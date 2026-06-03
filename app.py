@@ -19,27 +19,19 @@ from moviepy import concatenate_videoclips
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY')
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'imobiliaria.db')
-
-def get_db_connection():
-    # Usa o caminho completo que definimos acima
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
 
 # --- CONFIGURAÇÕES DE DIRETÓRIOS ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Caminho para o BANCO DE DADOS (Vamos garantir que ele fique dentro de uma pasta persistente)
-# No Railway, se você montar um volume em /app/data, use esse caminho:
-DB_DIR = "/app/database"
+# Banco persistente no Volume Railway
+DB_DIR = "/data"
 os.makedirs(DB_DIR, exist_ok=True)
+
 DB_PATH = os.path.join(DB_DIR, "imobiliaria.db")
 
-# Função para conectar ao banco
 def get_db():
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Permite acessar colunas pelos nomes
+    conn.row_factory = sqlite3.Row
     return conn
 
 # Inicialização do Banco
