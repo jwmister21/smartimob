@@ -37,6 +37,7 @@ class Usuario(db.Model):
     foto_url = db.Column(db.Text)
     cargo = db.Column(db.String(100))
     is_admin = db.Column(db.Integer, default=0)
+    validade_assinatura = db.Column(db.String(20))
 
 class Cliente(db.Model):
     __tablename__ = "clientes"
@@ -67,6 +68,16 @@ class Imovel(db.Model):
     area = db.Column(db.String(100))
     descricao = db.Column(db.Text)
     empresa_id = db.Column(db.Integer)
+    status = db.Column(db.String(50))
+    usuario_id = db.Column(db.Integer)
+    empresa_id = db.Column(db.Integer)
+
+    fotos = db.relationship(
+        "FotoImovel",
+        backref="imovel",
+        cascade="all, delete-orphan"
+    )
+2. Mod
 
 app.secret_key = os.getenv('SECRET_KEY')
 
@@ -167,7 +178,7 @@ def super_admin_required(f):
 @super_admin_required
 def super_dashboard():
     # Lista todas as empresas e suas estatísticas
-    empresas = db.execute("""
+    empresas = db.session.execute("""
         SELECT e.id, e.nome_fantasia, 
         (SELECT COUNT(*) FROM usuarios WHERE empresa_id = e.id) as total_corretores,
         (SELECT COUNT(*) FROM imoveis WHERE empresa_id = e.id) as total_imoveis
@@ -208,31 +219,7 @@ def tornar_admin(usuario_id):
     db.session.commit()
     return jsonify({"status": "sucesso", "mensagem": "Usuário agora é Administrador!"})
 
-# --- FUNÇÃO DE LOGIN (REESCRITA PARA SQLAlchemy) ---
-def verificar_login():
-    if "usuario_id" not in session: 
-        return "redirect_login"
-    
-    usuario = Usuario.query.get(session["usuario_id"])
-    
-    if not usuario: 
-        return "redirect_login"
-    
-    # Se for admin, passa direto
-    if usuario.is_admin == 1: 
-        return "ativo"
-        
-    if usuario.status_assinatura == "bloqueado": 
-        return "bloqueado"
-        
-    if usuario.validade_assinatura:
-        # Comparação de data segura
-        validade = datetime.strptime(usuario.validade_assinatura, "%Y-%m-%d")
-        if datetime.now() > validade: 
-            return "vencido"
-            
-    return "ativo"
-    # Busca os dados atuais garantindo o escopo da empresa
+a
     # --- ROTA CONFIGURAÇÕES ---
 @app.route("/configuracoes")
 @verificar_sessao
@@ -681,8 +668,8 @@ def excluir_imovel(id):
     imovel = Imovel.query.filter_by(id=id, empresa_id=empresa_id).first_or_404()
     
     # Remove arquivo físico se existir
-    if imovel.foto:
-        caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], imovel.foto)
+    if imovel.FotoImovel:
+        caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], imovel.FotoImovel)
         if os.path.exists(caminho_foto):
             os.remove(caminho_foto)
     
@@ -795,106 +782,7 @@ Siga estas diretrizes:
         imovel=imovel_selecionado,
     )
 
-@app.route("/cliente/<int:id>")
-@verificar_sessao
-def perfil_cliente(id):
-    empresa_id = session.get("empresa_id")
-    cliente = Cliente.query.filter_by(id=id, empresa_id=empresa_id).first_or_404()
-    imoveis = Imovel.query.filter_by(empresa_id=empresa_id).all()
-
-    matches_cliente = []
-    c_bairro_txt = str(cliente.bairro).lower().strip() if cliente.bairro else ""
-    interesse_txt = str(cliente.interesse).lower().strip() if cliente.interesse else ""
-
-    for i in imoveis:
-        i_bairro_txt = str(i.bairro).lower().strip() if i.bairro else ""
-        porcentagem = 0
-        
-        if i_bairro_txt and (i_bairro_txt == c_bairro_txt or i_bairro_txt in interesse_txt): 
-            porcentagem += 50
-        try:
-            imovel_num = float(''.join(filter(str.isdigit, str(i.valor))))
-            cliente_num = float(''.join(filter(str.isdigit, str(cliente.faixa_preco))))
-            if imovel_num <= (cliente_num * 1.10): porcentagem += 50
-        except:
-            if cliente.faixa_preco and str(i.valor).strip() in str(cliente.faixa_preco).strip():
-                porcentagem += 50
-
-        if porcentagem >= 50:
-            matches_cliente.append({
-                "id": i.id, "titulo": i.titulo, "valor": i.valor, 
-                "local": f"{i.bairro}, {i.cidade}", "foto": getattr(i, 'foto', ''), 
-                "porcentagem": porcentagem
-            })
-
-    return render_template("perfil_cliente.html", cliente=cliente, matches=matches_cliente)
-
-@app.route("/cliente/atualizar_status/<int:id>", methods=["POST"])
-@verificar_sessao
-def atualizar_status_cliente(id):
-    cliente = Cliente.query.filter_by(id=id, empresa_id=session.get("empresa_id")).first_or_404()
-    cliente.status_funil = request.form.get("status_funil")
-    cliente.data_visita = request.form.get("data_visita")
-    db.session.commit()
-    return redirect(f"/cliente/{id}")
-
-@app.route("/cliente/atualizar_dados/<int:id>", methods=["POST"])
-@verificar_sessao
-def atualizar_dados_cliente(id):
-    cliente = Cliente.query.filter_by(id=id, empresa_id=session.get("empresa_id")).first_or_404()
-    cliente.email = request.form.get("email")
-    cliente.cpf = request.form.get("cpf")
-    cliente.endereco = request.form.get("endereco")
-    db.session.commit()
-    return redirect(f"/cliente/{id}")
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)# --- ROTAS DE ANÚNCIOS, PERFIL DE CLIENTE E ATUALIZAÇÕES ---
-
-@app.route("/gerar_anuncio", methods=["GET", "POST"])
-@verificar_sessao
-def gerar_anuncio():
-    empresa_id = session.get("empresa_id")
-    lista_imoveis = Imovel.query.filter_by(empresa_id=empresa_id).all()
-    
-    anuncio, imovel_selecionado = None, None
-
-    if request.method == "POST":
-        id_imovel = request.form.get("imovel_id")
-        imovel_selecionado = Imovel.query.filter_by(id=id_imovel, empresa_id=empresa_id).first()
-
-        if imovel_selecionado:
-            localizacao = f"{imovel_selecionado.bairro}, {imovel_selecionado.cidade}"
-
-            try:
-                prompt = f"""
-Você é um especialista em marketing imobiliário. Crie um anúncio persuasivo para:
-- Tipo: {imovel_selecionado.tipo}
-- Localização: {localizacao}
-- Valor: {imovel_selecionado.valor}
-- Descrição técnica: {imovel_selecionado.descricao}
-
-Siga estas diretrizes: 
-1. Headline impactante.
-2. Descrição atraente do estilo de vida.
-3. Diferenciais em tópicos.
-4. Chamada para ação final.
-"""
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash", contents=prompt
-                )
-                anuncio = response.text
-            except Exception as e:
-                anuncio = f"Erro ao conectar com a IA: {e}"
-                
-    return render_template(
-        "gerar_anuncio.html",
-        imoveis=lista_imoveis,
-        anuncio=anuncio,
-        imovel=imovel_selecionado,
-    )
-
+# --- ROTAS DE ANÚNCIOS, PERFIL DE CLIENTE E ATUALIZAÇÕES --
 @app.route("/cliente/<int:id>")
 @verificar_sessao
 def perfil_cliente(id):
