@@ -140,7 +140,7 @@ def init_db():
     """)
 
     if "status_assinatura" not in colunas:
-    cursor.execute("""
+        cursor.execute("""
         ALTER TABLE usuarios
         ADD COLUMN status_assinatura TEXT DEFAULT 'ativo'
     """)
