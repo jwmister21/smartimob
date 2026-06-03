@@ -146,6 +146,18 @@ def init_db():
     if "session_token" not in colunas_usuarios:
         cursor.execute("ALTER TABLE usuarios ADD COLUMN session_token TEXT")
 
+    cursor.execute("PRAGMA table_info(clientes)")
+    colunas_clientes = [c[1] for c in cursor.fetchall()]
+    
+    # Lista de colunas necessárias na tabela clientes
+    colunas_necessarias = ["email", "interesse", "faixa_preco", "bairro", "data_visita"]
+    
+    for coluna in colunas_necessarias:
+        if coluna not in colunas_clientes:
+            # Adiciona a coluna se ela não existir
+        cursor.execute(f"ALTER TABLE clientes ADD COLUMN {coluna} TEXT")
+            print(f"Coluna {coluna} adicionada à tabela clientes.")
+
     conn.commit()
     conn.close()
     print("Banco de dados atualizado com sucesso!")
