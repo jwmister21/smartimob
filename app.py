@@ -106,6 +106,40 @@ def logout():
     session.clear()
     return redirect("/login")
 
+@app.route("/cadastrar_usuario", methods=["GET", "POST"])
+def cadastrar_usuario():
+    if request.method == "POST":
+        nome = request.form.get("nome")
+        email = request.form.get("email")
+        senha_pura = request.form.get("senha")
+        nome_empresa = request.form.get("nome_empresa") or "Sem Nome"
+        
+        try:
+            # 1. Cria a empresa
+            nova_empresa = Empresa(nome=nome_empresa)
+            db.session.add(nova_empresa)
+            db.session.commit() # Commita para gerar o ID da empresa
+            
+            # 2. Cria o usuário vinculado à empresa
+            novo_usuario = Usuario(
+                nome=nome,
+                email=email,
+                senha=generate_password_hash(senha_pura),
+                empresa_id=nova_empresa.id,
+                status_assinatura="ativo"
+            )
+            db.session.add(novo_usuario)
+            db.session.commit()
+            
+            flash("Conta criada com sucesso! Faça login.", "success")
+            return redirect("/login")
+        except Exception as e:
+            db.session.rollback()
+            flash("Erro ao cadastrar. Tente novamente.", "danger")
+            return redirect("/cadastrar_usuario")
+            
+    return render_template("cadastrar_usuario.html")
+
 # --- 5. INICIALIZAÇÃO ---
 if __name__ == "__main__":
     with app.app_context():
