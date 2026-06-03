@@ -131,22 +131,22 @@ def init_db():
     """)
 
     # 4. Tabela de imóveis
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS imoveis (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        titulo TEXT,
-        empresa_id INTEGER,
-        FOREIGN KEY(empresa_id) REFERENCES empresas(id)
-    )
-""")
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS imoveis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titulo TEXT,
+            empresa_id INTEGER,
+            FOREIGN KEY(empresa_id) REFERENCES empresas(id)
+        )
+    """)
 
 # Verifica as colunas da tabela clientes
-cursor.execute("PRAGMA table_info(clientes)")
-colunas = [c[1] for c in cursor.fetchall()]
+    cursor.execute("PRAGMA table_info(clientes)")
+    colunas = [c[1] for c in cursor.fetchall()]
 
 # Adiciona a coluna se ela não existir
-if "data_visita" not in colunas:
-    cursor.execute("""
+    if "data_visita" not in colunas:
+        cursor.execute("""
         ALTER TABLE clientes
         ADD COLUMN data_visita TEXT
     """)
