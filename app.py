@@ -17,6 +17,8 @@ from moviepy import concatenate_videoclips
 
 
 app = Flask(__name__)
+UPLOAD_FOLDER_IMOVEIS = '/app/static/uploads/imoveis'
+app.config['UPLOAD_FOLDER_IMOVEIS'] = UPLOAD_FOLDER_IMOVEIS
 app.secret_key = os.getenv('SECRET_KEY')
 
 
