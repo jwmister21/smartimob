@@ -13,10 +13,20 @@ from moviepy.video.VideoClip import TextClip
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+    "DATABASE_URL",
+    "sqlite:///imobiliaria.db"
+)
+
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
 
 app.secret_key = os.getenv('SECRET_KEY')
 
