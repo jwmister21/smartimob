@@ -155,7 +155,7 @@ def init_db():
     for coluna in colunas_necessarias:
         if coluna not in colunas_clientes:
             # Adiciona a coluna se ela não existir
-        cursor.execute(f"ALTER TABLE clientes ADD COLUMN {coluna} TEXT")
+            cursor.execute(f"ALTER TABLE clientes ADD COLUMN {coluna} TEXT")
             print(f"Coluna {coluna} adicionada à tabela clientes.")
 
     conn.commit()
