@@ -1090,8 +1090,7 @@ Siga estas diretrizes:
 4. Chamada para ação final.
 """
                 response = client.models.generate_content(
-                    model="gemini-1.5-flash", 
-                    contents=prompt
+                    model="gemini-2.5-flash", contents=prompt
                 )
                 anuncio = response.text
             except Exception as e:
