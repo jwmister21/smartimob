@@ -49,6 +49,10 @@ class Cliente(db.Model):
     bairro = db.Column(db.String(100))
     status_funil = db.Column(db.String(100))
     empresa_id = db.Column(db.Integer)
+    data_visita = db.Column(db.String(50))
+    cpf = db.Column(db.String(20))
+    endereco = db.Column(db.String(255))
+    usuario_id = db.Column(db.Integer)
 
 class Imovel(db.Model):
     __tablename__ = "imoveis"
@@ -76,9 +80,8 @@ for pasta in [app.config['UPLOAD_FOLDER_PERFIL'], app.config['UPLOAD_FOLDER_IMOV
         os.makedirs(pasta)
 
 # Nota: A partir daqui, usaremos db.session em vez de sqlite3
-for pasta in [PATH_PERFIL, PATH_IMOVEIS]:
-    if not os.path.exists(pasta):
-        os.makedirs(pasta)
+for pasta in [app.config['UPLOAD_FOLDER_PERFIL'], app.config['UPLOAD_FOLDER_IMOVEIS']]:
+    os.makedirs(pasta, exist_ok=True)
 
 # Removido DB_NAME, o SQLAlchemy usa a variável de configuração do app
 
