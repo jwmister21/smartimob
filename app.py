@@ -88,14 +88,24 @@ for pasta in [app.config['UPLOAD_FOLDER_PERFIL'], app.config['UPLOAD_FOLDER_IMOV
 client = genai.Client(api_key=os.getenv('GCP_API_KEY'))
 
 # --- DECORATORS E SEGURANÇA ---
+# --- 3. DECORATORS (CORRIGIDO) ---
 def verificar_sessao(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "usuario_id" not in session: return redirect("/login")
+        # 1. Verifica se existe ID na sessão
+        if "usuario_id" not in session:
+            return redirect("/login")
+        
+        # 2. Busca o usuário no banco
         usuario = Usuario.query.get(session["usuario_id"])
+        
+        # 3. VALIDAÇÃO CRÍTICA:
+        # Se o token da sessão for diferente do token salvo no banco, ele derruba
         if not usuario or usuario.session_token != session.get("session_token"):
+            print("DEBUG: Token inválido ou usuário inexistente. Logout forçado.")
             session.clear()
             return redirect("/login")
+            
         return f(*args, **kwargs)
     return decorated_function
 
