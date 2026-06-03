@@ -740,7 +740,7 @@ def admin():
         return "Acesso Negado.", 403
 
     # Abre a conexão usando a sua função
-    conn = get_db_connection()
+    conn = get_db()
     # O row_factory permite acessar os dados como colunas (opcional, mas recomendado)
     cursor = conn.cursor()
 
