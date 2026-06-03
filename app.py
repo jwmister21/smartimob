@@ -42,7 +42,7 @@ for pasta in [PATH_PERFIL, PATH_IMOVEIS]:
 DB_NAME = os.path.join(BASE_DIR, "database", "imobiliaria.db")
 
 
-api_key = os.getenv('GCP_API_KEY')
+client = genai.Client(api_key=os.getenv('GCP_API_KEY'))
 @app.context_processor
 def injetar_lembretes():
     # Pega a data de hoje formatada como 'YYYY-MM-DD'
@@ -414,7 +414,7 @@ def cadastrar_imovel():
 # (Mantenha o restante das suas outras rotas abaixo aqui...)
 
 
-api_key=os.getenv('GCP_API_KEY')
+client = genai.Client(api_key=os.getenv('GCP_API_KEY'))
 
 # ==========================================
 # FUNÇÃO AUXILIAR: VERIFICAÇÃO DE ASSINATURA
@@ -1071,7 +1071,22 @@ def gerar_anuncio():
         if imovel_selecionado:
             try:
                 # O restante do seu prompt permanece igual...
-                prompt = f"""... (seu código do prompt aqui) ..."""
+                prompt = f"""
+Você é um especialista em marketing imobiliário de alto desempenho. 
+Sua tarefa é criar um anúncio persuasivo e chamativo para o imóvel com as seguintes características:
+
+- Tipo: {tipo_imovel}
+- Localização: {localizacao}
+- Valor: {valor}
+- Detalhes principais: {detalhes}
+
+Por favor, siga estas diretrizes:
+1. Comece com uma "Headline" (título) impactante que foque no principal benefício do imóvel.
+2. Escreva um parágrafo que descreva o estilo de vida que o imóvel proporciona.
+3. Liste os principais diferenciais em tópicos (bullet points).
+4. Termine com uma "Chamada para Ação" (Call to Action) clara, incentivando o contato.
+5. Use um tom de voz profissional, mas entusiasmado e acolhedor.
+"""
                 
                 response = client.models.generate_content(
                     model="gemini-2.5-flash", contents=prompt
