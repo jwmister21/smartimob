@@ -73,20 +73,8 @@ def verificar_sessao(f):
         if "usuario_id" not in session:
             return redirect("/login")
 
-        # Verifica no banco se o token atual ainda é o mesmo
-        conn = sqlite3.connect(DB_PATH) 
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("SELECT session_token FROM usuarios WHERE id = ?", (session["usuario_id"],))
-        usuario_db = cursor.fetchone()
-        conn.close()
-
-        # Se o token no banco for diferente do token da sessão, alguém logou em outro lugar
-        if not usuario_db or usuario_db['session_token'] != session.get("session_token"):
-            session.clear() # Desloga o usuário
-            return redirect("/login")
-
         return f(*args, **kwargs)
+
     return decorated_function
 # ... (seus imports e DB_NAME = 'seu_banco.db')
 
