@@ -29,17 +29,21 @@ def get_db_connection():
 
 # --- CONFIGURAÇÕES DE DIRETÓRIOS ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-PATH_PERFIL = os.path.join(BASE_DIR, 'static', 'uploads', 'perfil')
-PATH_IMOVEIS = os.path.join(BASE_DIR, 'static', 'uploads', 'imoveis')
 
-app.config['UPLOAD_FOLDER_PERFIL'] = PATH_PERFIL
-app.config['UPLOAD_FOLDER_IMOVEIS'] = PATH_IMOVEIS
+# Caminho para o BANCO DE DADOS (Vamos garantir que ele fique dentro de uma pasta persistente)
+# No Railway, se você montar um volume em /app/data, use esse caminho:
+DB_DIR = os.path.join(BASE_DIR, "database")
+os.makedirs(DB_DIR, exist_ok=True)
+DB_PATH = os.path.join(DB_DIR, "imobiliaria.db")
 
-for pasta in [PATH_PERFIL, PATH_IMOVEIS]:
-    if not os.path.exists(pasta):
-        os.makedirs(pasta)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
 
-DB_NAME = os.path.join(BASE_DIR, "database", "imobiliaria.db")
+# Pastas de Upload (Persistentes)
+app.config['UPLOAD_FOLDER_PERFIL'] = os.path.join(BASE_DIR, 'static', 'uploads', 'perfil')
+app.config['UPLOAD_FOLDER_IMOVEIS'] = os.path.join(BASE_DIR, 'static', 'uploads', 'imoveis')
+
+for pasta in [app.config['UPLOAD_FOLDER_PERFIL'], app.config['UPLOAD_FOLDER_IMOVEIS']]:
+    os.makedirs(pasta, exist_ok=True)
 
 
 api_key = os.getenv('GCP_API_KEY')
