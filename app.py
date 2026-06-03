@@ -46,21 +46,25 @@ def init_db():
 
 # Roda a inicialização ao subir
 init_db()
+
 api_key = os.getenv('GCP_API_KEY')
+
 @app.context_processor
 def injetar_lembretes():
     # Pega a data de hoje formatada como 'YYYY-MM-DD'
     hoje = datetime.now().strftime('%Y-%m-%d')
 
-    conn = get_db_connection()
-    # Busca clientes onde a data_visita começa com a data de hoje
+    conn = get_db()
+
+    # Busca clientes onde a data_visita é hoje
     lembretes = conn.execute(
-        "SELECT * FROM clientes WHERE date(data_visita) = ?", (hoje,)
+        "SELECT * FROM clientes WHERE date(data_visita) = ?",
+        (hoje,)
     ).fetchall()
+
     conn.close()
 
     return dict(lembretes=lembretes)
-
 
 
 def verificar_sessao(f):
