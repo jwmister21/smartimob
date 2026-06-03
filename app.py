@@ -131,29 +131,24 @@ def init_db():
     """)
 
 # Verifica as colunas da tabela clientes
-    cursor.execute("PRAGMA table_info(clientes)")
-    colunas = [c[1] for c in cursor.fetchall()]
+ cursor.execute("PRAGMA table_info(clientes)")
+    colunas_clientes = [c[1] for c in cursor.fetchall()]
+    if "data_visita" not in colunas_clientes:
+        cursor.execute("ALTER TABLE clientes ADD COLUMN data_visita TEXT")
 
-# Adiciona a coluna se ela não existir
-    if "data_visita" not in colunas:
-        cursor.execute("""
-        ALTER TABLE clientes
-        ADD COLUMN data_visita TEXT
-    """)
+    # 3. Migração da tabela USUARIOS (É aqui que estava o erro!)
+    cursor.execute("PRAGMA table_info(usuarios)")
+    colunas_usuarios = [c[1] for c in cursor.fetchall()]
+    
+    if "status_assinatura" not in colunas_usuarios:
+        cursor.execute("ALTER TABLE usuarios ADD COLUMN status_assinatura TEXT DEFAULT 'ativo'")
+        
+    if "session_token" not in colunas_usuarios:
+        cursor.execute("ALTER TABLE usuarios ADD COLUMN session_token TEXT")
 
-    if "status_assinatura" not in colunas:
-        cursor.execute("""
-        ALTER TABLE usuarios
-        ADD COLUMN status_assinatura TEXT DEFAULT 'ativo'
-    """)
-    if "session_token" not in colunas:
-        cursor.execute("""
-        ALTER TABLE usuarios
-        ADD COLUMN session_token TEXT
-    """)
     conn.commit()
     conn.close()
-    print("Banco de dados inicializado com todas as tabelas!")
+    print("Banco de dados atualizado com sucesso!")
     print(f"Banco utilizado: {DB_PATH}")
 
 
