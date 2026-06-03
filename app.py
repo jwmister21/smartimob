@@ -42,7 +42,7 @@ for pasta in [PATH_PERFIL, PATH_IMOVEIS]:
 DB_NAME = os.path.join(BASE_DIR, "database", "imobiliaria.db")
 
 
-api_key = os.getenv('GCP_API_KEY')
+client = genai.Client(api_key=os.getenv('GCP_API_KEY'))
 @app.context_processor
 def injetar_lembretes():
     # Pega a data de hoje formatada como 'YYYY-MM-DD'
@@ -414,7 +414,7 @@ def cadastrar_imovel():
 # (Mantenha o restante das suas outras rotas abaixo aqui...)
 
 
-api_key=os.getenv('GCP_API_KEY')
+client = genai.Client(api_key=os.getenv('GCP_API_KEY'))
 
 # ==========================================
 # FUNÇÃO AUXILIAR: VERIFICAÇÃO DE ASSINATURA
@@ -1046,33 +1046,49 @@ def editar_imovel(id):
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
 # ==========================================
 @app.route("/gerar_anuncio", methods=["GET", "POST"])
-@verificar_sessao # Use o decorador que criamos
+@verificar_sessao
 def gerar_anuncio():
     empresa_id = session.get("empresa_id")
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Busca apenas os imóveis desta empresa
-    cursor.execute("SELECT * FROM imoveis WHERE empresa_id=?", (empresa_id,))
+    # Seleciona as colunas necessárias para o select da página
+    cursor.execute("SELECT id, titulo FROM imoveis WHERE empresa_id=?", (empresa_id,))
     lista_imoveis = cursor.fetchall()
     
     anuncio, imovel_selecionado = None, None
 
     if request.method == "POST":
-        id_imovel = request.form["imovel_id"]
+        id_imovel = request.form.get("imovel_id")
         
-        # A SEGURANÇA ESTÁ AQUI: Validamos ID do imóvel E empresa_id
-        cursor.execute(
-            "SELECT * FROM imoveis WHERE id=? AND empresa_id=?",
-            (id_imovel, empresa_id),
-        )
+        # Busca todas as colunas para mapear corretamente
+        cursor.execute("SELECT * FROM imoveis WHERE id=? AND empresa_id=?", (id_imovel, empresa_id))
         imovel_selecionado = cursor.fetchone()
 
         if imovel_selecionado:
+            # Mapeamento baseado no seu DB Browser (indices da tupla)
+            tipo_imovel = imovel_selecionado[2]
+            valor = imovel_selecionado[3]
+            cidade = imovel_selecionado[4]
+            bairro = imovel_selecionado[5]
+            descricao = imovel_selecionado[10]
+            
+            localizacao = f"{bairro}, {cidade}"
+
             try:
-                # O restante do seu prompt permanece igual...
-                prompt = f"""... (seu código do prompt aqui) ..."""
-                
+                prompt = f"""
+Você é um especialista em marketing imobiliário. Crie um anúncio persuasivo para:
+- Tipo: {tipo_imovel}
+- Localização: {localizacao}
+- Valor: {valor}
+- Descrição técnica: {descricao}
+
+Siga estas diretrizes: 
+1. Headline impactante.
+2. Descrição atraente do estilo de vida.
+3. Diferenciais em tópicos.
+4. Chamada para ação final.
+"""
                 response = client.models.generate_content(
                     model="gemini-2.5-flash", contents=prompt
                 )
@@ -1192,4 +1208,5 @@ def atualizar_dados_cliente(id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
