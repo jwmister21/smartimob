@@ -121,15 +121,26 @@ def login():
     if request.method == "POST":
         email = request.form.get("email")
         senha = request.form.get("senha")
+        
         usuario = Usuario.query.filter_by(email=email).first()
+        
         if usuario and check_password_hash(usuario.senha, senha):
-            token = secrets.token_hex(16)
-            usuario.session_token = token
+            # Cria sessão
+            novo_token = secrets.token_hex(16)
+            usuario.session_token = novo_token
             db.session.commit()
-            session.update({"usuario_id": usuario.id, "empresa_id": usuario.empresa_id, 
-                           "session_token": token, "is_admin": usuario.is_admin})
-            return redirect("/")
+            
+            session["usuario_id"] = usuario.id
+            session["empresa_id"] = usuario.empresa_id
+            session["session_token"] = novo_token
+            session["is_admin"] = usuario.is_admin
+            
+            return redirect("/") # Redireciona para a home
+        
+        # Se a senha estiver errada, o flash vai avisar
         flash("E-mail ou senha incorretos.", "danger")
+        return redirect("/login")
+        
     return render_template("login.html")
 
 @app.route("/cadastrar_usuario", methods=["GET", "POST"])
