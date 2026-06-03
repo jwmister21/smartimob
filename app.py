@@ -138,6 +138,12 @@ def init_db():
         ALTER TABLE clientes
         ADD COLUMN data_visita TEXT
     """)
+
+    if "status_assinatura" not in colunas:
+    cursor.execute("""
+        ALTER TABLE usuarios
+        ADD COLUMN status_assinatura TEXT DEFAULT 'ativo'
+    """)
     conn.commit()
     conn.close()
     print("Banco de dados inicializado com todas as tabelas!")
