@@ -131,7 +131,7 @@ def init_db():
     """)
 
 # Verifica as colunas da tabela clientes
- cursor.execute("PRAGMA table_info(clientes)")
+    cursor.execute("PRAGMA table_info(clientes)")
     colunas_clientes = [c[1] for c in cursor.fetchall()]
     if "data_visita" not in colunas_clientes:
         cursor.execute("ALTER TABLE clientes ADD COLUMN data_visita TEXT")
