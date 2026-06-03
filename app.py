@@ -70,7 +70,7 @@ def verificar_sessao(f):
             return redirect("/login")
 
         # Verifica no banco se o token atual ainda é o mesmo
-        conn = sqlite3.connect(DB_NAME) 
+        conn = sqlite3.connect(DB_PATH) 
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute("SELECT session_token FROM usuarios WHERE id = ?", (session["usuario_id"],))
@@ -89,7 +89,7 @@ def verificar_sessao(f):
 def init_db():
 
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # 1. Tabela de empresas
@@ -144,7 +144,7 @@ def init_db():
 
 
 def atualizar_banco():
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     comandos = [
@@ -295,7 +295,7 @@ def verificar_login():
     if "usuario_id" not in session: return "redirect_login"
     if session.get("is_admin") == 1: return "ativo"
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT status_assinatura, validade_assinatura FROM usuarios WHERE id = ?", (session["usuario_id"],))
     user = cursor.fetchone()
@@ -310,7 +310,7 @@ def verificar_login():
 # --- ROTA CONFIGURAÇÕES (CORRIGIDA) ---
 
     # Busca os dados atuais garantindo o escopo da empresa
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         SELECT nome, foto_url FROM usuarios 
@@ -379,7 +379,7 @@ def cadastrar_imovel():
         empresa_id = session.get("empresa_id")
         user_id = session.get("usuario_id")
 
-        conn = sqlite3.connect(DB_NAME)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # 1. Insere o imóvel incluindo o empresa_id
@@ -433,7 +433,7 @@ def verificar_login():
         return "ativo"
 
     # Consulta o status direto no banco de dados para segurança máxima
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
         "SELECT status_assinatura, validade_assinatura FROM usuarios WHERE id = ?",
@@ -467,7 +467,7 @@ def atualizar_senha():
     senha_atual = request.form.get("senha_atual")
     nova_senha = request.form.get("nova_senha")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT senha FROM usuarios WHERE id = ?", (session["usuario_id"],))
     hash_atual = cursor.fetchone()[0]
@@ -497,7 +497,7 @@ def index():
 
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # A SEGURANÇA: Contamos itens baseados na empresa_id
@@ -526,7 +526,7 @@ def match_ia():
         return redirect("/admin")
 
     empresa_id = session.get("empresa_id")
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # ISOLAMENTO: Puxa apenas dados vinculados à empresa do usuário logado
@@ -592,7 +592,7 @@ def login():
         email = request.form.get("email")
         senha = request.form.get("senha")
 
-        conn = sqlite3.connect(DB_NAME)
+        conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
@@ -633,7 +633,7 @@ def cadastrar_usuario():
         # Gera o hash da senha para segurança
         senha_hash = generate_password_hash(senha_pura)
 
-        conn = sqlite3.connect(DB_NAME)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         try:
@@ -699,7 +699,7 @@ def configuracoes():
             file.save(save_path)
 
             # Atualiza no banco
-            conn = sqlite3.connect(DB_NAME)
+            conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             # Adicionamos a empresa_id aqui apenas por boa prática, embora 
             # o usuario_id já seja único no seu sistema
@@ -712,7 +712,7 @@ def configuracoes():
             return redirect("/configuracoes")
 
     # Busca os dados atuais
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         SELECT nome, foto_url FROM usuarios 
@@ -782,7 +782,7 @@ def admin_acao(user_id):
 def admin_bloquear(id):
     if session.get("is_admin") != 1:
         return "Negado", 403
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
         "UPDATE usuarios SET status_assinatura='bloqueado' WHERE id=?", (id,)
@@ -797,7 +797,7 @@ def admin_liberar(id):
     if session.get("is_admin") != 1:
         return "Negado", 403
     nova_data = request.form["validade"]
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
         "UPDATE usuarios SET status_assinatura='ativo', validade_assinatura=? WHERE id=?",
@@ -819,7 +819,7 @@ def admin_resetar_senha(id):
     # SEMPRE HASH: Nunca guarde senhas em texto puro no banco
     senha_hash = generate_password_hash(nova_senha_plain)
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Atualização com segurança extra:
@@ -844,7 +844,7 @@ def admin_resetar_senha(id):
 def listar_clientes():
     empresa_id = session.get('empresa_id')
 
-    conn = sqlite3.connect(DB_NAME) # Usei sua variável global DB_NAME
+    conn = sqlite3.connect(DB_PATH) # Usei sua variável global DB_NAME
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -869,7 +869,7 @@ def cadastrar_cliente():
         user_id = session["usuario_id"]
         empresa_id = session["empresa_id"]
 
-        conn = sqlite3.connect(DB_NAME)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         # Inserimos os dados incluindo o campo empresa_id
@@ -892,7 +892,7 @@ def cadastrar_cliente():
 def imoveis():
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row 
     cursor = conn.cursor()
 
@@ -918,7 +918,7 @@ def imoveis():
 def excluir_imovel(id):
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # 1. Buscamos o imóvel apenas se ele pertencer à empresa logada
@@ -948,7 +948,7 @@ def excluir_imovel(id):
 def ver_imovel(imovel_id):
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row 
     cursor = conn.cursor()
 
@@ -982,7 +982,7 @@ def funil():
     # O decorador @verificar_sessao já cuida da autenticação
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -1008,7 +1008,7 @@ def funil():
 @verificar_sessao # Usamos o decorador que garante segurança na sessão
 def editar_imovel(id):
     empresa_id = session.get("empresa_id")
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     if request.method == "POST":
@@ -1053,7 +1053,7 @@ def editar_imovel(id):
 @verificar_sessao # Use o decorador que criamos
 def gerar_anuncio():
     empresa_id = session.get("empresa_id")
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Busca apenas os imóveis desta empresa
@@ -1097,7 +1097,7 @@ def gerar_anuncio():
 def perfil_cliente(id):
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # 1. Busca dados do cliente filtrando pela empresa_id
@@ -1151,7 +1151,7 @@ def atualizar_status_cliente(id):
     data_visita = request.form.get("data_visita")
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # Corrigido de cliente_id para id (que é o argumento da função)
@@ -1174,7 +1174,7 @@ def atualizar_dados_cliente(id):
     endereco = request.form.get("endereco")
     empresa_id = session.get("empresa_id")
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
     # CORREÇÃO: Removida a vírgula após endereco = ?
