@@ -17,10 +17,7 @@ from moviepy import concatenate_videoclips
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///imobiliaria.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
 app.secret_key = os.getenv('SECRET_KEY')
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'imobiliaria.db')
