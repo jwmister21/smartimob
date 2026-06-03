@@ -140,7 +140,7 @@ def init_db():
         )
     """)
     
-   cursor.execute("PRAGMA table_info(clientes)")
+cursor.execute("PRAGMA table_info(clientes)")
     colunas = [c[1] for c in cursor.fetchall()]
 
     if "data_visita" not in colunas:
