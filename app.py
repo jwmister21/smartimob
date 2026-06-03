@@ -153,6 +153,7 @@ def init_db():
     conn.commit()
     conn.close()
     print("Banco de dados inicializado com todas as tabelas!")
+    print(f"Banco utilizado: {DB_PATH}")
 
 
 
