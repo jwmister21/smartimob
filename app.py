@@ -1046,50 +1046,52 @@ def editar_imovel(id):
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
 # ==========================================
 @app.route("/gerar_anuncio", methods=["GET", "POST"])
-@verificar_sessao # Use o decorador que criamos
+@verificar_sessao
 def gerar_anuncio():
     empresa_id = session.get("empresa_id")
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Busca apenas os imóveis desta empresa
-    cursor.execute("SELECT * FROM imoveis WHERE empresa_id=?", (empresa_id,))
+    # Seleciona as colunas necessárias para o select da página
+    cursor.execute("SELECT id, titulo FROM imoveis WHERE empresa_id=?", (empresa_id,))
     lista_imoveis = cursor.fetchall()
     
     anuncio, imovel_selecionado = None, None
 
     if request.method == "POST":
-        id_imovel = request.form["imovel_id"]
+        id_imovel = request.form.get("imovel_id")
         
-        # A SEGURANÇA ESTÁ AQUI: Validamos ID do imóvel E empresa_id
-        cursor.execute(
-            "SELECT * FROM imoveis WHERE id=? AND empresa_id=?",
-            (id_imovel, empresa_id),
-        )
+        # Busca todas as colunas para mapear corretamente
+        cursor.execute("SELECT * FROM imoveis WHERE id=? AND empresa_id=?", (id_imovel, empresa_id))
         imovel_selecionado = cursor.fetchone()
 
         if imovel_selecionado:
-            try:
-                # O restante do seu prompt permanece igual...
-                prompt = f"""
-Você é um especialista em marketing imobiliário de alto desempenho. 
-Sua tarefa é criar um anúncio persuasivo e chamativo para o imóvel com as seguintes características:
+            # Mapeamento baseado no seu DB Browser (indices da tupla)
+            tipo_imovel = imovel_selecionado[2]
+            valor = imovel_selecionado[3]
+            cidade = imovel_selecionado[4]
+            bairro = imovel_selecionado[5]
+            descricao = imovel_selecionado[10]
+            
+            localizacao = f"{bairro}, {cidade}"
 
+            try:
+                prompt = f"""
+Você é um especialista em marketing imobiliário. Crie um anúncio persuasivo para:
 - Tipo: {tipo_imovel}
 - Localização: {localizacao}
 - Valor: {valor}
-- Detalhes principais: {detalhes}
+- Descrição técnica: {descricao}
 
-Por favor, siga estas diretrizes:
-1. Comece com uma "Headline" (título) impactante que foque no principal benefício do imóvel.
-2. Escreva um parágrafo que descreva o estilo de vida que o imóvel proporciona.
-3. Liste os principais diferenciais em tópicos (bullet points).
-4. Termine com uma "Chamada para Ação" (Call to Action) clara, incentivando o contato.
-5. Use um tom de voz profissional, mas entusiasmado e acolhedor.
+Siga estas diretrizes: 
+1. Headline impactante.
+2. Descrição atraente do estilo de vida.
+3. Diferenciais em tópicos.
+4. Chamada para ação final.
 """
-                
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash", contents=prompt
+                    model="gemini-1.5-flash", 
+                    contents=prompt
                 )
                 anuncio = response.text
             except Exception as e:
