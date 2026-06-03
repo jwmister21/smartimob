@@ -122,26 +122,26 @@ def login():
         email = request.form.get("email")
         senha = request.form.get("senha")
         
+        print(f"DEBUG: Tentativa de login para o email: {email}") # Isso aparecerá nos logs do terminal
+        
         usuario = Usuario.query.filter_by(email=email).first()
         
-        if usuario and check_password_hash(usuario.senha, senha):
-            # Cria sessão
-            novo_token = secrets.token_hex(16)
-            usuario.session_token = novo_token
-            db.session.commit()
+        if usuario:
+            print(f"DEBUG: Usuário encontrado! Nome: {usuario.nome}")
+            if check_password_hash(usuario.senha, senha):
+                print("DEBUG: Senha correta!")
+                # ... resto do código de sessão ...
+                return redirect("/")
+            else:
+                print("DEBUG: Senha incorreta!")
+        else:
+            print("DEBUG: Usuário não encontrado no banco.")
             
-            session["usuario_id"] = usuario.id
-            session["empresa_id"] = usuario.empresa_id
-            session["session_token"] = novo_token
-            session["is_admin"] = usuario.is_admin
-            
-            return redirect("/") # Redireciona para a home
-        
-        # Se a senha estiver errada, o flash vai avisar
         flash("E-mail ou senha incorretos.", "danger")
         return redirect("/login")
         
     return render_template("login.html")
+
 
 @app.route("/cadastrar_usuario", methods=["GET", "POST"])
 def cadastrar_usuario():
