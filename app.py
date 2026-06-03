@@ -139,7 +139,15 @@ def init_db():
             FOREIGN KEY(empresa_id) REFERENCES empresas(id)
         )
     """)
+    
+    cursor.execute("PRAGMA table_info(clientes)")
+       colunas = [c[1] for c in cursor.fetchall()]
 
+         if "data_visita" not in colunas:
+            cursor.execute("""
+        ALTER TABLE clientes
+        ADD COLUMN data_visita TEXT
+    """)
     conn.commit()
     conn.close()
     print("Banco de dados inicializado com todas as tabelas!")
