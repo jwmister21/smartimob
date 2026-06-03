@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel ADM - SMARTZEN{% endblock %}
+{% block pagina %}Painel Administrativo de Corretores{% endblock %}
+
+{% block content %}
+<style>
+    .admin-container {
+        background: #111827;
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .tabela-usuarios {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        color: white;
+    }
+    .tabela-usuarios th, .tabela-usuarios td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #374151;
+    }
+    .tabela-usuarios th {
+        background: #1f2937;
+        color: #9ca3af;
+        font-weight: 600;
+    }
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        display: inline-block;
+    }
+    .badge-ativo { background: #10b981; color: white; }
+    .badge-bloqueado { background: #ef4444; color: white; }
+    
+    .acoes-flex {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .btn-acao {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    .btn-bloquear { background: #ef4444; }
+    .btn-bloquear:hover { background: #dc2626; }
+    
+    .form-inline {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    .input-inline {
+        padding: 8px;
+        background: #1f2937;
+        border: 1px solid #374151;
+        color: white;
+        border-radius: 8px;
+        font-size: 0.85rem;
+    }
+    .input-inline:focus {
+        border-color: #0ea5e9;
+        outline: none;
+    }
+    .btn-salvar { background: #10b981; }
+    .btn-salvar:hover { background: #059669; }
+    .btn-reset { background: #f59e0b; }
+    .btn-reset:hover { background: #d97706; }
+</style>
+
+<div class="admin-container">
+    <h2 style="margin-top: 0; color: white;">👥 Gerenciamento de Corretores / Empresas</h2>
+    
+    <!-- Cards de Métricas -->
+    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+        <div style="background: #1f2937; padding: 20px; border-radius: 10px; flex: 1; text-align: center;">
+            <h3 style="color: #9ca3af;">Total de Imóveis</h3>
+            <p style="font-size: 1.5rem; color: white;">{{ total_imoveis }}</p>
+        </div>
+        <div style="background: #1f2937; padding: 20px; border-radius: 10px; flex: 1; text-align: center;">
+            <h3 style="color: #9ca3af;">Total de Clientes</h3>
+            <p style="font-size: 1.5rem; color: white;">{{ total_clientes }}</p>
+        </div>
+    </div>
+
+    <table class="tabela-usuarios">
+        <thead>
+            <tr>
+                <th>Nome / Empresa</th>
+                <th>E-mail</th>
+                <th>Status</th>
+                <th>Vencimento</th>
+                <th>Ações de Acesso</th>
+                <th>Resetar Senha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for corretor in corretores %}
+            <tr>
+                <td>
+                    <strong style="color: white; font-size: 1rem;">{{ corretor[1] }}</strong>
+                    <br><span style="font-size: 0.8rem; color: #9ca3af;">{{ corretor[3] if corretor[3] else 'Corretor Autônomo' }}</span>
+                </td>
+                <td>{{ corretor[2] }}</td>
+                <td>
+                    {% if corretor[4] == 'ativo' %}
+                        <span class="badge badge-ativo">● Ativo</span>
+                    {% else %}
+                        <span class="badge badge-bloqueado">● Suspenso</span>
+                    {% endif %}
+                </td>
+                <td>{{ corretor[5] if corretor[5] else 'Sem limite' }}</td>
+                <td>
+                    <div class="acoes-flex">
+                        <!-- Renovar -->
+                        <form action="/admin/liberar/{{ corretor[0] }}" method="POST" class="form-inline">
+                            <input type="date" name="validade" class="input-inline" value="{{ corretor[5] }}">
+                            <button type="submit" class="btn-acao btn-salvar">Renovar</button>
+                        </form>
+
+                        <!-- Bloquear -->
+                        {% if corretor[4] == 'ativo' %}
+                            <a href="/admin/bloquear/{{ corretor[0] }}" class="btn-acao btn-bloquear">🛑 Bloquear</a>
+                        {% endif %}
+
+                        <!-- Tornar Admin -->
+                        <form action="/admin/acao/{{ corretor[0] }}" method="POST">
+                            <input type="hidden" name="acao" value="promover_admin">
+                            {% if corretor[6] == 1 %}
+                                <span style="color: #10b981; font-size: 0.8rem;">✅ Admin</span>
+                            {% else %}
+                                <button type="submit" class="btn-acao" style="background: #6366f1;">Tornar Admin</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </td>
+                <td>
+                    <form action="/admin/resetar_senha/{{ corretor[0] }}" method="POST" class="form-inline">
+                        <input type="text" name="nova_senha" placeholder="Nova senha" class="input-inline" style="width: 110px;" required>
+                        <button type="submit" class="btn-acao btn-reset">🔑 Alterar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

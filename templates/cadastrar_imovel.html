@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Imóvel{% endblock %}
+{% block pagina %}Novo Imóvel{% endblock %}
+
+{% block content %}
+<style>
+    .card { background: #111827; padding: 25px; border-radius: 20px; border: 1px solid #1f2937; color: white; }
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .campo-box { display: flex; flex-direction: column; gap: 5px; }
+    .campo-box label { color: #9ca3af; font-size: 13px; margin-left: 5px; }
+    .form-grid input, .form-grid select, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #374151; border-radius: 10px; color: white; box-sizing: border-box; }
+
+    /* Galeria Horizontal */
+    #preview-container { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 15px; padding: 10px 0; margin-top: 15px; min-height: 130px; }
+    .foto-thumbnail { width: 120px; height: 120px; object-fit: cover; border-radius: 10px; border: 2px solid #374151; flex-shrink: 0; }
+    
+    .btn-salvar { background: #22c55e; color: white; padding: 15px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; }
+</style>
+
+<div class="card">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-grid">
+            <div class="campo-box"><label>Título</label><input type="text" name="titulo" required></div>
+            <div class="campo-box"><label>Tipo</label>
+                <select name="tipo"><option>Casa</option><option>Apartamento</option><option>Terreno</option></select>
+            </div>
+            <div class="campo-box"><label>Valor (R$)</label><input type="text" name="valor" id="valor"></div>
+            <div class="campo-box"><label>Cidade</label><input type="text" name="cidade"></div>
+            <div class="campo-box"><label>Bairro</label><input type="text" name="bairro"></div>
+            <div class="campo-box"><label>Quartos</label><input type="number" name="quartos"></div>
+            <div class="campo-box"><label>Banheiros</label><input type="number" name="banheiros"></div>
+            <div class="campo-box"><label>Área (m²)</label><input type="number" name="area"></div>
+            <div class="campo-box"><label>Status</label>
+                <select name="status"><option>Venda</option><option>Aluguel</option></select>
+            </div>
+        </div>
+
+        <div class="campo-box" style="margin-top: 15px;">
+            <label>Descrição</label>
+            <textarea name="descricao" rows="4"></textarea>
+        </div>
+
+        <div class="campo-box" style="margin-top: 20px;">
+            <label>Fotos do Imóvel</label>
+            <label for="input-fotos" class="btn-acao btn-editar" style="width: fit-content; cursor: pointer;">➕ Adicionar Fotos</label>
+            <input type="file" name="fotos[]" id="input-fotos" accept="image/*" multiple style="display:none" onchange="previewFotos(event)">
+            <div id="preview-container"></div>
+        </div>
+
+        <button type="submit" class="btn-salvar">Salvar Imóvel</button>
+    </form>
+</div>
+
+<script>
+    // 1. Variável global para manter o histórico de arquivos selecionados
+    let arquivosParaEnviar = new DataTransfer();
+
+    // Máscara de valor (mantive a sua)
+    document.getElementById('valor').addEventListener('input', function(e){
+        let v = e.target.value.replace(/\D/g,'');
+        v = (Number(v)/100).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        e.target.value = v;
+    });
+
+    // 2. Preview Horizontal Inteligente
+    function previewFotos(event) {
+        const input = event.target;
+        const container = document.getElementById('preview-container');
+        
+        // Adiciona os novos arquivos selecionados à nossa lista global
+        for (let i = 0; i < input.files.length; i++) {
+            arquivosParaEnviar.items.add(input.files[i]);
+            
+            // Cria o elemento de visualização apenas para o arquivo novo
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'foto-thumbnail';
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(input.files[i]);
+        }
+        
+        // 3. O SEGREDO: Atualiza o input com a lista acumulada de arquivos
+        input.files = arquivosParaEnviar.files;
+        
+        console.log("Total de arquivos na fila:", input.files.length);
+    }
+</script>
+{% endblock %}

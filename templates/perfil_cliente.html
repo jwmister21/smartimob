@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Perfil do Cliente - SMARTZEN{% endblock %}
+{% block pagina %}Ficha do Cliente / Funil{% endblock %}
+
+{% block content %}
+<style>
+    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 15px; }
+    .perfil-card { background: #111827; border: 1px solid #374151; border-radius: 16px; padding: 25px; }
+    .info-label { color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 4px; display: block; }
+    .info-val { color: white; font-size: 1.1rem; margin-bottom: 18px; font-weight: 500; }
+    .funnel-selector { background: #1f2937; border: 1px solid #4b5563; color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 1rem; margin-bottom: 15px; }
+    .btn-salvar-status { background: #0ea5e9; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+    .btn-salvar-status:hover { background: #0284c7; }
+</style>
+
+<div class="perfil-grid">
+    <div class="perfil-card">
+        <span style="color: #0ea5e9; font-weight: bold;">👤 Cadastro Geral</span>
+        <h2 style="color: white; margin: 5px 0 25px 0;">{{ cliente[1] }}</h2>
+
+        <div style="background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #f59e0b;">
+            <span class="info-label" style="color: #f59e0b;">📍 Estágio Atual no Funil</span>
+            <div style="font-size: 1.3rem; font-weight: bold; color: white; margin-top: 5px;">
+                {{ cliente[7] if cliente[7] else 'Novo' }}
+            </div>
+        </div>
+
+        <form action="/cliente/atualizar_status/{{ cliente[0] }}" method="POST">
+            <label class="info-label">Mudar Etapa:</label>
+            <!-- CORREÇÃO: Adicionado onchange aqui -->
+            <select name="status_funil" class="funnel-selector" onchange="verificarData(this)">
+                <option value="Novo" {% if cliente[7] == 'Novo' %}selected{% endif %}>🆕 Lead Novo</option>
+                <option value="Em Atendimento" {% if cliente[7] == 'Em Atendimento' %}selected{% endif %}>💬 Em Atendimento</option>
+                <option value="Visita Agendada" {% if cliente[7] == 'Visita Agendada' %}selected{% endif %}>📅 Visita Agendada</option>
+                <option value="Proposta Feita" {% if cliente[7] == 'Proposta Feita' %}selected{% endif %}>📝 Proposta Feita</option>
+                <option value="Contrato Fechado" {% if cliente[7] == 'Contrato Fechado' %}selected{% endif %}>🏆 Venda Concluída!</option>
+            </select>
+            
+            <div id="campoData" style="margin: 10px 0; display: {% if cliente[7] == 'Visita Agendada' %}block{% else %}none{% endif %};">
+                <label style="color: #ccc; font-size: 0.8rem;">Data e Hora da Visita:</label>
+                <!-- Ajustado para cliente[10] (ou índice correspondente à sua coluna data_visita) -->
+                <input type="datetime-local" name="data_visita" class="funnel-selector" value="{{ cliente[10] }}">
+            </div>
+
+            <button type="submit" class="btn-salvar-status">💾 Atualizar Status</button>
+        </form>
+
+        <script>
+            function verificarData(select) {
+                var campoData = document.getElementById('campoData');
+                if (select.value === 'Visita Agendada') {
+                    campoData.style.display = 'block';
+                } else {
+                    campoData.style.display = 'none';
+                }
+            }
+        </script>
+
+        <hr style="border: 0; border-top: 1px solid #374151; margin: 20px 0;">
+        <span class="info-label">Telefone</span> <div class="info-val">📞 {{ cliente[2] }}</div>
+        <span class="info-label">Orçamento</span> <div class="info-val" style="color: #10b981;">💰 R$ {{ cliente[5] }}</div>
+
+        <form action="/cliente/atualizar_dados/{{ cliente[0] }}" method="POST" style="margin-top: 25px; background: #1f2937; padding: 15px; border-radius: 12px;">
+            <span style="color: #0ea5e9; font-weight: bold; margin-bottom: 10px; display: block;">📋 Informações Adicionais</span>
+            <label class="info-label">E-mail</label>
+            <input type="email" name="email" value="{{ cliente[3] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
+            <label class="info-label">CPF</label>
+            <input type="text" name="cpf" value="{{ cliente[8] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
+            <label class="info-label">Endereço</label>
+            <input type="text" name="endereco" value="{{ cliente[9] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
+            <button type="submit" class="btn-salvar-status">💾 Salvar Alterações</button>
+        </form>
+    </div>
+
+    <div class="perfil-card">
+        <span style="color: #10b981; font-weight: bold;">🧠 Sugestões do Match IA</span>
+        <h2 style="color: white; margin: 5px 0 25px 0;">Imóveis Ideais</h2>
+        {% for match in matches %}
+        <div style="background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #374151;">
+            <h4 style="margin: 0; color: white;">{{ match.titulo }}</h4>
+            <p style="margin: 5px 0; color: #10b981; font-weight: bold;">{{ match.valor }}</p>
+            <a href="/imovel/{{ match.id }}" style="color: #0ea5e9; text-decoration: none; font-size: 0.8rem;">Ver detalhes</a>
+        </div>
+        {% else %}
+        <p style="color: #9ca3af;">Nenhum imóvel encontrado para este perfil.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

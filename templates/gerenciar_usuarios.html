@@ -1,0 +1,25 @@
+<table style="width: 100%; color: white; background: #111827; padding: 20px;">
+    {% for u in usuarios %}
+    <tr>
+        <td>{{ u[1] }}</td> <td>{{ u[2] }}</td> <td>
+            {% if u[4] == 1 %}
+                <span style="color: #10b981;">✅ Administrador</span>
+            {% else %}
+                <button onclick="promoverUsuario({{ u[0] }})" style="background: #e11d48;">Promover a Admin</button>
+            {% endif %}
+        </td>
+        <td>
+            <button onclick="resetarSenha({{ u[0] }})" class="btn-warning">Resetar Senha</button>
+            <button onclick="desativarUsuario({{ u[0] }})" class="btn-danger">Desativar</button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script>
+function promoverUsuario(id) {
+    fetch(`/superadmin/usuario/promover/${id}`, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => { alert(data.mensagem); location.reload(); });
+}
+</script>

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* Estilização para o tema escuro */
+    h2, h3, label { color: white; }
+    .config-box { background: #1a252f; padding: 25px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #34495e; max-width: 500px; }
+    .form-control { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #34495e; border-radius: 4px; background: #0f171e; color: white; }
+    .btn-salvar { background: #2980b9; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+    .avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #34495e; margin-bottom: 15px; }
+</style>
+
+<h2>Configurações do Perfil</h2>
+
+<div class="config-box">
+    <h3>Olá, {{ usuario[0] }}</h3>
+    <form action="/configuracoes" method="POST" enctype="multipart/form-data">
+        {% if usuario[1] %}
+            <img src="{{ url_for('static', filename=usuario[1]) }}" class="avatar">
+        {% endif %}
+        
+        <label>Alterar foto:</label>
+        <input type="file" name="foto" class="form-control" accept="image/*">
+        
+        <label>Nome:</label>
+        <input type="text" name="nome" class="form-control" value="{{ usuario[0] }}">
+        
+        <button type="submit" class="btn-salvar">Salvar Perfil</button>
+    </form>
+</div>
+
+<div class="config-box">
+    <h3>Segurança</h3>
+    <form action="/atualizar_senha" method="POST">
+        <label>Senha Atual:</label>
+        <input type="password" name="senha_atual" class="form-control" required>
+        <label>Nova Senha:</label>
+        <input type="password" name="nova_senha" class="form-control" required>
+        <button type="submit" class="btn-salvar">Alterar Senha</button>
+    </form>
+</div>
+{% endblock %}

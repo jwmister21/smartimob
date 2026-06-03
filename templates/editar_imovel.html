@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Imóvel{% endblock %}
+
+{% block pagina %}Editar Imóvel{% endblock %}
+
+{% block content %}
+<style>
+    .card { background: #111827; padding: 25px; border-radius: 20px; border: 1px solid #1f2937; }
+    
+    .form-grid { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 15px; 
+    }
+
+    .campo-box { display: flex; flex-direction: column; gap: 5px; }
+    .campo-box label { color: #9ca3af; font-size: 13px; margin-left: 5px; }
+
+    .form-grid input, .form-grid select {
+        width: 100%;
+        padding: 12px;
+        background: #0f172a;
+        border: 1px solid #374151;
+        border-radius: 10px;
+        color: white;
+        box-sizing: border-box;
+    }
+
+    .img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #374151; }
+
+    .btn-voltar { color: #9ca3af; text-decoration: none; margin-right: 15px; }
+    
+    .btn {
+        background: #0ea5e9;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+</style>
+
+<div class="card">
+    <form method="POST" enctype="multipart/form-data">
+        
+        <div class="form-grid">
+            <div class="campo-box">
+                <label>Título</label>
+                <input type="text" name="titulo" value="{{ imovel[1] }}" required>
+            </div>
+
+            <div class="campo-box">
+                <label>Tipo</label>
+                <select name="tipo">
+                    <option {% if imovel[2] == 'Casa' %}selected{% endif %}>Casa</option>
+                    <option {% if imovel[2] == 'Apartamento' %}selected{% endif %}>Apartamento</option>
+                    <option {% if imovel[2] == 'Terreno' %}selected{% endif %}>Terreno</option>
+                    <option {% if imovel[2] == 'Comercial' %}selected{% endif %}>Comercial</option>
+                </select>
+            </div>
+
+            <div class="campo-box">
+                <label>Valor (R$)</label>
+                <input type="text" name="valor" value="{{ imovel[3] }}">
+            </div>
+
+            <div class="campo-box">
+                <label>Cidade</label>
+                <input type="text" name="cidade" value="{{ imovel[4] }}">
+            </div>
+
+            <div class="campo-box">
+                <label>Bairro</label>
+                <input type="text" name="bairro" value="{{ imovel[5] }}">
+            </div>
+
+            <div class="campo-box">
+                <label>Quartos</label>
+                <input type="number" name="quartos" value="{{ imovel[6] }}">
+            </div>
+
+            <div class="campo-box">
+                <label>Banheiros</label>
+                <input type="number" name="banheiros" value="{{ imovel[7] }}">
+            </div>
+
+            <div class="campo-box">
+                <label>Área (m²)</label>
+                <input type="number" name="area" value="{{ imovel[8] }}">
+            </div>
+
+            <div class="campo-box">
+                <label>Status</label>
+                <select name="status">
+                    <option {% if imovel[9] == 'Venda' %}selected{% endif %}>Venda</option>
+                    <option {% if imovel[9] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
+                </select>
+            </div>
+        </div>
+
+        <br>
+        
+        <div class="campo-box">
+            <label>Foto do Imóvel (Substituir)</label>
+            <input type="file" name="foto" accept="image/*">
+            {% if imovel[11] %}
+                <p style="font-size: 12px; color: #6b7280;">Foto atual: <img src="{{ url_for('static', filename='uploads/' + imovel[11]) }}" class="img-preview"></p>
+            {% endif %}
+        </div>
+
+        <br>
+
+        <label style="color: #9ca3af; font-size: 13px;">Descrição</label>
+        <textarea name="descricao" rows="5" style="width:100%; padding:15px; border-radius:12px; background:#0f172a; border:1px solid #374151; color:white; box-sizing:border-box;">{{ imovel[10] }}</textarea>
+
+        <br><br>
+
+        <a href="/imoveis" class="btn-voltar">← Voltar</a>
+        <button type="submit" class="btn">Salvar Alterações</button>
+    </form>
+</div>
+
+{% endblock %}

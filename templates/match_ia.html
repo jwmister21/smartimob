@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Match IA - SMARTZEN{% endblock %}
+{% block pagina %}Match Inteligente (Clientes x Imóveis){% endblock %}
+
+{% block content %}
+<style>
+    .match-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    .match-card {
+        background: #111827;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        border: 1px solid #374151;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+    }
+    .porcentagem-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        padding: 6px 12px;
+        border-radius: 10px;
+    }
+    .match-alto { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+    .match-medio { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+    
+    .barra-progresso-bg {
+        background: #1f2937;
+        border-radius: 10px;
+        height: 10px;
+        width: 100%;
+        margin: 15px 0;
+        overflow: hidden;
+    }
+    .barra-progresso-fill {
+        height: 100%;
+        border-radius: 10px;
+    }
+    .fill-alto { background: #10b981; }
+    .fill-medio { background: #f59e0b; }
+
+    .btn-whatsapp {
+        display: block;
+        text-align: center;
+        background: #25D366;
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-top: 15px;
+        transition: background 0.2s;
+    }
+    .btn-whatsapp:hover { background: #1ebd58; }
+</style>
+
+<div style="margin-bottom: 25px;">
+    <h2 style="margin-top: 0; color: white;">🧠 Cruzamento de Dados Automatizado</h2>
+    <p style="color: #9ca3af;">A IA analisa instantaneamente as preferências de seus clientes cadastrados e sugere os imóveis ideais para eles.</p>
+</div>
+
+<div class="match-container">
+    {% for match in matches %}
+    <div class="match-card">
+        <div>
+            <div class="porcentagem-badge {% if match.porcentagem >= 70 %}match-alto{% else %}match-medio{% endif %}">
+                {{ match.porcentagem }}% Match
+            </div>
+
+            <span style="color: #0ea5e9; font-size: 0.85rem; font-weight: bold; text-transform: uppercase;">🔥 Potencial Comprador</span>
+            <h3 style="margin: 5px 0 15px 0; color: white;">{{ match.cliente_nome }}</h3>
+            
+            <div class="barra-progresso-bg">
+                <div class="barra-progresso-fill {% if match.porcentagem >= 70 %}fill-alto{% else %}fill-medio{% endif %}" style="width: {{ match.porcentagem }}%;"></div>
+            </div>
+
+            <div style="display: flex; gap: 12px; background: #1f2937; padding: 12px; border-radius: 10px; margin-top: 10px;">
+                {% if match.imovel_foto %}
+                    <img src="{{ url_for('static', filename='uploads/' + match.imovel_foto) }}" style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover;">
+                {% else %}
+                    <div style="width: 70px; height: 70px; border-radius: 8px; background: #374151; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.8rem;">Sem Foto</div>
+                {% endif %}
+                <div>
+                    <h4 style="margin: 0 0 4px 0; color: white; font-size: 0.95rem;"><a href="/imovel/{{ match.imovel_id }}" style="color: white; text-decoration: none;">{{ match.imovel_titulo }}</a></h4>
+                    <p style="margin: 0; color: #9ca3af; font-size: 0.8rem;">📍 {{ match.imovel_local }}</p>
+                    <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.9rem;">{{ match.imovel_valor }}</p>
+                </div>
+            </div>
+        </div>
+
+        {% set texto_zap = "Olá " + match.cliente_nome + "! Selecionei aqui no sistema uma excelente oportunidade que encaixa exatamente com o que você procura: " + match.imovel_titulo + " localizado em " + match.imovel_local + ". Posso te enviar os detalhes?" %}
+        <a href="https://api.whatsapp.com/send?phone=55{{ match.cliente_telefone }}&text={{ texto_zap|urlencode }}" target="_blank" class="btn-whatsapp">
+            📲 Oferecer Imóvel no WhatsApp
+        </a>
+    </div>
+    {% else %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: #111827; border-radius: 15px; color: #9ca3af;">
+        🔍 Nenhuma combinação ideal encontrada entre os seus clientes e imóveis atuais. Cadastre mais registros para ver os cruzamentos!
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="funil-header">
+    <h1>Pipeline de Vendas</h1>
+    <p>Gerencie o status dos seus clientes de forma estratégica.</p>
+</div>
+
+<div class="funil-container">
+    {% for etapa in etapas %}
+    <div class="coluna-funil">
+        <h3>{{ etapa }} ({{ funil_dados[etapa]|length }})</h3>
+        
+        <div class="cards-area">
+            {% for cliente in funil_dados[etapa] %}
+            <div class="card-cliente">
+                <p><strong>{{ cliente.nome }}</strong></p>
+                <p>💰 Orçamento: {{ cliente.orcamento }}</p>
+                <div class="card-actions">
+                    <a href="/cliente/{{ cliente.id }}" class="btn-detalhes">Ver Perfil</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="card-vazio">
+                <small>Sem clientes aqui.</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    /* Estilos específicos do Funil */
+    .funil-header { margin-bottom: 25px; }
+    
+    .funil-container { 
+        display: flex; 
+        gap: 15px; 
+        overflow-x: auto; 
+        align-items: flex-start;
+        padding-bottom: 20px;
+    }
+
+    .coluna-funil {
+    flex: 1; /* Faz as colunas dividirem o espaço igualmente */
+    min-width: 180px; /* Colunas ficam mais estreitas */
+    max-width: 250px;
+    }
+
+    .coluna-funil h3 { 
+        color: #e5e7eb; 
+        font-size: 14px;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #3b82f6; 
+        padding-bottom: 10px;
+    }
+
+    .card-cliente { 
+        background: #1f2937; 
+        padding: 15px; 
+        margin-bottom: 12px; 
+        border-radius: 8px;
+        color: #ffffff;
+        border-left: 4px solid #3b82f6; /* Detalhe lateral no card */
+    }
+
+    .card-cliente strong { display: block; margin-bottom: 5px; }
+    
+    .btn-detalhes { 
+        display: inline-block;
+        margin-top: 10px;
+        color: #3b82f6; 
+        text-decoration: none; 
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .card-vazio { 
+        padding: 10px; 
+        text-align: center; 
+        color: #4b5563; 
+        font-style: italic; 
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ imovel.titulo }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Reaproveitando o CSS do Carrossel que já temos no sistema */
+    .carousel-container { position: relative; width: 100%; height: 400px; overflow: hidden; border-radius: 20px 20px 0 0; }
+    .carousel-images { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
+    .carousel-images img { min-width: 100%; height: 400px; object-fit: cover; }
+    .btn-nav { position: absolute; top: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; padding: 15px; font-size: 20px; z-index: 10; }
+
+    /* Estilos da Página */
+    .detalhes-card { background: #111827; border-radius: 20px; overflow: hidden; color: white; margin: 20px 0; }
+    .info { padding: 30px; }
+    .titulo { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: #f8fafc; }
+    .valor { font-size: 28px; color: #22c55e; font-weight: bold; margin-bottom: 25px; }
+    .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .item { background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid #374151; }
+    .acoes-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #334155; }
+    .btn-acao { padding: 12px 24px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; cursor: pointer; border: none; }
+    .btn-editar { background: #0ea5e9; color: white; }
+    .btn-excluir { background: #374151; color: #ef4444; border: 1px solid #ef4444; }
+    .btn-voltar { background: transparent; color: #94a3b8; border: 1px solid #334155; }
+    .btn-compartilhar { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; }
+</style>
+
+<div class="detalhes-card">
+    
+    {% if imovel.fotos %}
+    <div class="carousel-container" id="carousel-detalhe">
+        <div class="carousel-images">
+            {% for foto in imovel.fotos %}
+                <img src="{{ url_for('static', filename='uploads/imoveis/' + foto) }}" alt="Foto do Imóvel">
+            {% endfor %}
+        </div>
+        {% if imovel.fotos|length > 1 %}
+            <button class="btn-nav" style="left:0" onclick="mudarFoto('carousel-detalhe', -1)">❮</button>
+            <button class="btn-nav" style="right:0" onclick="mudarFoto('carousel-detalhe', 1)">❯</button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="info">
+        <div class="titulo">{{ imovel.titulo }}</div>
+<div class="valor">{{ imovel.valor }}</div>
+
+<div class="grid-info">
+    <div class="item">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
+    <div class="item">🏠 {{ imovel.tipo }}</div>
+    <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
+    <div class="item">🚿 {{ imovel.banheiros }} Banheiros</div>
+    <div class="item">📐 {{ imovel.area }} m²</div>
+    <div class="item">📄 {{ imovel.status }}</div>
+</div>
+
+<h3>Descrição</h3>
+<div class="item">{{ imovel.descricao }}</div>
+
+        <div class="acoes-container">
+            <a href="/imoveis" class="btn-acao btn-voltar">← Voltar</a>
+            <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
+            <button onclick="compartilharImovel()" class="btn-acao btn-compartilhar">📱 Compartilhar</button>
+            <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Deseja excluir?')">🗑 Excluir</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mesma função que usamos na listagem
+    function mudarFoto(carouselId, direcao) {
+        const container = document.getElementById(carouselId).querySelector('.carousel-images');
+        const total = container.children.length;
+        let index = parseInt(container.dataset.index || 0);
+        index = (index + direcao + total) % total;
+        container.dataset.index = index;
+        container.style.transform = `translateX(-${index * 100}%)`;
+    }
+
+    function compartilharImovel() {
+        const link = window.location.href;
+        if (navigator.share) {
+            navigator.share({title: '{{ imovel.titulo }}', url: link}).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(link);
+            alert("Link copiado!");
+        }
+    }
+</script>
+{% endblock %}

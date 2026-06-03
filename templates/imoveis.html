@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Imóveis
+{% endblock %}
+
+{% block pagina %}
+Imóveis
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+/* TOPO */
+.topo-imoveis{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:20px 0;
+}
+
+.topo-imoveis h2{
+    margin:0;
+}
+
+/* FILTRO */
+.filtro-container{
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.filtro-box{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+
+.campo{
+    flex: 1 1 180px;
+}
+
+.campo input{
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #2b3445;
+    background: #0f172a;
+    color: white;
+    outline: none;
+}
+
+.campo button{
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #0ea5e9;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.campo button:hover{
+    background: #0284c7;
+}
+
+/* GRID */
+.grid-imoveis{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:25px;
+}
+
+/* CARD */
+.card-imovel{
+    background:#111827;
+    border-radius:20px;
+    overflow:hidden;
+    transition:.3s;
+}
+
+.card-imovel:hover{
+    transform:translateY(-5px);
+}
+
+.imagem{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+}
+
+.sem-foto{
+    height:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#1e293b;
+    font-size:60px;
+}
+
+.info{
+    padding:20px;
+}
+
+.titulo{
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:10px;
+    color:white;
+}
+
+.valor{
+    color:#22c55e;
+    font-size:24px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.detalhes{
+    color:#cbd5e1;
+    line-height:1.8;
+}
+
+.acoes{
+    margin-top:15px;
+    display:flex;
+    gap:10px;
+    padding: 0 20px 20px 20px;
+}
+
+.btn-editar{
+    background:#0ea5e9;
+    color:white;
+    text-decoration:none;
+    padding:10px 15px;
+    border-radius:10px;
+    display:inline-block;
+}
+
+.btn-excluir{
+    background:#ef4444;
+    color:white;
+    text-decoration:none;
+    padding:10px 15px;
+    border-radius:10px;
+    display:inline-block;
+}
+
+/* Carrossel Simples */
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+}
+
+.carousel-images {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    height: 100%;
+}
+
+.carousel-images img {
+    min-width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.btn-nav {
+    position: absolute;
+    top: 50%;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+</style>
+
+<!-- FILTRO -->
+<div class="filtro-container">
+
+    <form method="GET" action="/imoveis" class="filtro-box">
+
+        <div class="campo">
+            <input type="text" name="cidade" placeholder="Cidade">
+        </div>
+
+        <div class="campo">
+            <input type="text" name="bairro" placeholder="Bairro">
+        </div>
+
+        <div class="campo">
+            <input type="text" name="tipo" placeholder="Tipo (Casa/Apto)">
+        </div>
+
+        <div class="campo">
+            <input type="number" name="quartos" placeholder="Quartos">
+        </div>
+
+        <div class="campo">
+            <input type="number" name="banheiros" placeholder="Banheiros">
+        </div>
+
+        <div class="campo">
+            <input type="text" name="valor_max" placeholder="Valor máximo">
+        </div>
+
+        <div class="campo">
+            <button type="submit">🔍 Filtrar</button>
+        </div>
+
+    </form>
+
+</div>
+
+<!-- TOPO -->
+<div class="topo-imoveis">
+
+    <h2>Lista de Imóveis</h2>
+
+    <a href="/cadastrar_imovel" class="btn-editar">
+        + Novo Imóvel
+    </a>
+
+</div>
+
+<!-- LISTA -->
+<div class="grid-imoveis">
+
+{% for imovel in imoveis %}
+<div class="card-imovel">
+
+    {% if imovel.fotos %}
+    <div class="carousel-container" id="carousel-{{ imovel.id }}">
+        <div class="carousel-images">
+            {% for foto in imovel.fotos %}
+                <img src="{{ url_for('static', filename='uploads/imoveis/' + foto) }}" alt="Foto do imóvel">
+            {% endfor %}
+        </div>
+        
+        {% if imovel.fotos|length > 1 %}
+            <button class="btn-nav" style="left:0" onclick="mudarFoto('carousel-{{ imovel.id }}', -1)">❮</button>
+            <button class="btn-nav" style="right:0" onclick="mudarFoto('carousel-{{ imovel.id }}', 1)">❯</button>
+        {% endif %}
+    </div>
+    {% else %}
+        <div class="sem-foto">🏠</div>
+    {% endif %}
+
+    <a href="/imovel/{{ imovel.id }}" style="text-decoration:none; color:inherit;">
+        <div class="info">
+            <div class="titulo">{{ imovel.titulo }}</div>
+            <div class="valor">{{ imovel.valor }}</div>
+            <div class="detalhes">
+                📍 {{ imovel.bairro }}, {{ imovel.cidade }} <br>
+                🛏 {{ imovel.quartos }} Quartos | 🚿 {{ imovel.banheiros }} Banheiros <br>
+                📐 {{ imovel.area }} m²
+            </div>
+        </div>
+    </a>
+
+    <div class="acoes">
+        <a href="/editar_imovel/{{ imovel.id }}" class="btn-editar">✏ Editar</a>
+        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-excluir" onclick="return confirm('Deseja excluir?')">🗑 Excluir</a>
+    </div>
+
+</div>
+{% endfor %}
+</div>
+
+<script>
+function mudarFoto(carouselId, direcao) {
+    const container = document.getElementById(carouselId).querySelector('.carousel-images');
+    const total = container.children.length;
+    
+    // Pega o índice atual ou inicia em 0
+    let index = parseInt(container.dataset.index || 0);
+    
+    // Calcula o novo índice com segurança
+    index = (index + direcao + total) % total;
+    container.dataset.index = index;
+    
+    // Move o carrossel
+    container.style.transform = `translateX(-${index * 100}%)`;
+}
+</script>
+{% endblock %}

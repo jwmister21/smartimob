@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Abordagem IA
+{% endblock %}
+
+{% block pagina %}
+Abordagem IA
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <h2>✨ Abordagem Gerada por IA</h2>
+
+    <br>
+
+    <textarea
+    id="mensagem"
+    style="
+    width:100%;
+    height:350px;
+    padding:15px;
+    border-radius:12px;
+    font-size:15px;
+    ">
+{{ mensagem }}
+    </textarea>
+
+    <br><br>
+
+    <button
+    onclick="copiarMensagem()"
+    class="btn">
+        📋 Copiar
+    </button>
+
+    <a
+    id="btnWhatsapp"
+    target="_blank"
+    class="btn">
+        📱 WhatsApp
+    </a>
+
+</div>
+
+<script>
+
+function copiarMensagem(){
+
+    let texto =
+    document.getElementById("mensagem")
+
+    texto.select()
+
+    document.execCommand("copy")
+
+    alert("Mensagem copiada!")
+}
+
+function atualizarWhatsapp(){
+
+    let texto =
+    document.getElementById("mensagem").value
+
+    let link =
+    "https://wa.me/55{{ telefone }}?text="
+    + encodeURIComponent(texto)
+
+    document
+    .getElementById("btnWhatsapp")
+    .href = link
+}
+
+atualizarWhatsapp()
+
+document
+.getElementById("mensagem")
+.addEventListener(
+    "keyup",
+    atualizarWhatsapp
+)
+
+</script>
+
+{% endblock %}

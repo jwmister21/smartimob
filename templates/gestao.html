@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="box">
+    <h2>📊 Painel de Gestão (Admin)</h2>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: white;">
+        <thead>
+            <tr style="border-bottom: 2px solid #374151;">
+                <th style="padding: 10px;">Corretor</th>
+                <th style="padding: 10px;">Imóveis Cadastrados</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for corretor in corretores %}
+            <tr style="border-bottom: 1px solid #374151;">
+                <td style="padding: 10px;">{{ corretor[0] }}</td>
+                <td style="padding: 10px; text-align: center;">{{ corretor[1] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <a href="/admin/criar-usuario" style="display: block; margin-top: 20px; color: #0ea5e9;">
+        + Adicionar novo corretor à empresa
+    </a>
+</div>
+{% endblock %}
