@@ -24,6 +24,7 @@ app.config['UPLOAD_FOLDER_PERFIL'] = 'static/uploads/perfil'
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 # O modelo Flash atual é o 'gemini-1.5-flash'
 model = genai.GenerativeModel('gemini-2.5-flash')
+app.secret_key = 'uma_chave_muito_secreta_e_unica'
 
 
 # --- CONFIGURAÇÕES DE DIRETÓRIOS ---
