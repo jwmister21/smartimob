@@ -13,6 +13,7 @@ from moviepy.video.VideoClip import TextClip
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
+import google.generativeai as genai
 
 
 
