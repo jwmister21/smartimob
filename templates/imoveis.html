@@ -254,7 +254,9 @@ Imóveis
     <a href="/imovel/{{ imovel.id }}" style="text-decoration:none; color:inherit;">
         <div class="info">
             <div class="titulo">{{ imovel.titulo }}</div>
-            <div class="valor">{{ imovel.valor }}</div>
+            <div class="valor">
+R$ {{ "{:,.2f}".format(imovel.valor).replace(",", "X").replace(".", ",").replace("X", ".") }}
+</div>
             <div class="detalhes">
                 📍 {{ imovel.bairro }}, {{ imovel.cidade }} <br>
                 🛏 {{ imovel.quartos }} Quartos | 🚿 {{ imovel.banheiros }} Banheiros <br>
