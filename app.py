@@ -310,63 +310,163 @@ def super_dashboard():
 
 @app.route('/analisar_cliente', methods=['POST'])
 def analisar_cliente():
-    dados = request.get_json()
-    msg = dados.get('mensagem')
+    import json
 
-    # 1. Pedimos para a IA extrair os filtros em formato JSON (fácil de ler pelo Python)
+    dados = request.get_json()
+    msg = dados.get('mensagem', '')
+
     try:
         response = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": "Responda APENAS com JSON: {'bairro': 'nome', 'valor': 0, 'quartos': 0}."},
-                {"role": "user", "content": f"Analise: {msg}"}
-            ],
             model="llama3-8b-8192",
-        )
-        # Extrai e limpa o texto da IA
-        texto_limpo = response.choices[0].message.content.replace('```json', '').replace('```', '').strip()
-        filtros = json.loads(texto_limpo)
-    except Exception as e:
-        return jsonify({"resultado": "<p>Erro ao processar IA. Tente novamente.</p>"})
-        # 2. Tenta converter para JSON
-        filtros = json.loads(texto_limpo)
-    except json.JSONDecodeError:
-        # Se a IA enviar lixo, retornamos um erro amigável para o chat
-        return jsonify({"resultado": "<p>Erro: Não consegui entender o perfil. Tente ser mais específico.</p>"})
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+Você é um extrator de informações imobiliárias.
 
-    # 2. Consultamos o Banco de Dados
+Extraia da mensagem:
+- bairro
+- valor máximo
+- quartos
+
+Responda SOMENTE JSON.
+
+Exemplo:
+
+{
+    "bairro": "Guaianases",
+    "valor": 450000,
+    "quartos": 3
+}
+
+Se não encontrar algum campo:
+
+{
+    "bairro": "",
+    "valor": 999999999,
+    "quartos": 0
+}
+"""
+                },
+                {
+                    "role": "user",
+                    "content": msg
+                }
+            ]
+        )
+
+        texto_limpo = (
+            response.choices[0]
+            .message.content
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+        print("RESPOSTA IA:", texto_limpo)
+
+        filtros = json.loads(texto_limpo)
+
+    except json.JSONDecodeError:
+        return jsonify({
+            "resultado": """
+            <p>
+                Não consegui interpretar sua busca.
+                Tente novamente.
+            </p>
+            """
+        })
+
+    except Exception as e:
+        print("ERRO IA:", str(e))
+
+        return jsonify({
+            "resultado": f"""
+            <p>
+                Erro ao processar a IA.
+            </p>
+            """
+        })
+
+    bairro = filtros.get("bairro", "")
+    quartos = int(filtros.get("quartos", 0))
+
+    try:
+        valor_busca = float(filtros.get("valor", 999999999))
+    except:
+        valor_busca = 999999999
+
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("""
-    SELECT name
-    FROM sqlite_master
-    WHERE type='table'
-""")
 
-    print("TABELAS:", cursor.fetchall())
+    query = """
+    SELECT id, titulo, valor, bairro, quartos
+    FROM imoveis
+    WHERE bairro LIKE ?
+      AND quartos >= ?
+      AND CAST(
+            REPLACE(
+                REPLACE(valor,'R$',''),
+            '.','')
+        AS REAL
+      ) <= ?
+    LIMIT 5
+    """
 
-# Convertemos o valor para float para garantir a comparação correta
-    bairro = filtros.get("bairro", "")
-    quartos = filtros.get("quartos", 0)
-    valor_busca = float(filtros.get("valor", 999999999)) 
+    cursor.execute(
+        query,
+        (
+            f"%{bairro}%",
+            quartos,
+            valor_busca
+        )
+    )
 
-# O SQL agora busca exatamente nos nomes de colunas que o banco confirmou
-    query = "SELECT id, titulo FROM imoveis WHERE bairro = ? AND quartos >= ? AND CAST(REPLACE(REPLACE(valor, 'R$', ''), '.', '') AS REAL) <= ?"
+    imoveis = cursor.fetchall()
 
-    cursor.execute(query, (filtros['bairro'], filtros['quartos'], valor_busca))
-    imovel = cursor.fetchone()
     conn.close()
-    # 3. Montamos o HTML dinâmico
-    if imovel:
-        resultado_html = f"""
-        <div style="background:#0f172a; padding:10px; border-radius:8px; margin-top:5px; border-left: 4px solid #f59e0b;">
-            <strong>{imovel[1]}</strong><br>
-            <a href="/imovel/{imovel[0]}" style="color:#f59e0b; font-weight:bold;">➔ Ver Detalhes</a>
+
+    if not imoveis:
+        return jsonify({
+            "resultado": """
+            <p>
+                Nenhum imóvel encontrado com esses critérios.
+            </p>
+            """
+        })
+
+    resultado_html = ""
+
+    for imovel in imoveis:
+
+        resultado_html += f"""
+        <div style="
+            background:#0f172a;
+            padding:12px;
+            border-radius:8px;
+            margin-top:8px;
+            border-left:4px solid #f59e0b;
+        ">
+            <strong>{imovel['titulo']}</strong><br>
+
+            💰 {imovel['valor']}<br>
+            📍 {imovel['bairro']}<br>
+            🛏 {imovel['quartos']} quartos<br><br>
+
+            <a href="/imovel/{imovel['id']}"
+               style="
+                    color:#f59e0b;
+                    font-weight:bold;
+                    text-decoration:none;
+               ">
+               ➔ Ver Detalhes
+            </a>
         </div>
         """
-    else:
-        resultado_html = "<p>Nenhum imóvel encontrado com esses critérios.</p>"
 
-    return jsonify({"resultado": resultado_html})
+    return jsonify({
+        "resultado": resultado_html
+    })
 
 
 
