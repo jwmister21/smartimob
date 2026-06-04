@@ -275,34 +275,62 @@ def tela_gestao():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM usuarios WHERE empresa_id=?",
-        (empresa_id,)
-    )
+    # Total de usuários
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM usuarios
+        WHERE empresa_id = ?
+    """, (empresa_id,))
     total_usuarios = cursor.fetchone()[0]
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
-        (empresa_id,)
-    )
+    # Total de imóveis
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id = ?
+    """, (empresa_id,))
     total_imoveis = cursor.fetchone()[0]
 
-    cursor.execute(
-        "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
-        (empresa_id,)
-    )
-    total_clientes = cursor.fetchone()[0]
+    # Total de clientes
+    try:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM clientes
+            WHERE empresa_id = ?
+        """, (empresa_id,))
+        total_clientes = cursor.fetchone()[0]
+    except:
+        total_clientes = 0
 
+    # Imóveis disponíveis
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id = ?
+        AND status = 'Venda'
+    """, (empresa_id,))
+    imoveis_disponiveis = cursor.fetchone()[0]
+
+    # Imóveis fechados
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id = ?
+        AND status <> 'Venda'
+    """, (empresa_id,))
+    imoveis_fechados = cursor.fetchone()[0]
+
+    # Ranking de corretores
     cursor.execute("""
         SELECT
             u.id,
             u.nome,
-            COUNT(i.id) as total_imoveis
+            COUNT(i.id) AS total_imoveis
         FROM usuarios u
         LEFT JOIN imoveis i
             ON u.id = i.usuario_id
         WHERE u.empresa_id = ?
-        GROUP BY u.id
+        GROUP BY u.id, u.nome
         ORDER BY total_imoveis DESC
     """, (empresa_id,))
 
@@ -315,9 +343,10 @@ def tela_gestao():
         total_usuarios=total_usuarios,
         total_imoveis=total_imoveis,
         total_clientes=total_clientes,
+        imoveis_disponiveis=imoveis_disponiveis,
+        imoveis_fechados=imoveis_fechados,
         corretores=corretores
     )
-
 
 
 # Decorator para o Super Admin
