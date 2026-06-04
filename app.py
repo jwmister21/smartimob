@@ -20,7 +20,9 @@ app = Flask(__name__)
 UPLOAD_FOLDER_IMOVEIS = '/app/static/uploads/imoveis'
 app.config['UPLOAD_FOLDER_IMOVEIS'] = UPLOAD_FOLDER_IMOVEIS
 app.config['UPLOAD_FOLDER_PERFIL'] = 'static/uploads/perfil'
-app.secret_key = os.getenv('SECRET_KEY')
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# O modelo Flash atual é o 'gemini-1.5-flash'
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 
 # --- CONFIGURAÇÕES DE DIRETÓRIOS ---
@@ -1074,13 +1076,13 @@ def editar_imovel(id):
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
 # ==========================================
 @app.route("/gerar_anuncio", methods=["GET", "POST"])
-@verificar_sessao # Use o decorador que criamos
+@verificar_sessao
 def gerar_anuncio():
     empresa_id = session.get("empresa_id")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # Busca apenas os imóveis desta empresa
+    # Busca imóveis da empresa
     cursor.execute("SELECT * FROM imoveis WHERE empresa_id=?", (empresa_id,))
     lista_imoveis = cursor.fetchall()
 
@@ -1089,7 +1091,6 @@ def gerar_anuncio():
     if request.method == "POST":
         id_imovel = request.form["imovel_id"]
 
-        # A SEGURANÇA ESTÁ AQUI: Validamos ID do imóvel E empresa_id
         cursor.execute(
             "SELECT * FROM imoveis WHERE id=? AND empresa_id=?",
             (id_imovel, empresa_id),
@@ -1098,13 +1099,13 @@ def gerar_anuncio():
 
         if imovel_selecionado:
             try:
-                # O restante do seu prompt permanece igual...
-                prompt = f"""... (seu código do prompt aqui) ..."""
-
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash", contents=prompt
-                )
+                # Montagem do prompt com os dados do imóvel
+                prompt = f"Crie um anúncio de venda imobiliária atraente e persuasivo para este imóvel: {imovel_selecionado}"
+                
+                # Chamada direta usando o objeto 'model' configurado no topo
+                response = model.generate_content(prompt)
                 anuncio = response.text
+                
             except Exception as e:
                 anuncio = f"Erro ao conectar com a IA: {e}"
 
@@ -1115,7 +1116,6 @@ def gerar_anuncio():
         anuncio=anuncio,
         imovel=imovel_selecionado,
     )
-
 @app.route("/cliente/<int:id>")
 @verificar_sessao # Substituímos a verificação manual pelo nosso decorador
 def perfil_cliente(id):
