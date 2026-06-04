@@ -200,6 +200,27 @@
         chat.style.display = 'flex';
     }
 }
+
+async function analisarIA() {
+    const texto = document.getElementById('texto_cliente').value;
+    const chatBody = document.getElementById('chat-body');
+
+    if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
+
+    // Feedback visual
+    chatBody.innerHTML = "<p>Processando com IA...</p>";
+
+    const response = await fetch('/analisar_cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: texto })
+    });
+
+    const data = await response.json();
+    
+    // Exibe o resultado da análise no chat
+    chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
+}    
 </script>
 
 </body>
