@@ -131,6 +131,12 @@
         <a href="/funil">⚡ Funil</a>
         <a href="/configuracoes">⚙ Configurações</a>
         <a href="/gerar_anuncio">🧠 Gerar Anúncio</a>
+        {% if session.get('is_admin') == 1 %}
+        <a href="/admin/gestao">📊 Gestão</a>
+        <a href="/admin/criar-usuario">➕ Novo Usuário</a>
+        {% endif %}
+
+        <a href="/configuracoes">⚙ Configurações</a>
     </div>
 </div>
 
