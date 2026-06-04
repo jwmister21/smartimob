@@ -1126,8 +1126,8 @@ REGRAS IMPORTANTES:
 DADOS DO IMÓVEL:
 {imovel_selecionado}
 
-Gere o anúncio agora:
-""""
+Gere o anúncio agora:"""
+
                 
                 # Chamada direta usando o objeto 'model' configurado no topo
                 response = model.generate_content(prompt)
