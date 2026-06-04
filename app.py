@@ -14,6 +14,7 @@ from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
 import google.generativeai as genai
+import json
 
 
 
@@ -314,8 +315,17 @@ def analisar_cliente():
     response = model.generate_content(prompt)
     
     # Supondo que a IA retornou: {"bairro": "Guaianazes", "valor": 450000, "quartos": 3}
-    import json
-    filtros = json.loads(response.text)
+    response = model.generate_content(prompt)
+    
+    # 1. Limpeza da resposta da IA (Remove markdown e espaços extras)
+    texto_limpo = response.text.replace('```json', '').replace('```', '').strip()
+    
+    try:
+        # 2. Tenta converter para JSON
+        filtros = json.loads(texto_limpo)
+    except json.JSONDecodeError:
+        # Se a IA enviar lixo, retornamos um erro amigável para o chat
+        return jsonify({"resultado": "<p>Erro: Não consegui entender o perfil. Tente ser mais específico.</p>"})
 
     # 2. Consultamos o Banco de Dados
     conn = sqlite3.connect('imobiliaria.db')
