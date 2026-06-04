@@ -298,6 +298,26 @@ def super_dashboard():
 
 
 
+@app.route('/analisar_cliente', methods=['POST'])
+def analisar_cliente():
+    dados = request.get_json()
+    mensagem_cliente = dados.get('mensagem')
+
+    # Prompt para extrair dados
+    prompt = f"""
+    Analise a mensagem do cliente e extraia os dados principais: 
+    Bairro, valor máximo, número de quartos. 
+    Retorne uma resposta curta indicando o perfil.
+    Mensagem: {mensagem_cliente}
+    """
+
+    model = genai.GenerativeModel('gemini-pro')
+    response = model.generate_content(prompt)
+
+    return jsonify({"resultado": response.text})
+
+
+
 @app.route("/superadmin/usuario/editar/<int:user_id>", methods=["POST"])
 @super_admin_required
 def editar_usuario(user_id):
