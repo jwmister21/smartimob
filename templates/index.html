@@ -110,6 +110,25 @@
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+    /* Dentro de static/style.css */
+.ia-match-container {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+    margin: 20px 0;
+}
+
+.btn-analisar {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}   
+
 </style>
 
 <div class="welcome-banner">
@@ -156,6 +175,16 @@
 <div style="margin-top: 15px;">
     <p style="color: #9ca3af; margin-bottom: 5px;">Clientes na Reta Final (Proposta Feita):</p>
     <a href="/funil" class="btn-funil">🚀 Ver Funil Completo</a>
+
+
+<div class="ia-match-container">
+    <h3>🧠 Match Inteligente com IA</h3>
+    <textarea id="texto_cliente" rows="3" placeholder="Cole a mensagem do cliente..."></textarea>
+    <button class="btn-analisar" onclick="analisarIA()">Analisar com IA</button>
+</div>
+
+<div id="resultados-ia"></div>
+    
 </div>
 
 {% endblock %}
