@@ -15,7 +15,7 @@ from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione a
 from moviepy import concatenate_videoclips
 import google.generativeai as genai
 import json
-
+from openai import OpenAI
 
 
 app = Flask(__name__)
@@ -26,6 +26,10 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 # O modelo Flash atual é o 'gemini-1.5-flash'
 model = genai.GenerativeModel('gemini-2.5-flash')
 app.secret_key = 'uma_chave_muito_secreta_e_unica'
+client = OpenAI(
+    api_key="SUA_CHAVE_AQUI_DO_GROQ", # Pegue em console.groq.com
+    base_url="https://api.groq.com/openai/v1"
+)
 
 
 # --- CONFIGURAÇÕES DE DIRETÓRIOS ---
@@ -310,19 +314,19 @@ def analisar_cliente():
     msg = dados.get('mensagem')
 
     # 1. Pedimos para a IA extrair os filtros em formato JSON (fácil de ler pelo Python)
-    prompt = f"""
-    Analise esta mensagem: '{msg}'.
-    Extraia o bairro, o valor máximo e o número de quartos.
-    Responda APENAS com este formato JSON: 
-    {{"bairro": "nome", "valor": 0, "quartos": 0}}
-    """
-    model = genai.GenerativeModel('gemini-2.5-flash') # Nota: Verifique se o modelo está correto
-    response = model.generate_content(prompt)
-    
-    # 1. Limpeza da resposta da IA (Remove markdown e espaços extras)
-    texto_limpo = response.text.replace('```json', '').replace('```', '').strip()
-    
     try:
+        response = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "Responda APENAS com JSON: {'bairro': 'nome', 'valor': 0, 'quartos': 0}."},
+                {"role": "user", "content": f"Analise: {msg}"}
+            ],
+            model="llama3-8b-8192",
+        )
+        # Extrai e limpa o texto da IA
+        texto_limpo = response.choices[0].message.content.replace('```json', '').replace('```', '').strip()
+        filtros = json.loads(texto_limpo)
+    except Exception as e:
+        return jsonify({"resultado": "<p>Erro ao processar IA. Tente novamente.</p>"})
         # 2. Tenta converter para JSON
         filtros = json.loads(texto_limpo)
     except json.JSONDecodeError:
