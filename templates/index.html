@@ -112,21 +112,52 @@
 
     /* Dentro de static/style.css */
 .ia-match-container {
-    background: #f8fafc;
+    background-color: #1a2234; /* Cor que combina com o seu dark mode */
     padding: 20px;
     border-radius: 12px;
-    border: 2px solid #e2e8f0;
-    margin: 20px 0;
+    border: 1px solid #2d3748; /* Borda sutil para dar profundidade */
+    margin-top: 20px;
+    color: white; /* Texto branco */
+}
+
+.ia-match-container h3 {
+    margin-top: 0;
+    color: #f8fafc;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ia-match-container textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: #0f172a; /* Fundo do textarea mais escuro */
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: white;
+    margin-bottom: 15px;
+    resize: none;
+    box-sizing: border-box; /* Garante que o padding não quebre a largura */
+}
+
+.ia-match-container textarea::placeholder {
+    color: #64748b;
 }
 
 .btn-analisar {
-    background: #2563eb;
-    color: white;
+    background: #f59e0b; /* Aquela cor de destaque que você usa nos ícones */
+    color: #000;
     border: none;
     padding: 10px 20px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-analisar:hover {
+    background: #fbbf24;
 }   
 
 </style>
