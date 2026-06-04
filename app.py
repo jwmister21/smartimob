@@ -609,29 +609,64 @@ def renderizar_video():
 
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
-@verificar_sessao # Substituímos a verificação manual pelo decorador
+@verificar_sessao
 def cadastrar_imovel():
     if request.method == "POST":
-        # Pegamos os dados da sessão
+
         empresa_id = session.get("empresa_id")
         user_id = session.get("usuario_id")
+
+        # FORMATA O VALOR
+        valor = request.form.get("valor", "")
+
+        valor = (
+            valor.replace("R$", "")
+                 .replace(".", "")
+                 .replace(",", ".")
+                 .strip()
+        )
+
+        try:
+            valor = float(valor)
+        except:
+            valor = 0
 
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # 1. Insere o imóvel incluindo o empresa_id
         cursor.execute("""
-            INSERT INTO imoveis (titulo, tipo, valor, cidade, bairro, quartos, 
-                                 banheiros, area, status, descricao, usuario_id, empresa_id)
+            INSERT INTO imoveis (
+                titulo,
+                tipo,
+                valor,
+                cidade,
+                bairro,
+                quartos,
+                banheiros,
+                area,
+                status,
+                descricao,
+                usuario_id,
+                empresa_id
+            )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (request.form.get("titulo"), request.form.get("tipo"), request.form.get("valor"), 
-              request.form.get("cidade"), request.form.get("bairro"), request.form.get("quartos"), 
-              request.form.get("banheiros"), request.form.get("area"), request.form.get("status"), 
-              request.form.get("descricao"), user_id, empresa_id))
+        """, (
+            request.form.get("titulo"),
+            request.form.get("tipo"),
+            valor,  # <- AGORA VAI SALVAR COMO NÚMERO
+            request.form.get("cidade"),
+            request.form.get("bairro"),
+            request.form.get("quartos"),
+            request.form.get("banheiros"),
+            request.form.get("area"),
+            request.form.get("status"),
+            request.form.get("descricao"),
+            user_id,
+            empresa_id
+        ))
 
         imovel_id = cursor.lastrowid
 
-        # 2. Processamento de fotos (mantém a lógica, mas agora com o imovel_id seguro)
         arquivos = request.files.getlist("fotos[]")
 
         for file in arquivos:
@@ -639,16 +674,25 @@ def cadastrar_imovel():
                 nome_seguro = secure_filename(file.filename)
                 nome_foto = f"{imovel_id}_{int(datetime.now().timestamp())}_{nome_seguro}"
 
-                # Salva o arquivo na pasta
-                caminho_salvamento = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], nome_foto)
+                caminho_salvamento = os.path.join(
+                    app.config['UPLOAD_FOLDER_IMOVEIS'],
+                    nome_foto
+                )
+
                 file.save(caminho_salvamento)
 
-                # Insere o registro da foto
-                cursor.execute("INSERT INTO fotos_imoveis (imovel_id, nome_arquivo) VALUES (?, ?)", 
-                               (imovel_id, nome_foto))
+                cursor.execute(
+                    """
+                    INSERT INTO fotos_imoveis
+                    (imovel_id, nome_arquivo)
+                    VALUES (?, ?)
+                    """,
+                    (imovel_id, nome_foto)
+                )
 
         conn.commit()
         conn.close()
+
         return redirect("/imoveis")
 
     return render_template("cadastrar_imovel.html")
