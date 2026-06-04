@@ -266,21 +266,57 @@ def admin_required(f):
     return decorated_function
 
 @app.route("/admin/gestao")
-@verificar_sessao # Seu decorator original
+@verificar_sessao
 @admin_required
 def tela_gestao():
-    empresa_id = session.get('empresa_id')
 
-    # Busca resumo: quantos imóveis cada corretor cadastrou
-    corretores_estatisticas = db.execute("""
-        SELECT u.nome, COUNT(i.id) as total_imoveis 
+    empresa_id = session.get("empresa_id")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM usuarios WHERE empresa_id=?",
+        (empresa_id,)
+    )
+    total_usuarios = cursor.fetchone()[0]
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
+        (empresa_id,)
+    )
+    total_imoveis = cursor.fetchone()[0]
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
+        (empresa_id,)
+    )
+    total_clientes = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT
+            u.id,
+            u.nome,
+            COUNT(i.id) as total_imoveis
         FROM usuarios u
-        LEFT JOIN imoveis i ON u.id = i.usuario_id 
-        WHERE u.empresa_id = ? 
+        LEFT JOIN imoveis i
+            ON u.id = i.usuario_id
+        WHERE u.empresa_id = ?
         GROUP BY u.id
-    """, (empresa_id,)).fetchall()
+        ORDER BY total_imoveis DESC
+    """, (empresa_id,))
 
-    return render_template("gestao.html", corretores=corretores_estatisticas)
+    corretores = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "gestao.html",
+        total_usuarios=total_usuarios,
+        total_imoveis=total_imoveis,
+        total_clientes=total_clientes,
+        corretores=corretores
+    )
 
 
 
@@ -495,6 +531,36 @@ Se algum campo não for informado:
 
 
 
+
+@app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
+@verificar_sessao
+@admin_required
+def alterar_senha_usuario(id):
+
+    nova_senha = request.form.get("senha")
+
+    senha_hash = generate_password_hash(nova_senha)
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET senha=?
+        WHERE id=?
+        AND empresa_id=?
+    """, (
+        senha_hash,
+        id,
+        session.get("empresa_id")
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin/usuarios")
+
+
 @app.route("/superadmin/usuario/editar/<int:user_id>", methods=["POST"])
 @super_admin_required
 def editar_usuario(user_id):
@@ -505,7 +571,34 @@ def editar_usuario(user_id):
     if 'ativo' in dados:
         db.execute("UPDATE usuarios SET status = ? WHERE id = ?", (dados['ativo'], user_id))
     db.commit()
-    return jsonify({"status": "sucesso"})        
+    return jsonify({"status": "sucesso"})
+
+
+
+@app.route("/admin/usuarios")
+@verificar_sessao
+@admin_required
+def admin_usuarios():
+
+    empresa_id = session.get("empresa_id")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id,nome,email,is_admin,status
+        FROM usuarios
+        WHERE empresa_id=?
+    """, (empresa_id,))
+
+    usuarios = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_usuarios.html",
+        usuarios=usuarios
+    )
 
 
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
