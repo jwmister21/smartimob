@@ -335,11 +335,16 @@ def analisar_cliente():
     # 2. Consultamos o Banco de Dados
     conn = sqlite3.connect('imobiliaria.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT id, titulo FROM imoveis WHERE bairro=? AND valor <= ? AND quartos >= ?", 
-                   (filtros['bairro'], filtros['valor'], filtros['quartos']))
+
+# Convertemos o valor para float para garantir a comparação correta
+    valor_busca = float(filtros['valor']) 
+
+# O SQL agora busca exatamente nos nomes de colunas que o banco confirmou
+    query = "SELECT id, titulo FROM imoveis WHERE bairro = ? AND quartos >= ? AND CAST(REPLACE(REPLACE(valor, 'R$', ''), '.', '') AS REAL) <= ?"
+
+    cursor.execute(query, (filtros['bairro'], filtros['quartos'], valor_busca))
     imovel = cursor.fetchone()
     conn.close()
-
     # 3. Montamos o HTML dinâmico
     if imovel:
         resultado_html = f"""
