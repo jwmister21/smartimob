@@ -301,20 +301,42 @@ def super_dashboard():
 @app.route('/analisar_cliente', methods=['POST'])
 def analisar_cliente():
     dados = request.get_json()
-    mensagem_cliente = dados.get('mensagem')
+    msg = dados.get('mensagem')
 
-    # Prompt para extrair dados
+    # 1. Pedimos para a IA extrair os filtros em formato JSON (fácil de ler pelo Python)
     prompt = f"""
-    Analise a mensagem do cliente e extraia os dados principais: 
-    Bairro, valor máximo, número de quartos. 
-    Retorne uma resposta curta indicando o perfil.
-    Mensagem: {mensagem_cliente}
+    Analise esta mensagem: '{msg}'.
+    Extraia o bairro, o valor máximo e o número de quartos.
+    Responda APENAS com este formato JSON: 
+    {{"bairro": "nome", "valor": 0, "quartos": 0}}
     """
-
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash') # Nota: Verifique se o modelo está correto
     response = model.generate_content(prompt)
+    
+    # Supondo que a IA retornou: {"bairro": "Guaianazes", "valor": 450000, "quartos": 3}
+    import json
+    filtros = json.loads(response.text)
 
-    return jsonify({"resultado": response.text})
+    # 2. Consultamos o Banco de Dados
+    conn = sqlite3.connect('imobiliaria.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, titulo FROM imoveis WHERE bairro=? AND valor <= ? AND quartos >= ?", 
+                   (filtros['bairro'], filtros['valor'], filtros['quartos']))
+    imovel = cursor.fetchone()
+    conn.close()
+
+    # 3. Montamos o HTML dinâmico
+    if imovel:
+        resultado_html = f"""
+        <div style="background:#0f172a; padding:10px; border-radius:8px; margin-top:5px; border-left: 4px solid #f59e0b;">
+            <strong>{imovel[1]}</strong><br>
+            <a href="/imovel/{imovel[0]}" style="color:#f59e0b; font-weight:bold;">➔ Ver Detalhes</a>
+        </div>
+        """
+    else:
+        resultado_html = "<p>Nenhum imóvel encontrado com esses critérios.</p>"
+
+    return jsonify({"resultado": resultado_html})
 
 
 
