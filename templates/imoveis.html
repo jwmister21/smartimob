@@ -238,7 +238,7 @@ Imóveis
     <div class="carousel-container" id="carousel-{{ imovel.id }}">
         <div class="carousel-images">
             {% for foto in imovel.fotos %}
-                <img src="{{ url_for('static', filename='uploads/imoveis/' + foto) }}" alt="Foto do imóvel">
+                <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
             {% endfor %}
         </div>
         
