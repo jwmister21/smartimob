@@ -39,18 +39,40 @@
         .notif-item { border-bottom: 1px solid #374151; padding: 10px 0; color: #fff; text-decoration: none; display: block; font-size: 0.9rem; }
         .notif-item:hover { color: #38bdf8; }
     /* Botão flutuante */
+/* O Botão Flutuante Amarelo */
+.chat-float-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    z-index: 9999; /* Garante que fique por cima de tudo */
+    transition: transform 0.2s;
+}
+
+.chat-float-btn:hover {
+    transform: scale(1.1);
+}
+
+/* A Caixa (Chat Widget) */
 .chat-widget {
     position: fixed;
-    bottom: 90px;
-    right: 30px;
+    bottom: 100px; /* Sobe um pouco para não ficar colado no botão */
+    right: 25px;
     width: 300px;
     height: 400px;
     background: #1a2234;
     border-radius: 15px;
-    display: none;
-    flex-direction: column; /* Fundamental para empilhar */
+    display: none; /* Começa escondido */
+    flex-direction: column;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 9999;
+    z-index: 9998;
     border: 1px solid #334155;
     overflow: hidden;
 }
