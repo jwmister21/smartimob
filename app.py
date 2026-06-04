@@ -141,6 +141,8 @@ def init_db():
     if "data_visita" not in colunas_clientes:
         cursor.execute("ALTER TABLE clientes ADD COLUMN data_visita TEXT")
 
+    
+
     # 3. Migração da tabela USUARIOS (É aqui que estava o erro!)
     cursor.execute("PRAGMA table_info(usuarios)")
     colunas_usuarios = [c[1] for c in cursor.fetchall()]
@@ -150,6 +152,16 @@ def init_db():
         
     if "session_token" not in colunas_usuarios:
         cursor.execute("ALTER TABLE usuarios ADD COLUMN session_token TEXT")
+
+
+    cursor.execute("PRAGMA table_info(imoveis)")
+    colunas_imoveis = [c[1] for c in cursor.fetchall()]
+    
+    colunas_novas = ["cidade", "bairro", "rua", "iptu"]
+    
+    for coluna in colunas_novas:
+        if coluna not in colunas_imoveis:
+            cursor.execute(f"ALTER TABLE imoveis ADD COLUMN {coluna} TEXT")
 
     cursor.execute("PRAGMA table_info(clientes)")
     colunas_clientes = [c[1] for c in cursor.fetchall()]
