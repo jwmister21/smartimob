@@ -1114,7 +1114,20 @@ def gerar_anuncio():
         if imovel_selecionado:
             try:
                 # Montagem do prompt com os dados do imóvel
-                prompt = f"Crie um anúncio de venda imobiliária atraente e persuasivo para este imóvel Gere o anúncio  e inclua os emojis nativos para tornar o texto atrativo.e se ficar algum * ou # sobrando remova : {imovel_selecionado}"
+                prompt = prompt = f"""
+Crie um anúncio de venda imobiliária atraente e persuasivo para o imóvel abaixo.
+
+REGRAS IMPORTANTES:
+1. NÃO use asteriscos (*), hashtags (#) ou qualquer caractere de formatação Markdown.
+2. Use apenas texto simples, quebras de linha e emojis nativos para organizar o texto.
+3. Estruture o anúncio com: Título chamativo, lista de benefícios, valor e um convite para ação (Call-to-Action).
+4. Mantenha um tom profissional e entusiasmado.
+
+DADOS DO IMÓVEL:
+{imovel_selecionado}
+
+Gere o anúncio agora:
+""""
                 
                 # Chamada direta usando o objeto 'model' configurado no topo
                 response = model.generate_content(prompt)
