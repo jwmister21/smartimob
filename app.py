@@ -784,10 +784,10 @@ def cadastrar_imovel():
                 area,
                 status,
                 descricao,
-                usuario_id,
-                empresa_id,
                 rua,
-                iptu
+                iptu,
+                usuario_id,
+                empresa_id
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)
         """, (
