@@ -319,9 +319,6 @@ def analisar_cliente():
     model = genai.GenerativeModel('gemini-2.5-flash') # Nota: Verifique se o modelo está correto
     response = model.generate_content(prompt)
     
-    # Supondo que a IA retornou: {"bairro": "Guaianazes", "valor": 450000, "quartos": 3}
-    response = model.generate_content(prompt)
-    
     # 1. Limpeza da resposta da IA (Remove markdown e espaços extras)
     texto_limpo = response.text.replace('```json', '').replace('```', '').strip()
     
@@ -333,7 +330,7 @@ def analisar_cliente():
         return jsonify({"resultado": "<p>Erro: Não consegui entender o perfil. Tente ser mais específico.</p>"})
 
     # 2. Consultamos o Banco de Dados
-    conn = sqlite3.connect('imobiliaria.db')
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
     SELECT name
