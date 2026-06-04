@@ -136,6 +136,11 @@ def init_db():
         )
     """)
 
+    # Adicione isso logo antes do seu cursor.execute no app.py
+    cursor.execute("PRAGMA table_info(imoveis)")
+    colunas_reais = cursor.fetchall()
+    print("Colunas reais no banco:", colunas_reais)
+
 # Verifica as colunas da tabela clientes
     cursor.execute("PRAGMA table_info(clientes)")
     colunas_clientes = [c[1] for c in cursor.fetchall()]
