@@ -390,6 +390,7 @@ Se não encontrar algum campo:
 
     bairro = filtros.get("bairro", "")
     quartos = int(filtros.get("quartos", 0))
+    tipo = filtros.get("tipo", "").lower()
 
     try:
         valor_busca = float(filtros.get("valor", 999999999))
@@ -410,6 +411,7 @@ Se não encontrar algum campo:
             '.','')
         AS REAL
       ) <= ?
+      AND LOWER(tipo) = ?  -- FILTRO DE TIPO AQUI
     LIMIT 5
     """
 
@@ -418,7 +420,7 @@ Se não encontrar algum campo:
         (
             f"%{bairro}%",
             quartos,
-            valor_busca
+            valor_busca, tipo
         )
     )
 
