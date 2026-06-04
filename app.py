@@ -1114,7 +1114,7 @@ def gerar_anuncio():
         if imovel_selecionado:
             try:
                 # Montagem do prompt com os dados do imóvel
-                prompt = f"Crie um anúncio de venda imobiliária atraente e persuasivo para este imóvel: {imovel_selecionado}"
+                prompt = f"Crie um anúncio de venda imobiliária atraente e persuasivo para este imóvel Gere o anúncio mantendo a formatação Markdown e inclua os emojis nativos para tornar o texto atrativo.: {imovel_selecionado}"
                 
                 # Chamada direta usando o objeto 'model' configurado no topo
                 response = model.generate_content(prompt)
