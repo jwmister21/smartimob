@@ -311,7 +311,7 @@ def analisar_cliente():
     Mensagem: {mensagem_cliente}
     """
 
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-2.5-flash')
     response = model.generate_content(prompt)
 
     return jsonify({"resultado": response.text})
