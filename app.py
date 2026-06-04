@@ -27,7 +27,7 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel('gemini-2.5-flash')
 app.secret_key = 'uma_chave_muito_secreta_e_unica'
 client = OpenAI(
-    api_key="SUA_CHAVE_AQUI_DO_GROQ", # Pegue em console.groq.com
+    api_key=os.getenv("GROQ_API_KEY"), # Pegue em console.groq.com
     base_url="https://api.groq.com/openai/v1"
 )
 
