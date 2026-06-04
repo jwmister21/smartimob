@@ -655,7 +655,7 @@ def login():
             return redirect("/")
 
         conn.close()
-        flash("E-mail ou senha incorretos.", "danger")
+        return render_template("login.html", erro="E-mail ou senha incorretos.")
         return redirect("/login")
 
     # Se o método for GET, apenas mostra o HTML
