@@ -222,11 +222,5 @@ async function analisarIA() {
     chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
 }
 
-const data = await response.json();
-
-// O innerHTML vai renderizar o link que montamos no Python
-chatBody.innerHTML = `<strong>IA encontrou:</strong> ${data.resultado}`;    
-</script>
-
 </body>
 </html>
