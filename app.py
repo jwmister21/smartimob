@@ -785,9 +785,11 @@ def cadastrar_imovel():
                 status,
                 descricao,
                 usuario_id,
-                empresa_id
+                empresa_id,
+                rua,
+                iptu
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
@@ -799,6 +801,8 @@ def cadastrar_imovel():
             request.form.get("area"),
             request.form.get("status"),
             request.form.get("descricao"),
+            request.form.get("rua"),
+            request.form.get("iptu"),
             user_id,
             empresa_id
         ))
