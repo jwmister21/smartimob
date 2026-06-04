@@ -223,6 +223,30 @@ async function analisarIA() {
 }
 
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
 
+    const valorInput = document.getElementById("valor");
+
+    valorInput.addEventListener("input", function(e) {
+
+        let valor = e.target.value.replace(/\D/g, "");
+
+        if (valor === "") {
+            e.target.value = "";
+            return;
+        }
+
+        valor = (parseInt(valor) / 100).toFixed(2);
+
+        valor = valor.replace(".", ",");
+
+        valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        e.target.value = "R$ " + valor;
+    });
+
+});
+</script>
 </body>
 </html>
