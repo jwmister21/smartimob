@@ -789,7 +789,7 @@ def cadastrar_imovel():
                 rua,
                 iptu
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
