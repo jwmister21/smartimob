@@ -335,9 +335,18 @@ def analisar_cliente():
     # 2. Consultamos o Banco de Dados
     conn = sqlite3.connect('imobiliaria.db')
     cursor = conn.cursor()
+    cursor.execute("""
+    SELECT name
+    FROM sqlite_master
+    WHERE type='table'
+""")
+
+    print("TABELAS:", cursor.fetchall())
 
 # Convertemos o valor para float para garantir a comparação correta
-    valor_busca = float(filtros['valor']) 
+    bairro = filtros.get("bairro", "")
+    quartos = filtros.get("quartos", 0)
+    valor_busca = float(filtros.get("valor", 999999999)) 
 
 # O SQL agora busca exatamente nos nomes de colunas que o banco confirmou
     query = "SELECT id, titulo FROM imoveis WHERE bairro = ? AND quartos >= ? AND CAST(REPLACE(REPLACE(valor, 'R$', ''), '.', '') AS REAL) <= ?"
