@@ -19,7 +19,12 @@ from openai import OpenAI
 
 
 app = Flask(__name__)
-UPLOAD_FOLDER_IMOVEIS = '/app/static/uploads/imoveis'
+DB_DIR = "/data"
+
+UPLOAD_FOLDER_IMOVEIS = "/data/uploads/imoveis"
+
+os.makedirs(UPLOAD_FOLDER_IMOVEIS, exist_ok=True)
+
 app.config['UPLOAD_FOLDER_IMOVEIS'] = UPLOAD_FOLDER_IMOVEIS
 app.config['UPLOAD_FOLDER_PERFIL'] = 'static/uploads/perfil'
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -264,6 +269,15 @@ def admin_required(f):
             return "Acesso Negado: Apenas administradores.", 403
         return f(*args, **kwargs)
     return decorated_function
+
+
+@app.route('/uploads/imoveis/<filename>')
+def foto_imovel(filename):
+    return send_from_directory(
+        '/data/uploads/imoveis',
+        filename
+    )
+
 
 @app.route("/admin/gestao")
 @verificar_sessao
