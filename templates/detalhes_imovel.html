@@ -47,11 +47,11 @@
 
 <div class="grid-info">
     <div class="item">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
-    <div class="item">🏠 {{ imovel.tipo }}</div>
+    <div class="item">🛣 Rua: {{ imovel.rua or 'Não especificada' }}</div> <div class="item">🏠 {{ imovel.tipo }}</div>
     <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
     <div class="item">🚿 {{ imovel.banheiros }} Banheiros</div>
     <div class="item">📐 {{ imovel.area }} m²</div>
-    <div class="item">📄 {{ imovel.status }}</div>
+    <div class="item">💰 IPTU: R$ {{ imovel.iptu or '0.00' }}</div>    <div class="item">📄 Status: {{ imovel.status }}</div>
 </div>
 
 <h3>Descrição</h3>
