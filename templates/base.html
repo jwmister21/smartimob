@@ -39,45 +39,59 @@
         .notif-item { border-bottom: 1px solid #374151; padding: 10px 0; color: #fff; text-decoration: none; display: block; font-size: 0.9rem; }
         .notif-item:hover { color: #38bdf8; }
     /* Botão flutuante */
-.chat-float-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: #f59e0b;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 1000;
-}
-
-/* Janela do Chat */
 .chat-widget {
     position: fixed;
     bottom: 90px;
-    right: 20px;
-    width: 320px;
+    right: 30px;
+    width: 300px;
     height: 400px;
     background: #1a2234;
-    border-radius: 12px;
-    display: none; /* Escondido por padrão */
-    flex-direction: column;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    z-index: 1000;
+    border-radius: 15px;
+    display: none;
+    flex-direction: column; /* Fundamental para empilhar */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 9999;
+    border: 1px solid #334155;
     overflow: hidden;
 }
 
-.chat-header {
-    background: #0f172a;
+.chat-body {
+    flex: 1; /* Faz o corpo ocupar todo o espaço sobrando */
     padding: 15px;
-    color: white;
-    display: flex;
-    justify-content: space-between;
+    overflow-y: auto;
 }
-    
+
+.chat-footer {
+    padding: 15px;
+    background: #0f172a; /* Fundo do rodapé diferente para destacar */
+    border-top: 1px solid #334155;
+}
+
+#texto_cliente {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.btn-analisar {
+    width: 100%;
+    background: #f59e0b;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-analisar:hover { background: #d97706; }
     
     
     </style>
@@ -128,13 +142,18 @@
         </div>
     </div>
 
-    <div id="chat-widget" class="chat-widget">
+  <div class="chat-widget" id="chat-widget">
     <div class="chat-header">
-        <span>IA SmartZen</span>
+        <span>🧠 IA SmartZen</span>
         <button onclick="toggleChat()">X</button>
     </div>
+    
     <div class="chat-body" id="chat-body">
-        <textarea id="texto_cliente" placeholder="Cole a mensagem do cliente..."></textarea>
+        <p style="color: #94a3b8; font-size: 0.85rem;">Como posso ajudar você a encontrar o imóvel ideal hoje?</p>
+    </div>
+
+    <div class="chat-footer">
+        <textarea id="texto_cliente" placeholder="Cole a mensagem aqui..." rows="2"></textarea>
         <button class="btn-analisar" onclick="analisarIA()">Analisar</button>
     </div>
 </div>
