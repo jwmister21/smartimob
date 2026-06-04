@@ -313,7 +313,7 @@ def analisar_cliente():
     import json
 
     dados = request.get_json()
-    msg = dados.get('mensagem', '')
+    msg = dados.get('mensagem', '').strip()
 
     try:
         response = client.chat.completions.create(
@@ -325,9 +325,18 @@ def analisar_cliente():
 Você é um extrator de informações imobiliárias.
 
 Extraia da mensagem:
+
 - bairro
-- valor máximo
+- valor
 - quartos
+- tipo
+
+Tipos possíveis:
+- casa
+- apartamento
+- sobrado
+- terreno
+- comercial
 
 Responda SOMENTE JSON.
 
@@ -336,15 +345,17 @@ Exemplo:
 {
     "bairro": "Guaianases",
     "valor": 450000,
-    "quartos": 3
+    "quartos": 3,
+    "tipo": "casa"
 }
 
-Se não encontrar algum campo:
+Se algum campo não for informado:
 
 {
     "bairro": "",
     "valor": 999999999,
-    "quartos": 0
+    "quartos": 0,
+    "tipo": ""
 }
 """
                 },
@@ -369,71 +380,82 @@ Se não encontrar algum campo:
 
     except json.JSONDecodeError:
         return jsonify({
-            "resultado": """
-            <p>
-                Não consegui interpretar sua busca.
-                Tente novamente.
-            </p>
-            """
+            "resultado": "<p>Não consegui interpretar sua busca.</p>"
         })
 
     except Exception as e:
         print("ERRO IA:", str(e))
 
         return jsonify({
-            "resultado": f"""
-            <p>
-                Erro ao processar a IA.
-            </p>
-            """
+            "resultado": "<p>Erro ao processar a IA.</p>"
         })
 
-    bairro = filtros.get("bairro", "")
-    quartos = int(filtros.get("quartos", 0))
-    tipo = filtros.get("tipo", "").lower()
+    bairro = filtros.get("bairro", "").strip()
+    tipo = filtros.get("tipo", "").strip().lower()
+
+    try:
+        quartos = int(filtros.get("quartos", 0))
+    except:
+        quartos = 0
 
     try:
         valor_busca = float(filtros.get("valor", 999999999))
     except:
         valor_busca = 999999999
 
+    print("BAIRRO:", bairro)
+    print("TIPO:", tipo)
+    print("QUARTOS:", quartos)
+    print("VALOR:", valor_busca)
+
     conn = get_db()
     cursor = conn.cursor()
 
     query = """
-    SELECT id, titulo, valor, bairro, quartos
+    SELECT
+        id,
+        titulo,
+        valor,
+        bairro,
+        quartos,
+        tipo
     FROM imoveis
-    WHERE bairro LIKE ?
-      AND quartos >= ?
-      AND CAST(
-            REPLACE(
-                REPLACE(valor,'R$',''),
-            '.','')
-        AS REAL
-      ) <= ?
-      AND LOWER(tipo) = ?  -- FILTRO DE TIPO AQUI
-    LIMIT 5
+    WHERE 1=1
     """
 
-    cursor.execute(
-        query,
-        (
-            f"%{bairro}%",
-            quartos,
-            valor_busca, tipo
-        )
-    )
+    parametros = []
+
+    if bairro:
+        query += " AND LOWER(bairro) LIKE LOWER(?)"
+        parametros.append(f"%{bairro}%")
+
+    if quartos > 0:
+        query += " AND quartos >= ?"
+        parametros.append(quartos)
+
+    if tipo:
+        query += " AND LOWER(tipo) = ?"
+        parametros.append(tipo)
+
+    query += " LIMIT 10"
+
+    print("QUERY:", query)
+    print("PARAMETROS:", parametros)
+
+    cursor.execute(query, parametros)
 
     imoveis = cursor.fetchall()
+
+    print("IMOVEIS ENCONTRADOS:", len(imoveis))
 
     conn.close()
 
     if not imoveis:
         return jsonify({
             "resultado": """
-            <p>
+            <div style='padding:10px'>
                 Nenhum imóvel encontrado com esses critérios.
-            </p>
+            </div>
             """
         })
 
@@ -451,6 +473,7 @@ Se não encontrar algum campo:
         ">
             <strong>{imovel['titulo']}</strong><br>
 
+            🏠 {imovel['tipo']}<br>
             💰 {imovel['valor']}<br>
             📍 {imovel['bairro']}<br>
             🛏 {imovel['quartos']} quartos<br><br>
@@ -461,7 +484,7 @@ Se não encontrar algum campo:
                     font-weight:bold;
                     text-decoration:none;
                ">
-               ➔ Ver Detalhes
+                ➔ Ver Detalhes
             </a>
         </div>
         """
