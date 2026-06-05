@@ -960,9 +960,22 @@ def match_ia():
     clientes = cursor.fetchall()
 
     cursor.execute("""
-        SELECT id, titulo, tipo, valor, cidade, bairro, foto 
-        FROM imoveis WHERE empresa_id = ?
-    """, (empresa_id,))
+SELECT
+    i.id,
+    i.titulo,
+    i.tipo,
+    i.valor,
+    i.cidade,
+    i.bairro,
+    (
+        SELECT nome_arquivo
+        FROM fotos_imoveis f
+        WHERE f.imovel_id = i.id
+        LIMIT 1
+    ) as foto
+FROM imoveis i
+WHERE i.empresa_id = ?
+""", (empresa_id,))
     imoveis = cursor.fetchall()
     conn.close()
 
