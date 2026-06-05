@@ -86,7 +86,8 @@
 
             <div style="display: flex; gap: 12px; background: #1f2937; padding: 12px; border-radius: 10px; margin-top: 10px;">
                 {% if match.imovel_foto %}
-                    <img src="{{ url_for('static', filename='uploads/imoveis/' + match.imovel_foto) }} " style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
+                    <img src="/uploads/imoveis/{{ match.imovel_foto }}"
+     style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover;">
      
                 {% else %}
                     <div style="width: 70px; height: 70px; border-radius: 8px; background: #374151; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 0.8rem;">Sem Foto</div>
