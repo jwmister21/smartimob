@@ -1,27 +1,65 @@
-<h3>Criar novo usuário</h3>
-<form action="/admin/criar-login" method="POST">
-    <input type="email" name="email" placeholder="E-mail do colaborador" required>
-    <input type="password" name="senha" placeholder="Senha inicial" required>
-    <button type="submit">Cadastrar</button>
-</form>
+{% extends 'base.html' %}
 
-<hr>
+{% block title %}Gerenciar Usuários - SMARTZEN{% endblock %}
 
-<h3>Usuários da Empresa</h3>
-<table>
-    <tr>
-        <th>E-mail</th>
-        <th>Ações</th>
-    </tr>
-    {% for user in usuarios %}
-    <tr>
-        <td>{{ user.email }}</td>
-        <td>
-            <form action="/admin/deletar-usuario" method="POST">
-                <input type="hidden" name="user_id" value="{{ user.id }}">
-                <button type="submit" onclick="return confirm('Tem certeza?')">Remover</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+{% block content %}
+<style>
+    .admin-container {
+        background: #111827;
+        padding: 30px;
+        border-radius: 15px;
+        margin-top: 20px;
+        color: white;
+    }
+    input {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #374151;
+        background: #1f2937;
+        color: white;
+        margin-right: 10px;
+    }
+    button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        background: #0ea5e9;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 15px; border-bottom: 1px solid #374151; text-align: left; }
+    .btn-remover { background: #ef4444; }
+</style>
+
+<div class="admin-container">
+    <h3>Criar novo usuário</h3>
+    <form action="/admin/criar-login" method="POST">
+        <input type="email" name="email" placeholder="E-mail do colaborador" required>
+        <input type="password" name="senha" placeholder="Senha inicial" required>
+        <button type="submit">Cadastrar</button>
+    </form>
+
+    <hr style="border: 0; border-top: 1px solid #374151; margin: 25px 0;">
+
+    <h3>Usuários da Empresa</h3>
+    <table>
+        <tr>
+            <th>E-mail</th>
+            <th>Ações</th>
+        </tr>
+        {% for user in usuarios %}
+        <tr>
+            <td>{{ user.email }}</td>
+            <td>
+                <form action="/admin/deletar-usuario" method="POST">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <button type="submit" class="btn-remover" onclick="return confirm('Tem certeza?')">Remover</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
