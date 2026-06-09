@@ -1191,7 +1191,7 @@ def admin():
 
     # 3. SE FOR OUTRO ADMIN: Redireciona para o painel restrito da empresa dele
     else:
-        return redirect(url_for('/'))
+        return redirect('/')
 
 # Rota para processar as ações (Promover, Bloquear, Resetar Senha)
 @app.route("/admin/acao/<int:user_id>", methods=["POST"])
