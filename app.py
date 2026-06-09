@@ -751,11 +751,11 @@ def renderizar_video():
     # 5. Limpa a memória fechando o vídeo
     video.close()
 
-   return jsonify({
+    return jsonify({
         "status": "sucesso", 
         # A URL deve começar com /data/uploads... para bater com a rota que criamos
         "url_video": f"/data/uploads/imoveis/{nome_video}"
-    })
+        })
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
