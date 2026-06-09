@@ -1,0 +1,27 @@
+<h3>Criar novo usuário</h3>
+<form action="/admin/criar-login" method="POST">
+    <input type="email" name="email" placeholder="E-mail do colaborador" required>
+    <input type="password" name="senha" placeholder="Senha inicial" required>
+    <button type="submit">Cadastrar</button>
+</form>
+
+<hr>
+
+<h3>Usuários da Empresa</h3>
+<table>
+    <tr>
+        <th>E-mail</th>
+        <th>Ações</th>
+    </tr>
+    {% for user in usuarios %}
+    <tr>
+        <td>{{ user.email }}</td>
+        <td>
+            <form action="/admin/deletar-usuario" method="POST">
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <button type="submit" onclick="return confirm('Tem certeza?')">Remover</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
