@@ -914,16 +914,15 @@ def atualizar_senha():
 @app.route("/")
 @verificar_sessao
 def index():
-    # O decorador @verificar_sessao já cuida de verificar login, bloqueios, etc.
-    if session.get("is_admin") == 1:
-        return redirect("/admin")
-
+    # REMOVIDO: O redirecionamento automático que causava o loop
+    # Agora o admin vê o dashboard da empresa dele normalmente
+    
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # A SEGURANÇA: Contamos itens baseados na empresa_id
+    # Contagem segura por empresa_id
     cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id=?", (empresa_id,))
     total_clientes = cursor.fetchone()[0]
 
