@@ -1228,6 +1228,25 @@ def admin_bloquear(id):
     return redirect("/admin")
 
 
+@app.route('/admin/criar-login', methods=['POST'])
+def criar_login():
+    # Verifica se o usuário atual é admin
+    if not session.get('is_admin'):
+        return "Acesso negado", 403
+    
+    email = request.form.get('email')
+    senha = request.form.get('senha') # Lembre-se de criptografar com Werkzeug!
+    empresa_id = session.get('empresa_id') # Pega a empresa do admin logado
+    
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO usuarios (email, senha, empresa_id) VALUES (?, ?, ?)", 
+                   (email, senha, empresa_id))
+    conn.commit()
+    conn.close()
+    return "Usuário criado com sucesso para sua empresa!"
+
+
 @app.route("/admin/liberar/<int:id>", methods=["POST"])
 def admin_liberar(id):
     if session.get("is_admin") != 1:
