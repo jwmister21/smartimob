@@ -577,6 +577,17 @@ Se algum campo não for informado:
 
 
 
+@app.route('/data/uploads/imoveis/<filename>')
+def servir_video_do_volume(filename):
+    # Verifica se o arquivo realmente existe no seu volume /data/
+    caminho_completo = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], filename)
+    if os.path.exists(caminho_completo):
+        return send_from_directory(app.config['UPLOAD_FOLDER_IMOVEIS'], filename)
+    else:
+        abort(404)
+
+
+
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
 @admin_required
@@ -740,11 +751,11 @@ def renderizar_video():
     # 5. Limpa a memória fechando o vídeo
     video.close()
 
-    return jsonify({
+   return jsonify({
         "status": "sucesso", 
-        "url_video": f"/static/uploads/imoveis/{nome_video}"
+        # A URL deve começar com /data/uploads... para bater com a rota que criamos
+        "url_video": f"/data/uploads/imoveis/{nome_video}"
     })
-
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
