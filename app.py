@@ -1167,28 +1167,31 @@ def configuracoes():
 @app.route("/admin")
 @verificar_sessao
 def admin():
-    # Verifica se o usuário logado é o administrador
+    # 1. Verifica se o usuário é admin da empresa (proteção básica)
     if session.get('is_admin') != 1:
         return "Acesso Negado.", 403
 
-    # Abre a conexão usando a sua função
-    conn = get_db()
-    # O row_factory permite acessar os dados como colunas (opcional, mas recomendado)
-    cursor = conn.cursor()
+    # 2. SE FOR VOCÊ: Acesso ao painel global completo
+    if session.get('user_email') == 'jacksonwillyan8@gmail.com':
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Métricas globais de todo o sistema
+        total_imoveis = cursor.execute("SELECT COUNT(*) FROM imoveis").fetchone()[0]
+        total_clientes = cursor.execute("SELECT COUNT(*) FROM clientes").fetchone()[0]
+        
+        # Lista de todos os usuários do sistema
+        corretores = cursor.execute("SELECT id, nome, email, empresa_id, status_assinatura, validade_assinatura, is_admin FROM usuarios").fetchall()
+        
+        conn.close()
+        return render_template("admin.html", 
+                               corretores=corretores, 
+                               total_imoveis=total_imoveis, 
+                               total_clientes=total_clientes)
 
-    # Busca as métricas globais
-    total_imoveis = cursor.execute("SELECT COUNT(*) FROM imoveis").fetchone()[0]
-    total_clientes = cursor.execute("SELECT COUNT(*) FROM clientes").fetchone()[0]
-
-    # Busca a lista de todos os usuários
-    corretores = cursor.execute("SELECT id, nome, email, empresa_id, status_assinatura, validade_assinatura, is_admin FROM usuarios").fetchall()
-
-    conn.close() # Fecha a conexão
-
-    return render_template("admin.html", 
-                           corretores=corretores, 
-                           total_imoveis=total_imoveis, 
-                           total_clientes=total_clientes)
+    # 3. SE FOR OUTRO ADMIN: Redireciona para o painel restrito da empresa dele
+    else:
+        return redirect(url_for('/'))
 
 # Rota para processar as ações (Promover, Bloquear, Resetar Senha)
 @app.route("/admin/acao/<int:user_id>", methods=["POST"])
