@@ -717,7 +717,7 @@ def renderizar_video():
     dados = request.json
     imovel_id = dados.get('imovel_id')
 
-    pasta_fotos = os.path.join('static', 'uploads', 'imoveis')
+    pasta_fotos = app.config['UPLOAD_FOLDER_IMOVEIS']
     arquivos = [f for f in os.listdir(pasta_fotos) if f.startswith(f"{imovel_id}_")]
 
     if not arquivos:
