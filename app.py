@@ -1046,7 +1046,7 @@ def login():
             session["session_token"] = novo_token
             session["usuario_nome"] = usuario['nome']
             session["is_admin"] = usuario['is_admin']
-
+            session["user_email"] = usuario['email']
             conn.close()
             return redirect("/")
 
