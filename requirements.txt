@@ -30,7 +30,7 @@ MarkupSafe==3.0.3
 moviepy==2.0.0
 
 numpy==1.26.4
-pillow==11.3.0
+pillow==10.4.0
 
 psycopg2-binary==2.9.12
 
