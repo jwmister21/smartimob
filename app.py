@@ -799,10 +799,11 @@ def cadastrar_imovel():
                 iptu,
                 condominio,
                 link,
+                cep,
                 usuario_id,
                 empresa_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
@@ -818,6 +819,7 @@ def cadastrar_imovel():
             request.form.get("iptu"),
             request.form.get("condominio"),
             request.form.get("link"),
+            request.form.get("cep"),
             user_id,
             empresa_id
         ))
@@ -1521,6 +1523,7 @@ def editar_imovel(id):
         descricao = request.form.get("descricao", "")
         condominio = request.form.get("condominio", "")
         link = request.form.get("link", "")
+        cep = request.form.get("cep", "")
 
         # Atualiza os dados do imóvel
         cursor.execute("""
@@ -1536,7 +1539,8 @@ def editar_imovel(id):
                 status=?,
                 descricao=?,
                 condominio=?,
-                link=?
+                link=?,
+                cep=?
             WHERE id=? AND empresa_id=?
         """, (
             titulo,
@@ -1551,6 +1555,7 @@ def editar_imovel(id):
             descricao,
             condominio,
             link,
+            cep,
             id,
             empresa_id
         ))
