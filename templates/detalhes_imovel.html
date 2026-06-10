@@ -44,7 +44,7 @@
     <div class="info">
         <div class="titulo">{{ imovel.titulo }}</div>
 <div class="valor">
-    R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+    {{ imovel.valor }}
 </div>
 
 <div class="grid-info">
