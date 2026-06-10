@@ -32,5 +32,36 @@
     </form>
 </div>
 
+
+    <div class="card">
+    <hr>
+    <h3>Preview em Tempo Real</h3>
+    <div id="preview-box" style="padding: 20px; border: 2px solid #ccc; border-radius: 8px; text-align: center;">
+        <h2 id="preview-nome" style="color: #0ea5e9;">Nome da sua Imobiliária</h2>
+        <button id="preview-btn" style="background-color: #0ea5e9; color: white; border: none; padding: 10px;">Ver Imóvel</button>
+    </div>
+</div>
+
+<script>
+    const inputCor = document.querySelector('input[name="cor_primaria"]');
+    const inputNome = document.querySelector('input[name="nome_imobiliaria"]');
+    
+    const previewNome = document.getElementById('preview-nome');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewBox = document.getElementById('preview-box');
+
+    // Função para atualizar as cores
+    inputCor.addEventListener('input', (e) => {
+        const cor = e.target.value;
+        previewNome.style.color = cor;
+        previewBtn.style.backgroundColor = cor;
+        previewBox.style.borderColor = cor;
+    });
+
+    // Função para atualizar o texto
+    inputNome.addEventListener('input', (e) => {
+        previewNome.innerText = e.target.value || "Nome da sua Imobiliária";
+    });
+</script>
 </body>
 </html>
