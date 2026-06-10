@@ -959,8 +959,7 @@ def index():
 @verificar_sessao
 def match_ia():
     # Bloqueio extra para admin não entrar aqui
-    if session.get("is_admin") == 1: 
-        return redirect("/admin")
+
 
     empresa_id = session.get("empresa_id")
     conn = sqlite3.connect(DB_PATH)
