@@ -44,81 +44,77 @@
 
 <div class="card">
     <form method="POST" enctype="multipart/form-data">
-        
         <div class="form-grid">
             <div class="campo-box">
                 <label>Título</label>
-                <input type="text" name="titulo" value="{{ imovel[1] }}" required>
+                <input type="text" name="titulo" value="{{ imovel['titulo'] }}" required>
             </div>
 
             <div class="campo-box">
                 <label>Tipo</label>
                 <select name="tipo">
-                    <option {% if imovel[2] == 'Casa' %}selected{% endif %}>Casa</option>
-                    <option {% if imovel[2] == 'Apartamento' %}selected{% endif %}>Apartamento</option>
-                    <option {% if imovel[2] == 'Terreno' %}selected{% endif %}>Terreno</option>
-                    <option {% if imovel[2] == 'Comercial' %}selected{% endif %}>Comercial</option>
+                    {% for t in ['Casa', 'Apartamento', 'Terreno', 'Comercial'] %}
+                        <option value="{{ t }}" {% if imovel['tipo'] == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
             <div class="campo-box">
                 <label>Valor (R$)</label>
-                <input type="text" name="valor" value="{{ imovel[3] }}">
+                <input type="number" step="0.01" name="valor" value="{{ imovel['valor'] }}">
             </div>
 
             <div class="campo-box">
                 <label>Cidade</label>
-                <input type="text" name="cidade" value="{{ imovel[4] }}">
+                <input type="text" name="cidade" value="{{ imovel['cidade'] }}">
             </div>
 
             <div class="campo-box">
                 <label>Bairro</label>
-                <input type="text" name="bairro" value="{{ imovel[5] }}">
+                <input type="text" name="bairro" value="{{ imovel['bairro'] }}">
             </div>
 
             <div class="campo-box">
                 <label>Quartos</label>
-                <input type="number" name="quartos" value="{{ imovel[6] }}">
+                <input type="number" name="quartos" value="{{ imovel['quartos'] or 0 }}">
             </div>
 
             <div class="campo-box">
                 <label>Banheiros</label>
-                <input type="number" name="banheiros" value="{{ imovel[7] }}">
+                <input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}">
             </div>
 
             <div class="campo-box">
                 <label>Área (m²)</label>
-                <input type="number" name="area" value="{{ imovel[8] }}">
+                <input type="number" name="area" value="{{ imovel['area'] or 0 }}">
             </div>
 
             <div class="campo-box">
                 <label>Status</label>
                 <select name="status">
-                    <option {% if imovel[9] == 'Venda' %}selected{% endif %}>Venda</option>
-                    <option {% if imovel[9] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
+                    <option value="Venda" {% if imovel['status'] == 'Venda' %}selected{% endif %}>Venda</option>
+                    <option value="Aluguel" {% if imovel['status'] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
                 </select>
             </div>
         </div>
 
-        <br>
-        
-        <div class="campo-box">
+        <div class="campo-box" style="margin-top: 20px;">
             <label>Foto do Imóvel (Substituir)</label>
             <input type="file" name="foto" accept="image/*">
-            {% if imovel[11] %}
-                <p style="font-size: 12px; color: #6b7280;">Foto atual: <img src="{{ url_for('static', filename='uploads/' + imovel[11]) }}" class="img-preview"></p>
+            {% if imovel['foto'] %}
+                <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+                    Foto atual: <img src="{{ url_for('static', filename='uploads/' + imovel['foto']) }}" class="img-preview">
+                </p>
             {% endif %}
         </div>
 
-        <br>
+        <label style="color: #9ca3af; font-size: 13px; display: block; margin-top: 15px;">Descrição</label>
+        <textarea name="descricao" rows="5" style="width:100%; padding:15px; border-radius:12px; background:#0f172a; border:1px solid #374151; color:white;">{{ imovel['descricao'] }}</textarea>
 
-        <label style="color: #9ca3af; font-size: 13px;">Descrição</label>
-        <textarea name="descricao" rows="5" style="width:100%; padding:15px; border-radius:12px; background:#0f172a; border:1px solid #374151; color:white; box-sizing:border-box;">{{ imovel[10] }}</textarea>
-
-        <br><br>
-
-        <a href="/imoveis" class="btn-voltar">← Voltar</a>
-        <button type="submit" class="btn">Salvar Alterações</button>
+        <div style="margin-top: 20px;">
+            <a href="/imoveis" class="btn-voltar">← Voltar</a>
+            <button type="submit" class="btn">Salvar Alterações</button>
+        </div>
     </form>
 </div>
 
