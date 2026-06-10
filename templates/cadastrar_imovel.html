@@ -38,12 +38,23 @@
             <div class="campo-box"><label>Banheiros</label><input type="number" name="banheiros"></div>
             <div class="campo-box"><label>Área (m²)</label><input type="number" name="area"></div>
 
-            <div class="campo-box"><label>Valor IPTU (R$)</label><input type="number" step="0.01" name="iptu"></div>
-            <div class="campo-box"><label>Status</label>
-                <select name="status"><option>Venda</option><option>Aluguel</option></select>
+            <div class="campo-box">
+    <label>Valor IPTU (R$)</label>
+    <input type="text" name="iptu" id="iptu" placeholder="R$ 0,00">
+</div>
 
-            <div class="campo-box"><label>Valor Condomínio (R$)</label><input type="text" name="condominio" placeholder="R$ 0,00"></div>
-       
+<div class="campo-box">
+    <label>Status</label>
+    <select name="status">
+        <option>Venda</option>
+        <option>Aluguel</option>
+    </select>
+</div>
+
+<div class="campo-box">
+    <label>Valor Condomínio (R$)</label>
+    <input type="text" name="condominio" id="condominio" placeholder="R$ 0,00">
+</div>
     
 </div>
             </div>
