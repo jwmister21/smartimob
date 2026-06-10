@@ -184,7 +184,7 @@ document.getElementById("fotos").addEventListener("change", function() {
 });
 
 
-    <script>
+ 
 const inputValor = document.getElementById('valor-input');
 
 inputValor.addEventListener('input', (e) => {
@@ -203,6 +203,16 @@ inputValor.addEventListener('input', (e) => {
 
     e.target.value = valor;
 });
-</script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById('valor-input');
+    if (input.value) {
+        let valor = input.value.replace(/\D/g, '');
+        input.value = (Number(valor) / 100).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    }
+});
 </script>
 {% endblock %}
