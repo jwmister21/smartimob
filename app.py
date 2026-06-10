@@ -786,7 +786,6 @@ def cadastrar_imovel():
         empresa_id = session.get("empresa_id")
         user_id = session.get("usuario_id")
 
-        # FORMATA O VALOR
         valor = request.form.get("valor", "")
 
         valor = (
@@ -806,12 +805,14 @@ def cadastrar_imovel():
 
         cursor.execute("""
             INSERT INTO imoveis (
-                titulo, tipo, valor, cidade, bairro, quartos, banheiros, 
-                area, status, descricao, rua, iptu, condominio, link, cep, 
-                lavabo, vaga_garagem, lazer, sacada, usuario_id, empresa_id
+                titulo, tipo, valor, cidade, bairro,
+                quartos, banheiros, area, status, descricao,
+                rua, iptu, condominio, link, cep,
+                vaga_garagem, lazer, sacada, lavabo,
+                usuario_id, empresa_id
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         """, (
+        """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
             valor,
@@ -827,14 +828,14 @@ def cadastrar_imovel():
             request.form.get("condominio"),
             request.form.get("link"),
             request.form.get("cep"),
-            # Agora na ordem correta, igual ao INSERT acima:
-            request.form.get("lavabo"),
             request.form.get("vaga_garagem"),
             request.form.get("lazer"),
             request.form.get("sacada"),
+            request.form.get("lavabo"),
             user_id,
             empresa_id
         ))
+
         imovel_id = cursor.lastrowid
 
         arquivos = request.files.getlist("fotos[]")
@@ -851,14 +852,10 @@ def cadastrar_imovel():
 
                 file.save(caminho_salvamento)
 
-                cursor.execute(
-                    """
-                    INSERT INTO fotos_imoveis
-                    (imovel_id, nome_arquivo)
+                cursor.execute("""
+                    INSERT INTO fotos_imoveis (imovel_id, nome_arquivo)
                     VALUES (?, ?)
-                    """,
-                    (imovel_id, nome_foto)
-                )
+                """, (imovel_id, nome_foto))
 
         conn.commit()
         conn.close()
