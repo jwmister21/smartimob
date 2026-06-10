@@ -1529,6 +1529,10 @@ def editar_imovel(id):
         return redirect("/imoveis")
 
     # Se for GET, busca os dados
+    cursor.execute("SELECT id, nome_arquivo FROM fotos WHERE imovel_id=?", (id,))
+    fotos = cursor.fetchall()
+
+    
     cursor.execute("SELECT * FROM imoveis WHERE id=? AND empresa_id=?", (id, empresa_id))
     imovel = cursor.fetchone()
     conn.close()
