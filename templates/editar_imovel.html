@@ -61,7 +61,7 @@
 
             <div class="campo-box">
                 <label>Valor (R$)</label>
-                <input type="text" name="valor" id="valor-input" value="{{ '%.2f'|format(imovel['valor'] or 0) }}">
+                <input type="text" name="valor" id="valor-input" value="{{ imovel['valor'] }}">
             </div>
 
             <div class="campo-box">
