@@ -99,14 +99,17 @@
         </div>
 
         <div class="campo-box" style="margin-top: 20px;">
-            <label>Foto do Imóvel (Substituir)</label>
-            <input type="file" name="foto" accept="image/*">
-            {% if imovel['foto'] %}
-                <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
-                    Foto atual: <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
-                </p>
-            {% endif %}
-        </div>
+            <label>Fotos Atuais:</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+        {% for foto in fotos %}
+            <div style="position: relative;">
+                <img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview">
+                <br>
+                <a href="/excluir-foto/{{ foto['id'] }}" style="color: #ff4d4d; font-size: 12px;">Excluir</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
 
         <label style="color: #9ca3af; font-size: 13px; display: block; margin-top: 15px;">Descrição</label>
         <textarea name="descricao" rows="5" style="width:100%; padding:15px; border-radius:12px; background:#0f172a; border:1px solid #374151; color:white;">{{ imovel['descricao'] }}</textarea>
