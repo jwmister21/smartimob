@@ -65,6 +65,11 @@
             <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
             <button onclick="compartilharImovel()" class="btn-acao btn-compartilhar">📱 Compartilhar</button>
             <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Deseja excluir?')">🗑 Excluir</a>
+            <button class="btn-drive" 
+            onclick="copiarLink('{{ imovel['link'] }}')" 
+            style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+        Copiar Drive
+    </button>
         </div>
     </div>
 </div>
