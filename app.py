@@ -1496,26 +1496,28 @@ def funil():
     return render_template("funil.html", funil_dados=funil_dados, etapas=etapas)    
 
 @app.route("/editar_imovel/<int:id>", methods=["GET", "POST"])
-@verificar_sessao # Usamos o decorador que garante segurança na sessão
+@verificar_sessao
 def editar_imovel(id):
     empresa_id = session.get("empresa_id")
     conn = sqlite3.connect(DB_PATH)
+    # Importante: permite acessar os dados pelo nome da coluna (imovel['titulo'])
+    conn.row_factory = sqlite3.Row 
     cursor = conn.cursor()
 
     if request.method == "POST":
-        # Recebe os novos dados do formulário
-        titulo = request.form["titulo"]
-        tipo = request.form["tipo"]
-        valor = request.form["valor"]
-        cidade = request.form["cidade"]
-        bairro = request.form["bairro"]
-        quartos = request.form["quartos"]
-        banheiros = request.form["banheiros"]
-        area = request.form["area"]
-        status = request.form["status"]
-        descricao = request.form["descricao"]
+        # Recebe os dados de forma segura, garantindo valores padrão
+        titulo = request.form.get("titulo", "")
+        tipo = request.form.get("tipo", "Casa")
+        valor = request.form.get("valor", 0)
+        cidade = request.form.get("cidade", "")
+        bairro = request.form.get("bairro", "")
+        quartos = request.form.get("quartos") or 0
+        banheiros = request.form.get("banheiros") or 0
+        area = request.form.get("area") or 0
+        status = request.form.get("status", "Venda")
+        descricao = request.form.get("descricao", "")
 
-        # A SEGURANÇA: Atualiza apenas se o id do imóvel E a empresa_id baterem
+        # Atualiza apenas se o id do imóvel E a empresa_id baterem (Segurança)
         cursor.execute("""
             UPDATE imoveis SET titulo=?, tipo=?, valor=?, cidade=?, bairro=?, 
             quartos=?, banheiros=?, area=?, status=?, descricao=? 
@@ -1526,7 +1528,7 @@ def editar_imovel(id):
         conn.close()
         return redirect("/imoveis")
 
-    # Se for GET, busca apenas se pertencer à empresa correta
+    # Se for GET, busca os dados
     cursor.execute("SELECT * FROM imoveis WHERE id=? AND empresa_id=?", (id, empresa_id))
     imovel = cursor.fetchone()
     conn.close()
@@ -1535,7 +1537,6 @@ def editar_imovel(id):
         return "Imóvel não encontrado ou sem permissão de acesso.", 404
 
     return render_template("editar_imovel.html", imovel=imovel)
-
 
 # ==========================================
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
