@@ -32,7 +32,7 @@
         <div class="imoveis-grid">
             {% for i in imoveis %}
                 <div class="card">
-                    <img src="{{ i.foto_url or 'https://via.placeholder.com/400x200' }}" alt="Foto do imóvel">
+                    <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
                     <div class="card-body">
                         <h3>{{ i.titulo }}</h3>
                         <p>🏠 {{ i.quartos }} Quartos | 📐 {{ i.area }} m²</p>
