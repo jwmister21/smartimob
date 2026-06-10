@@ -1546,6 +1546,7 @@ def editar_imovel(id):
             area,
             status,
             descricao,
+            condominio,
             id,
             empresa_id
         ))
