@@ -1521,7 +1521,7 @@ def editar_imovel(id):
         status = request.form.get("status", "Venda")
         descricao = request.form.get("descricao", "")
         condominio = request.form.get("condominio", "")
-        condominio = request.form.get("link", "")
+        link = request.form.get("link", "")
 
         # Atualiza os dados do imóvel
         cursor.execute("""
