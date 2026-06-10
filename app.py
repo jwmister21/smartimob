@@ -10,7 +10,7 @@ from functools import wraps
 from moviepy.video.VideoClip import ColorClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 from moviepy.video.VideoClip import TextClip
-from moviepy.audio.io.AudioFileClip import AudioFileClip
+from moviepy.audio.io.AudioFileClip import AudioFileClip 
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
 import google.generativeai as genai
