@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <style>
+        :root { --cor-principal: {{ empresa.cor_primaria }}; }
+        body { font-family: sans-serif; }
+        header { background-color: var(--cor-principal); color: white; padding: 20px; }
+        .imovel-card { border: 1px solid var(--cor-principal); padding: 15px; margin: 10px; }
+    </style>
+    <title>{{ empresa.nome_imobiliaria }}</title>
+</head>
+<body>
+    <header>
+        <h1>Bem-vindo à {{ empresa.nome_imobiliaria }}</h1>
+    </header>
+
+    <div class="container">
+        <h2>Nossos Imóveis</h2>
+        {% for imovel in imoveis %}
+            <div class="imovel-card">
+                <h3>{{ imovel.titulo }}</h3>
+                <p>Valor: R$ {{ imovel.preco }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
