@@ -54,6 +54,7 @@
     <div class="item">🚿 {{ imovel.banheiros }} Banheiros</div>
     <div class="item">📐 {{ imovel.area }} m²</div>
     <div class="item">💰 IPTU: R$ {{ imovel.iptu or '0.00' }}</div>    <div class="item">📄 Status: {{ imovel.status }}</div>
+    <div class="item">🏢 Condomínio: R$ {{ imovel['condominio'] or 0.00 }}</div>
 </div>
 
 <h3>Descrição</h3>
