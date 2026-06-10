@@ -5,10 +5,20 @@
     <title>{{ empresa.nome_imobiliaria }}</title>
     <style>
         :root { --cor-principal: {{ empresa.cor_primaria }}; }
-        body { font-family: sans-serif; margin: 0; }
-        header { background-color: var(--cor-principal); color: white; padding: 2rem; text-align: center; }
-        .container { padding: 20px; }
-        .card { border: 2px solid var(--cor-principal); padding: 15px; margin: 10px; border-radius: 8px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f9f9f9; }
+        
+        header { background-color: var(--cor-principal); color: white; padding: 40px 20px; text-align: center; }
+        
+        .container { max-width: 1000px; margin: 20px auto; padding: 20px; }
+        
+        /* Grid de Imóveis */
+        .imoveis-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 20px; transition: transform 0.2s; border-top: 5px solid var(--cor-principal); }
+        .card:hover { transform: translateY(-5px); }
+        
+        .card h3 { margin-top: 0; color: #333; }
+        .preco { font-weight: bold; font-size: 1.2rem; color: var(--cor-principal); }
     </style>
 </head>
 <body>
@@ -17,15 +27,18 @@
     </header>
 
     <div class="container">
-        <h2>Nossos Imóveis</h2>
-        {% for imovel in imoveis %}
-            <div class="card">
-                <h3>{{ imovel.titulo }}</h3>
-                <p>R$ {{ imovel.preco }}</p>
-            </div>
-        {% else %}
-            <p>Nenhum imóvel disponível no momento.</p>
-        {% endfor %}
+        <h2>Imóveis em destaque</h2>
+        <div class="imoveis-grid">
+            {% for imovel in imoveis %}
+                <div class="card">
+                    <h3>{{ imovel.titulo }}</h3>
+                    <p class="preco">R$ {{ imovel.preco }}</p>
+                    <button style="background: var(--cor-principal); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer;">Ver Detalhes</button>
+                </div>
+            {% else %}
+                <p>Nenhum imóvel disponível no momento.</p>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>
