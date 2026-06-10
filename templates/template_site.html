@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <meta charset="UTF-8">
+    <title>{{ empresa.nome_imobiliaria }}</title>
     <style>
         :root { --cor-principal: {{ empresa.cor_primaria }}; }
-        body { font-family: sans-serif; }
-        header { background-color: var(--cor-principal); color: white; padding: 20px; }
-        .imovel-card { border: 1px solid var(--cor-principal); padding: 15px; margin: 10px; }
+        body { font-family: sans-serif; margin: 0; }
+        header { background-color: var(--cor-principal); color: white; padding: 2rem; text-align: center; }
+        .container { padding: 20px; }
+        .card { border: 2px solid var(--cor-principal); padding: 15px; margin: 10px; border-radius: 8px; }
     </style>
-    <title>{{ empresa.nome_imobiliaria }}</title>
 </head>
 <body>
     <header>
-        <h1>Bem-vindo à {{ empresa.nome_imobiliaria }}</h1>
+        <h1>{{ empresa.nome_imobiliaria }}</h1>
     </header>
 
     <div class="container">
         <h2>Nossos Imóveis</h2>
         {% for imovel in imoveis %}
-            <div class="imovel-card">
+            <div class="card">
                 <h3>{{ imovel.titulo }}</h3>
-                <p>Valor: R$ {{ imovel.preco }}</p>
+                <p>R$ {{ imovel.preco }}</p>
             </div>
+        {% else %}
+            <p>Nenhum imóvel disponível no momento.</p>
         {% endfor %}
     </div>
 </body>
