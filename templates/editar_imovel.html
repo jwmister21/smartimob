@@ -103,7 +103,7 @@
             <input type="file" name="foto" accept="image/*">
             {% if imovel['foto'] %}
                 <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">
-                    Foto atual: <img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview">
+                    Foto atual: <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
                 </p>
             {% endif %}
         </div>
