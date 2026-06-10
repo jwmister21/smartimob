@@ -111,6 +111,16 @@
     </div>
 </div>
 
+        <div class="campo-box" style="margin-top:20px;">
+    <label>Adicionar Novas Fotos</label>
+
+    <input
+        type="file"
+        name="fotos[]"
+        multiple
+        accept="image/*">
+  </div>
+
         <label style="color: #9ca3af; font-size: 13px; display: block; margin-top: 15px;">Descrição</label>
         <textarea name="descricao" rows="5" style="width:100%; padding:15px; border-radius:12px; background:#0f172a; border:1px solid #374151; color:white;">{{ imovel['descricao'] }}</textarea>
 
