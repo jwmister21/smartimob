@@ -804,14 +804,14 @@ def cadastrar_imovel():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-       cursor.execute("""
+        cursor.execute("""
             INSERT INTO imoveis (
                 titulo, tipo, valor, cidade, bairro, quartos, banheiros, 
                 area, status, descricao, rua, iptu, condominio, link, cep, 
                 lavabo, vaga_garagem, lazer, sacada, usuario_id, empresa_id
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
+         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
             valor,
