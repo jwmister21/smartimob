@@ -1250,21 +1250,24 @@ def admin_bloquear(id):
 
 @app.route('/admin/criar-login', methods=['POST'])
 def criar_login():
-    # Verifica se o usuário atual é admin
     if not session.get('is_admin'):
         return "Acesso negado", 403
     
     email = request.form.get('email')
-    senha = request.form.get('senha') # Lembre-se de criptografar com Werkzeug!
-    empresa_id = session.get('empresa_id') # Pega a empresa do admin logado
+    senha_raw = request.form.get('senha')
+    empresa_id = session.get('empresa_id')
+    
+    # CRÍTICO: Criptografe a senha antes de salvar
+    senha_hash = generate_password_hash(senha_raw)
     
     conn = sqlite3.connect('/data/imobiliaria.db')
     cursor = conn.cursor()
+    # Salve o senha_hash, não a senha_raw
     cursor.execute("INSERT INTO usuarios (email, senha, empresa_id) VALUES (?, ?, ?)", 
-                   (email, senha, empresa_id))
+                   (email, senha_hash, empresa_id))
     conn.commit()
     conn.close()
-    return "Usuário criado com sucesso para sua empresa!"
+    return "Usuário criado com sucesso!"
 
 
 
