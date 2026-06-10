@@ -96,7 +96,7 @@
                     <h4 style="margin: 0 0 4px 0; color: white; font-size: 0.95rem;"><a href="/imovel/{{ match.imovel_id }}" style="color: white; text-decoration: none;">{{ match.imovel_titulo }}</a></h4>
                     <p style="margin: 0; color: #9ca3af; font-size: 0.8rem;">📍 {{ match.imovel_local }}</p>
                     <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.9rem;">
-                      R$ {{ "{:,.2f}".format(match.valor | float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                      R$ {{ match.imovel_valor }}
                     </p>
                 </div>
             </div>
