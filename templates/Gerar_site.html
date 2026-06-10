@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurar Site - SMARTZEN IMOB</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f4f7f6; }
+        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        input[type="text"], input[type="color"] { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #0ea5e9; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background: #0284c7; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>🚀 Gerador de Site SMARTZEN</h2>
+    <p>Personalize sua vitrine imobiliária:</p>
+    
+    <form action="/admin/configurar-site" method="POST">
+        <label>Nome da Imobiliária:</label>
+        <input type="text" name="nome_imobiliaria" placeholder="Ex: Imobiliária Prime" required>
+        
+        <label>Seu Endereço (slug):</label>
+        <input type="text" name="subdominio" placeholder="ex: imobiliaria-prime" required>
+        <p style="font-size: 12px; color: #666;">Seu link será: smartzen.app/site/<strong>seu-escolhido</strong></p>
+
+        <label>Cor de Destaque:</label>
+        <input type="color" name="cor_primaria" value="#0ea5e9">
+
+        <button type="submit">Publicar/Atualizar Site</button>
+    </form>
+</div>
+
+</body>
+</html>
