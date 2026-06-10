@@ -1682,6 +1682,11 @@ def editar_imovel(id):
         fotos=fotos
     )
 
+
+
+@app.route('/Gerar_site')
+def mostrar_gerador():
+    return render_template('Gerar_site.html')
 # ==========================================
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
 # ==========================================
