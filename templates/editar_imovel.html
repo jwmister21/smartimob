@@ -185,34 +185,30 @@ document.getElementById("fotos").addEventListener("change", function() {
 
 
  
-const inputValor = document.getElementById('valor-input');
-
-inputValor.addEventListener('input', (e) => {
-    let valor = e.target.value.replace(/\D/g, ''); // Remove tudo que não é número
-    
-    if (valor === "") {
-        e.target.value = "";
-        return;
-    }
-
-    // Formata o número para moeda brasileira
-    valor = (Number(valor) / 100).toLocaleString('pt-BR', {
+<script>
+// Função unificada para formatar
+function formatarMoeda(valor) {
+    if (!valor) return "";
+    let valorNumerico = valor.toString().replace(/\D/g, '');
+    return (Number(valorNumerico) / 100).toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
     });
+}
 
-    e.target.value = valor;
+// 1. Ao digitar
+const inputValor = document.getElementById('valor-input');
+inputValor.addEventListener('input', (e) => {
+    e.target.value = formatarMoeda(e.target.value);
 });
 
-    document.addEventListener("DOMContentLoaded", function() {
+// 2. Ao carregar a página
+window.addEventListener("load", function() {
     const input = document.getElementById('valor-input');
     if (input.value) {
-        let valor = input.value.replace(/\D/g, '');
-        input.value = (Number(valor) / 100).toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        });
+        input.value = formatarMoeda(input.value);
     }
 });
+</script>
 </script>
 {% endblock %}
