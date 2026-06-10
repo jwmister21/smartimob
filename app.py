@@ -1499,13 +1499,13 @@ def funil():
 @verificar_sessao
 def editar_imovel(id):
     empresa_id = session.get("empresa_id")
+
     conn = sqlite3.connect(DB_PATH)
-    # Importante: permite acessar os dados pelo nome da coluna (imovel['titulo'])
-    conn.row_factory = sqlite3.Row 
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     if request.method == "POST":
-        # Recebe os dados de forma segura, garantindo valores padrão
+
         titulo = request.form.get("titulo", "")
         tipo = request.form.get("tipo", "Casa")
         valor = request.form.get("valor", 0)
@@ -1517,28 +1517,107 @@ def editar_imovel(id):
         status = request.form.get("status", "Venda")
         descricao = request.form.get("descricao", "")
 
-        # Atualiza apenas se o id do imóvel E a empresa_id baterem (Segurança)
+        # Atualiza os dados do imóvel
         cursor.execute("""
-            UPDATE imoveis SET titulo=?, tipo=?, valor=?, cidade=?, bairro=?, 
-            quartos=?, banheiros=?, area=?, status=?, descricao=? 
+            UPDATE imoveis
+            SET titulo=?,
+                tipo=?,
+                valor=?,
+                cidade=?,
+                bairro=?,
+                quartos=?,
+                banheiros=?,
+                area=?,
+                status=?,
+                descricao=?
             WHERE id=? AND empresa_id=?
-        """, (titulo, tipo, valor, cidade, bairro, quartos, banheiros, area, status, descricao, id, empresa_id))
+        """, (
+            titulo,
+            tipo,
+            valor,
+            cidade,
+            bairro,
+            quartos,
+            banheiros,
+            area,
+            status,
+            descricao,
+            id,
+            empresa_id
+        ))
+
+        # ==========================
+        # NOVAS FOTOS
+        # ==========================
+        arquivos = request.files.getlist("fotos[]")
+
+        for file in arquivos:
+
+            if file and file.filename != "":
+
+                nome_seguro = secure_filename(file.filename)
+
+                nome_foto = (
+                    f"{id}_"
+                    f"{int(datetime.now().timestamp())}_"
+                    f"{nome_seguro}"
+                )
+
+                caminho_salvamento = os.path.join(
+                    app.config["UPLOAD_FOLDER_IMOVEIS"],
+                    nome_foto
+                )
+
+                file.save(caminho_salvamento)
+
+                cursor.execute("""
+                    INSERT INTO fotos_imoveis
+                    (imovel_id, nome_arquivo)
+                    VALUES (?, ?)
+                """, (
+                    id,
+                    nome_foto
+                ))
 
         conn.commit()
         conn.close()
+
         return redirect("/imoveis")
 
-    # Se for GET, busca os dados
+    # ==========================
+    # BUSCAR IMÓVEL
+    # ==========================
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id=? AND empresa_id=?
+    """, (id, empresa_id))
 
-    
-    cursor.execute("SELECT * FROM imoveis WHERE id=? AND empresa_id=?", (id, empresa_id))
     imovel = cursor.fetchone()
-    conn.close()
 
     if not imovel:
+        conn.close()
         return "Imóvel não encontrado ou sem permissão de acesso.", 404
 
-    return render_template("editar_imovel.html", imovel=imovel)
+    # ==========================
+    # BUSCAR FOTOS
+    # ==========================
+    cursor.execute("""
+        SELECT *
+        FROM fotos_imoveis
+        WHERE imovel_id=?
+        ORDER BY id DESC
+    """, (id,))
+
+    fotos = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "editar_imovel.html",
+        imovel=imovel,
+        fotos=fotos
+    )
 
 # ==========================================
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
