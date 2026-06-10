@@ -24,7 +24,7 @@ app = Flask(__name__)
 DB_DIR = "/data"
 
 UPLOAD_FOLDER_IMOVEIS = "/data/uploads/imoveis"
-
+ 
 os.makedirs(UPLOAD_FOLDER_IMOVEIS, exist_ok=True)
 
 app.config['UPLOAD_FOLDER_IMOVEIS'] = UPLOAD_FOLDER_IMOVEIS
