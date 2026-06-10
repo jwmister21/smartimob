@@ -1536,7 +1536,7 @@ def editar_imovel(id):
                 area=?,
                 status=?,
                 descricao=?,
-                condominio=?
+                condominio=?,
                 link=?
             WHERE id=? AND empresa_id=?
         """, (
