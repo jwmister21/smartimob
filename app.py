@@ -1036,6 +1036,31 @@ WHERE i.empresa_id = ?
 
 
 
+@app.route('/admin/configurar-site', methods=['POST'])
+def salvar_configuracoes():
+    if not session.get('is_admin'):
+        return "Acesso negado", 403
+    
+    empresa_id = session.get('empresa_id')
+    nome = request.form.get('nome_imobiliaria')
+    cor = request.form.get('cor_primaria')
+    subdominio = request.form.get('subdominio')
+    
+    # Aqui entraria a lógica de upload da logo (salve apenas o caminho da imagem)
+    
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    cursor = conn.cursor()
+    
+    # Usamos INSERT OR REPLACE para atualizar se já existir
+    cursor.execute("""
+        INSERT OR REPLACE INTO configuracoes_site (empresa_id, nome_imobiliaria, cor_primaria, subdominio)
+        VALUES (?, ?, ?, ?)
+    """, (empresa_id, nome, cor, subdominio))
+    
+    conn.commit()
+    conn.close()
+    return "Site configurado com sucesso!"
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
