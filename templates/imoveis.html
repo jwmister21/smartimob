@@ -252,19 +252,25 @@ Imóveis
     {% endif %}
 
     <a href="/imovel/{{ imovel.id }}" style="text-decoration:none; color:inherit;">
-        <div class="info">
-            <div class="titulo">{{ imovel.titulo }}</div>
-            <div class="valor"> {{ imovel.valor }}</div>     
-            </div>
-            <div class="detalhes">
-                📍 {{ imovel.bairro }}, {{ imovel.cidade }} <br>
-                🛏 {{ imovel.quartos }} Quartos | 🚿 {{ imovel.banheiros }} Banheiros <br>
-                📐 {{ imovel.area }} m² | IPTU :R$  {{ imovel.iptu }} |
-                Condominio :R$ {{ imovel.condominio }}
-            </div>
-        
+    <div class="info">
+
+        <div class="titulo">{{ imovel.titulo }}</div>
+
+        <div class="valor">
+            R$ {{ imovel.valor }}
         </div>
-    </a>
+
+        <div class="detalhes">
+            📍 {{ imovel.bairro }}, {{ imovel.cidade }} <br>
+            🛏 {{ imovel.quartos }} Quartos |
+            🚿 {{ imovel.banheiros }} Banheiros <br>
+            📐 {{ imovel.area }} m² |
+            IPTU: R$ {{ imovel.iptu }} |
+            Condomínio: R$ {{ imovel.condominio or 0 }}
+        </div>
+
+    </div>
+</a>
 
     <div class="acoes">
         <a href="/editar_imovel/{{ imovel.id }}" class="btn-editar">✏ Editar</a>
