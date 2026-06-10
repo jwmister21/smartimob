@@ -804,35 +804,17 @@ def cadastrar_imovel():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute("""
+       cursor.execute("""
             INSERT INTO imoveis (
-                titulo,
-                tipo,
-                valor,
-                cidade,
-                bairro,
-                quartos,
-                banheiros,
-                area,
-                status,
-                descricao,
-                rua,
-                iptu,
-                condominio,
-                link,
-                cep,
-                lavabo,
-                vaga_garagem,
-                lazer,
-                sacada,
-                usuario_id,
-                empresa_id
+                titulo, tipo, valor, cidade, bairro, quartos, banheiros, 
+                area, status, descricao, rua, iptu, condominio, link, cep, 
+                lavabo, vaga_garagem, lazer, sacada, usuario_id, empresa_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? ,? ,? ,? ,? ,?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
-            valor,  # <- AGORA VAI SALVAR COMO NÚMERO
+            valor,
             request.form.get("cidade"),
             request.form.get("bairro"),
             request.form.get("quartos"),
@@ -845,14 +827,14 @@ def cadastrar_imovel():
             request.form.get("condominio"),
             request.form.get("link"),
             request.form.get("cep"),
+            # Agora na ordem correta, igual ao INSERT acima:
+            request.form.get("lavabo"),
             request.form.get("vaga_garagem"),
             request.form.get("lazer"),
             request.form.get("sacada"),
-            request.form.get("lavabo"),
             user_id,
             empresa_id
         ))
-
         imovel_id = cursor.lastrowid
 
         arquivos = request.files.getlist("fotos[]")
