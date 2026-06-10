@@ -757,6 +757,27 @@ def renderizar_video():
         "url_video": f"/data/uploads/imoveis/{nome_video}"
         })
 
+
+@app.route('/site/<subdominio>')
+def exibir_site(subdominio):
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    conn.row_factory = sqlite3.Row # Para acessar colunas pelo nome
+    cursor = conn.cursor()
+    
+    # 1. Busca as configurações da imobiliária
+    empresa = cursor.execute("SELECT * FROM configuracoes_site WHERE subdominio = ?", (subdominio,)).fetchone()
+    
+    if not empresa:
+        return "Site não encontrado", 404
+        
+    # 2. Busca todos os imóveis daquela empresa
+    imoveis = cursor.execute("SELECT * FROM imoveis WHERE empresa_id = ?", (empresa['empresa_id'],)).fetchall()
+    
+    conn.close()
+    
+    # 3. Renderiza o template passando os dados
+    return render_template('template_site.html', empresa=empresa, imoveis=imoveis)
+
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
