@@ -118,20 +118,31 @@
 
 
  /* Seções do Menu */
-.menu-section-title {
-    color: #4b5563;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin: 20px 0 10px 14px;
-    letter-spacing: 0.05em;
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
+
 .menu a {
     display: flex;
     align-items: center;
-    gap: 2px;
-}       
-    
+    gap: 10px;
+    text-decoration: none;
+    color: #d1d5db;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: .3s;
+}
+
+.menu-section-title {
+    color: #4b5563;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 8px 0 2px 12px;
+    letter-spacing: .05em;
+}
     
     </style>
     
