@@ -281,30 +281,6 @@ def foto_imovel(filename):
     )
 
 
-
-
-
-@app.route('/site/<subdominio>')
-def exibir_site(subdominio):
-    # Conecta no banco
-    conn = sqlite3.connect('/data/imobiliaria.db')
-    conn.row_factory = sqlite3.Row # Isso permite acessar colunas pelo nome (ex: empresa['nome_imobiliaria'])
-    cursor = conn.cursor()
-    
-    # Busca a configuração pelo slug (subdominio)
-    empresa = cursor.execute("SELECT * FROM configuracoes_site WHERE subdominio = ?", (subdominio,)).fetchone()
-    
-    if not empresa:
-        return "Site não encontrado ou URL inválida.", 404
-        
-    # Busca os imóveis daquela empresa
-    imoveis = cursor.execute("SELECT * FROM imoveis WHERE empresa_id = ?", (empresa['empresa_id'],)).fetchall()
-    
-    conn.close()
-    
-    # Renderiza o template passando os dados da empresa e a lista de imóveis
-    return render_template('template_site.html', empresa=empresa, imoveis=imoveis)
-
 @app.route("/admin/gestao")
 @verificar_sessao
 @admin_required
