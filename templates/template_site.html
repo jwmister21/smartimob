@@ -32,11 +32,11 @@
         <div class="imoveis-grid">
             {% for i in imoveis %}
                 <div class="card">
-                    <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
+                    <img src="/data/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
                     <div class="card-body">
                         <h3>{{ i.titulo }}</h3>
                         <p>🏠 {{ i.quartos }} Quartos | 📐 {{ i.area }} m²</p>
-                        <p class="preco">R$ {{ imovel.valor }}</p>
+                        <p class="preco">R$ {{ i.valor }}</p>
                     </div>
                 </div>
             {% endfor %}
