@@ -75,6 +75,19 @@
 </div>
 
 <script>
+
+    function copiarLink(texto) {
+    if (!texto || texto === "None" || texto === "") {
+        alert("Este imóvel não possui um link de Drive cadastrado.");
+        return;
+    }
+
+    navigator.clipboard.writeText(texto).then(() => {
+        alert("Link copiado para a área de transferência!");
+    }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+    });
+    }
     // Mesma função que usamos na listagem
     function mudarFoto(carouselId, direcao) {
         const container = document.getElementById(carouselId).querySelector('.carousel-images');
