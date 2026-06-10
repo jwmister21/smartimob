@@ -144,5 +144,25 @@ aplicarMascaraMoeda('condominio');
         
         console.log("Total de arquivos na fila:", input.files.length);
     }
+
+    async function buscarCep() {
+    const cep = document.getElementById('cep').value.replace(/\D/g, '');
+    if (cep.length !== 8) return; // Valida se tem 8 números
+
+    try {
+        const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const dados = await resposta.json();
+
+        if (!dados.erro) {
+            document.getElementById('rua').value = dados.logradouro;
+            document.getElementById('bairro').value = dados.bairro;
+            document.getElementById('cidade').value = dados.localidade;
+        } else {
+            alert("CEP não encontrado.");
+        }
+    } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+    }
+}
 </script>
 {% endblock %}
