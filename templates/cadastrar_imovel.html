@@ -42,9 +42,9 @@
             <div class="campo-box"><label>Status</label>
                 <select name="status"><option>Venda</option><option>Aluguel</option></select>
 
-                 <div class="campo-box">
-    <label>Valor Condomínio (R$)</label>
-    <input type="text" name="condominio" placeholder="R$ 0,00">
+            <div class="campo-box"><label>Valor Condomínio (R$)</label><input type="text" name="condominio" placeholder="R$ 0,00"></div>
+       
+    
 </div>
             </div>
         </div>
@@ -71,11 +71,36 @@
     let arquivosParaEnviar = new DataTransfer();
 
     // Máscara de valor (mantive a sua)
-    document.getElementById('valor').addEventListener('input', function(e){
-        let v = e.target.value.replace(/\D/g,'');
-        v = (Number(v)/100).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        e.target.value = v;
+    function aplicarMascaraMoeda(idCampo){
+
+    const campo = document.getElementById(idCampo);
+
+    if(!campo) return;
+
+    campo.addEventListener('input', function(e){
+
+        let valor = e.target.value.replace(/\D/g,'');
+
+        if(valor === ''){
+            e.target.value = '';
+            return;
+        }
+
+        valor = (Number(valor) / 100).toLocaleString(
+            'pt-BR',
+            {
+                style:'currency',
+                currency:'BRL'
+            }
+        );
+
+        e.target.value = valor;
     });
+}
+
+aplicarMascaraMoeda('valor');
+aplicarMascaraMoeda('iptu');
+aplicarMascaraMoeda('condominio');
 
     // 2. Preview Horizontal Inteligente
     function previewFotos(event) {
