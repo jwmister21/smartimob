@@ -61,7 +61,7 @@
 
             <div class="campo-box">
                 <label>Valor (R$)</label>
-                <input type="number" step="0.01" name="valor" value="{{ imovel['valor'] }}">
+                <input type="text" name="valor" id="valor-input" value="{{ imovel['valor'] }}" placeholder="0,00">
             </div>
 
             <div class="campo-box">
@@ -77,6 +77,10 @@
                 <label>link driver</label>
                 <input type="text" name="link" value="{{ imovel['link'] }}">
             </div>
+            <div class="campo-box">
+                <label>Cepr</label>
+                <input type="text" name="cep" value="{{ imovel['cep'] }}">
+             </div>   
                 
             
             <div class="campo-box">
@@ -178,5 +182,27 @@ document.getElementById("fotos").addEventListener("change", function() {
     });
 
 });
+
+
+    <script>
+const inputValor = document.getElementById('valor-input');
+
+inputValor.addEventListener('input', (e) => {
+    let valor = e.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+    
+    if (valor === "") {
+        e.target.value = "";
+        return;
+    }
+
+    // Formata o número para moeda brasileira
+    valor = (Number(valor) / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+
+    e.target.value = valor;
+});
+</script>
 </script>
 {% endblock %}
