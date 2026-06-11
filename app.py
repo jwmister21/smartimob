@@ -1927,6 +1927,7 @@ def atualizar_dados_cliente(id):
     email = request.form.get("email")
     cpf = request.form.get("cpf") 
     endereco = request.form.get("endereco")
+    telefone = request.form.get("telefone")
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
@@ -1935,9 +1936,9 @@ def atualizar_dados_cliente(id):
     # CORREÇÃO: Removida a vírgula após endereco = ?
     cursor.execute("""
         UPDATE clientes 
-        SET email = ?, cpf = ?, endereco = ?
+        SET email = ?, cpf = ?, endereco = ?, telefone=?
         WHERE id = ? AND empresa_id = ?
-    """, (email, cpf, endereco, id, empresa_id))
+    """, (email, cpf, endereco, telefone, id, empresa_id))
 
     conn.commit()
     conn.close()
