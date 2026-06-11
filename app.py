@@ -1126,10 +1126,12 @@ def cadastrar_usuario():
             empresa_id = cursor.lastrowid
 
             # 2. Cria o usuário vinculado ao ID da empresa recém-criada
-            cursor.execute("""
-                INSERT INTO usuarios (nome, email, senha, empresa_id, status_assinatura) 
-                VALUES (?, ?, ?, ?, ?)
-            """, (nome, email, senha_hash, empresa_id, "ativo"))
+            cursor.execute("INSERT INTO usuarios (nome, email, senha, empresa_id, status_assinatura) VALUES (?, ?, ?, ?, ?)", (nome, email, senha_hash, empresa_id, "ativo"))
+
+            usuario_id = cursor.lastrowid
+
+            cursor.execute("UPDATE usuarios SET whatsapp_sessao = ? WHERE id = ?", (f"corretor_{usuario_id}", usuario_id))
+         
 
             conn.commit()
             print(f"DEBUG: Usuário {email} cadastrado na empresa {nome_empresa} (ID: {empresa_id})")
@@ -1145,6 +1147,37 @@ def cadastrar_usuario():
         return redirect("/login")
 
     return render_template("cadastrar_usuario.html")
+
+
+
+@app.route("/whatsapp")
+def whatsapp():
+
+    if "usuario_id" not in session:
+        return redirect("/login")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT whatsapp_sessao,
+               whatsapp_status,
+               whatsapp_numero
+        FROM usuarios
+        WHERE id = ?
+    """, (session["usuario_id"],))
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "whatsapp.html",
+        sessao=usuario["whatsapp_sessao"],
+        status=usuario["whatsapp_status"],
+        numero=usuario["whatsapp_numero"]
+    )
 
 
 @app.route("/logout")
