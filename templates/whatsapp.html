@@ -21,4 +21,38 @@ async function conectarWhatsapp() {
         "Sessão iniciada: " + dados.sessao;
 
 }
+    <script>
+async function carregarQR() {
+
+    const resp = await fetch('/qr/teste'); // ou /qr/{{sessao}}
+    const dados = await resp.json();
+
+    console.log(dados);
+
+    let qr =
+        dados.qrcode ||
+        dados.qrCode ||
+        dados.qr ||
+        dados.base64;
+
+    if (!qr) {
+        document.getElementById("msg").innerText =
+            "Aguardando QR Code...";
+
+        setTimeout(carregarQR, 2000); // 🔁 tenta de novo
+        return;
+    }
+
+    if (!qr.startsWith("data:image")) {
+        qr = "data:image/png;base64," + qr;
+    }
+
+    document.getElementById("qr").src = qr;
+    document.getElementById("qr").style.display = "block";
+
+    document.getElementById("msg").innerText =
+        "Escaneie o QR Code no WhatsApp";
+
+}
+</script>
 </script>
