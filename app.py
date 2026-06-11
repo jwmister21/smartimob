@@ -283,6 +283,21 @@ def foto_imovel(filename):
     )
 
 
+@app.route("/editar_cliente/<int:id>", methods=["GET"])
+def pagina_editar(id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # Busca o cliente específico pelo ID
+    cursor.execute("SELECT * FROM clientes WHERE id = ?", (id,))
+    cliente = cursor.fetchone()
+    conn.close()
+    
+    # Retorna o template do formulário com os dados do cliente
+    return render_template("perfil_cliente.html", cliente=cliente)
+
+
 @app.route("/admin/gestao")
 @verificar_sessao
 @admin_required
@@ -389,6 +404,27 @@ def super_dashboard():
     """).fetchall()
     return render_template("super_admin.html", empresas=empresas)
 
+
+@app.route("/atualizar_cliente/<int:id>", methods=["POST"])
+def atualizar_cliente(id):
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    email = request.form.get("email")
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Atualiza o registro no banco
+    cursor.execute("""
+        UPDATE clientes 
+        SET nome = ?, telefone = ?, email = ? 
+        WHERE id = ?
+    """, (nome, telefone, email, id))
+    
+    conn.commit()
+    conn.close()
+    
+    return "Cliente atualizado com sucesso! <a href='/'>Voltar</a>"
 
 
 @app.route('/analisar_cliente', methods=['POST'])
