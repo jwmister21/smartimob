@@ -4,4 +4,21 @@
 <p>Status: {{ status }}</p>
 <p>Número: {{ numero }}</p>
 
-<button>Conectar WhatsApp</button>
+<button onclick="conectarWhatsapp()">
+    Conectar WhatsApp
+</button>
+
+<div id="resultado"></div>
+
+<script>
+async function conectarWhatsapp() {
+
+    const resp = await fetch('/conectar_whatsapp');
+
+    const dados = await resp.json();
+
+    document.getElementById("resultado").innerHTML =
+        "Sessão iniciada: " + dados.sessao;
+
+}
+</script>
