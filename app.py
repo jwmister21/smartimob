@@ -1500,6 +1500,9 @@ def cadastrar_cliente():
         interesse = request.form["interesse"]
         faixa_preco = request.form["faixa_preco"]
         bairro = request.form.get("bairro", "")
+        sobre = request.form.get("sobre", "")
+        entrada = request.form.get("entrada", "")
+        pagamento = request.form.get("pagamento", "")
 
         # Recuperamos os IDs da sessão garantida pelo @verificar_sessao
         user_id = session["usuario_id"]
@@ -1510,9 +1513,9 @@ def cadastrar_cliente():
 
         # Inserimos os dados incluindo o campo empresa_id
         cursor.execute("""
-            INSERT INTO clientes (nome, telefone, email, interesse, faixa_preco, bairro, usuario_id, empresa_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (nome, telefone, email, interesse, faixa_preco, bairro, user_id, empresa_id))
+            INSERT INTO clientes (nome, telefone, email, interesse, faixa_preco, bairro, sobre, entrada, pagamento, usuario_id, empresa_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (nome, telefone, email, interesse, faixa_preco, bairro, sobre, entrada, pagamento, user_id, empresa_id))
 
         conn.commit()
         conn.close()
