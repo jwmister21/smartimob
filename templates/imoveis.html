@@ -319,5 +319,56 @@ function mudarFoto(carouselId, direcao) {
         console.error('Erro ao copiar: ', err);
     });
 }
+
+    async function compartilharImovel(titulo, valor, link) {
+        const texto = `Confira este imóvel: ${titulo}\nValor: R$ ${valor}\nVeja mais: ${link}`;
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Imóvel para você',
+                    text: texto,
+                    url: link
+                });
+            } catch (err) {
+                console.log('Erro ao compartilhar:', err);
+            }
+        } else {
+            navigator.clipboard.writeText(texto);
+            alert('Informações copiadas! Agora basta colar no WhatsApp.');
+        }
+    }
+    async function compartilharImovel(titulo, valor, link, urlFoto) {
+    const texto = `Confira este imóvel: ${titulo}\nValor: R$ ${valor}\nVeja mais: ${link}`;
+    
+    let arquivos = [];
+
+    // Tenta baixar a foto para transformar em arquivo (Blob)
+    try {
+        const response = await fetch(urlFoto);
+        const blob = await response.blob();
+        // Cria o arquivo que o sistema entende
+        arquivos = [new File([blob], 'imovel.jpg', { type: 'image/jpeg' })];
+    } catch (err) {
+        console.log("Não foi possível carregar a foto para compartilhamento", err);
+    }
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Imóvel para você',
+                text: texto,
+                url: link,
+                files: arquivos // Aqui a foto é incluída
+            });
+        } catch (err) {
+            console.log('Erro ao compartilhar:', err);
+        }
+    } else {
+        // Se não suportar share, copia o texto
+        navigator.clipboard.writeText(texto);
+        alert('Informações copiadas! Agora basta colar no WhatsApp.');
+    }
+}
 </script>
 {% endblock %}
