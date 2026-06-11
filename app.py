@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import secrets
+import requests
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.utils import secure_filename
@@ -17,6 +18,7 @@ import google.generativeai as genai
 import json
 from openai import OpenAI
 from flask import send_from_directory
+
 
 
 
