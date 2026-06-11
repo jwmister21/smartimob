@@ -104,6 +104,42 @@
             </div>
 
             <div class="campo-box">
+    <label>Rua</label>
+    <input type="text" name="rua" value="{{ imovel['rua'] or '' }}">
+</div>
+
+<div class="campo-box">
+    <label>IPTU</label>
+    <input type="text" name="iptu" value="{{ imovel['iptu'] or '' }}">
+</div>
+
+<div class="campo-box">
+    <label>Vagas de Garagem</label>
+    <input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}">
+</div>
+
+<div class="campo-box">
+    <label>Área de Lazer</label>
+    <input type="text" name="lazer" value="{{ imovel['lazer'] or '' }}" placeholder="Piscina, Churrasqueira, Academia...">
+</div>
+
+<div class="campo-box">
+    <label>Lavabo</label>
+    <select name="lavabo">
+        <option value="0" {% if not imovel['lavabo'] %}selected{% endif %}>Não</option>
+        <option value="1" {% if imovel['lavabo'] %}selected{% endif %}>Sim</option>
+    </select>
+</div>
+
+<div class="campo-box">
+    <label>Sacada</label>
+    <select name="sacada">
+        <option value="0" {% if not imovel['sacada'] %}selected{% endif %}>Não</option>
+        <option value="1" {% if imovel['sacada'] %}selected{% endif %}>Sim</option>
+    </select>
+</div>
+
+            <div class="campo-box">
                 <label>Status</label>
                 <select name="status">
                     <option value="Venda" {% if imovel['status'] == 'Venda' %}selected{% endif %}>Venda</option>
