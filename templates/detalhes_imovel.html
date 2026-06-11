@@ -49,12 +49,56 @@
 
 <div class="grid-info">
     <div class="item">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
-    <div class="item">🛣 Rua: {{ imovel.rua or 'Não especificada' }}</div> <div class="item">🏠 {{ imovel.tipo }}</div>
+    <div class="item">🛣 Rua: {{ imovel.rua or 'Não especificada' }}</div>
+
+    <div class="item">🏠 {{ imovel.tipo }}</div>
     <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
     <div class="item">🚿 {{ imovel.banheiros }} Banheiros</div>
+
     <div class="item">📐 {{ imovel.area }} m²</div>
-    <div class="item">💰 IPTU: R$ {{ imovel.iptu or '0.00' }}</div>    <div class="item">📄 Status: {{ imovel.status }}</div>
-    <div class="item">🏢 Condomínio: R$ {{ imovel['condominio'] or 0.00 }}</div>  <div class="item">📄 Cep: {{ imovel.cep }}</div>
+
+    <div class="item">💰 IPTU: R$ {{ imovel.iptu or '0.00' }}</div>
+    <div class="item">🏢 Condomínio: R$ {{ imovel.condominio or '0.00' }}</div>
+
+    <div class="item">📄 Status: {{ imovel.status }}</div>
+    <div class="item">📮 CEP: {{ imovel.cep or 'Não informado' }}</div>
+
+    <div class="item">🚗 Vagas: {{ imovel.vaga_garagem or 0 }}</div>
+
+    <div class="item">
+        🚻 Lavabo:
+        {% if imovel.lavabo %}
+            Sim
+        {% else %}
+            Não
+        {% endif %}
+    </div>
+
+    <div class="item">
+        🌴 Área de Lazer:
+        {% if imovel.lazer %}
+            {{ imovel.lazer }}
+        {% else %}
+            Não informado
+        {% endif %}
+    </div>
+
+    <div class="item">
+        🌅 Sacada:
+        {% if imovel.sacada %}
+            Sim
+        {% else %}
+            Não
+        {% endif %}
+    </div>
+
+    {% if imovel.link %}
+    <div class="item">
+        🔗 <a href="{{ imovel.link }}" target="_blank" style="color:#38bdf8;">
+            Ver Pasta do Imóvel
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 <h3>Descrição</h3>
