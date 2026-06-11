@@ -576,6 +576,39 @@ Se algum campo não for informado:
 
 
 
+@app.route("/conectar_whatsapp")
+def conectar_whatsapp():
+
+    usuario_id = session["usuario_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT whatsapp_sessao FROM usuarios WHERE id = ?",
+        (usuario_id,)
+    )
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/criar-sessao",
+        json={
+            "sessao": usuario["whatsapp_sessao"]
+        }
+    )
+
+    return {
+        "ok": True,
+        "sessao": usuario["whatsapp_sessao"]
+    }
+
+    return {"ok": True}
+
+
 
 @app.route('/data/uploads/imoveis/<filename>')
 def servir_video_do_volume(filename):
