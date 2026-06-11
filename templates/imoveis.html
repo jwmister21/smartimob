@@ -376,5 +376,16 @@ function mudarFoto(carouselId, direcao) {
         alert('Informações copiadas! Agora basta colar no WhatsApp.');
     }
 }
+
+    function abrirWhatsApp(titulo, valor, bairro, link) {
+    // Monta o texto limpo
+    const texto = `Confira este imóvel: ${titulo}\nValor: R$ ${valor}\nBairro: ${bairro}\nVeja mais: ${link}`;
+    
+    // Cria a URL de forma segura
+    const url = "https://wa.me/?text=" + encodeURIComponent(texto);
+    
+    // Abre o link
+    window.open(url, '_blank');
+}
 </script>
 {% endblock %}
