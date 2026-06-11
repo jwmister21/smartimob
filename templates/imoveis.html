@@ -281,6 +281,11 @@ Imóveis
         Copiar Drive
     </button>
     </div>
+<button class="btn-share" 
+        onclick="compartilharImovel('{{ imovel.titulo }}', '{{ imovel.valor }}', '{{ imovel.bairro }}', '{{ imovel.link }}')">
+    Compartilhar 📤
+</button>
+    
 
 </div>
 {% endfor %}
