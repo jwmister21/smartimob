@@ -8,8 +8,25 @@
     Conectar WhatsApp
 </button>
 
-<div id="resultado"></div>
+<p id="msg"></p>
 
+<img id="qr" style="width:260px; display:none; margin-top:20px;" />
+
+<script>
+async function conectarWhatsapp() {
+
+    document.getElementById("msg").innerText = "Iniciando sessão...";
+
+    const resp = await fetch('/conectar_whatsapp');
+    const dados = await resp.json();
+
+    document.getElementById("msg").innerText =
+        "Sessão: " + dados.sessao;
+
+    // 👇 agora começa a buscar o QR
+    carregarQR();
+}
+</script>
 <script>
 async function conectarWhatsapp() {
 
