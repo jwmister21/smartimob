@@ -1353,6 +1353,35 @@ def login():
     # Se o método for GET, apenas mostra o HTML
     return render_template("login.html")
 
+
+
+@app.route("/buscar_qr")
+@verificar_sessao
+def buscar_qr():
+
+    usuario_id = session["usuario_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT whatsapp_sessao
+        FROM usuarios
+        WHERE id=?
+    """, (usuario_id,))
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    r = requests.get(
+        f"https://zoom-leggings-viability.ngrok-free.dev/qr/{usuario['whatsapp_sessao']}"
+    )
+
+    return r.json()
+
 @app.route("/cadastrar_usuario", methods=["GET", "POST"])
 def cadastrar_usuario():
     if request.method == "POST":
