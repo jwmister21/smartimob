@@ -298,6 +298,15 @@ def enviar_imovel(imovel_id, telefone):
     )
 
     imovel = cursor.fetchone()
+    cursor.execute("""
+        SELECT nome_arquivo
+        FROM fotos_imoveis
+        WHERE imovel_id = ?
+        LIMIT 1
+        """, (imovel_id,))
+
+    foto = cursor.fetchone()
+ 
 
     conn.close()
 
@@ -310,7 +319,7 @@ def enviar_imovel(imovel_id, telefone):
     imagem = (
         request.host_url.rstrip("/")
         + "/uploads/imoveis/"
-        + imovel["foto"]
+        + foto["nome_arquivo"]
     )
 
     print("URL IMAGEM:", imagem)
