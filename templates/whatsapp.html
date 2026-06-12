@@ -10,65 +10,51 @@
 
 <p id="msg"></p>
 
-<img id="qr" style="width:260px; display:none; margin-top:20px;" />
+<img id="qr"
+     style="width:260px;display:none;margin-top:20px;">
 
 <script>
+
 async function conectarWhatsapp() {
 
-    document.getElementById("msg").innerText = "Iniciando sessão...";
+    document.getElementById("msg").innerText =
+        "Iniciando sessão...";
 
     const resp = await fetch('/conectar_whatsapp');
+
     const dados = await resp.json();
 
     document.getElementById("msg").innerText =
         "Sessão: " + dados.sessao;
 
-    // 👇 agora começa a buscar o QR
     carregarQR();
-}
-</script>
-<script>
-async function conectarWhatsapp() {
-
-    const resp = await fetch('/conectar_whatsapp');
-
-    const dados = await resp.json();
-
-    document.getElementById("resultado").innerHTML =
-        "Sessão iniciada: " + dados.sessao;
-
 }
 
 async function carregarQR() {
 
-    const resp = await fetch('/qr/teste'); // ou /qr/{{sessao}}
+    const resp = await fetch(
+        'https://zoom-leggings-viability.ngrok-free.dev/qr/{{ sessao }}'
+    );
+
     const dados = await resp.json();
 
     console.log(dados);
 
-    let qr =
-        dados.qrcode ||
-        dados.qrCode ||
-        dados.qr ||
-        dados.base64;
+    if (!dados.sucesso) {
 
-    if (!qr) {
         document.getElementById("msg").innerText =
             "Aguardando QR Code...";
 
-        setTimeout(carregarQR, 2000); // 🔁 tenta de novo
+        setTimeout(carregarQR, 2000);
+
         return;
     }
 
-    if (!qr.startsWith("data:image")) {
-        qr = "data:image/png;base64," + qr;
-    }
-
-    document.getElementById("qr").src = qr;
+    document.getElementById("qr").src = dados.qrcode;
     document.getElementById("qr").style.display = "block";
 
     document.getElementById("msg").innerText =
-        "Escaneie o QR Code no WhatsApp";
+        "Escaneie o QR Code";
 
 }
 
