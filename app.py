@@ -617,6 +617,8 @@ Se algum campo não for informado:
 @app.route("/conectar_whatsapp")
 def conectar_whatsapp():
 
+    import requests
+
     usuario_id = session["usuario_id"]
 
     conn = sqlite3.connect(DB_PATH)
@@ -632,14 +634,19 @@ def conectar_whatsapp():
 
     conn.close()
 
-    print("SESSAO:", usuario["whatsapp_sessao"])
+    r = requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/criar-sessao",
+        json={
+            "sessao": usuario["whatsapp_sessao"]
+        }
+    )
+
+    print("RESPOSTA NODE:", r.text)
 
     return {
         "ok": True,
         "sessao": usuario["whatsapp_sessao"]
     }
-
-
 
 @app.route('/data/uploads/imoveis/<filename>')
 def servir_video_do_volume(filename):
