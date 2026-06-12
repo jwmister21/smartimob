@@ -799,6 +799,33 @@ def alterar_senha_usuario(id):
     return redirect("/admin/usuarios")
 
 
+@app.route("/status_whatsapp")
+@verificar_sessao
+def status_whatsapp():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            whatsapp_status,
+            whatsapp_numero
+        FROM usuarios
+        WHERE id = ?
+    """, (session["usuario_id"],))
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    return {
+        "status": usuario["whatsapp_status"],
+        "numero": usuario["whatsapp_numero"]
+    }
+
+
 @app.route("/superadmin/usuario/editar/<int:user_id>", methods=["POST"])
 @super_admin_required
 def editar_usuario(user_id):
