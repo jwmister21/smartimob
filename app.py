@@ -632,19 +632,12 @@ def conectar_whatsapp():
 
     conn.close()
 
-    requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/criar-sessao",
-        json={
-            "sessao": usuario["whatsapp_sessao"]
-        }
-    )
+    print("SESSAO:", usuario["whatsapp_sessao"])
 
     return {
         "ok": True,
         "sessao": usuario["whatsapp_sessao"]
     }
-
-    return {"ok": True}
 
 
 
