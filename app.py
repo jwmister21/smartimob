@@ -301,7 +301,7 @@ def enviar_imovel(imovel_id, telefone):
 
     conn.close()
 
-    print("FOTO:", imovel["foto"])
+ 
 
 imagem = (
     request.host_url.rstrip("/")
@@ -309,7 +309,7 @@ imagem = (
     + imovel["foto"]
 )
 
-print("URL IMAGEM:", imagem)
+
 
     legenda = f"""
 🏡 {imovel['titulo']}
