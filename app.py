@@ -754,6 +754,21 @@ def admin_usuarios():
     )
 
 
+@app.route("/teste_envio")
+def teste_envio():
+
+    requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/enviar",
+        json={
+            "sessao": "corretor_1",
+            "numero": "5511920900085@c.us",
+            "mensagem": "🚀 Teste SMARTZEN IMOB"
+        }
+    )
+
+    return "Mensagem enviada"
+
+
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
 @super_admin_required
 def gerenciar_usuarios_empresa(empresa_id):
