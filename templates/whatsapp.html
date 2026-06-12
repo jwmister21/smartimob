@@ -123,6 +123,9 @@
 
 </div>
 <script>
+    if (dados.status !== "conectado") {
+    carregarQR();
+}
 
 setInterval(verificarStatus, 3000);
 
@@ -178,32 +181,40 @@ async function conectarWhatsapp() {
 
 async function carregarQR() {
 
-    const resp =
-        await fetch("/buscar_qr")
+    try {
+        const resp = await fetch("/buscar_qr");
+        const dados = await resp.json();
 
-    const dados = await resp.json();
+        console.log("QR response:", dados);
 
-    console.log(dados);
+        // ainda não pronto
+        if (!dados.sucesso || !dados.qrcode) {
+            setTimeout(carregarQR, 2000);
+            return;
+        }
 
-    if (!dados.sucesso) {
+        const img = document.getElementById("qr");
 
-        setTimeout(
-            carregarQR,
-            2000
-        );
+        if (!img) {
+            console.log("Elemento QR não encontrado");
+            return;
+        }
 
-        return;
+        // 🔥 CORREÇÃO IMPORTANTE AQUI
+        let qrFinal = dados.qrcode;
+
+        if (!qrFinal.startsWith("data:image")) {
+            qrFinal = "data:image/png;base64," + qrFinal;
+        }
+
+        img.src = qrFinal;
+        img.style.display = "block";
+
+    } catch (err) {
+        console.error("Erro ao carregar QR:", err);
+        setTimeout(carregarQR, 3000);
     }
-
-    document.getElementById("qr").src =
-        dados.qrcode;
-
-    document.getElementById("qr").style.display =
-        "block";
-
 }
-
-
 
 </script>
 
