@@ -156,6 +156,58 @@ async function verificarStatus(){
     }
 }
 
+
+ 
+
+const SESSAO = "{{ sessao }}";
+
+async function conectarWhatsapp() {
+
+    document.getElementById("status").innerText =
+        "Gerando QR Code...";
+
+    const resp = await fetch("/conectar_whatsapp");
+
+    const dados = await resp.json();
+
+    console.log(dados);
+
+    carregarQR();
+
+}
+
+async function carregarQR() {
+
+    const resp =
+        await fetch(
+            "https://zoom-leggings-viability.ngrok-free.dev/qr/" +
+            SESSAO
+        );
+
+    const dados = await resp.json();
+
+    console.log(dados);
+
+    if (!dados.sucesso) {
+
+        setTimeout(
+            carregarQR,
+            2000
+        );
+
+        return;
+    }
+
+    document.getElementById("qr").src =
+        dados.qrcode;
+
+    document.getElementById("qr").style.display =
+        "block";
+
+}
+
+
+
 </script>
 
 {% endblock %}
