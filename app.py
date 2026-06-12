@@ -301,15 +301,19 @@ def enviar_imovel(imovel_id, telefone):
 
     conn.close()
 
- 
+    if not imovel:
+        return "Imóvel não encontrado"
 
-imagem = (
-    request.host_url.rstrip("/")
-    + "/uploads/imoveis/"
-    + imovel["foto"]
-)
+    if not imovel["foto"]:
+        return "Imóvel sem foto"
 
+    imagem = (
+        request.host_url.rstrip("/")
+        + "/uploads/imoveis/"
+        + imovel["foto"]
+    )
 
+    print("URL IMAGEM:", imagem)
 
     legenda = f"""
 🏡 {imovel['titulo']}
@@ -339,6 +343,7 @@ imagem = (
         }
     )
 
+    return r.text
     return r.text
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
