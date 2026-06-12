@@ -2101,6 +2101,39 @@ def atualizar_status_cliente(id):
 
     return redirect(f"/cliente/{id}")
 
+
+@app.route("/desconectar_whatsapp")
+@verificar_sessao
+def desconectar_whatsapp():
+
+    import requests
+    import sqlite3
+
+    sessao = f"corretor_{session['usuario_id']}"
+
+    requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/desconectar",
+        json={
+            "sessao": sessao
+        }
+    )
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET whatsapp_status='desconectado',
+            whatsapp_numero=NULL
+        WHERE id=?
+    """, (session["usuario_id"],))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/whatsapp")
+
+
 @app.route("/cliente/atualizar_dados/<int:id>", methods=["POST"])
 @verificar_sessao
 def atualizar_dados_cliente(id):
