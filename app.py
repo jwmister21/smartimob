@@ -298,6 +298,32 @@ def pagina_editar(id):
     return render_template("perfil_cliente.html", cliente=cliente)
 
 
+
+
+@app.route("/buscar_qr")
+def buscar_qr():
+
+    usuario_id = session["usuario_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT whatsapp_sessao FROM usuarios WHERE id=?",
+        (usuario_id,)
+    )
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    r = requests.get(
+        f"https://zoom-leggings-viability.ngrok-free.dev/qr/{usuario['whatsapp_sessao']}"
+    )
+
+    return r.json()
+
 @app.route("/admin/gestao")
 @verificar_sessao
 @admin_required
