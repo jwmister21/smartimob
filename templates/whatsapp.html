@@ -32,10 +32,7 @@ async function conectarWhatsapp() {
 
 async function carregarQR() {
 
-    const resp = await fetch(
-        'https://zoom-leggings-viability.ngrok-free.dev/qr/{{ sessao }}'
-    );
-
+    const resp = await fetch('/buscar_qr')
     const dados = await resp.json();
 
     console.log(dados);
