@@ -866,6 +866,30 @@ def admin_usuarios():
     )
 
 
+
+@app.route("/atualizar_status_whatsapp", methods=["POST"])
+def atualizar_status_whatsapp():
+
+    dados = request.get_json()
+
+    sessao = dados.get("sessao")
+    status = dados.get("status")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET whatsapp_status = ?
+        WHERE whatsapp_sessao = ?
+    """, (status, sessao))
+
+    conn.commit()
+    conn.close()
+
+    return {"sucesso": True}
+
+
 @app.route("/teste_envio")
 def teste_envio():
 
