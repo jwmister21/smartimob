@@ -301,11 +301,15 @@ def enviar_imovel(imovel_id, telefone):
 
     conn.close()
 
-    imagem = (
-        request.host_url.rstrip("/")
-        + "/uploads/imoveis/"
-        + imovel["foto"]
-    )
+    print("FOTO:", imovel["foto"])
+
+imagem = (
+    request.host_url.rstrip("/")
+    + "/uploads/imoveis/"
+    + imovel["foto"]
+)
+
+print("URL IMAGEM:", imagem)
 
     legenda = f"""
 🏡 {imovel['titulo']}
