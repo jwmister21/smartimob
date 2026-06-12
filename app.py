@@ -288,33 +288,39 @@ def foto_imovel(filename):
 @verificar_sessao
 def enviar_imovel(imovel_id, telefone):
 
+    import requests
+    import sqlite3
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # Busca o imóvel
     cursor.execute(
-        "SELECT * FROM imoveis WHERE id=?",
+        "SELECT * FROM imoveis WHERE id = ?",
         (imovel_id,)
     )
 
     imovel = cursor.fetchone()
+
+    if not imovel:
+        conn.close()
+        return "Imóvel não encontrado"
+
+    # Busca a primeira foto do imóvel
     cursor.execute("""
         SELECT nome_arquivo
         FROM fotos_imoveis
         WHERE imovel_id = ?
         LIMIT 1
-        """, (imovel_id,))
+    """, (imovel_id,))
 
     foto = cursor.fetchone()
- 
 
     conn.close()
 
-    if not imovel:
-        return "Imóvel não encontrado"
-
-    if not imovel["foto"]:
-        return "Imóvel sem foto"
+    if not foto:
+        return "Imóvel sem fotos cadastradas"
 
     imagem = (
         request.host_url.rstrip("/")
@@ -322,6 +328,7 @@ def enviar_imovel(imovel_id, telefone):
         + foto["nome_arquivo"]
     )
 
+    print("FOTO:", foto["nome_arquivo"])
     print("URL IMAGEM:", imagem)
 
     legenda = f"""
@@ -342,17 +349,23 @@ def enviar_imovel(imovel_id, telefone):
 🔗 {imovel['link'] or ''}
 """
 
+    numero = telefone.replace(" ", "").replace("-", "")
+
+    if "@c.us" not in numero:
+        numero += "@c.us"
+
     r = requests.post(
         "https://zoom-leggings-viability.ngrok-free.dev/enviar-imagem",
         json={
             "sessao": f"corretor_{session['usuario_id']}",
-            "numero": telefone + "@c.us",
+            "numero": numero,
             "imagem": imagem,
             "legenda": legenda
         }
     )
 
-    return r.text
+    print("RESPOSTA NODE:", r.text)
+
     return r.text
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
