@@ -1,58 +1,72 @@
-<h1>WhatsApp do Corretor</h1>
+<div class="card-whatsapp">
 
-<p>Sessão: {{ sessao }}</p>
-<p>Status: {{ status }}</p>
-<p>Número: {{ numero }}</p>
+    <h2>
+        <i class="bi bi-whatsapp"></i>
+        WhatsApp do Corretor
+    </h2>
 
-<button onclick="conectarWhatsapp()">
-    Conectar WhatsApp
-</button>
+    <div class="status-box">
 
-<p id="msg"></p>
+        <p>
+            <strong>Sessão:</strong>
+            {{ sessao }}
+        </p>
 
-<img id="qr"
-     style="width:260px;display:none;margin-top:20px;">
+        <p>
+            <strong>Status:</strong>
+            <span id="status">
+                {{ status }}
+            </span>
+        </p>
 
-<script>
+        <p>
+            <strong>Número:</strong>
+            {{ numero or "Não conectado" }}
+        </p>
 
-async function conectarWhatsapp() {
+    </div>
 
-    document.getElementById("msg").innerText =
-        "Iniciando sessão...";
+    <button
+        class="btn-whatsapp"
+        onclick="conectarWhatsapp()">
+        Conectar WhatsApp
+    </button>
 
-    const resp = await fetch('/conectar_whatsapp');
+    <div id="areaQr">
 
-    const dados = await resp.json();
+        <img
+            id="qr"
+            style="display:none; width:280px; margin-top:20px;"
+        >
 
-    document.getElementById("msg").innerText =
-        "Sessão: " + dados.sessao;
+    </div>
 
-    carregarQR();
+</div>
+<style>
+
+.card-whatsapp{
+    background:#111827;
+    border:1px solid #374151;
+    border-radius:16px;
+    padding:25px;
+    max-width:700px;
 }
 
-async function carregarQR() {
-
-    const resp = await fetch('/buscar_qr')
-    const dados = await resp.json();
-
-    console.log(dados);
-
-    if (!dados.sucesso) {
-
-        document.getElementById("msg").innerText =
-            "Aguardando QR Code...";
-
-        setTimeout(carregarQR, 2000);
-
-        return;
-    }
-
-    document.getElementById("qr").src = dados.qrcode;
-    document.getElementById("qr").style.display = "block";
-
-    document.getElementById("msg").innerText =
-        "Escaneie o QR Code";
-
+.status-box{
+    background:#1f2937;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:20px;
 }
 
-</script>
+.btn-whatsapp{
+    background:#25D366;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+</style>
