@@ -283,6 +283,60 @@ def foto_imovel(filename):
     )
 
 
+
+@app.route("/enviar_imovel/<int:imovel_id>/<telefone>")
+@verificar_sessao
+def enviar_imovel(imovel_id, telefone):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM imoveis WHERE id=?",
+        (imovel_id,)
+    )
+
+    imovel = cursor.fetchone()
+
+    conn.close()
+
+    imagem = (
+        request.host_url.rstrip("/")
+        + "/uploads/imoveis/"
+        + imovel["foto"]
+    )
+
+    legenda = f"""
+🏡 {imovel['titulo']}
+
+💰 Valor: {imovel['valor']}
+
+📍 {imovel['bairro']} - {imovel['cidade']}
+
+🛏 {imovel['quartos']} quartos
+🚿 {imovel['banheiros']} banheiros
+🚗 {imovel['vaga_garagem']} vagas
+
+📐 Área: {imovel['area']}
+
+{imovel['descricao'] or ''}
+
+🔗 {imovel['link'] or ''}
+"""
+
+    r = requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/enviar-imagem",
+        json={
+            "sessao": f"corretor_{session['usuario_id']}",
+            "numero": telefone + "@c.us",
+            "imagem": imagem,
+            "legenda": legenda
+        }
+    )
+
+    return r.text
+
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
 def pagina_editar(id):
     conn = sqlite3.connect(DB_PATH)
