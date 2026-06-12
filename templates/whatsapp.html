@@ -51,6 +51,25 @@
     font-weight:600;
 }
 
+    
+
+.btn-desconectar{
+    display:inline-block;
+    margin-top:15px;
+    background:#dc2626;
+    color:white;
+    text-decoration:none;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:600;
+}
+
+.btn-desconectar:hover{
+    background:#b91c1c;
+}
+
+
+
 </style>
 
 <div class="whatsapp-card">
@@ -85,7 +104,14 @@
         onclick="conectarWhatsapp()">
         Conectar WhatsApp
     </button>
+{% if status == "conectado" %}
 
+<a href="/desconectar_whatsapp"
+   class="btn-desconectar">
+   🔴 Desconectar WhatsApp
+</a>
+
+{% endif %}
     <div id="areaQr">
 
         <img
