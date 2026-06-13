@@ -1515,7 +1515,7 @@ def admin():
         total_clientes = cursor.execute("SELECT COUNT(*) FROM clientes").fetchone()[0]
         
         # Lista de todos os usuários do sistema
-        corretores = cursor.execute("SELECT id, nome, email, empresa_id, status_assinatura, validade_assinatura, is_admin FROM usuarios").fetchall()
+        corretores = cursor.execute("SELECT id, nome, email, empresa_id, status_assinatura, validade_assinatura, is_admin FROM usuaris").fetchall()
         
         conn.close()
         return render_template("admin.html", 
