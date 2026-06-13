@@ -281,19 +281,16 @@ Imóveis
         Copiar Drive
     </button>
     </div>
-<a href="https://wa.me/?text={{ (
-    'Confira este imóvel: ' + imovel.titulo + 
-    '%0AValor: R$ ' + imovel.valor|string + 
-    '%0ABairro: ' + imovel.bairro + 
-    '%0ALink: ' + request.base_url + '/imovel/' + imovel.id|string
-) | urlencode }}" 
-   target="_blank" 
-   class="btn-whatsapp-universal">
-   Compartilhar no WhatsApp 💬
-</a>
-    
+
 
 </div>
+    <div><button
+    class="btn-whatsapp"
+    onclick="abrirModalEnviar('{{ imovel.id }}')">
+
+    📲 Enviar Imóvel
+
+</button></div>
 {% endfor %}
 </div>
 
