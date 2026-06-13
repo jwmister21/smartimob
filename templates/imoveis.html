@@ -318,23 +318,31 @@ Imóveis
 </a>
 
     <div class="acoes">
-        <a href="/editar_imovel/{{ imovel.id }}" class="btn-editar">✏ Editar</a>
-        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-excluir" onclick="return confirm('Deseja excluir?')">🗑 Excluir</a>
-        <button class="btn-drive" 
-            onclick="copiarLink('{{ imovel['link'] }}')" 
-            style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-        Copiar Drive
+
+    <a href="/editar_imovel/{{ imovel.id }}" class="btn-editar">
+        ✏️ Editar
+    </a>
+
+    <a href="/excluir_imovel/{{ imovel.id }}"
+       class="btn-excluir"
+       onclick="return confirm('Deseja excluir?')">
+        🗑 Excluir
+    </a>
+
+    <button class="btn-drive"
+            onclick="copiarLink('{{ imovel.link }}')">
+        🔗 Drive
     </button>
-          <div><button
-    class="btn-whatsapp"
-    onclick="abrirModalEnviar('{{ imovel.id }}')">
 
-    📲 Enviar Imóvel
-
-    </button></div>
-
+    <button class="btn-whatsapp"
+            onclick="abrirModalEnviar('{{ imovel.id }}')">
+        📲 WhatsApp
+    </button>
 
 </div>
+
+</div>
+{% endfor %}
     
 {% endfor %}
 </div>
