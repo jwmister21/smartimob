@@ -358,6 +358,45 @@ Imóveis
     }
 }
 
+
+   .loading-whatsapp{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.8);
+    z-index:999999;
+    justify-content:center;
+    align-items:center;
+}
+
+.loading-box{
+    background:#111827;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    color:white;
+    min-width:280px;
+}
+
+.spinner{
+    width:50px;
+    height:50px;
+    border:4px solid #374151;
+    border-top:4px solid #22c55e;
+    border-radius:50%;
+    margin:0 auto 20px;
+    animation:girar 1s linear infinite;
+}
+
+@keyframes girar{
+    from{
+        transform:rotate(0deg);
+    }
+    to{
+        transform:rotate(360deg);
+    }
+}
+
 </style>
 
 <!-- FILTRO -->
@@ -510,6 +549,21 @@ Imóveis
     </div>
 
 </div>
+
+<div id="loadingWhatsapp" class="loading-whatsapp">
+
+    <div class="loading-box">
+
+        <div class="spinner"></div>
+
+        <h3>Enviando imóvel...</h3>
+
+        <p>Aguarde alguns segundos</p>
+
+    </div>
+
+</div>
+
 <script>
 
 function abrirModalEnviar(imovelId){
@@ -533,21 +587,20 @@ function fecharModalWhatsapp(){
 async function enviarImovelWhatsapp(){
 
     const telefone =
-        document.getElementById(
-            "telefoneDestino"
-        ).value;
+        document.getElementById("telefoneDestino").value;
 
     const imovelId =
-        document.getElementById(
-            "imovelSelecionado"
-        ).value;
+        document.getElementById("imovelSelecionado").value;
 
     if(!telefone){
 
         alert("Digite o telefone");
-
         return;
     }
+
+    document.getElementById(
+        "loadingWhatsapp"
+    ).style.display = "flex";
 
     try{
 
@@ -557,9 +610,11 @@ async function enviarImovelWhatsapp(){
 
         const dados = await resp.json();
 
-        if(dados.sucesso){
+        document.getElementById(
+            "loadingWhatsapp"
+        ).style.display = "none";
 
-            alert("✅ Imóvel enviado com sucesso!");
+        if(dados.sucesso){
 
             fecharModalWhatsapp();
 
@@ -567,19 +622,22 @@ async function enviarImovelWhatsapp(){
                 "telefoneDestino"
             ).value = "";
 
+            alert("✅ Imóvel enviado com sucesso!");
+
         }else{
 
-            alert(
-                "❌ Erro ao enviar: " +
-                (dados.erro || "")
-            );
+            alert("❌ Erro ao enviar imóvel");
         }
 
     }catch(err){
 
-        console.log(err);
+        document.getElementById(
+            "loadingWhatsapp"
+        ).style.display = "none";
 
-        alert("❌ Falha ao enviar imóvel");
+        alert("❌ Erro ao enviar");
+
+        console.log(err);
     }
 }
 
