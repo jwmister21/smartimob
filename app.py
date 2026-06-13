@@ -366,9 +366,9 @@ def enviar_imovel(imovel_id, telefone):
 
     print("RESPOSTA NODE:", r.text)
 
-     resultado = r.json()
+    resultado = r.json()
 
-     return jsonify(resultado)
+    return jsonify(resultado)
 
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
