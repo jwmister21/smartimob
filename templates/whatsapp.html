@@ -128,91 +128,56 @@
 </div>
 <script>
     
-  let conectado = false;
 let carregandoQR = false;
-
-window.onload = () => {
-    verificarStatus();
-    setInterval(verificarStatus, 3000);
-};
-
-async function verificarStatus(){
-
-    const resp = await fetch('/status_whatsapp');
-    const dados = await resp.json();
-
-    if(dados.status === "conectado"){
-
-        conectado = true;
-
-        document.getElementById("status").innerText = "Conectado";
-        document.getElementById("numero").innerText = dados.numero;
-
-        document.getElementById("btnConectar").style.display = "none";
-        document.getElementById("qr").style.display = "none";
-
-        document.getElementById("areaQr").innerHTML = `
-            <div class="conectado">
-                ✅ WhatsApp conectado com sucesso
-            </div>
-        `;
-
-        return;
-    }
-
-    if(!conectado && !carregandoQR){
-        carregarQR();
-    }
-}
 
 async function carregarQR(){
 
-    if(conectado) return;
+    if(carregandoQR) return;
 
     carregandoQR = true;
 
     try {
+
         const resp = await fetch("/buscar_qr");
         const dados = await resp.json();
 
         console.log("QR:", dados);
 
-        const qr = dados.qrcode;
+        if(dados.qrcode){
 
-        if(!qr){
-            setTimeout(() => {
-                carregandoQR = false;
-                carregarQR();
-            }, 2000);
-            return;
+            const img = document.getElementById("qr");
+
+            let qrFinal = dados.qrcode;
+
+            if(!qrFinal.startsWith("data:image")){
+                qrFinal = "data:image/png;base64," + qrFinal;
+            }
+
+            img.src = qrFinal;
+            img.style.display = "block";
         }
 
-        const img = document.getElementById("qr");
+    } catch(err){
 
-        let qrFinal = qr;
-
-        if(!qrFinal.startsWith("data:image")){
-            qrFinal = "data:image/png;base64," + qrFinal;
-        }
-
-        img.src = qrFinal;
-        img.style.display = "block";
-
-    } catch (err) {
         console.error("Erro QR:", err);
+
     }
 
     setTimeout(() => {
         carregandoQR = false;
-    }, 2000);
+        carregarQR();
+    }, 3000);
 }
 
-function conectarWhatsapp() {
+function conectarWhatsapp(){
 
     document.getElementById("status").innerText =
         "Gerando QR Code...";
 
     fetch("/conectar_whatsapp");
+
+    carregarQR();
+}
 
     carregarQR();
 }
