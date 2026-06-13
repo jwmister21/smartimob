@@ -127,87 +127,71 @@
 
 </div>
 <script>
-    if (dados.status !== "conectado") {
-    carregarQR();
-}
+    
+  let conectado = false;
+let carregandoQR = false;
 
-setInterval(verificarStatus, 3000);
+window.onload = () => {
+    verificarStatus();
+    setInterval(verificarStatus, 3000);
+};
 
 async function verificarStatus(){
 
-    const resp =
-        await fetch('/status_whatsapp');
-
-    const dados =
-        await resp.json();
+    const resp = await fetch('/status_whatsapp');
+    const dados = await resp.json();
 
     if(dados.status === "conectado"){
 
-        document.getElementById("status")
-            .innerText = "Conectado";
+        conectado = true;
 
-        document.getElementById("numero")
-            .innerText = dados.numero;
+        document.getElementById("status").innerText = "Conectado";
+        document.getElementById("numero").innerText = dados.numero;
 
-        document.getElementById("btnConectar")
-            .style.display = "none";
-
-        document.getElementById("qr")
-            .style.display = "none";
+        document.getElementById("btnConectar").style.display = "none";
+        document.getElementById("qr").style.display = "none";
 
         document.getElementById("areaQr").innerHTML = `
             <div class="conectado">
                 ✅ WhatsApp conectado com sucesso
             </div>
         `;
+
+        return;
+    }
+
+    if(!conectado && !carregandoQR){
+        carregarQR();
     }
 }
 
+async function carregarQR(){
 
- 
+    if(conectado) return;
 
-const SESSAO = "{{ sessao }}";
-
-async function conectarWhatsapp() {
-
-    document.getElementById("status").innerText =
-        "Gerando QR Code...";
-
-    const resp = await fetch("/conectar_whatsapp");
-
-    const dados = await resp.json();
-
-    console.log(dados);
-
-    carregarQR();
-
-}
-
-async function carregarQR() {
+    carregandoQR = true;
 
     try {
         const resp = await fetch("/buscar_qr");
         const dados = await resp.json();
 
-        console.log("QR response:", dados);
+        console.log("QR:", dados);
 
-        // ainda não pronto
-        if (!dados.sucesso || !dados.qrcode) {
-            setTimeout(carregarQR, 2000);
+        const qr = dados.qrcode;
+
+        if(!qr){
+            setTimeout(() => {
+                carregandoQR = false;
+                carregarQR();
+            }, 2000);
             return;
         }
 
         const img = document.getElementById("qr");
 
-        if (!img) {
-            console.log("Elemento QR não encontrado");
-            return;
-        }
+        let qrFinal = qr;
 
-        // 🔥 CORREÇÃO IMPORTANTE AQUI
-        let qrFinal = dados.qrcode;
-
-        if (!qrFinal.startsWith("data:image")) {
+        if(!qrFinal.startsWith("data:image")){
             qrFinal = "data:image/png;base64," + qrFinal;
         }
 
@@ -215,11 +199,24 @@ async function carregarQR() {
         img.style.display = "block";
 
     } catch (err) {
-        console.error("Erro ao carregar QR:", err);
-        setTimeout(carregarQR, 3000);
+        console.error("Erro QR:", err);
     }
+
+    setTimeout(() => {
+        carregandoQR = false;
+    }, 2000);
 }
 
+function conectarWhatsapp() {
+
+    document.getElementById("status").innerText =
+        "Gerando QR Code...";
+
+    fetch("/conectar_whatsapp");
+
+    carregarQR();
+}
+    
 </script>
 
 {% endblock %}
