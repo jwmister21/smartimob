@@ -291,6 +291,37 @@ Imóveis
     📲 Enviar Imóvel
 
 </button></div>
+
+    <div id="modalWhatsapp" class="modal-whatsapp">
+
+    <div class="modal-conteudo">
+
+        <h3>📲 Enviar Imóvel</h3>
+
+        <input
+            type="text"
+            id="telefoneDestino"
+            placeholder="5511999999999">
+
+        <input
+            type="hidden"
+            id="imovelSelecionado">
+
+        <div class="acoes-modal">
+
+            <button onclick="enviarImovelWhatsapp()">
+                Enviar
+            </button>
+
+            <button onclick="fecharModalWhatsapp()">
+                Cancelar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 {% endfor %}
 </div>
 
