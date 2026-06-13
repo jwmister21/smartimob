@@ -376,6 +376,51 @@ Imóveis
 
 </div>
 <script>
+
+function abrirModalEnviar(imovelId){
+
+    document.getElementById(
+        "imovelSelecionado"
+    ).value = imovelId;
+
+    document.getElementById(
+        "modalWhatsapp"
+    ).style.display = "flex";
+}
+
+function fecharModalWhatsapp(){
+
+    document.getElementById(
+        "modalWhatsapp"
+    ).style.display = "none";
+}
+
+function enviarImovelWhatsapp(){
+
+    const telefone =
+        document.getElementById(
+            "telefoneDestino"
+        ).value;
+
+    const imovelId =
+        document.getElementById(
+            "imovelSelecionado"
+        ).value;
+
+    if(!telefone){
+
+        alert("Digite o telefone");
+
+        return;
+    }
+
+    window.location.href =
+        `/enviar_imovel/${imovelId}/${telefone}`;
+}
+
+
+
+    
 function mudarFoto(carouselId, direcao) {
     const container = document.getElementById(carouselId).querySelector('.carousel-images');
     const total = container.children.length;
