@@ -530,7 +530,7 @@ function fecharModalWhatsapp(){
     ).style.display = "none";
 }
 
-function enviarImovelWhatsapp(){
+async function enviarImovelWhatsapp(){
 
     const telefone =
         document.getElementById(
@@ -549,11 +549,39 @@ function enviarImovelWhatsapp(){
         return;
     }
 
-    window.location.href =
-        `/enviar_imovel/${imovelId}/${telefone}`;
+    try{
+
+        const resp = await fetch(
+            `/enviar_imovel/${imovelId}/${telefone}`
+        );
+
+        const dados = await resp.json();
+
+        if(dados.sucesso){
+
+            alert("✅ Imóvel enviado com sucesso!");
+
+            fecharModalWhatsapp();
+
+            document.getElementById(
+                "telefoneDestino"
+            ).value = "";
+
+        }else{
+
+            alert(
+                "❌ Erro ao enviar: " +
+                (dados.erro || "")
+            );
+        }
+
+    }catch(err){
+
+        console.log(err);
+
+        alert("❌ Falha ao enviar imóvel");
+    }
 }
-
-
 
     
 function mudarFoto(carouselId, direcao) {
