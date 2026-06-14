@@ -69,6 +69,23 @@
         </form>
     </div>
     <div class="perfil-card">
+        <span style="color: #10b981; font-weight: bold;">🧠 Sugestões do Match IA</span>
+        <h2 style="color: white; margin: 5px 0 25px 0;">Imóveis Ideais</h2>
+        {% for match in matches %}
+        <div style="background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #374151;">
+            <h4 style="margin: 0; color: white;">{{ match.titulo }}</h4>
+            <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.9rem;">
+              R$ {{ "{:,.2f}".format(match.valor | float).replace(',', 'X').replace('.', ',').replace('X', '.') }}
+           </p>
+            <a href="/imovel/{{ match.id }}" style="color: #0ea5e9; text-decoration: none; font-size: 0.8rem;">Ver detalhes</a>
+        </div>
+        {% else %}
+        <p style="color: #9ca3af;">Nenhum imóvel encontrado para este perfil.</p>
+        {% endfor %}
+    </div>
+    
+</div>
+<div class="perfil-card">
 
     <h3>📝 Ocorrências</h3>
 
@@ -89,6 +106,7 @@
     </form>
 
 </div>
+
     <div class="perfil-card">
 
     <h3>📋 Histórico</h3>
@@ -117,22 +135,5 @@
 
     {% endfor %}
 
-</div>
-
-    <div class="perfil-card">
-        <span style="color: #10b981; font-weight: bold;">🧠 Sugestões do Match IA</span>
-        <h2 style="color: white; margin: 5px 0 25px 0;">Imóveis Ideais</h2>
-        {% for match in matches %}
-        <div style="background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #374151;">
-            <h4 style="margin: 0; color: white;">{{ match.titulo }}</h4>
-            <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.9rem;">
-              R$ {{ "{:,.2f}".format(match.valor | float).replace(',', 'X').replace('.', ',').replace('X', '.') }}
-           </p>
-            <a href="/imovel/{{ match.id }}" style="color: #0ea5e9; text-decoration: none; font-size: 0.8rem;">Ver detalhes</a>
-        </div>
-        {% else %}
-        <p style="color: #9ca3af;">Nenhum imóvel encontrado para este perfil.</p>
-        {% endfor %}
-    </div>
 </div>
 {% endblock %}
