@@ -116,15 +116,8 @@
     <div class="ocorrencia-item">
 
         <div class="ocorrencia-topo">
-
-            <strong>
-                {{ o["usuario_nome"] }}
-            </strong>
-
-            <span>
-                {{ o["data_criacao"] }}
-            </span>
-
+            <strong>{{ o["usuario_nome"] }}</strong>
+            <span>{{ o["data_criacao"] }}</span>
         </div>
 
         <div class="ocorrencia-texto">
@@ -132,6 +125,12 @@
         </div>
 
     </div>
+
+    {% else %}
+
+    <p style="color:#999;">
+        Nenhuma ocorrência cadastrada.
+    </p>
 
     {% endfor %}
 
