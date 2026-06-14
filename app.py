@@ -2091,6 +2091,7 @@ def perfil_cliente(id):
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     # 1. Busca dados do cliente filtrando pela empresa_id
