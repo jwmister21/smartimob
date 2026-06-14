@@ -1005,6 +1005,50 @@ def exibir_site(subdominio):
     # 3. Renderiza o template passando os dados
     return render_template('template_site.html', empresa=empresa, imoveis=imoveis)
 
+
+@app.route("/excluir-foto/<int:foto_id>")
+@verificar_sessao
+def excluir_foto(foto_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # Busca a foto
+    cursor.execute("""
+        SELECT *
+        FROM fotos_imoveis
+        WHERE id = ?
+    """, (foto_id,))
+
+    foto = cursor.fetchone()
+
+    if not foto:
+        conn.close()
+        return redirect(request.referrer)
+
+    # Caminho do arquivo
+    caminho_foto = os.path.join(
+        app.config['UPLOAD_FOLDER_IMOVEIS'],
+        foto["nome_arquivo"]
+    )
+
+    # Remove arquivo físico
+    if os.path.exists(caminho_foto):
+        os.remove(caminho_foto)
+
+    # Remove do banco
+    cursor.execute("""
+        DELETE FROM fotos_imoveis
+        WHERE id = ?
+    """, (foto_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(request.referrer)
+
+
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
