@@ -2104,6 +2104,20 @@ def perfil_cliente(id):
         conn.close()
         return "Cliente não encontrado ou não pertence a esta empresa.", 404
 
+
+    cursor.execute("""
+        SELECT
+        o.*,
+        u.nome as usuario_nome
+        FROM ocorrencias_clientes o
+        LEFT JOIN usuarios u
+        ON u.id = o.usuario_id
+        WHERE o.cliente_id = ?
+        ORDER BY o.id DESC
+    """, (id,))
+
+    ocorrencias = cursor.fetchall()
+
     # 2. Busca apenas os imóveis da MESMA empresa para o cálculo de match
     cursor.execute("""
         SELECT id, titulo, tipo, valor, cidade, bairro, foto 
@@ -2134,8 +2148,43 @@ def perfil_cliente(id):
         if porcentagem >= 50:
             matches_cliente.append({"id": i_id, "titulo": i_titulo, "valor": i_valor, "local": f"{i_bairro}, {i_cidade}", "foto": i_foto, "porcentagem": porcentagem})
 
-    return render_template("perfil_cliente.html", cliente=cliente, matches=matches_cliente)
+    return render_template("perfil_cliente.html", cliente=cliente, matches=matches_cliente, ocorrencias=ocorrencias)
 
+
+
+@app.route(
+    "/cliente/adicionar_ocorrencia/<int:cliente_id>",
+    methods=["POST"]
+)
+@verificar_sessao
+def adicionar_ocorrencia(cliente_id):
+
+    ocorrencia = request.form.get("ocorrencia")
+    usuario_id = session["usuario_id"]
+
+    if ocorrencia and ocorrencia.strip():
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO ocorrencias_clientes
+            (
+                cliente_id,
+                usuario_id,
+                ocorrencia
+            )
+            VALUES (?, ?, ?)
+        """, (
+            cliente_id,
+            usuario_id,
+            ocorrencia
+        ))
+
+        conn.commit()
+        conn.close()
+
+    return redirect(f"/cliente/{cliente_id}")
 
 @app.route("/cliente/atualizar_status/<int:id>", methods=["POST"])
 @verificar_sessao
