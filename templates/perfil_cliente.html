@@ -63,17 +63,61 @@
 
         <form action="/cliente/atualizar_dados/{{ cliente[0] }}" method="POST" style="margin-top: 25px; background: #1f2937; padding: 15px; border-radius: 12px;">
             <span style="color: #0ea5e9; font-weight: bold; margin-bottom: 10px; display: block;">📋 Informações Adicionais</span>
-            <label class="info-label">E-mail</label>
-            <input type="email" name="email" value="{{ cliente[3] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
-            <label class="info-label">CPF</label>
-            <input type="text" name="cpf" value="{{ cliente[8] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
-            <label class="info-label">Endereço</label>
-            <input type="text" name="endereco" value="{{ cliente[9] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
             <label class="info-label">Telefone</label>
             <input type="text" name="telefone" value="{{ cliente[2] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
             <button type="submit" class="btn-salvar-status">💾 Salvar Alterações</button>
         </form>
     </div>
+    <div class="perfil-card">
+
+    <h3>📝 Ocorrências</h3>
+
+    <form method="POST"
+          action="/cliente/adicionar_ocorrencia/{{ cliente[0] }}">
+
+        <textarea
+            name="ocorrencia"
+            rows="4"
+            placeholder="Digite uma ocorrência do cliente..."
+            required>
+        </textarea>
+
+        <button type="submit" class="btn-salvar">
+            ➕ Adicionar Ocorrência
+        </button>
+
+    </form>
+
+</div>
+    <div class="perfil-card">
+
+    <h3>📋 Histórico</h3>
+
+    {% for o in ocorrencias %}
+
+    <div class="ocorrencia-item">
+
+        <div class="ocorrencia-topo">
+
+            <strong>
+                {{ o["usuario_nome"] }}
+            </strong>
+
+            <span>
+                {{ o["data_criacao"] }}
+            </span>
+
+        </div>
+
+        <div class="ocorrencia-texto">
+            {{ o["ocorrencia"] }}
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
 
     <div class="perfil-card">
         <span style="color: #10b981; font-weight: bold;">🧠 Sugestões do Match IA</span>
