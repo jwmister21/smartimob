@@ -1900,6 +1900,8 @@ def editar_imovel(id):
         vaga_garagem = request.form.get("vaga_garagem", "")
         lazer = request.form.get("lazer", "")
         sacada = request.form.get("sacada", "")
+        rua = request.form.get("rua", "")
+        iptu = request.form.get("iptu", "")
 
         # Atualiza os dados do imóvel
         cursor.execute("""
@@ -1920,7 +1922,9 @@ def editar_imovel(id):
                 lavabo=?,
                 lazer=?,
                 vaga_garagem=?,
-                sacada=?
+                sacada=?,
+                rua=?,
+                iptu=?
             WHERE id=? AND empresa_id=?
         """, (
             titulo,
@@ -1940,6 +1944,8 @@ def editar_imovel(id):
             vaga_garagem,
             lazer,
             sacada,
+            rua,
+            iptu,
             id,
             empresa_id
         ))
