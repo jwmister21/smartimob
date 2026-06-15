@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Simulador de Financiamento{% endblock %}
+
+{% block content %}
+
+<div class="container">
+
+    <h2>🏠 Simulador de Financiamento</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px;">
+
+        <input type="number" id="valor" placeholder="Valor do imóvel">
+
+        <input type="number" id="entrada" placeholder="Entrada">
+
+        <select id="banco" onchange="setTaxa()">
+            <option value="caixa">Caixa</option>
+            <option value="itau">Itaú</option>
+            <option value="bradesco">Bradesco</option>
+            <option value="santander">Santander</option>
+        </select>
+
+        <input type="number" id="taxa" placeholder="Taxa mensal (%)">
+
+        <input type="number" id="prazo" placeholder="Prazo (meses)">
+
+    </div>
+
+    <button onclick="simular()" style="margin-top:20px;">
+        Simular financiamento
+    </button>
+
+    <div id="resultado" style="margin-top:25px;font-size:20px;font-weight:bold;"></div>
+
+</div>
+
+<script>
+
+function setTaxa() {
+
+    let banco = document.getElementById("banco").value;
+
+    let taxas = {
+        caixa: 0.85,
+        itau: 0.95,
+        bradesco: 1.05,
+        santander: 1.10
+    };
+
+    document.getElementById("taxa").value = taxas[banco];
+}
+
+function simular() {
+
+    let valor = parseFloat(document.getElementById("valor").value);
+    let entrada = parseFloat(document.getElementById("entrada").value);
+    let taxa = parseFloat(document.getElementById("taxa").value) / 100;
+    let prazo = parseInt(document.getElementById("prazo").value);
+
+    if (!valor || !entrada || !taxa || !prazo) {
+        document.getElementById("resultado").innerHTML =
+            "Preencha todos os campos!";
+        return;
+    }
+
+    let pv = valor - entrada;
+    let i = taxa;
+
+    let parcela = (pv * i) / (1 - Math.pow(1 + i, -prazo));
+
+    document.getElementById("resultado").innerHTML =
+        "💰 Parcela estimada: R$ " + parcela.toFixed(2);
+}
+
+</script>
