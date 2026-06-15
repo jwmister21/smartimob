@@ -753,7 +753,7 @@ def servir_video_do_volume(filename):
 
 
 
- @app.route("/verificar_conexao_whatsapp")
+@app.route("/verificar_conexao_whatsapp")
 def verificar_conexao_whatsapp():
 
     sessao = session.get("sessao")  # ou pega do usuário logado
