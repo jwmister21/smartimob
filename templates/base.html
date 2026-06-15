@@ -9,181 +9,300 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
         body { background:#0b1120; color:white; }
 
-        .sidebar { 
-    position: fixed; 
-    left: 0; 
-    top: 0; 
-    width: 260px; 
-    height: 100vh; /* Mantém a altura total */
-    background: #0f172a; 
-    border-right: 1px solid #1e293b; 
-    padding: 20px; 
-    display: flex; 
-    flex-direction: column;
-    
-    /* ADICIONE ESTAS DUAS LINHAS */
-    overflow-y: auto;   /* Adiciona scroll vertical apenas se necessário */
-    scrollbar-width: thin; /* Estiliza a barra de scroll no Firefox */
-}
-
-/* Opcional: Deixa a barra de scroll mais bonita (Chrome, Edge, Safari) */
-.sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-.sidebar::-webkit-scrollbar-thumb {
-    background-color: #334155;
-    border-radius: 10px;
-}
-        /* Sidebar Moderna */
-        .sidebar { 
-            position:fixed; left:0; top:0; width:260px; height:100vh; 
-            background:#0f172a; border-right:1px solid #1e293b; 
-            padding:20px; display:flex; flex-direction:column;
-        }
-        .logo { font-size:24px; font-weight:800; margin-bottom:40px; padding-left:10px; letter-spacing:-1px; }
+        /* Sidebar */
+        .sidebar { position:fixed; left:0; top:0; width:260px; height:100vh; background:#111827; border-right:1px solid rgba(255,255,255,.05); padding:25px; }
+        .logo { font-size:28px; font-weight:700; margin-bottom:40px; }
         .logo span { color:#38bdf8; }
-        
-        .menu { display:flex; flex-direction:column; gap:5px; }
-        .menu a { 
-            display:flex; align-items:center; gap:12px;
-            text-decoration:none; color:#94a3b8; 
-            padding:12px 16px; border-radius:10px; 
-            transition:all 0.3s ease; font-weight:500; font-size:0.95rem;
-        }
-        .menu a:hover { background:#1e293b; color:#f8fafc; }
-        .menu a.active { background:#0ea5e9; color:white; box-shadow:0 4px 12px rgba(14, 165, 233, 0.3); }
-
-        .menu-section-title {
-            color:#475569; font-size:0.75rem; 
-            text-transform:uppercase; font-weight:700; 
-            margin:20px 0 10px 16px; letter-spacing:0.05em;
-        }
+        .menu { display:flex; flex-direction:column; gap:2px; }
+        .menu a { text-decoration:none; color:#d1d5db; padding:14px; border-radius:12px; transition:.3s; }
+        .menu a:hover { background:#1e293b; color:white; }
 
         /* Conteúdo Principal */
         .main { margin-left:260px; min-height:100vh; padding:35px; }
         .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
         
-        /* Notificações e Dropdown */
-        .user-controls { display:flex; align-items:center; position:relative; }
-        .badge { background:#ef4444; color:white; border-radius:50%; padding:2px 6px; font-size:10px; position:absolute; top:-5px; right:15px; }
-        .dropdown { position:relative; display:inline-block; }
-        .dropbtn { background:#111827; border:1px solid #1e293b; color:white; padding:10px 15px; border-radius:12px; cursor:pointer; font-size:14px; }
-        .dropdown-content { display:none; position:absolute; right:0; background-color:#111827; min-width:160px; box-shadow:0px 8px 16px rgba(0,0,0,0.3); z-index:1000; border-radius:12px; border:1px solid #1e293b; }
-        .dropdown-content a { color:white; padding:12px 16px; text-decoration:none; display:block; font-size:14px; }
-        .dropdown-content a:hover { background-color:#1e293b; }
-        .dropdown:hover .dropdown-content { display:block; }
-        .notif-box { display:none; position:absolute; right:40px; top:50px; width:280px; background:#111827; border:1px solid #374151; border-radius:12px; padding:10px; z-index:2000; }
+        /* Controles de Usuário e Sino */
+        .user-controls { display: flex; align-items: center; position: relative; }
         
-        /* Widgets IA */
-        .chat-float-btn { position:fixed; bottom:25px; right:25px; width:60px; height:60px; border-radius:50%; background:#f59e0b; border:none; font-size:28px; cursor:pointer; box-shadow:0 4px 15px rgba(0,0,0,0.4); z-index:9999; }
-        .chat-widget { position:fixed; bottom:100px; right:25px; width:300px; height:400px; background:#1a2234; border-radius:15px; display:none; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.5); z-index:9998; border:1px solid #334155; }
-        .chat-header { padding:15px; display:flex; justify-content:space-between; border-bottom:1px solid #334155; }
-        .chat-body { flex:1; padding:15px; overflow-y:auto; }
-        .chat-footer { padding:15px; background:#0f172a; }
-        #texto_cliente { width:100%; background:#1e293b; border:1px solid #475569; border-radius:8px; color:white; padding:10px; margin-bottom:10px; resize:none; }
-        .btn-analisar { width:100%; background:#f59e0b; border:none; padding:8px; border-radius:6px; font-weight:bold; cursor:pointer; }
+        /* Badge do Sino */
+        .badge { background: #ef4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; position: absolute; top: -5px; right: 15px; }
+
+        .dropdown { position: relative; display: inline-block; }
+        .dropbtn { background: #111827; border: 1px solid #1e293b; color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 14px; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: #111827; min-width: 160px; box-shadow: 0px 8px 16px rgba(0,0,0,0.3); z-index: 1000; border-radius: 12px; border: 1px solid #1e293b; }
+        .dropdown-content a { color: white; padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; }
+        .dropdown-content a:hover { background-color: #1e293b; }
+        .dropdown:hover .dropdown-content { display: block; }
+
+        /* Caixa de Notificação Dinâmica */
+        .notif-box { display: none; position: absolute; right: 40px; top: 50px; width: 280px; background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 2000; }
+        .notif-item { border-bottom: 1px solid #374151; padding: 10px 0; color: #fff; text-decoration: none; display: block; font-size: 0.9rem; }
+        .notif-item:hover { color: #38bdf8; }
+    /* Botão flutuante */
+/* O Botão Flutuante Amarelo */
+.chat-float-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    z-index: 9999; /* Garante que fique por cima de tudo */
+    transition: transform 0.2s;
+}
+
+.chat-float-btn:hover {
+    transform: scale(1.1);
+}
+
+/* A Caixa (Chat Widget) */
+.chat-widget {
+    position: fixed;
+    bottom: 100px; /* Sobe um pouco para não ficar colado no botão */
+    right: 25px;
+    width: 300px;
+    height: 400px;
+    background: #1a2234;
+    border-radius: 15px;
+    display: none; /* Começa escondido */
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 9998;
+    border: 1px solid #334155;
+    overflow: hidden;
+}
+
+.chat-body {
+    flex: 1; /* Faz o corpo ocupar todo o espaço sobrando */
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.chat-footer {
+    padding: 15px;
+    background: #0f172a; /* Fundo do rodapé diferente para destacar */
+    border-top: 1px solid #334155;
+}
+
+#texto_cliente {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.btn-analisar {
+    width: 100%;
+    background: #f59e0b;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-analisar:hover { background: #d97706; }
+
+
+
+ /* Seções do Menu */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #d1d5db;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: .3s;
+}
+
+.menu-section-title {
+    color: #4b5563;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 8px 0 2px 12px;
+    letter-spacing: .05em;
+}
+    
     </style>
+    
 </head>
 <body>
 
 <div class="sidebar">
+
     <div class="logo">SMART<span>ZEN</span></div>
+
     <div class="menu">
-        <div class="menu-section-title">Navegação</div>
-        <a href="/">🏠 Dashboard</a>
 
-        <div class="menu-section-title">Gestão Imobiliária</div>
-        <a href="/clientes">👥 Clientes</a>
-        <a href="/imoveis">🏢 Imóveis</a>
-        <a href="/funil">⚡ Funil de Vendas</a>
+    <div class="menu-section-title">Principal</div>
+
+    <a href="/">🏠 Dashboard</a>
+
+    <div class="menu-section-title">CRM</div>
+    <a href="/clientes">👥 Clientes</a>
+    <a href="/funil">⚡ Funil</a>
+    <div class="menu-section-title">Imóveis</div>
+    <a href="/imoveis">🏢 Imóveis</a>
+    <a href="/match_ia">🤝 Match IA</a>
+    <div class="menu-section-title">Marketing</div>
+    <a href="/gerar_anuncio">🧠 Gerar Anúncio</a>
+    <div class="menu-section-title">Sistema</div>
+    <a href="/configuracoes">⚙ Configurações</a>
+    <a href="/whatsapp"> Whatsapp</a>
+    <a href="/simulador_financiamento"> Financiamento</a>    
         
-        <div class="menu-section-title">Ferramentas IA</div>
-        <a href="/match_ia">🤝 Match Inteligente</a>
-        <a href="/gerar_anuncio">🧠 Gerar Anúncio</a>
-        <a href="/simulador_financiamento">💰 Simulador</a>
 
-        <div class="menu-section-title">Configurações</div>
-        <a href="/whatsapp">💬 Whatsapp</a>
-        <a href="/configuracoes">⚙ Configurações</a>
+    {% if session.get('is_admin') == 1 %}
 
-        {% if session.get('is_admin') == 1 %}
-            <div class="menu-section-title">Administração</div>
-            <a href="/admin/gestao">📊 Gestão</a>
-            <a href="/admin/novo-usuario">➕ Novo Usuário</a>
-        {% endif %}
-    </div>
+        <div class="menu-section-title">Administração</div>
+
+        <a href="/admin/gestao">📊 Gestão</a>
+        <a href="/admin/novo-usuario">➕ Novo Usuário</a>
+
+    {% endif %}
+
+</div>
 </div>
 
 <div class="main">
     <div class="topbar">
         <h1>{% block pagina %}{% endblock %}</h1>
         <div class="user-controls">
-            <span style="font-size: 20px; margin-right: 20px; cursor: pointer;" onclick="toggleNotificacoes()">
-                🔔 {% if lembretes|length > 0 %}<span class="badge">{{ lembretes|length }}</span>{% endif %}
+            <span style="font-size: 20px; margin-right: 20px; cursor: pointer; position: relative;" onclick="toggleNotificacoes()">
+                🔔
+                {% if lembretes|length > 0 %}
+                    <span class="badge">{{ lembretes|length }}</span>
+                {% endif %}
             </span>
+
             <div id="notificacoes-box" class="notif-box">
-                <h4>Visitas Hoje</h4>
-                {% for l in lembretes %}
-                    <a href="/cliente/{{ l[0] }}" class="notif-item">📅 {{ l[1] }}</a>
-                {% else %}
-                    <p style="padding:10px;">Nenhuma visita.</p>
-                {% endfor %}
+    <h4 style="margin-bottom: 10px; border-bottom: 1px solid #374151; padding-bottom: 5px;">Visitas Hoje</h4>
+    {% for l in lembretes %}
+        <a href="/cliente/{{ l[0] }}" class="notif-item" style="display: block; margin-bottom: 8px;">
+            <div style="font-weight: bold; color: white;">📅 {{ l[1] }}</div>
+            <div style="font-size: 0.75rem; color: #9ca3af;">
+                Você tem um agendamento hoje  {{ l[10].split('T')[1] }}
             </div>
+        </a>
+    {% else %}
+        <p style="color: #6b7280; font-size: 0.8rem; padding: 10px;">Nenhuma visita hoje.</p>
+    {% endfor %}
+</div>
+
             <div class="dropdown">
                 <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
                 <div class="dropdown-content">
                     <a href="/configuracoes">⚙ Configurações</a>
-                    <a href="/logout" style="color:#ff4d4d;">🚪 Sair</a>
+                    <a href="/logout" style="color: #ff4d4d;">🚪 Sair</a>
                 </div>
             </div>
         </div>
     </div>
 
-    {% block content %}{% endblock %}
-</div>
+  <div class="chat-widget" id="chat-widget">
+    <div class="chat-header">
+        <span>🧠 IA SmartZen</span>
+        <button onclick="toggleChat()">X</button>
+    </div>
+    
+    <div class="chat-body" id="chat-body">
+        <p style="color: #94a3b8; font-size: 0.85rem;">Como posso ajudar você a encontrar o imóvel ideal hoje?</p>
+    </div>
 
-<button class="chat-float-btn" onclick="toggleChat()">🧠</button>
-<div class="chat-widget" id="chat-widget">
-    <div class="chat-header"><span>IA SmartZen</span><button onclick="toggleChat()">X</button></div>
-    <div class="chat-body" id="chat-body"><p>Como posso ajudar hoje?</p></div>
     <div class="chat-footer">
-        <textarea id="texto_cliente" rows="2"></textarea>
+        <textarea id="texto_cliente" placeholder="Cole a mensagem aqui..." rows="2"></textarea>
         <button class="btn-analisar" onclick="analisarIA()">Analisar</button>
     </div>
 </div>
 
-<script>
-    // Menu Ativo
-    document.addEventListener("DOMContentLoaded", function() {
-        const path = window.location.pathname;
-        document.querySelectorAll('.menu a').forEach(link => {
-            if (link.getAttribute('href') === path) link.classList.add('active');
-        });
-    });
+<button class="chat-float-btn" onclick="toggleChat()">🧠</button>
 
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script>
     function toggleNotificacoes() {
         var box = document.getElementById("notificacoes-box");
         box.style.display = (box.style.display === "block") ? "none" : "block";
     }
 
     function toggleChat() {
-        const chat = document.getElementById('chat-widget');
-        chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
+    const chat = document.getElementById('chat-widget');
+    if (chat.style.display === 'flex') {
+        chat.style.display = 'none';
+    } else {
+        chat.style.display = 'flex';
     }
+}
 
-    async function analisarIA() {
-        const texto = document.getElementById('texto_cliente').value;
-        const chatBody = document.getElementById('chat-body');
-        if (!texto.trim()) return alert("Cole a mensagem!");
-        chatBody.innerHTML = "<p>Processando...</p>";
-        const response = await fetch('/analisar_cliente', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensagem: texto })
-        });
-        const data = await response.json();
-        chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
-    }
+async function analisarIA() {
+    const texto = document.getElementById('texto_cliente').value;
+    const chatBody = document.getElementById('chat-body');
+
+    if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
+
+    // Feedback visual
+    chatBody.innerHTML = "<p>Processando com IA...</p>";
+
+    const response = await fetch('/analisar_cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: texto })
+    });
+
+    const data = await response.json();
+    
+    // Exibe o resultado da análise no chat
+    chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
+}
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const valorInput = document.getElementById("valor");
+
+    valorInput.addEventListener("input", function(e) {
+
+        let valor = e.target.value.replace(/\D/g, "");
+
+        if (valor === "") {
+            e.target.value = "";
+            return;
+        }
+
+        valor = (parseInt(valor) / 100).toFixed(2);
+
+        valor = valor.replace(".", ",");
+
+        valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        e.target.value = "R$ " + valor;
+    });
+
+});
 </script>
 </body>
 </html>
