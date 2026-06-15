@@ -9,6 +9,31 @@
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
         body { background:#0b1120; color:white; }
 
+        .sidebar { 
+    position: fixed; 
+    left: 0; 
+    top: 0; 
+    width: 260px; 
+    height: 100vh; /* Mantém a altura total */
+    background: #0f172a; 
+    border-right: 1px solid #1e293b; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column;
+    
+    /* ADICIONE ESTAS DUAS LINHAS */
+    overflow-y: auto;   /* Adiciona scroll vertical apenas se necessário */
+    scrollbar-width: thin; /* Estiliza a barra de scroll no Firefox */
+}
+
+/* Opcional: Deixa a barra de scroll mais bonita (Chrome, Edge, Safari) */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: #334155;
+    border-radius: 10px;
+}
         /* Sidebar Moderna */
         .sidebar { 
             position:fixed; left:0; top:0; width:260px; height:100vh; 
