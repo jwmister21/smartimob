@@ -3,6 +3,7 @@
 {% block title %}Simulador de Financiamento{% endblock %}
 
 {% block content %}
+
 <style>
 .simulador-container{
     max-width: 900px;
@@ -26,6 +27,7 @@
     border-radius: 8px;
     border: none;
     outline: none;
+    width: 100%;
 }
 
 .simulador-btn{
@@ -51,15 +53,16 @@
     color: #22c55e;
 }
 </style>
+
 <div class="simulador-container">
 
     <h2>🏠 Simulador de Financiamento</h2>
 
     <div class="simulador-grid">
 
-        <input type="number" id="valor" placeholder="Valor do imóvel">
+        <input type="text" id="valor" placeholder="Valor do imóvel">
 
-        <input type="number" id="entrada" placeholder="Entrada">
+        <input type="text" id="entrada" placeholder="Entrada">
 
         <select id="banco" onchange="setTaxa()">
             <option value="caixa">Caixa</option>
@@ -70,7 +73,17 @@
 
         <input type="number" id="taxa" placeholder="Taxa (%)" readonly>
 
-        <input type="number" id="prazo" placeholder="Prazo (meses)">
+        <select id="prazo">
+            <option value="12">12 meses</option>
+            <option value="24">24 meses</option>
+            <option value="36">36 meses</option>
+            <option value="60">60 meses</option>
+            <option value="120">120 meses</option>
+            <option value="240">240 meses</option>
+            <option value="360">360 meses</option>
+            <option value="420">420 meses</option>
+        </select>
+
     </div>
 
     <button class="simulador-btn" onclick="simular()">
@@ -80,8 +93,10 @@
     <div id="resultado" class="resultado"></div>
 
 </div>
+
 <script>
 
+// taxas por banco
 function setTaxa() {
 
     let banco = document.getElementById("banco").value;
@@ -96,16 +111,49 @@ function setTaxa() {
     document.getElementById("taxa").value = taxas[banco];
 }
 
+
+// formatar R$ enquanto digita
+function formatBRL(value){
+    value = value.replace(/\D/g, "");
+    value = (value/100).toFixed(2) + "";
+    value = value.replace(".", ",");
+    value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    return "R$ " + value;
+}
+
+
+// converter R$ para número
+function parseBRL(value){
+    return parseFloat(
+        value.replace("R$","")
+             .replace(/\./g,"")
+             .replace(",",".")
+             .trim()
+    );
+}
+
+
+// máscara inputs
+document.getElementById("valor").addEventListener("input", function(e){
+    e.target.value = formatBRL(e.target.value);
+});
+
+document.getElementById("entrada").addEventListener("input", function(e){
+    e.target.value = formatBRL(e.target.value);
+});
+
+
+// simulação
 function simular() {
 
-    let valor = parseFloat(document.getElementById("valor").value);
-    let entrada = parseFloat(document.getElementById("entrada").value);
+    let valor = parseBRL(document.getElementById("valor").value);
+    let entrada = parseBRL(document.getElementById("entrada").value);
     let taxa = parseFloat(document.getElementById("taxa").value) / 100;
     let prazo = parseInt(document.getElementById("prazo").value);
 
     if (!valor || !entrada || !taxa || !prazo) {
         document.getElementById("resultado").innerHTML =
-            "Preencha todos os campos!";
+            "⚠️ Preencha todos os campos corretamente";
         return;
     }
 
@@ -119,4 +167,5 @@ function simular() {
 }
 
 </script>
+
 {% endblock %}
