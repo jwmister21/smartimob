@@ -1054,6 +1054,31 @@ def excluir_foto(foto_id):
     return redirect(request.referrer)
 
 
+
+@app.route("/campanhas")
+def campanhas():
+    return render_template("campanhas.html")
+
+
+@app.route("/enviar_mensagem", methods=["POST"])
+def enviar_mensagem():
+
+    data = request.get_json()
+    telefone = data["telefone"]
+    mensagem = data["mensagem"]
+
+    # integração com WPPConnect
+    requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/enviar",
+        json={
+            "phone": telefone,
+            "message": mensagem
+        }
+    )
+
+    return {"status": "ok"}
+
+
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
