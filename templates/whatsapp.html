@@ -125,8 +125,13 @@
     </div>
 
 </div>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
+const socket = io("https://smartimob-production.up.railway.app");
 
+    socket.on("whatsapp_status", function(data) {
+        console.log(data);
+    });
 let carregandoQR = false;
 
 async function carregarQR(){
