@@ -1,0 +1,65 @@
+<div class="card">
+
+    <h2>📢 Nova Campanha WhatsApp</h2>
+
+    <!-- TELEFONES -->
+    <label>📱 Telefones (um por linha)</label>
+    <textarea id="telefones" rows="8"
+        placeholder="5511999999999&#10;5511888888888"></textarea>
+
+    <!-- MENSAGEM -->
+    <label>💬 Mensagem</label>
+    <textarea id="mensagem" rows="6"
+        placeholder="Olá! Temos novos imóveis disponíveis..."></textarea>
+
+    <!-- TIMER -->
+    <label>⏱️ Intervalo entre envios (segundos)</label>
+    <input type="number" id="delay" value="5" min="1">
+
+    <button onclick="iniciarEnvio()">🚀 Iniciar campanha</button>
+
+    <div id="status"></div>
+
+</div>
+
+<script>
+async function iniciarEnvio() {
+
+    const telefones = document.getElementById("telefones")
+        .value.split("\n")
+        .map(t => t.trim())
+        .filter(t => t);
+
+    const mensagem = document.getElementById("mensagem").value;
+    const delay = parseInt(document.getElementById("delay").value);
+
+    const status = document.getElementById("status");
+
+    for (let i = 0; i < telefones.length; i++) {
+
+        const telefone = telefones[i];
+
+        status.innerHTML =
+            `Enviando ${i+1}/${telefones.length} → ${telefone}`;
+
+        try {
+            await fetch("/enviar_mensagem", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    telefone,
+                    mensagem
+                })
+            });
+
+        } catch (err) {
+            console.log("Erro:", err);
+        }
+
+        // ⏱️ delay entre envios
+        await new Promise(r => setTimeout(r, delay * 1000));
+    }
+
+    status.innerHTML = "✅ Campanha finalizada!";
+}
+</script>
