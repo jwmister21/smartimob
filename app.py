@@ -2380,5 +2380,5 @@ def atualizar_dados_cliente(id):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=port)
 
