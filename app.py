@@ -332,21 +332,20 @@ def enviar_imovel(imovel_id, telefone):
     print("URL IMAGEM:", imagem)
 
     legenda = f"""
-🏡 {imovel['titulo']}
+🏡 *{imovel['titulo']}*
 
-💰 Valor: {imovel['valor']}
+📍 *Localização:* {imovel['bairro']} - {imovel['cidade']}
 
-📍 {imovel['bairro']} - {imovel['cidade']}
+💰 *Valor:* R$ {imovel['valor']}
 
-🛏 {imovel['quartos']} quartos
-🚿 {imovel['banheiros']} banheiros
-🚗 {imovel['vaga_garagem']} vagas
+🛏 {imovel['quartos']} quartos  | 🚿 {imovel['banheiros']} banheiros  | 🚗 {imovel['vaga_garagem']} vagas
+📐 Área: {imovel['area']} m²
 
-📐 Área: {imovel['area']}
+✨ *Destaques:*
+{imovel['descricao'] or "Entre em contato para mais informações sobre este imóvel."}
 
-{imovel['descricao'] or ''}
-
-🔗 {imovel['link'] or ''}
+📲 *Quer agendar uma visita ou receber mais opções parecidas?*
+Fale comigo agora!
 """
 
     numero = telefone.replace(" ", "").replace("-", "")
