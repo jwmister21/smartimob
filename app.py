@@ -1465,33 +1465,32 @@ def site_publico(slug):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # busca empresa pelo slug
+    # pega config do site
     cursor.execute("""
         SELECT * FROM configuracoes_site
         WHERE subdominio = ?
     """, (slug,))
-    config = cursor.fetchone()
+    empresa = cursor.fetchone()
 
-    if not config:
+    if not empresa:
         return "Site não encontrado"
 
-    empresa_id = config["empresa_id"]
-
-    # busca imóveis da empresa
+    # pega imóveis da empresa
     cursor.execute("""
         SELECT * FROM imoveis
         WHERE empresa_id = ?
-    """, (empresa_id,))
+    """, (empresa["empresa_id"],)
+    )
     imoveis = cursor.fetchall()
 
     conn.close()
 
     return render_template(
         "site_publico.html",
-        config=config,
+        empresa=empresa,
         imoveis=imoveis
     )
-
+ 
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
     if not session.get('is_admin'):
