@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SMARTZEN IMOB{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    {% set path = request.path %}
 <style>
 
 /* =========================
@@ -331,6 +332,12 @@ body {
     margin: 8px 0 2px 12px;
     letter-spacing: .05em;
 }
+     .menu a.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 0 1px rgba(37,99,235,.4);
+}
 </style>
 </head>
 <body>
@@ -346,18 +353,21 @@ body {
     <a href="/">🏠 Dashboard</a>
 
     <div class="menu-section-title">CRM</div>
-    <a href="/clientes">👥 Clientes</a>
-    <a href="/funil">⚡ Funil</a>
-    <div class="menu-section-title">Imóveis</div>
-    <a href="/imoveis">🏢 Imóveis</a>
-    <a href="/match_ia">🤝 Match IA</a>
-    <div class="menu-section-title">Marketing</div>
-    <a href="/gerar_anuncio">🧠 Gerar Anúncio</a>
-    <a href="/campanhas">📢 Campanhas</a>    
-    <div class="menu-section-title">Sistema</div>
-    <a href="/configuracoes">⚙ Configurações</a>
-    <a href="/whatsapp">🟢 Whatsapp</a>
-    <a href="/simulador_financiamento">💰 Financiamento</a>    
+<a href="/clientes" class="{% if '/clientes' in path %}active{% endif %}">👥 Clientes</a>
+<a href="/funil" class="{% if '/funil' in path %}active{% endif %}">⚡ Funil</a>
+
+<div class="menu-section-title">Imóveis</div>
+<a href="/imoveis" class="{% if '/imoveis' in path %}active{% endif %}">🏢 Imóveis</a>
+<a href="/match_ia" class="{% if '/match_ia' in path %}active{% endif %}">🤝 Match IA</a>
+
+<div class="menu-section-title">Marketing</div>
+<a href="/gerar_anuncio" class="{% if '/gerar_anuncio' in path %}active{% endif %}">🧠 Gerar Anúncio</a>
+<a href="/campanhas" class="{% if '/campanhas' in path %}active{% endif %}">📢 Campanhas</a>
+
+<div class="menu-section-title">Sistema</div>
+<a href="/configuracoes" class="{% if '/configuracoes' in path %}active{% endif %}">⚙ Configurações</a>
+<a href="/whatsapp" class="{% if '/whatsapp' in path %}active{% endif %}">🟢 Whatsapp</a>
+<a href="/simulador_financiamento" class="{% if '/simulador_financiamento' in path %}active{% endif %}">💰 Financiamento</a>    
         
 
     {% if session.get('is_admin') == 1 %}
