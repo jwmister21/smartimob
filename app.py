@@ -1631,7 +1631,7 @@ def criar_login():
     cursor = conn.cursor()
     # Salve o senha_hash, não a senha_raw
     cursor.execute("INSERT INTO usuarios (email, senha, empresa_id, nome) VALUES (?, ?, ?, ?)", 
-                   (email, senha_hash, empresa_id))
+                   (email, senha_hash, empresa_id, nome))
     conn.commit()
     conn.close()
     return "Usuário criado com sucesso!"
