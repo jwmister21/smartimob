@@ -1063,35 +1063,40 @@ def campanhas():
 def enviar_mensagem():
 
     data = request.get_json()
+
     telefone = data["telefone"]
     mensagem = data["mensagem"]
 
+    usuario_id = session.get("usuario_id")
+
     try:
+        conn = sqlite3.connect("/data/imobiliaria.db")
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT whatsapp_sessao
+            FROM usuarios
+            WHERE id = ?
+        """, (usuario_id,))
+
+        resultado = cursor.fetchone()
+        conn.close()
+
+        if not resultado:
+            return {"status": "error", "erro": "Sessão não encontrada"}
+
+        sessao = resultado[0]
+
         resp = requests.post(
             "https://zoom-leggings-viability.ngrok-free.dev/enviar",
             json={
-                "sessao": "default",
+                "sessao": sessao,
                 "numero": telefone,
                 "mensagem": mensagem
             }
         )
 
-        print("RESPOSTA NODE:", resp.text)
-
-        return {
-            "status": "ok" if resp.status_code == 200 else "error",
-            "resposta": resp.text
-        }
-
-    except Exception as e:
-
-        print("ERRO:", e)
-
-        return {
-            "status": "error",
-            "erro": str(e)
-        }
-
+        print("
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
