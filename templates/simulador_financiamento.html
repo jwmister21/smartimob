@@ -3,12 +3,59 @@
 {% block title %}Simulador de Financiamento{% endblock %}
 
 {% block content %}
+<style>
+.simulador-container{
+    max-width: 900px;
+    margin: auto;
+    background: #0f172a;
+    padding: 25px;
+    border-radius: 12px;
+    color: white;
+    margin-top: 20px;
+}
 
-<div class="container">
+.simulador-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.simulador-container input,
+.simulador-container select{
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+.simulador-btn{
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.simulador-btn:hover{
+    background: #1d4ed8;
+}
+
+.resultado{
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #22c55e;
+}
+</style>
+<div class="simulador-container">
 
     <h2>🏠 Simulador de Financiamento</h2>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px;">
+    <div class="simulador-grid">
 
         <input type="number" id="valor" placeholder="Valor do imóvel">
 
@@ -21,20 +68,18 @@
             <option value="santander">Santander</option>
         </select>
 
-        <input type="number" id="taxa" placeholder="Taxa mensal (%)">
+        <input type="number" id="taxa" placeholder="Taxa (%)" readonly>
 
         <input type="number" id="prazo" placeholder="Prazo (meses)">
-
     </div>
 
-    <button onclick="simular()" style="margin-top:20px;">
+    <button class="simulador-btn" onclick="simular()">
         Simular financiamento
     </button>
 
-    <div id="resultado" style="margin-top:25px;font-size:20px;font-weight:bold;"></div>
+    <div id="resultado" class="resultado"></div>
 
 </div>
-
 <script>
 
 function setTaxa() {
