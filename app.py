@@ -18,9 +18,9 @@ import google.generativeai as genai
 import json
 from openai import OpenAI
 from flask import send_from_directory
+from flask_socketio import SocketIO
 
-
-
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 app = Flask(__name__)
 DB_DIR = "/data"
@@ -870,8 +870,13 @@ def atualizar_status_whatsapp():
     conn.commit()
     conn.close()
 
-    return {"sucesso": True}
+    # 🔥 TEMPO REAL
+    socketio.emit("whatsapp_status", {
+        "sessao": sessao,
+        "status": status
+    })
 
+    return {"sucesso": True}
 @app.route("/teste_envio")
 def teste_envio():
 
@@ -2375,5 +2380,5 @@ def atualizar_dados_cliente(id):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    socketio.run(host='0.0.0.0', port=port)
 
