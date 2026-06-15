@@ -113,14 +113,12 @@
         onclick="conectarWhatsapp()">
         Conectar WhatsApp
     </button>
-{% if status == "Conectado" %}
-
-<a href="/desconectar_whatsapp"
-   class="btn-desconectar">
+<a href="/desconectar"
+   id="btnDesconectar"
+   class="btn-desconectar"
+   style="display:none;">
    🔴 Desconectar WhatsApp
 </a>
-
-{% endif %}
     <div id="areaQr">
 
         <img
@@ -194,14 +192,17 @@ function atualizarStatus(status) {
 
     const statusEl = document.getElementById("status");
     const numeroEl = document.getElementById("numero");
-    const btn = document.getElementById("btnConectar");
+    const btnConectar = document.getElementById("btnConectar");
+    const btnDesconectar = document.getElementById("btnDesconectar");
     const qr = document.getElementById("qr");
 
     if (status === "conectado") {
 
         statusEl.innerText = "🟢 Conectado";
         numeroEl.innerText = "✔ WhatsApp conectado";
-        btn.style.display = "none";
+
+        btnConectar.style.display = "none";
+        btnDesconectar.style.display = "inline-block"; // 🔥 AQUI
 
         pararQR = true;
 
@@ -213,13 +214,11 @@ function atualizarStatus(status) {
 
         statusEl.innerText = "🔴 Desconectado";
         numeroEl.innerText = "Não conectado";
-        btn.style.display = "inline-block";
+
+        btnConectar.style.display = "inline-block";
+        btnDesconectar.style.display = "none"; // 🔥 AQUI
 
         pararQR = false;
-
-    } else {
-
-        statusEl.innerText = status;
     }
 }
 
