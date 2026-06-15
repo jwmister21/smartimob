@@ -873,12 +873,12 @@ def atualizar_status_whatsapp():
 
     return {"sucesso": True}
 
-
+https://zoom-leggings-viability.ngrok-free.dev/enviar
 @app.route("/teste_envio")
 def teste_envio():
 
     requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/enviar",
+        "",
         json={
             "sessao": "corretor_1",
             "numero": "5511920900085@c.us",
@@ -1067,17 +1067,31 @@ def enviar_mensagem():
     telefone = data["telefone"]
     mensagem = data["mensagem"]
 
-    # integração com WPPConnect
-    requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/enviar",
-        json={
-            "phone": telefone,
-            "message": mensagem
+    try:
+        resp = requests.post(
+            "https://zoom-leggings-viability.ngrok-free.dev/enviar",
+            json={
+                "sessao": "default",
+                "numero": telefone,
+                "mensagem": mensagem
+            }
+        )
+
+        print("RESPOSTA NODE:", resp.text)
+
+        return {
+            "status": "ok" if resp.status_code == 200 else "error",
+            "resposta": resp.text
         }
-    )
 
-    return {"status": "ok"}
+    except Exception as e:
 
+        print("ERRO:", e)
+
+        return {
+            "status": "error",
+            "erro": str(e)
+        }
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
