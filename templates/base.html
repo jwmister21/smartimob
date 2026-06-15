@@ -339,6 +339,64 @@ window.addEventListener("load", () => {
         document.body.classList.add("light");
     }
 });
+    function toggleNotificacoes() {
+        var box = document.getElementById("notificacoes-box");
+        box.style.display = (box.style.display === "block") ? "none" : "block";
+    }
+
+    function toggleChat() {
+    const chat = document.getElementById('chat-widget');
+    if (chat.style.display === 'flex') {
+        chat.style.display = 'none';
+    } else {
+        chat.style.display = 'flex';
+    }
+}
+
+async function analisarIA() {
+    const texto = document.getElementById('texto_cliente').value;
+    const chatBody = document.getElementById('chat-body');
+
+    if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
+
+    // Feedback visual
+    chatBody.innerHTML = "<p>Processando com IA...</p>";
+
+    const response = await fetch('/analisar_cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: texto })
+    });
+
+    const data = await response.json();
+    
+    // Exibe o resultado da análise no chat
+    chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    const valorInput = document.getElementById("valor");
+
+    valorInput.addEventListener("input", function(e) {
+
+        let valor = e.target.value.replace(/\D/g, "");
+
+        if (valor === "") {
+            e.target.value = "";
+            return;
+        }
+
+        valor = (parseInt(valor) / 100).toFixed(2);
+
+        valor = valor.replace(".", ",");
+
+        valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+        e.target.value = "R$ " + valor;
+    });
+
+});
 </script>
 </body>
 </html>
