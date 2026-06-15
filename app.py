@@ -2254,9 +2254,26 @@ def editar_imovel(id):
 
 @app.route("/gerar_site")
 def gerar_site():
+
     empresa_id = session["empresa_id"]
 
-    return render_template("gerar_site.html")
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # busca empresa
+    cursor.execute("""
+        SELECT * FROM empresas WHERE id = ?
+    """, (empresa_id,))
+
+    empresa = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "gerar_site.html",
+        empresa=empresa
+    )
 # ==========================================
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
 # ==========================================
