@@ -100,8 +100,8 @@
                 <option value="Visita Agendada" {% if cliente[7] == 'Visita Agendada' %}selected{% endif %}>📅 Visita Agendada</option>
                 <option value="Proposta Feita" {% if cliente[7] == 'Proposta Feita' %}selected{% endif %}>📝 Proposta Feita</option>
                 <option value="Contrato Fechado" {% if cliente[7] == 'Contrato Fechado' %}selected{% endif %}>🏆 Venda Concluída!</option>
-                <option value="Desistiu" {% if cliente[7] == 'Desistiu' %}selected{% endif %}>Desistiu!</option>
-                <option value="Ja comprou" {% if cliente[7] == 'Ja comprou' %}selected{% endif %}>Ja comprou!</option>
+                <option value="Desistiu" {% if cliente[7] == 'Desistiu' %}selected{% endif %}>⚠️ Desistiu!</option>
+                <option value="Ja comprou" {% if cliente[7] == 'Ja comprou' %}selected{% endif %}>⛔ Ja Comprou!</option>
             </select>
             
             <div id="campoData" style="margin: 10px 0; display: {% if cliente[7] == 'Visita Agendada' %}block{% else %}none{% endif %};">
