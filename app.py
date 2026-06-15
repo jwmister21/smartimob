@@ -753,6 +753,54 @@ def servir_video_do_volume(filename):
 
 
 
+ @app.route("/verificar_conexao_whatsapp")
+def verificar_conexao_whatsapp():
+
+    sessao = session.get("sessao")  # ou pega do usuário logado
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT whatsapp_sessao
+        FROM usuarios
+        WHERE id = ?
+    """, (session["usuario_id"],))
+
+    user = cursor.fetchone()
+
+    if not user:
+        return {"status": "desconectado"}
+
+    sessao = user[0]
+
+    # chama NODE pra verificar status real
+    import requests
+
+    try:
+        r = requests.get(
+            f"https://zoom-leggings-viability.ngrok-free.dev/status/{sessao}"
+        )
+
+        data = r.json()
+
+        status = data.get("status", "desconectado")
+
+        # atualiza banco
+        cursor.execute("""
+            UPDATE usuarios
+            SET whatsapp_status = ?
+            WHERE whatsapp_sessao = ?
+        """, (status, sessao))
+
+        conn.commit()
+        conn.close()
+
+        return {"status": status}
+
+    except Exception as e:
+        return {"status": "desconectado", "erro": str(e)}
+
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
 @admin_required
