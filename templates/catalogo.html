@@ -1,101 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Catálogo de Imóveis</title>
+<style>
+:root {
+    --cor: {{ config.cor_primaria }};
+}
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #0f172a;
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
+.header {
+    background: var(--cor);
+    padding: 20px;
+    color: white;
+}
 
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+.card {
+    background: #111827;
+    border-left: 4px solid var(--cor);
+    padding: 15px;
+    margin: 10px;
+}
+</style>
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .card {
-            background: #111827;
-            border-radius: 12px;
-            overflow: hidden;
-            padding: 15px;
-        }
-
-        .img {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-
-        .valor {
-            color: #22c55e;
-            font-weight: bold;
-            margin-top: 8px;
-        }
-
-        .btn {
-            display: block;
-            margin-top: 10px;
-            text-align: center;
-            background: #22c55e;
-            padding: 10px;
-            border-radius: 8px;
-            color: white;
-            text-decoration: none;
-        }
-
-        .titulo {
-            font-size: 14px;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-
-<body>
-
-<h1>🏡 Catálogo de Imóveis</h1>
-
-<div class="grid">
-
-    {% for imovel in imoveis %}
-
-    <div class="card">
-
-        <img class="img"
-             src="/uploads/imoveis/{{ imovel.id }}.jpg">
-
-        <div class="titulo">
-            {{ imovel.titulo }}
-        </div>
-
-        <div class="valor">
-            R$ {{ imovel.valor }}
-        </div>
-
-        <p style="font-size:12px;">
-            📍 {{ imovel.bairro }} - {{ imovel.cidade }}
-        </p>
-
-        <a class="btn"
-           href="https://wa.me/55SEUNUMERO?text=Tenho interesse no imóvel {{ imovel.titulo }}">
-            Falar no WhatsApp
-        </a>
-
-    </div>
-
-    {% endfor %}
-
+<div class="header">
+    <h1>{{ config.nome_imobiliaria }}</h1>
 </div>
 
-</body>
-</html>
+<div class="grid">
+    {% for imovel in imoveis %}
+    <div class="card">
+        <h3>{{ imovel.titulo }}</h3>
+        <p>{{ imovel.cidade }} - {{ imovel.bairro }}</p>
+        <p>💰 {{ imovel.valor }}</p>
+    </div>
+    {% endfor %}
+</div>
