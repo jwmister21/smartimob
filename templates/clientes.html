@@ -67,9 +67,11 @@ tr:hover { background:#1a2332; }
             <td>{{ cliente[5] }}</td>
             <td>{{ cliente[7] }}</td>
             <td>
-                <button class="btn-dados" onclick="abrirDetalhes('{{ cliente[1] }}', '{{ cliente[3] }}', '{{ cliente[8] }}', '{{ cliente[9] }}')">
-                    + Dados
-                </button>
+                <button
+    class="btn-dados"
+    onclick="window.location.href='/cliente/{{ cliente[0] }}'">
+    👤 Perfil
+</button>
                 <a class="btn-whats" target="_blank" href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">
                     WhatsApp
                 </a>
