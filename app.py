@@ -873,7 +873,6 @@ def atualizar_status_whatsapp():
 
     return {"sucesso": True}
 
-https://zoom-leggings-viability.ngrok-free.dev/enviar
 @app.route("/teste_envio")
 def teste_envio():
 
