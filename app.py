@@ -20,9 +20,9 @@ from openai import OpenAI
 from flask import send_from_directory
 from flask_socketio import SocketIO
 
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 DB_DIR = "/data"
 
 UPLOAD_FOLDER_IMOVEIS = "/data/uploads/imoveis"
