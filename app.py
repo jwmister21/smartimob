@@ -482,6 +482,11 @@ def super_admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+@app.route("/simulador-financiamento")
+def simulador_financiamento():
+    return render_template("simulador_financiamento.html")
+
 @app.route("/superadmin/dashboard")
 @super_admin_required
 def super_dashboard():
