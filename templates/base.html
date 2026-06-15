@@ -7,7 +7,58 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
+    <style> 
+         :root {
+    --bg: #0b1120;
+    --sidebar: #111827;
+    --card: #111827;
+    --text: #ffffff;
+    --muted: #d1d5db;
+    --hover: #1e293b;
+    --primary: #38bdf8;
+}
+
+/* 🌞 LIGHT MODE */
+body.light {
+    --bg: #f3f4f6;
+    --sidebar: #ffffff;
+    --card: #ffffff;
+    --text: #111827;
+    --muted: #374151;
+    --hover: #e5e7eb;
+    --primary: #2563eb;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* SIDEBAR */
+.sidebar {
+    background: var(--sidebar);
+}
+
+.menu a {
+    color: var(--muted);
+}
+
+.menu a:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.menu a.active {
+    background: var(--primary);
+    color: white;
+}
+
+.logo span {
+    color: var(--primary);
+}
+
+        
+        
         * {
             margin: 0;
             padding: 0;
@@ -220,6 +271,18 @@
     <div class="topbar">
         <h1>{% block pagina %}{% endblock %}</h1>
 
+        <button onclick="toggleTheme()" style="
+    background: #111827;
+    border: 1px solid #1e293b;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 10px;
+">
+    🌓 Tema
+</button>
+
         <div class="user-controls">
             <span style="font-size: 20px; margin-right: 20px; cursor: pointer; position: relative;">
                 🔔
@@ -240,6 +303,25 @@
 
     {% block content %}{% endblock %}
 </div>
+<script>
+function toggleTheme() {
+    document.body.classList.toggle("light");
 
+    if (document.body.classList.contains("light")) {
+        localStorage.setItem("theme", "light");
+    } else {
+        localStorage.setItem("theme", "dark");
+    }
+}
+
+// carregar tema salvo
+window.addEventListener("load", () => {
+    const theme = localStorage.getItem("theme");
+
+    if (theme === "light") {
+        document.body.classList.add("light");
+    }
+});
+</script>
 </body>
 </html>
