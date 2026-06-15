@@ -133,9 +133,39 @@
 </div>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
+
 <script>
 
- async function verificarConexao() {
+/* =========================
+   SOCKET (TEMPO REAL)
+========================= */
+const socket = io("https://smartimob-production.up.railway.app");
+
+
+/* =========================
+   ESTADOS GLOBAIS
+========================= */
+let carregandoQR = false;
+let pararQR = false;
+
+
+/* =========================
+   SOCKET EVENT
+========================= */
+socket.on("whatsapp_status", function(data) {
+
+    console.log("📡 STATUS AO VIVO:", data);
+
+    if (data.sessao !== "{{ sessao }}") return;
+
+    atualizarStatus(data.status);
+});
+
+
+/* =========================
+   VERIFICAR CONEXÃO (FORCE SYNC)
+========================= */
+async function verificarConexao() {
 
     document.getElementById("status").innerText =
         "🔄 Verificando conexão...";
@@ -155,32 +185,10 @@
         console.error("Erro ao verificar conexão:", err);
     }
 }
-/* =========================
-   CONFIG SOCKET
-========================= */
-const socket = io("https://smartimob-production.up.railway.app");
-
-/* =========================
-   ESTADOS GLOBAIS
-========================= */
-let carregandoQR = false;
-let pararQR = false;
-
-/* =========================
-   SOCKET (TEMPO REAL)
-========================= */
-socket.on("whatsapp_status", function(data) {
-
-    console.log("📡 STATUS AO VIVO:", data);
-
-    if (data.sessao !== "{{ sessao }}") return;
-
-    atualizarStatus(data.status);
-});
 
 
 /* =========================
-   UI STATUS
+   ATUALIZA UI STATUS
 ========================= */
 function atualizarStatus(status) {
 
@@ -213,6 +221,21 @@ function atualizarStatus(status) {
 
         statusEl.innerText = status;
     }
+}
+
+
+/* =========================
+   CONECTAR WHATSAPP
+========================= */
+function conectarWhatsapp(){
+
+    document.getElementById("status").innerText =
+        "📲 Gerando QR Code...";
+
+    fetch("/conectar_whatsapp");
+
+    pararQR = false;
+    carregarQR();
 }
 
 
@@ -255,22 +278,7 @@ async function carregarQR(){
 
 
 /* =========================
-   CONECTAR WHATSAPP
-========================= */
-function conectarWhatsapp(){
-
-    document.getElementById("status").innerText =
-        "📲 Gerando QR Code...";
-
-    fetch("/conectar_whatsapp");
-
-    pararQR = false;
-    carregarQR();
-}
-
-
-/* =========================
-   TOAST (NOTIFICAÇÃO)
+   TOAST NOTIFICAÇÃO
 ========================= */
 function mostrarToast(msg) {
 
@@ -301,10 +309,9 @@ function mostrarToast(msg) {
 
 
 /* =========================
-   START
+   INIT
 ========================= */
 carregarQR();
 
 </script>
-
 {% endblock %}
