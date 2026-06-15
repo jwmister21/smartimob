@@ -126,17 +126,75 @@
 
 </div>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
 <script>
+/* =========================
+   CONFIG SOCKET
+========================= */
 const socket = io("https://smartimob-production.up.railway.app");
 
-    socket.on("whatsapp_status", function(data) {
-        console.log(data);
-    });
+/* =========================
+   ESTADOS GLOBAIS
+========================= */
 let carregandoQR = false;
+let pararQR = false;
 
+/* =========================
+   SOCKET (TEMPO REAL)
+========================= */
+socket.on("whatsapp_status", function(data) {
+
+    console.log("📡 STATUS AO VIVO:", data);
+
+    if (data.sessao !== "{{ sessao }}") return;
+
+    atualizarStatus(data.status);
+});
+
+
+/* =========================
+   UI STATUS
+========================= */
+function atualizarStatus(status) {
+
+    const statusEl = document.getElementById("status");
+    const numeroEl = document.getElementById("numero");
+    const btn = document.getElementById("btnConectar");
+    const qr = document.getElementById("qr");
+
+    if (status === "conectado") {
+
+        statusEl.innerText = "🟢 Conectado";
+        numeroEl.innerText = "✔ WhatsApp conectado";
+        btn.style.display = "none";
+
+        pararQR = true;
+
+        if (qr) qr.style.display = "none";
+
+        mostrarToast("✅ WhatsApp conectado com sucesso!");
+
+    } else if (status === "desconectado") {
+
+        statusEl.innerText = "🔴 Desconectado";
+        numeroEl.innerText = "Não conectado";
+        btn.style.display = "inline-block";
+
+        pararQR = false;
+
+    } else {
+
+        statusEl.innerText = status;
+    }
+}
+
+
+/* =========================
+   QR CODE LOOP
+========================= */
 async function carregarQR(){
 
-    if(carregandoQR) return;
+    if (carregandoQR || pararQR) return;
 
     carregandoQR = true;
 
@@ -145,15 +203,13 @@ async function carregarQR(){
         const resp = await fetch("/buscar_qr");
         const dados = await resp.json();
 
-        console.log("QR:", dados);
-
-        if(dados.qrcode){
+        if (dados.qrcode) {
 
             const img = document.getElementById("qr");
 
             let qrFinal = dados.qrcode;
 
-            if(!qrFinal.startsWith("data:image")){
+            if (!qrFinal.startsWith("data:image")) {
                 qrFinal = "data:image/png;base64," + qrFinal;
             }
 
@@ -161,28 +217,65 @@ async function carregarQR(){
             img.style.display = "block";
         }
 
-    } catch(err){
-
-        console.error("Erro QR:", err);
-
+    } catch (err) {
+        console.error("❌ Erro QR:", err);
     }
 
-    setTimeout(() => {
-        carregandoQR = false;
-        carregarQR();
-    }, 3000);
+    carregandoQR = false;
+
+    setTimeout(carregarQR, 3000);
 }
 
+
+/* =========================
+   CONECTAR WHATSAPP
+========================= */
 function conectarWhatsapp(){
 
     document.getElementById("status").innerText =
-        "Gerando QR Code...";
+        "📲 Gerando QR Code...";
 
     fetch("/conectar_whatsapp");
 
+    pararQR = false;
     carregarQR();
 }
 
+
+/* =========================
+   TOAST (NOTIFICAÇÃO)
+========================= */
+function mostrarToast(msg) {
+
+    let toast = document.getElementById("toast");
+
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast";
+        toast.style.position = "fixed";
+        toast.style.bottom = "20px";
+        toast.style.right = "20px";
+        toast.style.background = "#22c55e";
+        toast.style.color = "#fff";
+        toast.style.padding = "12px 18px";
+        toast.style.borderRadius = "10px";
+        toast.style.fontWeight = "600";
+        toast.style.zIndex = "9999";
+        document.body.appendChild(toast);
+    }
+
+    toast.innerText = msg;
+    toast.style.display = "block";
+
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 3000);
+}
+
+
+/* =========================
+   START
+========================= */
 carregarQR();
 
 </script>
