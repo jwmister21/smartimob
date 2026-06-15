@@ -1061,12 +1061,9 @@ def campanhas():
 
 @app.route("/enviar_mensagem", methods=["POST"])
 def enviar_mensagem():
-
     data = request.get_json()
-
     telefone = data["telefone"]
     mensagem = data["mensagem"]
-
     usuario_id = session.get("usuario_id")
 
     try:
@@ -1095,9 +1092,13 @@ def enviar_mensagem():
                 "mensagem": mensagem
             }
         )
-
         print("RESPOSTA NODE:", resp.text)
+        return {"status": "ok", "resposta": resp.text}
 
+    except Exception as e:
+        # Este bloco precisa existir para fechar o 'try'
+        print("ERRO:", e)
+        return {"status": "error", "erro": str(e)}
               
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
