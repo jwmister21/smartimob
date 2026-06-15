@@ -1458,7 +1458,39 @@ WHERE i.empresa_id = ?
     return render_template("match_ia.html", matches=matches)
 
 
+@app.route("/site/<slug>")
+def site_publico(slug):
 
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # busca empresa pelo slug
+    cursor.execute("""
+        SELECT * FROM configuracoes_site
+        WHERE subdominio = ?
+    """, (slug,))
+    config = cursor.fetchone()
+
+    if not config:
+        return "Site não encontrado"
+
+    empresa_id = config["empresa_id"]
+
+    # busca imóveis da empresa
+    cursor.execute("""
+        SELECT * FROM imoveis
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+    imoveis = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "site_publico.html",
+        config=config,
+        imoveis=imoveis
+    )
 
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
@@ -2221,12 +2253,39 @@ def editar_imovel(id):
 
 
 
-@app.route('/Gerar_site')
-def mostrar_gerador():
-    return render_template('Gerar_site.html')
+@app.route("/gerar_site")
+def gerar_site():
+    empresa_id = session["empresa_id"]
+
+    return render_template("gerar_site.html")
 # ==========================================
 # 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
 # ==========================================
+
+@app.route("/gerar_site/salvar", methods=["POST"])
+def salvar_site():
+
+    empresa_id = session["empresa_id"]
+
+    nome = request.form["nome"]
+    cor = request.form["cor"]
+    slug = request.form["slug"]
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT OR REPLACE INTO configuracoes_site
+        (empresa_id, nome_imobiliaria, cor_primaria, subdominio)
+        VALUES (?, ?, ?, ?)
+    """, (empresa_id, nome, cor, slug))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(f"/site/{slug}")
+
+
 @app.route("/gerar_anuncio", methods=["GET", "POST"])
 @verificar_sessao
 def gerar_anuncio():
