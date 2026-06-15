@@ -1,7 +1,7 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
+{% extends 'base.html' %}
+
+
+{% block content %}
 <title>Campanhas WhatsApp</title>
 
 <style>
@@ -162,6 +162,5 @@ async function iniciarEnvio() {
     status.innerHTML = "✅ Campanha finalizada!";
 }
 </script>
+{% endblock %}
 
-</body>
-</html>
