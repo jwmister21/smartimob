@@ -274,6 +274,34 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def salvar_status_whatsapp(sessao, status):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET whatsapp_status = ?
+        WHERE whatsapp_sessao = ?
+    """, (status, sessao))
+
+    conn.commit()
+    conn.close()
+
+
+@app.route("/webhook_whatsapp_status", methods=["POST"])
+def webhook_whatsapp_status():
+
+    dados = request.get_json()
+
+    sessao = dados.get("sessao")
+    status = dados.get("status")
+
+    salvar_status_whatsapp(sessao, status)
+
+    print("STATUS SALVO:", sessao, status)
+
+    return {"ok": True}
 
 @app.route('/uploads/imoveis/<filename>')
 def foto_imovel(filename):
