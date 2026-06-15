@@ -527,6 +527,20 @@ def super_dashboard():
     return render_template("super_admin.html", empresas=empresas)
 
 
+@app.route("/catalogo")
+def catalogo():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM imoveis ORDER BY id DESC")
+    imoveis = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("catalogo.html", imoveis=imoveis)
+
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
     nome = request.form.get("nome")
