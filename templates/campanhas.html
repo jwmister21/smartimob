@@ -43,19 +43,20 @@ async function iniciarEnvio() {
             `Enviando ${i+1}/${telefones.length} → ${telefone}`;
 
         try {
-            await fetch("/enviar_mensagem", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    telefone,
-                    mensagem
-                })
-            });
+            const resp = await fetch("/enviar_mensagem", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+        telefone,
+        mensagem
+    })
+});
 
-        } catch (err) {
-            console.log("Erro:", err);
-        }
+const data = await resp.json();
 
+if (data.status !== "ok") {
+    console.log("Erro ao enviar:", telefone);
+}
         // ⏱️ delay entre envios
         await new Promise(r => setTimeout(r, delay * 1000));
     }
