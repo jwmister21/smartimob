@@ -1622,6 +1622,7 @@ def criar_login():
     email = request.form.get('email')
     senha_raw = request.form.get('senha')
     empresa_id = session.get('empresa_id')
+    nome = request.form.get('nome')
     
     # CRÍTICO: Criptografe a senha antes de salvar
     senha_hash = generate_password_hash(senha_raw)
@@ -1629,7 +1630,7 @@ def criar_login():
     conn = sqlite3.connect('/data/imobiliaria.db')
     cursor = conn.cursor()
     # Salve o senha_hash, não a senha_raw
-    cursor.execute("INSERT INTO usuarios (email, senha, empresa_id) VALUES (?, ?, ?)", 
+    cursor.execute("INSERT INTO usuarios (email, senha, empresa_id, nome) VALUES (?, ?, ?, ?)", 
                    (email, senha_hash, empresa_id))
     conn.commit()
     conn.close()
