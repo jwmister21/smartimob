@@ -1616,25 +1616,75 @@ def admin_bloquear(id):
 
 @app.route('/admin/criar-login', methods=['POST'])
 def criar_login():
+
     if not session.get('is_admin'):
         return "Acesso negado", 403
-    
+
     email = request.form.get('email')
     senha_raw = request.form.get('senha')
-    empresa_id = session.get('empresa_id')
     nome = request.form.get('nome')
-    
-    # CRÍTICO: Criptografe a senha antes de salvar
+    empresa_id = session.get('empresa_id')
+
     senha_hash = generate_password_hash(senha_raw)
-    
+
     conn = sqlite3.connect('/data/imobiliaria.db')
     cursor = conn.cursor()
-    # Salve o senha_hash, não a senha_raw
-    cursor.execute("INSERT INTO usuarios (email, senha, empresa_id, nome) VALUES (?, ?, ?, ?)", 
-                   (email, senha_hash, empresa_id, nome))
-    conn.commit()
-    conn.close()
-    return "Usuário criado com sucesso!"
+
+    try:
+
+        # Cria usuário
+        cursor.execute("""
+            INSERT INTO usuarios
+            (
+                email,
+                senha,
+                empresa_id,
+                nome
+            )
+            VALUES (?, ?, ?, ?)
+        """,
+        (
+            email,
+            senha_hash,
+            empresa_id,
+            nome
+        ))
+
+        # ID gerado
+        usuario_id = cursor.lastrowid
+
+        # Cria sessão WhatsApp automática
+        whatsapp_sessao = f"corretor_{usuario_id}"
+
+        cursor.execute("""
+            UPDATE usuarios
+            SET whatsapp_sessao = ?
+            WHERE id = ?
+        """,
+        (
+            whatsapp_sessao,
+            usuario_id
+        ))
+
+        conn.commit()
+
+        print(
+            f"Usuário criado: {nome} | Sessão: {whatsapp_sessao}"
+        )
+
+        return redirect("/admin/novo-usuario")
+
+    except Exception as e:
+
+        conn.rollback()
+
+        print("ERRO:", e)
+
+        return f"Erro ao criar usuário: {e}"
+
+    finally:
+
+        conn.close()
 
 
 
