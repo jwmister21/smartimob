@@ -113,6 +113,11 @@
    class="btn-desconectar">
    🔴 Desconectar WhatsApp
 </a>
+ <button
+    class="whatsapp-btn"
+    onclick="verificarConexao()">
+    🔄 Verificar conexão
+</button>
 
 {% endif %}
     <div id="areaQr">
@@ -128,6 +133,27 @@
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
 <script>
+
+ async function verificarConexao() {
+
+    document.getElementById("status").innerText =
+        "🔄 Verificando conexão...";
+
+    try {
+
+        const resp = await fetch("/verificar_conexao_whatsapp");
+        const dados = await resp.json();
+
+        console.log("VERIFICAÇÃO:", dados);
+
+        if (dados.status) {
+            atualizarStatus(dados.status);
+        }
+
+    } catch (err) {
+        console.error("Erro ao verificar conexão:", err);
+    }
+}
 /* =========================
    CONFIG SOCKET
 ========================= */
