@@ -1,3 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Campanhas WhatsApp</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    margin: 0;
+    padding: 30px;
+    color: #e5e7eb;
+}
+
+.card {
+    max-width: 750px;
+    margin: auto;
+    background: #111827;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    border: 1px solid #1f2937;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    color: #60a5fa;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+textarea, input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #374151;
+    background: #0b1220;
+    color: #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+textarea:focus, input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+#status {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #22c55e;
+}
+</style>
+
+</head>
+
+<body>
+
 <div class="card">
 
     <h2>📢 Nova Campanha WhatsApp</h2>
@@ -35,32 +120,48 @@ async function iniciarEnvio() {
 
     const status = document.getElementById("status");
 
+    if (telefones.length === 0 || !mensagem) {
+        status.innerHTML = "⚠️ Preencha telefones e mensagem!";
+        return;
+    }
+
     for (let i = 0; i < telefones.length; i++) {
 
         const telefone = telefones[i];
 
         status.innerHTML =
-            `Enviando ${i+1}/${telefones.length} → ${telefone}`;
+            `⏳ Enviando ${i+1}/${telefones.length} → ${telefone}`;
 
         try {
             const resp = await fetch("/enviar_mensagem", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-        telefone,
-        mensagem
-    })
-});
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    telefone,
+                    mensagem
+                })
+            });
 
-const data = await resp.json();
+            const data = await resp.json();
 
-if (data.status !== "ok") {
-    console.log("Erro ao enviar:", telefone);
-}
-        // ⏱️ delay entre envios
+            if (data.status !== "ok") {
+                console.log("❌ Erro ao enviar:", telefone, data);
+                status.innerHTML =
+                    `❌ Erro ao enviar ${telefone}`;
+            }
+
+        } catch (err) {
+            console.log("Erro request:", err);
+            status.innerHTML =
+                `❌ Falha na requisição: ${telefone}`;
+        }
+
         await new Promise(r => setTimeout(r, delay * 1000));
     }
 
     status.innerHTML = "✅ Campanha finalizada!";
 }
 </script>
+
+</body>
+</html>
