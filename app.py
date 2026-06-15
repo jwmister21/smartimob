@@ -483,7 +483,7 @@ def super_admin_required(f):
     return decorated_function
 
 
-@app.route("/simulador-financiamento")
+@app.route("/simulador_financiamento")
 def simulador_financiamento():
     return render_template("simulador_financiamento.html")
 
