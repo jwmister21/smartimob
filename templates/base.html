@@ -4,332 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SMARTZEN IMOB{% endblock %}</title>
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        /* =========================
-           RESET
-        ========================= */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+        /* Variáveis de Tema */
+        :root { --bg-body: #0b1120; --bg-sidebar: #0f172a; --text-main: white; --text-muted: #94a3b8; --accent: #38bdf8; }
+        .light-mode { --bg-body: #f8fafc; --bg-sidebar: #ffffff; --text-main: #1e293b; --text-muted: #64748b; }
 
-        /* =========================
-           THEME
-        ========================= */
-        :root {
-            --bg: #0b1120;
-            --sidebar: #111827;
-            --text: #ffffff;
-            --muted: #d1d5db;
-            --hover: #1e293b;
-            --primary: #38bdf8;
-            --border: rgba(255,255,255,.05);
-        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); transition: 0.3s; }
 
-        body.light {
-            --bg: #f3f4f6;
-            --sidebar: #ffffff;
-            --text: #111827;
-            --muted: #374151;
-            --hover: #e5e7eb;
-            --primary: #2563eb;
-            --border: #e5e7eb;
+        /* Sidebar Aprimorada */
+        .sidebar { 
+            position:fixed; left:0; top:0; width:260px; height:100vh; 
+            background: var(--bg-sidebar); border-right:1px solid #1e293b; 
+            padding:20px; display:flex; flex-direction:column; overflow-y:auto;
         }
+        .logo { font-size:24px; font-weight:800; margin-bottom:40px; padding-left:10px; }
+        .logo span { color: var(--accent); }
+        .menu { display:flex; flex-direction:column; gap:5px; }
+        .menu a { 
+            display:flex; align-items:center; gap:12px; text-decoration:none; 
+            color: var(--text-muted); padding:12px 16px; border-radius:10px; 
+            transition:0.3s; font-weight:500; 
+        }
+        .menu a:hover { background:#1e293b; color:white; }
+        .menu-section-title { color:#475569; font-size:0.75rem; text-transform:uppercase; margin:20px 0 10px 16px; }
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            transition: background .3s ease, color .3s ease;
-        }
-
-        /* =========================
-           SIDEBAR (UPGRADE LEVE)
-        ========================= */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 260px;
-            height: 100vh;
-            background: var(--sidebar);
-            border-right: 1px solid var(--border);
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 40px;
-        }
-
-        .logo span {
-            color: var(--primary);
-        }
-
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: var(--muted);
-            padding: 10px 12px;
-            border-radius: 10px;
-            transition: .2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-
-        .menu a:hover {
-            background: var(--hover);
-            color: var(--text);
-            transform: translateX(2px);
-        }
-
-        .menu a.active {
-            background: var(--primary);
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .menu-section-title {
-            color: #6b7280;
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin: 10px 0 5px 10px;
-        }
-
-        /* =========================
-           MAIN
-        ========================= */
-        .main {
-            margin-left: 260px;
-            min-height: 100vh;
-            padding: 35px;
-        }
-
-        .topbar {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:30px;
-        }
-
-        .user-controls {
-            display:flex;
-            align-items:center;
-            position:relative;
-        }
-
-        .badge {
-            background:#ef4444;
-            color:white;
-            border-radius:50%;
-            padding:2px 6px;
-            font-size:10px;
-            position:absolute;
-            top:-5px;
-            right:15px;
-        }
-
-        /* DROPDOWN */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropbtn {
-            background: var(--sidebar);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px 15px;
-            border-radius: 12px;
-            cursor: pointer;
-        }
-
-        .dropdown-content {
-            display:none;
-            position:absolute;
-            right:0;
-            background: var(--sidebar);
-            min-width:160px;
-            border-radius:12px;
-            border:1px solid var(--border);
-            z-index:1000;
-        }
-
-        .dropdown-content a {
-            color: var(--text);
-            padding: 12px;
-            display:block;
-            text-decoration:none;
-        }
-
-        .dropdown-content a:hover {
-            background: var(--hover);
-        }
-
-        .dropdown:hover .dropdown-content {
-            display:block;
-        }
-
-        /* =========================
-           NOTIFICAÇÕES
-        ========================= */
-        .notif-box {
-            background: var(--sidebar);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-        }
-
-        /* =========================
-           CHAT (NÃO ALTERADO VISUAL)
-        ========================= */
-        .chat-widget {
-            background: #1a2234;
-        }
-
-        .chat-float-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #f59e0b;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            z-index: 9999;
-            transition: transform 0.2s;
-        }
-
-        .chat-float-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .chat-body {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-        }
-
-        .chat-footer {
-            padding: 15px;
-            background: #0f172a;
-            border-top: 1px solid #334155;
-        }
-
-        #texto_cliente {
-            width: 100%;
-            background: #1e293b;
-            border: 1px solid #475569;
-            border-radius: 8px;
-            color: white;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-            resize: none;
-        }
-
-        .btn-analisar {
-            width: 100%;
-            background: #f59e0b;
-            border: none;
-            padding: 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-analisar:hover {
-            background: #d97706;
-        }
+        /* Conteúdo */
+        .main { margin-left:260px; min-height:100vh; padding:35px; }
+        .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; }
+        
+        /* Tema Button */
+        .btn-theme { cursor: pointer; background: none; border: 1px solid #475569; padding: 5px 10px; border-radius: 8px; color: var(--text-main); }
     </style>
 </head>
-
 <body>
 
 <div class="sidebar">
-
     <div class="logo">SMART<span>ZEN</span></div>
-
     <div class="menu">
-
-        {% set path = request.path %}
-
-        <div class="menu-section-title">Principal</div>
-        <a href="/" class="{% if path == '/' %}active{% endif %}">🏠 Dashboard</a>
-
+        <div class="menu-section-title">Navegação</div>
+        <a href="/">🏠 Dashboard</a>
         <div class="menu-section-title">CRM</div>
-        <a href="/clientes" class="{% if '/clientes' in path %}active{% endif %}">👥 Clientes</a>
-        <a href="/funil" class="{% if '/funil' in path %}active{% endif %}">⚡ Funil</a>
-
+        <a href="/clientes">👥 Clientes</a>
+        <a href="/funil">⚡ Funil</a>
         <div class="menu-section-title">Imóveis</div>
-        <a href="/imoveis" class="{% if '/imoveis' in path %}active{% endif %}">🏢 Imóveis</a>
-        <a href="/match_ia" class="{% if '/match_ia' in path %}active{% endif %}">🤝 Match IA</a>
-
+        <a href="/imoveis">🏢 Imóveis</a>
+        <a href="/match_ia">🤝 Match IA</a>
         <div class="menu-section-title">Marketing</div>
-        <a href="/gerar_anuncio" class="{% if '/gerar_anuncio' in path %}active{% endif %}">🧠 Gerar Anúncio</a>
-
+        <a href="/gerar_anuncio">🧠 Gerar Anúncio</a>
         <div class="menu-section-title">Sistema</div>
-        <a href="/configuracoes" class="{% if '/configuracoes' in path %}active{% endif %}">⚙ Configurações</a>
-        <a href="/whatsapp" class="{% if '/whatsapp' in path %}active{% endif %}">💬 WhatsApp</a>
-        <a href="/simulador_financiamento" class="{% if '/simulador_financiamento' in path %}active{% endif %}">🏦 Financiamento</a>
+        <a href="/whatsapp">🟢 WhatsApp</a>
+        <a href="/simulador_financiamento">💰 Financiamento</a>
+        <a href="/configuracoes">⚙ Configurações</a>
 
         {% if session.get('is_admin') == 1 %}
-        <div class="menu-section-title">Administração</div>
-        <a href="/admin/gestao" class="{% if '/admin' in path %}active{% endif %}">📊 Gestão</a>
-        <a href="/admin/novo-usuario" class="{% if '/novo-usuario' in path %}active{% endif %}">➕ Novo Usuário</a>
+            <div class="menu-section-title">Administração</div>
+            <a href="/admin/gestao">📊 Gestão</a>
+            <a href="/admin/novo-usuario">➕ Novo Usuário</a>
         {% endif %}
-
     </div>
 </div>
 
 <div class="main">
-
     <div class="topbar">
-
         <h1>{% block pagina %}{% endblock %}</h1>
-
-        <button onclick="toggleTheme()" style="
-            background: var(--sidebar);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-right: 10px;
-        ">
-            🌓 Tema
-        </button>
-
         <div class="user-controls">
-            <span style="font-size:20px; margin-right:20px; cursor:pointer; position:relative;">
-                🔔
-                {% if lembretes|length > 0 %}
-                    <span class="badge">{{ lembretes|length }}</span>
-                {% endif %}
-            </span>
-
+            <button class="btn-theme" onclick="toggleTheme()">🌓 Alternar Tema</button>
+            <span style="font-size: 20px; margin: 0 20px; cursor: pointer;" onclick="toggleNotificacoes()">🔔</span>
             <div class="dropdown">
                 <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
                 <div class="dropdown-content">
-                    <a href="/configuracoes">⚙ Configurações</a>
-                    <a href="/logout" style="color:red;">🚪 Sair</a>
+                    <a href="/logout" style="color: #ff4d4d;">🚪 Sair</a>
                 </div>
             </div>
         </div>
@@ -339,19 +85,22 @@
 </div>
 
 <script>
-function toggleTheme() {
-    document.body.classList.toggle("light");
-    localStorage.setItem("theme",
-        document.body.classList.contains("light") ? "light" : "dark"
-    );
-}
-
-window.addEventListener("load", () => {
-    if (localStorage.getItem("theme") === "light") {
-        document.body.classList.add("light");
+    // Toggle Tema
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
-});
-</script>
 
+    // Carregar tema salvo
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+    }
+
+    function toggleNotificacoes() {
+        var box = document.getElementById("notificacoes-box");
+        box.style.display = (box.style.display === "block") ? "none" : "block";
+    }
+</script>
 </body>
 </html>
