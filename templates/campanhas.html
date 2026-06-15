@@ -6,97 +6,126 @@
 <style>
 body {
     font-family: Arial, sans-serif;
-    background: #0f172a;
+    background: radial-gradient(circle at top, #111827, #0f172a);
     margin: 0;
     padding: 30px;
     color: #e5e7eb;
 }
 
+/* CARD PRINCIPAL */
 .card {
-    max-width: 750px;
+    max-width: 780px;
     margin: auto;
-    background: #111827;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    border: 1px solid #1f2937;
+    background: rgba(17, 24, 39, 0.92);
+    padding: 28px;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.05);
+    backdrop-filter: blur(6px);
 }
 
+/* TÍTULO */
 h2 {
-    margin-bottom: 20px;
-    font-size: 22px;
+    margin-bottom: 22px;
+    font-size: 24px;
     color: #60a5fa;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
+/* LABELS */
 label {
     display: block;
-    margin-top: 15px;
-    margin-bottom: 6px;
-    font-size: 14px;
+    margin-top: 18px;
+    margin-bottom: 8px;
+    font-size: 13px;
     color: #9ca3af;
 }
 
+/* INPUTS */
 textarea, input {
     width: 100%;
-    padding: 12px;
-    border-radius: 8px;
+    padding: 12px 14px;
+    border-radius: 10px;
     border: 1px solid #374151;
     background: #0b1220;
     color: #e5e7eb;
     font-size: 14px;
     outline: none;
     transition: 0.2s;
+    box-sizing: border-box;
 }
 
 textarea:focus, input:focus {
     border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
 }
 
+/* BOTÃO */
 button {
-    margin-top: 20px;
+    margin-top: 22px;
     width: 100%;
-    padding: 12px;
-    background: #3b82f6;
+    padding: 14px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 15px;
+    font-weight: bold;
     cursor: pointer;
     transition: 0.2s;
 }
 
 button:hover {
-    background: #2563eb;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(37,99,235,0.25);
 }
 
+/* STATUS */
 #status {
-    margin-top: 15px;
+    margin-top: 18px;
     font-size: 14px;
-    color: #22c55e;
+    padding: 10px;
+    border-radius: 10px;
+    background: #0b1220;
+    border: 1px solid #1f2937;
+    color: #9ca3af;
+}
+
+/* STATUS VARIAÇÕES (JS pode usar depois se quiser) */
+.status-ok { color: #22c55e; }
+.status-error { color: #ef4444; }
+.status-loading { color: #fbbf24; }
+
+/* MOBILE */
+@media (max-width: 600px) {
+    body {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
 }
 </style>
-
-</head>
-
-<body>
 
 <div class="card">
 
     <h2>📢 Nova Campanha WhatsApp</h2>
 
-    <!-- TELEFONES -->
     <label>📱 Telefones (um por linha)</label>
     <textarea id="telefones" rows="8"
         placeholder="5511999999999&#10;5511888888888"></textarea>
 
-    <!-- MENSAGEM -->
     <label>💬 Mensagem</label>
     <textarea id="mensagem" rows="6"
         placeholder="Olá! Temos novos imóveis disponíveis..."></textarea>
 
-    <!-- TIMER -->
     <label>⏱️ Intervalo entre envios (segundos)</label>
     <input type="number" id="delay" value="5" min="1">
 
@@ -161,5 +190,5 @@ async function iniciarEnvio() {
     status.innerHTML = "✅ Campanha finalizada!";
 }
 </script>
-{% endblock %}
 
+{% endblock %}
