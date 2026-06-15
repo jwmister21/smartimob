@@ -8,7 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style> 
-         :root {
+         /* =========================
+   RESET
+========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* =========================
+   THEME VARIABLES
+========================= */
+:root {
     --bg: #0b1120;
     --sidebar: #111827;
     --card: #111827;
@@ -16,6 +29,7 @@
     --muted: #d1d5db;
     --hover: #1e293b;
     --primary: #38bdf8;
+    --border: rgba(255,255,255,.05);
 }
 
 /* 🌞 LIGHT MODE */
@@ -27,204 +41,207 @@ body.light {
     --muted: #374151;
     --hover: #e5e7eb;
     --primary: #2563eb;
+    --border: #e5e7eb;
 }
 
+/* =========================
+   BASE
+========================= */
 body {
     background: var(--bg);
     color: var(--text);
+    transition: background .3s ease, color .3s ease;
 }
 
-/* SIDEBAR */
+/* =========================
+   SIDEBAR
+========================= */
 .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
     background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
 }
 
-.menu a {
-    color: var(--muted);
-}
-
-.menu a:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.menu a.active {
-    background: var(--primary);
-    color: white;
+/* LOGO */
+.logo {
+    font-size: 26px;
+    font-weight: 700;
+    padding: 25px;
+    border-bottom: 1px solid var(--border);
+    background: var(--sidebar);
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .logo span {
     color: var(--primary);
 }
 
-        
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+/* MENU */
+.menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
 
-        body {
-            background: #0b1120;
-            color: white;
-        }
+/* LINKS */
+.menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--muted);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: .2s;
+}
 
-        /* SIDEBAR */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 260px;
-            height: 100vh;
-            background: #111827;
-            border-right: 1px solid rgba(255,255,255,.05);
-            display: flex;
-            flex-direction: column;
-        }
+.menu a:hover {
+    background: var(--hover);
+    color: var(--text);
+    transform: translateX(2px);
+}
 
-        .logo {
-            font-size: 26px;
-            font-weight: 700;
-            padding: 25px;
-            border-bottom: 1px solid rgba(255,255,255,.05);
-            background: #111827;
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
+/* MENU ATIVO */
+.menu a.active {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+}
 
-        .logo span {
-            color: #38bdf8;
-        }
+/* TITULOS MENU */
+.menu-section-title {
+    color: #6b7280;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 14px 0 6px 10px;
+    letter-spacing: .08em;
+}
 
-        .menu {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
+/* SCROLLBAR */
+.menu::-webkit-scrollbar {
+    width: 6px;
+}
 
-        .menu a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: #d1d5db;
-            padding: 10px 12px;
-            border-radius: 10px;
-            transition: .2s;
-            font-size: 14px;
-        }
+.menu::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 10px;
+}
 
-        .menu a:hover {
-            background: #1e293b;
-            color: #fff;
-            transform: translateX(2px);
-        }
+.menu::-webkit-scrollbar-thumb:hover {
+    background: #374151;
+}
 
-        /* 🔥 MENU ATIVO */
-        .menu a.active {
-            background: #2563eb;
-            color: white;
-            font-weight: 600;
-        }
+/* =========================
+   MAIN
+========================= */
+.main {
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 35px;
+}
 
-        .menu-section-title {
-            color: #4b5563;
-            font-size: 10px;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin: 14px 0 6px 10px;
-            letter-spacing: .08em;
-        }
+/* TOPBAR */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
 
-        .menu::-webkit-scrollbar {
-            width: 6px;
-        }
+/* USER AREA */
+.user-controls {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
 
-        .menu::-webkit-scrollbar-thumb {
-            background: #1f2937;
-            border-radius: 10px;
-        }
+/* NOTIF BADGE */
+.badge {
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    position: absolute;
+    top: -5px;
+    right: 15px;
+}
 
-        .menu::-webkit-scrollbar-thumb:hover {
-            background: #374151;
-        }
+/* DROPDOWN */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
 
-        /* MAIN */
-        .main {
-            margin-left: 260px;
-            min-height: 100vh;
-            padding: 35px;
-        }
+.dropbtn {
+    background: var(--sidebar);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: .2s;
+}
 
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: var(--sidebar);
+    min-width: 160px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    z-index: 1000;
+}
 
-        .user-controls {
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
+.dropdown-content a {
+    color: var(--text);
+    padding: 12px;
+    display: block;
+    text-decoration: none;
+}
 
-        .badge {
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 10px;
-            position: absolute;
-            top: -5px;
-            right: 15px;
-        }
+.dropdown-content a:hover {
+    background: var(--hover);
+}
 
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
-        .dropbtn {
-            background: #111827;
-            border: 1px solid #1e293b;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 12px;
-            cursor: pointer;
-        }
+/* =========================
+   BOTÕES
+========================= */
+button {
+    transition: .2s;
+}
 
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background-color: #111827;
-            min-width: 160px;
-            border-radius: 12px;
-            border: 1px solid #1e293b;
-            z-index: 1000;
-        }
+button:hover {
+    opacity: .9;
+}
 
-        .dropdown-content a {
-            color: white;
-            padding: 12px;
-            display: block;
-            text-decoration: none;
-        }
-
-        .dropdown-content a:hover {
-            background: #1e293b;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
+/* =========================
+   ANIMAÇÕES SUAVES
+========================= */
+.sidebar,
+.dropbtn,
+.dropdown-content,
+.menu a {
+    transition: background .3s ease, color .3s ease;
+}
     </style>
 </head>
 
