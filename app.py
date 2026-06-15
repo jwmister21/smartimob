@@ -1096,7 +1096,9 @@ def enviar_mensagem():
             }
         )
 
-        print("
+        print("RESPOSTA NODE:", resp.text)
+
+              
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
