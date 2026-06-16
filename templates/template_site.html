@@ -170,7 +170,7 @@ header p{
     color:#4b5563;
 }
 
-.preco{
+.valor{
     color:var(--cor);
     font-size:28px;
     font-weight:800;
@@ -333,8 +333,8 @@ footer{
                 </div>
                 {% endif %}
 
-                <div class="preco">
-                    R$ {{ "{:,.2f}".format(i.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                <div class="valor">
+                        {{ imovel.valor }}
                 </div>
 
                 <a
