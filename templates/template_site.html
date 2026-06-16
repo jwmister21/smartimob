@@ -221,12 +221,13 @@ footer {
         <div style="position:relative;">
             <span class="badge">{{ i.cidade }}</span>
             {% if i.fotos %}
+
 <div class="carousel-container" id="carousel-{{ i.id }}">
 
     <div class="carousel-images">
 
         {% for foto in i.fotos %}
-        <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
+            <img src="/uploads/imoveis/{{ foto }}" alt="Imóvel">
         {% endfor %}
 
     </div>
@@ -234,16 +235,24 @@ footer {
     {% if i.fotos|length > 1 %}
 
     <button class="carousel-btn prev"
-        onclick="moverSlide({{ i.id }}, -1)">
+            onclick="moverSlide({{ i.id }}, -1)">
         ❮
     </button>
 
     <button class="carousel-btn next"
-        onclick="moverSlide({{ i.id }}, 1)">
+            onclick="moverSlide({{ i.id }}, 1)">
         ❯
     </button>
 
     {% endif %}
+
+</div>
+
+{% else %}
+
+<img src="https://via.placeholder.com/600x400?text=Sem+Foto">
+
+{% endif %}
 
 </div>
 {% endif %}
@@ -285,12 +294,13 @@ function moverSlide(id, direcao){
             "#carousel-" + id + " .carousel-images"
         );
 
-    if(!slides[id]){
+    if(!carousel) return;
+
+    const total = carousel.children.length;
+
+    if(slides[id] === undefined){
         slides[id] = 0;
     }
-
-    const total =
-        carousel.children.length;
 
     slides[id] += direcao;
 
