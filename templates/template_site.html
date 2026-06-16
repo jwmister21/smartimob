@@ -246,35 +246,25 @@ footer{
 
     <div class="grid" id="grid-imoveis">
 
-        {% for i in imoveis %}
+        {% if imovel.fotos %}
 
-        <div class="card imovel">
+<div class="carousel-container" id="carousel-{{ imovel.id }}">
 
-            <div style="position:relative;">
+    <div class="carousel-images">
 
-                <span class="badge">
-                    {{ i.cidade or "Imóvel" }}
-                </span>
+        {% for foto in imovel.fotos %}
 
-                {% if i.fotos and i.fotos|length > 0 %}
+        <img
+            src="/uploads/imoveis/{{ foto }}"
+            alt="Foto do imóvel">
 
-                <div
-                    class="carousel-container"
-                    id="carousel-{{ i.id }}">
+        {% endfor %}
 
-                    <div class="carousel-images">
+    </div>
 
-                        {% for foto in i.fotos %}
+</div>
 
-                        <img
-                            src="{{ foto }}"
-                            alt="{{ i.titulo }}"
-                            loading="lazy"
-                            onerror="this.src='https://via.placeholder.com/800x500?text=Sem+Foto';">
-
-                        {% endfor %}
-
-                    </div>
+{% endif %}
 
                     {% if i.fotos|length > 1 %}
 
