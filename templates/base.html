@@ -31,9 +31,18 @@ body {
    SIDEBAR (UPGRADE VISUAL)
 ========================= */
 .sidebar {
-    background: #ffffff;
-    border-right: 1px solid #e5e7eb;
-    box-shadow: 4px 0 20px rgba(0,0,0,.05);
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    background: #111827;
+    border-right: 1px solid rgba(255,255,255,.06);
+    padding: 25px;
+
+    /* 🔥 UPGRADE */
+    display: flex;
+    flex-direction: column;
 }
 /* 🔥 SCROLL AQUI */
 .menu {
@@ -74,14 +83,11 @@ body {
 }
 
 .logo {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 35px;
-    letter-spacing: .5px;
+    color:#111827;
 }
 
 .logo span {
-    color: #38bdf8;
+    color:#2563eb;
 }
 
 /* MENU */
@@ -94,7 +100,7 @@ body {
 /* LINKS */
 .menu a {
     text-decoration: none;
-    color: #cbd5e1;
+    color: #475569;
     padding: 10px 12px;
     border-radius: 10px;
     display: flex;
@@ -106,8 +112,8 @@ body {
 
 /* HOVER MAIS SUAVE */
 .menu a:hover {
-    background: #1e293b;
-    color: #ffffff;
+    background: #eff6ff;
+    color: #2563eb;
     transform: translateX(3px);
 }
 
@@ -324,7 +330,7 @@ body {
 }
      .menu a.active {
     background: #2563eb;
-    color: #ffffff;
+    color: white;
     font-weight: 600;
     box-shadow: 0 0 0 1px rgba(37,99,235,.4);
 }
