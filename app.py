@@ -1461,27 +1461,63 @@ WHERE i.empresa_id = ?
 @app.route("/site/<slug>")
 def site_publico(slug):
 
+    import sqlite3
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # pega config do site
+    # Busca configuração do site
     cursor.execute("""
-        SELECT * FROM configuracoes_site
+        SELECT *
+        FROM configuracoes_site
         WHERE subdominio = ?
     """, (slug,))
+
     empresa = cursor.fetchone()
 
     if not empresa:
+        conn.close()
         return "Site não encontrado"
 
-    # pega imóveis da empresa
+    # Busca imóveis da empresa
     cursor.execute("""
-        SELECT * FROM imoveis
+        SELECT *
+        FROM imoveis
         WHERE empresa_id = ?
-    """, (empresa["empresa_id"],)
-    )
-    imoveis = cursor.fetchall()
+        ORDER BY id DESC
+    """, (empresa["empresa_id"],))
+
+    rows = cursor.fetchall()
+
+    imoveis = []
+
+    for row in rows:
+
+        imovel = dict(row)
+
+        # Busca TODAS as fotos do imóvel
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id ASC
+        """, (imovel["id"],))
+
+        fotos = cursor.fetchall()
+
+        imovel["fotos"] = [
+            foto["nome_arquivo"]
+            for foto in fotos
+        ]
+
+        # Primeira foto para capa
+        if imovel["fotos"]:
+            imovel["foto_capa"] = imovel["fotos"][0]
+        else:
+            imovel["foto_capa"] = None
+
+        imoveis.append(imovel)
 
     conn.close()
 
