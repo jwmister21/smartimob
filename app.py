@@ -2267,7 +2267,7 @@ def funil():
     conn.close()
 
     # Define suas etapas
-    etapas = ["Novo Contato", "Visita Agendada", "Em Atendimento", "Concluido", "Desistencia"]
+    etapas = ["Novo Contato", "Visita Agendada", "Negociação", "Concluido", "Desistencia"]
 
     # Organiza os dados em um dicionário
     funil_dados = {etapa: [] for etapa in etapas}
