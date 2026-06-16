@@ -1457,29 +1457,58 @@ def atualizar_senha():
 @app.route("/")
 @verificar_sessao
 def index():
-    # REMOVIDO: O redirecionamento automático que causava o loop
-    # Agora o admin vê o dashboard da empresa dele normalmente
-    
+
     empresa_id = session.get("empresa_id")
 
+
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Contagem segura por empresa_id
-    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id=?", (empresa_id,))
+
+    # Contagem clientes
+    cursor.execute(
+        "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
+        (empresa_id,)
+    )
+
     total_clientes = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id=?", (empresa_id,))
+
+
+    # Contagem imóveis
+    cursor.execute(
+        "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
+        (empresa_id,)
+    )
+
     total_imoveis = cursor.fetchone()[0]
 
+
+
+    # VERIFICA SITE DA EMPRESA
+
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id=?
+    """,(empresa_id,))
+
+
+    site = cursor.fetchone()
+
+
+
     conn.close()
+
+
 
     return render_template(
         "index.html",
         total_clientes=total_clientes,
         total_imoveis=total_imoveis,
+        site=site
     )
-
 # ==========================================
 # 2. SISTEMA DE LOGIN, USUÁRIOS E LOGOUT
 # ==========================================
@@ -2432,23 +2461,93 @@ def gerar_site():
 @app.route("/gerar_site/salvar", methods=["POST"])
 def salvar_site():
 
+    import re
+    import sqlite3
+
     empresa_id = session["empresa_id"]
 
-    nome = request.form["nome"]
-    cor = request.form["cor"]
-    slug = request.form["slug"]
 
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+
+
+    # verifica se já existe site da empresa
+
     cursor.execute("""
-        INSERT OR REPLACE INTO configuracoes_site
-        (empresa_id, nome_imobiliaria, cor_primaria, subdominio)
-        VALUES (?, ?, ?, ?)
-    """, (empresa_id, nome, cor, slug))
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+    """,(empresa_id,))
+
+
+    site = cursor.fetchone()
+
+
+    if site:
+
+        conn.close()
+
+        return redirect(f"/site/{site['subdominio']}")
+
+
+
+
+    # busca nome da empresa
+
+    cursor.execute("""
+        SELECT nome
+        FROM empresas
+        WHERE id = ?
+    """,(empresa_id,))
+
+
+    empresa = cursor.fetchone()
+
+
+
+    nome = empresa["nome"]
+
+
+
+    # cria slug automático
+
+    slug = re.sub(
+        r'[^a-z0-9]+',
+        '-',
+        nome.lower()
+    ).strip("-")
+
+
+
+    cor = "#22c55e"
+
+
+
+    cursor.execute("""
+        INSERT INTO configuracoes_site
+        (
+        empresa_id,
+        nome_imobiliaria,
+        cor_primaria,
+        subdominio
+        )
+        VALUES (?,?,?,?)
+    """,
+    (
+        empresa_id,
+        nome,
+        cor,
+        slug
+    ))
+
+
 
     conn.commit()
     conn.close()
+
+
 
     return redirect(f"/site/{slug}")
 
