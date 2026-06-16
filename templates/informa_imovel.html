@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>{{ imovel.titulo }}</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Segoe UI;
+    background:#f5f7fa;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.galeria-principal{
+    width:100%;
+    height:550px;
+    overflow:hidden;
+    border-radius:15px;
+    background:#eee;
+}
+
+.galeria-principal img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    cursor:pointer;
+}
+
+.miniaturas{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+    overflow:auto;
+}
+
+.miniaturas img{
+    width:120px;
+    height:80px;
+    object-fit:cover;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.info{
+    background:white;
+    margin-top:25px;
+    padding:25px;
+    border-radius:15px;
+}
+
+.titulo{
+    font-size:35px;
+    font-weight:bold;
+}
+
+.preco{
+    color:#22c55e;
+    font-size:42px;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.caracteristicas{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+    margin-top:25px;
+}
+
+.item{
+    background:#f8fafc;
+    padding:15px;
+    border-radius:10px;
+}
+
+.botoes{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+}
+
+.btn{
+    text-decoration:none;
+    padding:15px 25px;
+    border-radius:10px;
+    color:white;
+    font-weight:bold;
+}
+
+.whatsapp{
+    background:#25D366;
+}
+
+.compartilhar{
+    background:#2563eb;
+}
+
+.descricao{
+    margin-top:30px;
+    line-height:1.7;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:black;
+    z-index:9999;
+}
+
+.modal img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+}
+
+.fechar{
+    position:absolute;
+    top:20px;
+    right:20px;
+    color:white;
+    font-size:40px;
+    cursor:pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    {% if imovel.fotos %}
+
+    <div class="galeria-principal">
+
+        <img
+            id="fotoPrincipal"
+            src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+            onclick="abrirGaleria(this.src)"
+        >
+
+    </div>
+
+    <div class="miniaturas">
+
+        {% for foto in imovel.fotos %}
+
+        <img
+            src="/uploads/imoveis/{{ foto }}"
+            onclick="trocarFoto(this.src)"
+        >
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+    <div class="info">
+
+        <div class="titulo">
+            {{ imovel.titulo }}
+        </div>
+
+        <div class="preco">
+            R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        </div>
+
+        <h3>
+            📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+        </h3>
+
+        <div class="caracteristicas">
+
+            <div class="item">
+                🛏 {{ imovel.quartos }} Quartos
+            </div>
+
+            <div class="item">
+                🚿 {{ imovel.banheiros }} Banheiros
+            </div>
+
+            <div class="item">
+                🚗 {{ imovel.vaga_garagem }} Vagas
+            </div>
+
+            <div class="item">
+                📐 {{ imovel.area }} m²
+            </div>
+
+        </div>
+
+        <div class="botoes">
+
+            <a
+                class="btn whatsapp"
+                target="_blank"
+                href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+                WhatsApp
+            </a>
+
+            <a
+                href="#"
+                class="btn compartilhar"
+                onclick="compartilhar()">
+                Compartilhar
+            </a>
+
+        </div>
+
+        <div class="descricao">
+
+            <h2>Descrição</h2>
+
+            <p>
+                {{ imovel.descricao }}
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal" id="modal">
+
+    <span
+        class="fechar"
+        onclick="fecharGaleria()">
+        ×
+    </span>
+
+    <img id="fotoModal">
+
+</div>
+
+<script>
+
+function trocarFoto(src){
+
+    document
+    .getElementById("fotoPrincipal")
+    .src = src;
+}
+
+function abrirGaleria(src){
+
+    document
+    .getElementById("modal")
+    .style.display = "block";
+
+    document
+    .getElementById("fotoModal")
+    .src = src;
+}
+
+function fecharGaleria(){
+
+    document
+    .getElementById("modal")
+    .style.display = "none";
+}
+
+function compartilhar(){
+
+    if(navigator.share){
+
+        navigator.share({
+            title: document.title,
+            url: window.location.href
+        });
+
+    }else{
+
+        navigator.clipboard.writeText(
+            window.location.href
+        );
+
+        alert("Link copiado!");
+    }
+}
+
+</script>
+
+</body>
+</html>
