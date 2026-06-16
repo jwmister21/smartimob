@@ -4,180 +4,506 @@
 
 {% block content %}
 
-
 <style>
 
-body{
-    font-family:Arial;
-    background:#0f172a;
-    color:white;
+html,body{
+    margin:0;
+    padding:0;
 }
+
+
+body{
+
+    background:#0f172a;
+    font-family:Arial, sans-serif;
+    color:white;
+
+}
+
+
+/* tira espaço do base */
+
+main,
+.content,
+.container{
+
+    margin-top:0!important;
+    padding-top:0!important;
+
+}
+
+
+
+.campanha-area{
+
+
+    width:100%;
+    max-width:1400px;
+
+    margin:0 auto;
+
+    padding:10px 20px 30px;
+
+
+    display:grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap:20px;
+
+
+}
+
+
 
 
 .card{
-    max-width:900px;
-    margin:auto;
+
+
     background:#111827;
+
+    border-radius:18px;
+
     padding:25px;
-    border-radius:15px;
+
+    box-shadow:
+    0 15px 40px #0008;
+
+
+    border:1px solid #1e293b;
+
+
 }
 
 
-input,textarea{
+
+h2{
+
+    margin-top:0;
+
+    color:#60a5fa;
+
+}
+
+
+
+label{
+
+    color:#94a3b8;
+
+    display:block;
+
+    margin-top:15px;
+
+}
+
+
+
+input,
+textarea{
+
+
     width:100%;
-    padding:12px;
-    margin-top:10px;
+
+    box-sizing:border-box;
+
     background:#020617;
+
     color:white;
+
     border:1px solid #334155;
-    border-radius:10px;
-}
 
-
-.clientes{
-    margin-top:20px;
-    background:#020617;
-    padding:15px;
     border-radius:12px;
-    max-height:300px;
-    overflow:auto;
-}
 
-
-.cliente{
-    display:flex;
-    justify-content:space-between;
     padding:12px;
-    border-bottom:1px solid #1e293b;
+
+    margin-top:8px;
+
+    outline:none;
+
 }
+
+
+
+textarea{
+
+    resize:none;
+
+}
+
 
 
 button{
 
-    margin-top:20px;
+
     width:100%;
+
     padding:14px;
-    background:#22c55e;
+
+    margin-top:18px;
+
     border:0;
-    border-radius:10px;
+
+    border-radius:12px;
+
+
+    background:
+    linear-gradient(135deg,#22c55e,#16a34a);
+
+
+    color:white;
+
     font-weight:bold;
+
     cursor:pointer;
 
+
 }
+
+
+
+button:hover{
+
+transform:translateY(-2px);
+
+}
+
+
+
+.lista{
+
+    height:520px;
+
+    overflow-y:auto;
+
+    margin-top:15px;
+
+    padding-right:5px;
+
+}
+
+
+
+
+.cliente{
+
+
+    background:#020617;
+
+    padding:14px;
+
+    margin-bottom:10px;
+
+    border-radius:12px;
+
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+
+    border:1px solid #1e293b;
+
+
+}
+
+
+
+.cliente:hover{
+
+background:#1e293b;
+
+}
+
+
+
+
+.checkCliente{
+
+    width:20px;
+
+    height:20px;
+
+}
+
+
+
+.info{
+
+    flex:1;
+
+}
+
 
 
 .valor{
-    color:#38bdf8;
+
+    color:#22c55e;
+
+    font-weight:bold;
+
 }
+
+
+
+.top-clientes{
+
+display:flex;
+
+gap:10px;
+
+}
+
+
+
+.contador{
+
+margin-top:10px;
+
+color:#38bdf8;
+
+}
+
+
+
+@media(max-width:900px){
+
+
+.campanha-area{
+
+grid-template-columns:1fr;
+
+}
+
+
+}
+
 
 
 </style>
 
 
 
+<div class="campanha-area">
+
+
+
+<!-- ===================== -->
+<!-- DISPARO -->
+<!-- ===================== -->
+
+
 <div class="card">
 
 
-<h2>📢 Campanha WhatsApp</h2>
-
-
-<label>🔎 Filtrar orçamento até:</label>
-
-<input 
-type="number" 
-id="filtroValor"
-placeholder="Ex: 300000"
-onkeyup="filtrarClientes()">
+<h2>📢 Disparo WhatsApp</h2>
 
 
 
-<div class="clientes" id="listaClientes">
+<label>
+📱 Telefones selecionados
+</label>
 
 
-{% for c in clientes %}
+<textarea
 
-<div 
-class="cliente"
-data-orcamento="{{c.orcamento or 0}}"
->
-
-
-<div>
-
-
-<input 
-type="checkbox"
-class="checkCliente"
-data-tel="{{c.telefone}}"
-onchange="selecionarCliente(this)"
->
-
-
-<b>{{c.nome}}</b>
-
-<br>
-
-📱 {{c.telefone}}
-
-<br>
-
-💰 
-<span class="valor">
-R$ {{ "{:,.2f}".format(c.orcamento or 0) }}
-</span>
-
-
-</div>
-
-
-</div>
-
-
-{% endfor %}
-
-
-</div>
-
-
-
-<label>📱 Telefones</label>
-
-<textarea 
 id="telefones"
+
 rows="8"
-placeholder="Clientes selecionados aparecerão aqui">
+
+placeholder="Selecione clientes ao lado">
+
 </textarea>
 
 
 
-<label>💬 Mensagem</label>
 
-<textarea 
+<label>
+💬 Mensagem
+</label>
+
+
+<textarea
+
 id="mensagem"
-rows="5">
+
+rows="7"
+
+placeholder="Digite a mensagem">
+
 </textarea>
 
 
 
-<label>⏱ Intervalo segundos</label>
 
-<input 
+<label>
+⏱ Intervalo entre envios
+</label>
+
+
+<input
+
 id="delay"
+
 type="number"
+
 value="5">
 
 
 
+
+
 <button onclick="iniciarEnvio()">
-🚀 Enviar campanha
+
+🚀 Iniciar campanha
+
 </button>
+
+
+
+<div class="contador">
+
+Clientes selecionados:
+<span id="qtd">0</span>
+
+</div>
 
 
 
 <div id="status"></div>
 
 
+
 </div>
+
+
+
+
+
+
+<!-- ===================== -->
+<!-- CLIENTES -->
+<!-- ===================== -->
+
+
+<div class="card">
+
+
+<h2>👥 Clientes</h2>
+
+
+
+<div class="top-clientes">
+
+
+<input
+
+id="filtroValor"
+
+placeholder="Orçamento até ex: 300000"
+
+onkeyup="filtrarClientes()">
+
+
+
+</div>
+
+
+
+
+<button onclick="selecionarTodos()">
+
+☑ Selecionar todos visíveis
+
+</button>
+
+
+
+
+<div class="lista">
+
+
+
+{% for c in clientes %}
+
+
+
+<div
+
+class="cliente"
+
+data-orcamento="{{c.orcamento or 0}}"
+
+>
+
+
+
+<input
+
+type="checkbox"
+
+class="checkCliente"
+
+data-tel="{{c.telefone}}"
+
+onchange="selecionarCliente(this)"
+
+>
+
+
+
+
+<div class="info">
+
+
+<b>
+{{c.nome}}
+</b>
+
+
+<br>
+
+
+📱 {{c.telefone}}
+
+
+<br>
+
+
+💰
+
+<span class="valor">
+
+R$ {{ "{:,.2f}".format(c.orcamento or 0) }}
+
+</span>
+
+
+</div>
+
+
+
+</div>
+
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
 
 
 
@@ -185,15 +511,38 @@ value="5">
 <script>
 
 
+
+function atualizarContador(){
+
+
+let qtd =
+document.querySelectorAll(
+".checkCliente:checked"
+).length;
+
+
+document.getElementById("qtd")
+.innerHTML=qtd;
+
+
+}
+
+
+
+
+
 function selecionarCliente(check){
 
 
-let tel = check.dataset.tel;
-
-let campo = document.getElementById("telefones");
+let tel=check.dataset.tel;
 
 
-let numeros = campo.value
+let campo=
+document.getElementById("telefones");
+
+
+let lista =
+campo.value
 .split("\n")
 .filter(x=>x);
 
@@ -201,23 +550,75 @@ let numeros = campo.value
 
 if(check.checked){
 
-    if(!numeros.includes(tel)){
-        numeros.push(tel);
-    }
+
+if(!lista.includes(tel)){
+
+lista.push(tel);
+
+}
+
 
 }else{
 
-    numeros =
-    numeros.filter(n=>n != tel);
+
+lista =
+lista.filter(x=>x!=tel);
+
+
+}
+
+
+
+campo.value =
+lista.join("\n");
+
+
+
+atualizarContador();
+
 
 }
 
 
 
-campo.value = numeros.join("\n");
+
+
+
+
+
+function selecionarTodos(){
+
+
+document.querySelectorAll(".cliente")
+.forEach(card=>{
+
+
+if(card.style.display!="none"){
+
+
+let check =
+card.querySelector(
+".checkCliente"
+);
+
+
+
+check.checked=true;
+
+
+selecionarCliente(check);
 
 
 }
+
+
+});
+
+
+}
+
+
+
 
 
 
@@ -225,10 +626,12 @@ campo.value = numeros.join("\n");
 function filtrarClientes(){
 
 
-let valor =
+let valor=
+
 parseFloat(
 document.getElementById("filtroValor").value
 )
+
 || 999999999;
 
 
@@ -238,17 +641,23 @@ document.querySelectorAll(".cliente")
 
 
 let preco =
-parseFloat(card.dataset.orcamento);
+parseFloat(
+card.dataset.orcamento
+);
 
 
 
-if(preco <= valor){
+if(preco<=valor){
 
-    card.style.display="flex";
+
+card.style.display="flex";
+
 
 }else{
 
-    card.style.display="none";
+
+card.style.display="none";
+
 
 }
 
@@ -256,33 +665,48 @@ if(preco <= valor){
 
 });
 
+
 }
+
+
+
+
+
 
 
 
 async function iniciarEnvio(){
 
 
-let telefones =
+
+let telefones=
+
 document.getElementById("telefones")
 .value
 .split("\n")
 .filter(x=>x);
 
 
-let mensagem =
-document.getElementById("mensagem").value;
+
+let mensagem=
+
+document.getElementById("mensagem")
+.value;
 
 
-let delay =
+
+let delay=
+
 parseInt(
 document.getElementById("delay").value
 );
 
 
 
-let status =
+let status=
 document.getElementById("status");
+
+
 
 
 
@@ -299,15 +723,21 @@ status.innerHTML=
 
 await fetch("/enviar_mensagem",{
 
+
 method:"POST",
 
+
 headers:{
+
 "Content-Type":"application/json"
+
 },
+
 
 body:JSON.stringify({
 
 telefone,
+
 mensagem
 
 })
@@ -322,7 +752,6 @@ r=>setTimeout(r,delay*1000)
 );
 
 
-
 }
 
 
@@ -331,12 +760,14 @@ status.innerHTML=
 "✅ Campanha finalizada";
 
 
+
 }
 
 
 
-</script>
 
+
+</script>
 
 
 {% endblock %}
