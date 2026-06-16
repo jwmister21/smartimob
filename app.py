@@ -218,7 +218,7 @@ def atualizar_banco():
         "ALTER TABLE clientes ADD COLUMN interesse TEXT",
         "ALTER TABLE clientes ADD COLUMN faixa_preco TEXT",
         "ALTER TABLE clientes ADD COLUMN bairro TEXT",
-        "ALTER TABLE clientes ADD COLUMN status_funil TEXT DEFAULT 'Novo Contato'",
+        "ALTER TABLE clientes ADD COLUMN status_funil TEXT DEFAULT 'Lead Novo'",
         "ALTER TABLE clientes ADD COLUMN cpf TEXT",
         "ALTER TABLE clientes ADD COLUMN endereco TEXT",
         "ALTER TABLE clientes ADD COLUMN usuario_id INTEGER",
@@ -1193,7 +1193,7 @@ def capturar_lead():
         imovel["usuario_id"],
         imovel["bairro"],
         imovel["titulo"],
-        "Novo Contato"
+        "Lead Novo"
     ))
 
     conn.commit()
