@@ -1352,10 +1352,10 @@ def cadastrar_imovel():
                 titulo, tipo, valor, cidade, bairro,
                 quartos, banheiros, area, status, descricao,
                 rua, iptu, condominio, link, cep,
-                vaga_garagem, lazer, sacada, lavabo,
+                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais,
                 usuario_id, empresa_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
@@ -1376,6 +1376,9 @@ def cadastrar_imovel():
             request.form.get("lazer"),
             request.form.get("sacada"),
             request.form.get("lavabo"),
+            request.form.get("prazo"),
+            request.form.get("parcela"),
+            request.form.get("anuais")
             user_id,
             empresa_id
         ))
