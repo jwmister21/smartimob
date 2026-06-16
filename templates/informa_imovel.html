@@ -134,6 +134,35 @@ body{
     font-size:40px;
     cursor:pointer;
 }
+    .lead-box{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+.lead-box h2{
+    margin-bottom:20px;
+}
+
+.lead-box input{
+    width:100%;
+    padding:15px;
+    margin-bottom:12px;
+    border:1px solid #ddd;
+    border-radius:12px;
+}
+
+.lead-box button{
+    width:100%;
+    background:#6d28d9;
+    color:white;
+    border:none;
+    padding:15px;
+    border-radius:12px;
+    font-size:16px;
+    cursor:pointer;
+}
 
 </style>
 </head>
@@ -243,6 +272,41 @@ body{
     </span>
 
     <img id="fotoModal">
+
+</div>
+    <div class="lead-box">
+
+    <h2>Receba mais informações</h2>
+
+    <form action="/capturar_lead" method="POST">
+
+        <input
+            type="hidden"
+            name="imovel_id"
+            value="{{ imovel.id }}">
+
+        <input
+            type="text"
+            name="nome"
+            placeholder="Seu nome"
+            required>
+
+        <input
+            type="email"
+            name="email"
+            placeholder="Seu e-mail">
+
+        <input
+            type="text"
+            name="telefone"
+            placeholder="Seu telefone"
+            required>
+
+        <button type="submit">
+            Enviar mensagem
+        </button>
+
+    </form>
 
 </div>
 
