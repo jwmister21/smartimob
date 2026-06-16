@@ -436,7 +436,7 @@ def detalhes_imovel(imovel_id):
     conn.close()
 
     return render_template(
-        "informa_imovel.html",
+        "detalhes_imovel.html",
         imovel=imovel
     )
 
@@ -2200,7 +2200,7 @@ def ver_imovel(imovel_id):
     imovel['fotos'] = fotos
     conn.close()
 
-    return render_template("detalhes_imovel.html", imovel=imovel)
+    return render_template("informa_imovel.html", imovel=imovel)
 
 
 @app.route("/funil")
