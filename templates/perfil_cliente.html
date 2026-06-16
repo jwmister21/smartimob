@@ -95,7 +95,7 @@
             <label class="info-label">Mudar Etapa:</label>
             <!-- CORREÇÃO: Adicionado onchange aqui -->
             <select name="status_funil" class="funnel-selector" onchange="verificarData(this)">
-                <option value="Novo" {% if cliente[7] == 'Novo' %}selected{% endif %}>🆕 Lead Novo</option>
+                <option value="Lead Novo" {% if cliente[7] == 'Lead Novo' %}selected{% endif %}>🆕 Lead Novo</option>
                 <option value="Negociação" {% if cliente[7] == 'Negociação' %}selected{% endif %}>💬 Negociação</option>
                 <option value="Visita Agendada" {% if cliente[7] == 'Visita Agendada' %}selected{% endif %}>📅 Visita Agendada</option>
                 <option value="Concluido" {% if cliente[7] == 'Concluido' %}selected{% endif %}>🏆 Venda Concluída!</option>
