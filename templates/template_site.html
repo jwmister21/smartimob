@@ -246,25 +246,31 @@ footer{
 
     <div class="grid" id="grid-imoveis">
 
-        {% if imovel.fotos %}
+        {% for i in imoveis %}
 
-<div class="carousel-container" id="carousel-{{ imovel.id }}">
+        <div class="card imovel">
 
-    <div class="carousel-images">
+            <div style="position:relative;">
 
-        {% for foto in imovel.fotos %}
+                <span class="badge">
+                    {{ i.cidade or "Imóvel" }}
+                </span>
 
-        <img
-            src="/uploads/imoveis/{{ foto }}"
-            alt="Foto do imóvel">
+                {% if i.fotos and i.fotos|length > 0 %}
 
-        {% endfor %}
+                <div class="carousel-container" id="carousel-{{ i.id }}">
 
-    </div>
+                    <div class="carousel-images">
 
-</div>
+                        {% for foto in i.fotos %}
 
-{% endif %}
+                        <img
+                            src="/uploads/imoveis/{{ foto }}"
+                            alt="{{ i.titulo }}">
+
+                        {% endfor %}
+
+                    </div>
 
                     {% if i.fotos|length > 1 %}
 
