@@ -1251,12 +1251,13 @@ def excluir_foto(foto_id):
 
 
 @app.route("/campanhas")
+@verificar_sessao
 def campanhas():
 
-    usuario_id = session.get("usuario_id")
+    empresa_id = session.get('empresa_id')
 
 
-    conn = sqlite3.connect("/data/imobiliaria.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -1264,9 +1265,9 @@ def campanhas():
     cursor.execute("""
         SELECT *
         FROM clientes
-        WHERE usuario_id = ?
+        WHERE empresa_id = ?
         ORDER BY id DESC
-    """, (usuario_id,))
+    """, (empresa_id,))
 
 
     clientes = cursor.fetchall()
@@ -1279,7 +1280,6 @@ def campanhas():
         "campanhas.html",
         clientes=clientes
     )
-
 
 @app.route("/enviar_mensagem", methods=["POST"])
 def enviar_mensagem():
