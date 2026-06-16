@@ -8,6 +8,17 @@
 
 <style>
 
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+}
+
+
 body{
     margin:0;
     font-family:Segoe UI, sans-serif;
@@ -15,203 +26,150 @@ body{
     color:#0f172a;
 }
 
+
 /* CONTAINER */
 .container{
+    width:100%;
     max-width:1200px;
     margin:auto;
     padding:20px;
     display:grid;
-    grid-template-columns:2fr 1fr;
+    grid-template-columns:minmax(0,2fr) minmax(300px,1fr);
     gap:25px;
 }
+
 
 /* GALERIA */
 .galeria-principal{
     width:100%;
-    height:520px;
+    height:420px;
     border-radius:18px;
     overflow:hidden;
     background:#ddd;
-    position:relative;
 }
 
-.galeria-principal {
-    width: 100%;
-    height: 400px; /* Reduzi um pouco para ficar proporcional no mobile */
-    border-radius: 18px;
-    overflow: hidden;
-    background: #ddd;
-    position: relative;
+
+.galeria-principal img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
 }
 
-/* Ajuste importante para imagens não estourarem */
-.galeria-principal img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: .3s;
-}
 
-/* RESPONSIVIDADE OTIMIZADA */
-@media(max-width: 900px) {
-    .container {
-        grid-template-columns: 1fr;
-        padding: 10px;
-    }
 
-    .galeria-principal {
-        height: 300px; /* Menor em telas de celular */
-    }
-
-    .miniaturas {
-        gap: 5px;
-    }
-
-    .miniaturas img {
-        width: 80px; /* Miniaturas menores para caberem mais */
-        height: 60px;
-    }
-
-    .caracteristicas {
-        grid-template-columns: 1fr 1fr; /* Mantém 2 colunas no mobile para economizar espaço */
-    }
-
-    .lead-box {
-        position: static; /* Remove o sticky no mobile para não ocupar a tela toda */
-        margin-bottom: 80px; /* Espaço para a mobile-bar */
-    }
-}
-
-@media(max-width: 480px) {
-    .titulo { font-size: 22px; }
-    .valor { font-size: 24px; }
-    .caracteristicas { grid-template-columns: 1fr; } /* 1 coluna em telas muito pequenas */
-}
-
+/* MINIATURAS */
 .miniaturas{
     display:flex;
     gap:10px;
     margin-top:12px;
-    overflow:auto;
+    overflow-x:auto;
+    max-width:100%;
 }
 
+
 .miniaturas img{
-    width:110px;
+    flex:0 0 auto;
+    width:100px;
     height:75px;
     object-fit:cover;
     border-radius:10px;
-    cursor:pointer;
-    opacity:.8;
-    transition:.2s;
 }
 
-.miniaturas img:hover{
-    opacity:1;
-}
+
 
 /* INFO */
 .info{
     background:white;
     padding:25px;
     border-radius:18px;
-    box-shadow:0 10px 30px rgba(0,0,0,.05);
+    width:100%;
 }
 
+
 .titulo{
-    font-size:28px;
+    font-size:clamp(20px,4vw,28px);
     font-weight:700;
 }
 
+
 .valor{
     color:#16a34a;
-    font-size:34px;
+    font-size:clamp(24px,5vw,34px);
     font-weight:800;
     margin:10px 0;
+    word-break:break-word;
 }
 
+
+
+/* CARACTERISTICAS */
 .caracteristicas{
     display:grid;
     grid-template-columns:repeat(2,1fr);
     gap:10px;
-    margin-top:20px;
 }
+
 
 .item{
     background:#f8fafc;
     padding:12px;
     border-radius:10px;
-    font-size:14px;
 }
 
-/* BOTÕES */
+
+
+/* BOTOES */
 .botoes{
     display:flex;
+    flex-wrap:wrap;
     gap:10px;
-    margin-top:20px;
 }
+
 
 .btn{
     flex:1;
+    min-width:150px;
     text-align:center;
     padding:14px;
     border-radius:12px;
-    color:white;
-    font-weight:600;
-    text-decoration:none;
 }
 
-.whatsapp{ background:#25D366; }
-.compartilhar{ background:#2563eb; }
 
-/* LEAD BOX */
+
+/* LEAD */
 .lead-box{
+    width:100%;
     background:white;
     padding:20px;
     border-radius:18px;
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
     position:sticky;
     top:20px;
-    margin-bottom:20px;
 }
 
-.lead-box h2{
-    margin-top:0;
-}
 
 .lead-box input{
     width:100%;
+    max-width:100%;
     padding:12px;
     margin-bottom:10px;
-    border:1px solid #e2e8f0;
     border-radius:10px;
+    border:1px solid #e2e8f0;
 }
 
-.lead-box button{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    background:#7c3aed;
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-}
 
-/* DESCRIÇÃO */
-.descricao{
-    margin-top:20px;
-    line-height:1.6;
-}
 
 /* MODAL */
 .modal{
     display:none;
     position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
+    inset:0;
+    width:100%;
+    height:100%;
     background:black;
     z-index:9999;
 }
+
 
 .modal img{
     width:100%;
@@ -219,66 +177,130 @@ body{
     object-fit:contain;
 }
 
-.fechar{
-    position:absolute;
-    top:20px;
-    right:20px;
-    color:white;
-    font-size:40px;
-    cursor:pointer;
-}
 
-/* FLOAT WHATS */
+/* WHATS */
 .float-whats{
     position:fixed;
     bottom:20px;
     right:20px;
-    background:#25D366;
     width:60px;
     height:60px;
     border-radius:50%;
     display:flex;
     align-items:center;
     justify-content:center;
-    color:white;
-    font-size:28px;
-    text-decoration:none;
-    box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
 
-/* MOBILE BAR */
+
+
+/* MOBILE */
 .mobile-bar{
     display:none;
 }
 
-/* RESPONSIVO */
+
+
 @media(max-width:900px){
-    .container{
-        grid-template-columns:1fr;
-    }
 
-    .mobile-bar{
-        display:flex;
-        position:fixed;
-        bottom:0;
-        left:0;
-        right:0;
-        background:white;
-        padding:10px;
-        gap:10px;
-        box-shadow:0 -5px 20px rgba(0,0,0,.1);
-    }
 
-    .mobile-bar a{
-        flex:1;
-        text-align:center;
-        padding:12px;
-        border-radius:10px;
-        color:white;
-        text-decoration:none;
-        font-weight:600;
-    }
+.container{
+    grid-template-columns:1fr;
+    padding:12px;
 }
+
+
+.galeria-principal{
+    height:280px;
+}
+
+
+
+.info{
+    padding:18px;
+}
+
+
+
+.caracteristicas{
+    grid-template-columns:1fr;
+}
+
+
+
+.lead-box{
+    position:relative;
+    top:0;
+}
+
+
+
+.mobile-bar{
+    display:flex;
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:white;
+    padding:10px;
+    gap:10px;
+    z-index:1000;
+}
+
+
+.mobile-bar a{
+    flex:1;
+    padding:12px;
+    text-align:center;
+    border-radius:10px;
+    color:white;
+    text-decoration:none;
+}
+
+
+
+.float-whats{
+    bottom:80px;
+}
+
+
+}
+
+
+
+@media(max-width:480px){
+
+
+.container{
+    padding:8px;
+}
+
+
+.galeria-principal{
+    height:220px;
+}
+
+
+
+.titulo{
+    font-size:22px;
+}
+
+
+.botoes{
+    flex-direction:column;
+}
+
+
+.btn{
+    width:100%;
+}
+
+
+
+.valor{
+    font-size:26px;
+}
+
 
 </style>
 </head>
