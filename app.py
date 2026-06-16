@@ -1085,24 +1085,64 @@ def renderizar_video():
 
 @app.route('/site/<subdominio>')
 def exibir_site(subdominio):
-    conn = sqlite3.connect('/data/imobiliaria.db')
-    conn.row_factory = sqlite3.Row # Para acessar colunas pelo nome
-    cursor = conn.cursor()
-    
-    # 1. Busca as configurações da imobiliária
-    empresa = cursor.execute("SELECT * FROM configuracoes_site WHERE subdominio = ?", (subdominio,)).fetchone()
-    
-    if not empresa:
-        return "Site não encontrado", 404
-        
-    # 2. Busca todos os imóveis daquela empresa
-    imoveis = cursor.execute("SELECT * FROM imoveis WHERE empresa_id = ?", (empresa['empresa_id'],)).fetchall()
-    
-    conn.close()
-    
-    # 3. Renderiza o template passando os dados
-    return render_template('template_site.html', empresa=empresa, imoveis=imoveis)
 
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    empresa = cursor.execute(
+        """
+        SELECT *
+        FROM configuracoes_site
+        WHERE subdominio = ?
+        """,
+        (subdominio,)
+    ).fetchone()
+
+    if not empresa:
+        conn.close()
+        return "Site não encontrado", 404
+
+    rows = cursor.execute(
+        """
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+        """,
+        (empresa['empresa_id'],)
+    ).fetchall()
+
+    imoveis = []
+
+    for row in rows:
+
+        imovel = dict(row)
+
+        fotos = cursor.execute(
+            """
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id ASC
+            """,
+            (imovel["id"],)
+        ).fetchall()
+
+        imovel["fotos"] = [
+            foto["nome_arquivo"]
+            for foto in fotos
+        ]
+
+        imoveis.append(imovel)
+
+    conn.close()
+
+    return render_template(
+        "template_site.html",
+        empresa=empresa,
+        imoveis=imoveis
+    )
 
 @app.route("/excluir-foto/<int:foto_id>")
 @verificar_sessao
