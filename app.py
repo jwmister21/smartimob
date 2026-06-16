@@ -2267,12 +2267,12 @@ def funil():
     conn.close()
 
     # Define suas etapas
-    etapas = ["Novo Contato", "Visita Agendada", "Negociação", "Concluido", "Desistencia"]
+    etapas = ["Lead Novo", "Visita Agendada", "Negociação", "Concluido", "Desistencia"]
 
     # Organiza os dados em um dicionário
     funil_dados = {etapa: [] for etapa in etapas}
     for c in clientes:
-        status = c['status_funil'] or "Novo Contato"
+        status = c['status_funil'] or "Lead Novo"
         # Garante que o status exista nas etapas definidas
         if status in funil_dados:
             funil_dados[status].append(c)
