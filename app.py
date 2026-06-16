@@ -2338,6 +2338,9 @@ def editar_imovel(id):
         sacada = request.form.get("sacada", "")
         rua = request.form.get("rua", "")
         iptu = request.form.get("iptu", "")
+        parcela = request.form.get("parcela", "")
+        prazo = request.form.get("prazo", "")
+        anuais = request.form.get("anuais", "")
 
         # Atualiza os dados do imóvel
         cursor.execute("""
@@ -2361,6 +2364,9 @@ def editar_imovel(id):
                 sacada=?,
                 rua=?,
                 iptu=?
+                parcela=?
+                prazo=?
+                anuais=?
             WHERE id=? AND empresa_id=?
         """, (
             titulo,
@@ -2382,6 +2388,9 @@ def editar_imovel(id):
             sacada,
             rua,
             iptu,
+            parcela,
+            prazo,
+            anuais,
             id,
             empresa_id
         ))
