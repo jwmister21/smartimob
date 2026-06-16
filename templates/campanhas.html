@@ -399,14 +399,9 @@ Clientes selecionados:
 
 
 <input
-
 id="filtroValor"
-
-placeholder="Orçamento até ex: 300000"
-
-onkeyup="filtrarClientes()">
-
-
+placeholder="Filtrar até R$ 300.000"
+oninput="formatarFiltro(); filtrarClientes()">
 
 </div>
 
@@ -791,7 +786,25 @@ status.innerHTML=
 
 
 
+function formatarFiltro(){
 
+    let campo = document.getElementById("filtroValor");
+
+
+    let valor = campo.value.replace(/\D/g,'');
+
+
+
+    if(valor){
+
+        campo.value =
+        parseInt(valor)
+        .toLocaleString('pt-BR');
+
+    }
+
+
+}
 
 </script>
 
