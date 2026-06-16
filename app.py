@@ -436,7 +436,7 @@ def detalhes_imovel(imovel_id):
     conn.close()
 
     return render_template(
-        "detalhes_imovel.html",
+        "informa_imovel.html",
         imovel=imovel
     )
 
