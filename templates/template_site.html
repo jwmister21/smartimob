@@ -311,32 +311,32 @@ footer{
     <div class="titulo">{{ i.titulo }}</div>
 
     <div style="font-weight: bold; margin-bottom: 5px;">
-        📍 {{ i.cidade }} - {{ i.bairro }}
+        📍 {{ i.cidade or 'Cidade' }} - {{ i.bairro or 'Bairro' }}
     </div>
 
     <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">
-        {{ i.rua or 'Endereço não informado' }}
+        🏠 {{ i.rua or 'Endereço não informado' }}
     </div>
 
+    <div class="detalhes-imovel" style="display: flex; gap: 15px; font-size: 14px; color: #374151; margin-bottom: 10px; font-weight: 500;">
+        <span>🛏️ {{ i.quartos or 0 }}</span>
+        <span>🛁 {{ i.banheiros or 0 }}</span>
+        <span>🚗 {{ i.vaga_garagem or 0 }}</span>
+        {% if i.area %}
+        <span>📐 {{ i.area }} m²</span>
+        {% endif %}
+    </div>
+
+    <div class="valor" style="color: var(--cor); font-size: 24px; font-weight: 800;">
+        R$ {{ i.valor }}
+    </div>
     
-
-                <div class="valor">
-                        {{ i.valor }}
-                </div>
-                <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
-        {% if i.condominio %}
-            Cond. R$ {{ i.condominio }} 
-        {% endif %}
-        {% if i.iptu %}
-            | IPTU R$ {{ i.iptu }}
-        {% endif %}
+    <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+        {% if i.condominio %} 🏢 Cond. R$ {{ i.condominio }} {% endif %}
+        {% if i.iptu %} | 💰 IPTU R$ {{ i.iptu }} {% endif %}
     </div>
 
-                <a
-                    class="btn"
-                    href="/informa-imovel/{{ i.id }}">
-                    Ver detalhes
-                </a>
+    <a class="btn" href="/informa-imovel/{{ i.id }}">Ver detalhes</a>
 
             </div>
 
