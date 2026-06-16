@@ -2629,6 +2629,63 @@ def atualizar_dados_cliente(id):
     return redirect(f"/cliente/{id}")
 
 
+@app.route("/imovel-publico/<int:imovel_id>")
+def informa_imovel(imovel_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id = ?
+    """, (imovel_id,))
+
+    imovel = cursor.fetchone()
+
+    if not imovel:
+        conn.close()
+        return "Imóvel não encontrado", 404
+
+    imovel = dict(imovel)
+
+    cursor.execute("""
+        SELECT nome_arquivo
+        FROM fotos_imoveis
+        WHERE imovel_id = ?
+        ORDER BY id ASC
+    """, (imovel_id,))
+
+    fotos = cursor.fetchall()
+
+    imovel["fotos"] = [
+        foto["nome_arquivo"]
+        for foto in fotos
+    ]
+
+    # imóveis parecidos
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE cidade = ?
+        AND id != ?
+        LIMIT 4
+    """, (
+        imovel["cidade"],
+        imovel_id
+    ))
+
+    semelhantes = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "informa_imovel.html",
+        imovel=imovel,
+        semelhantes=semelhantes
+    )
+
 
 
 
