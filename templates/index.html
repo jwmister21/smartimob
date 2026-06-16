@@ -161,23 +161,42 @@
 }   
 
 </style>
+<div class="card-site">
 
+
+{% if site %}
+
+
+<a href="/site/{{ site['subdominio'] }}" class="btn-site">
+
+🌐 Meu Site
+
+</a>
+
+
+{% else %}
+
+
+<form method="POST" action="/gerar_site/salvar">
+
+<button class="btn-site">
+
+🚀 Gerar Site
+
+</button>
+
+</form>
+
+
+{% endif %}
+
+
+</div>
 <div class="welcome-banner">
     <h2 style="margin: 0; color: white; font-size: 1.5rem;">🚀 Olá, {{ session['usuario_nome'] }}!</h2>
     <p style="margin: 8px 0 0 0; color: #9ca3af;">O ecossistema SMARTZEN está monitorando sua carteira imobiliária. Veja o resumo de hoje:</p>
 </div>
-<form action="/gerar-site" method="POST">
-    <button type="submit" class="btn-gerar" style="
-        background: #22c55e; 
-        color: white; 
-        padding: 15px 30px; 
-        border: none; 
-        border-radius: 8px; 
-        font-weight: bold; 
-        cursor: pointer;
-        transition: 0.3s;">
-        🚀 Gerar / Atualizar Site
-    </button>
+
 </form>
 <div class="dashboard-grid">
     <div class="metric-card card-clientes">
