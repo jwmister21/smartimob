@@ -399,7 +399,7 @@ Fale comigo agora!
 
 
 @app.route("/imovel/<int:imovel_id>")
-def detalhes_imovel(imovel_id):
+def informa_imovel(imovel_id):
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -436,7 +436,7 @@ def detalhes_imovel(imovel_id):
     conn.close()
 
     return render_template(
-        "detalhes_imovel.html",
+        "informa_imovel.html",
         imovel=imovel
     )
 
@@ -2200,7 +2200,7 @@ def ver_imovel(imovel_id):
     imovel['fotos'] = fotos
     conn.close()
 
-    return render_template("informa_imovel.html", imovel=imovel)
+    return render_template("detalhes_imovel.html", imovel=imovel)
 
 
 @app.route("/funil")
