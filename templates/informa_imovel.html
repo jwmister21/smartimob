@@ -10,22 +10,29 @@
 
 body{
     margin:0;
-    font-family:Segoe UI;
-    background:#f5f7fa;
+    font-family:Segoe UI, sans-serif;
+    background:#f1f5f9;
+    color:#0f172a;
 }
 
+/* CONTAINER */
 .container{
     max-width:1200px;
     margin:auto;
     padding:20px;
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
 }
 
+/* GALERIA */
 .galeria-principal{
     width:100%;
-    height:550px;
+    height:520px;
+    border-radius:18px;
     overflow:hidden;
-    border-radius:15px;
-    background:#eee;
+    background:#ddd;
+    position:relative;
 }
 
 .galeria-principal img{
@@ -33,89 +40,134 @@ body{
     height:100%;
     object-fit:cover;
     cursor:pointer;
+    transition:.3s;
+}
+
+.galeria-principal img:hover{
+    transform:scale(1.02);
 }
 
 .miniaturas{
     display:flex;
     gap:10px;
-    margin-top:15px;
+    margin-top:12px;
     overflow:auto;
 }
 
 .miniaturas img{
-    width:120px;
-    height:80px;
+    width:110px;
+    height:75px;
     object-fit:cover;
     border-radius:10px;
     cursor:pointer;
+    opacity:.8;
+    transition:.2s;
 }
 
+.miniaturas img:hover{
+    opacity:1;
+}
+
+/* INFO */
 .info{
     background:white;
-    margin-top:25px;
     padding:25px;
-    border-radius:15px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
 }
 
 .titulo{
-    font-size:35px;
-    font-weight:bold;
+    font-size:28px;
+    font-weight:700;
 }
 
 .preco{
-    color:#22c55e;
-    font-size:42px;
-    font-weight:bold;
-    margin:15px 0;
+    color:#16a34a;
+    font-size:34px;
+    font-weight:800;
+    margin:10px 0;
 }
 
 .caracteristicas{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:15px;
-    margin-top:25px;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-top:20px;
 }
 
 .item{
     background:#f8fafc;
-    padding:15px;
+    padding:12px;
     border-radius:10px;
+    font-size:14px;
 }
 
+/* BOTÕES */
 .botoes{
     display:flex;
-    gap:15px;
-    margin-top:25px;
+    gap:10px;
+    margin-top:20px;
 }
 
 .btn{
-    text-decoration:none;
-    padding:15px 25px;
-    border-radius:10px;
+    flex:1;
+    text-align:center;
+    padding:14px;
+    border-radius:12px;
     color:white;
-    font-weight:bold;
+    font-weight:600;
+    text-decoration:none;
 }
 
-.whatsapp{
-    background:#25D366;
+.whatsapp{ background:#25D366; }
+.compartilhar{ background:#2563eb; }
+
+/* LEAD BOX */
+.lead-box{
+    background:white;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    position:sticky;
+    top:20px;
+    margin-bottom:20px;
 }
 
-.compartilhar{
-    background:#2563eb;
+.lead-box h2{
+    margin-top:0;
 }
 
+.lead-box input{
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+}
+
+.lead-box button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:#7c3aed;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+
+/* DESCRIÇÃO */
 .descricao{
-    margin-top:30px;
-    line-height:1.7;
+    margin-top:20px;
+    line-height:1.6;
 }
 
+/* MODAL */
 .modal{
     display:none;
     position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
+    top:0; left:0;
+    width:100%; height:100%;
     background:black;
     z-index:9999;
 }
@@ -134,224 +186,211 @@ body{
     font-size:40px;
     cursor:pointer;
 }
-    .lead-box{
-    background:white;
-    border-radius:20px;
-    padding:25px;
-    box-shadow:0 5px 20px rgba(0,0,0,.08);
-}
 
-.lead-box h2{
-    margin-bottom:20px;
-}
-
-.lead-box input{
-    width:100%;
-    padding:15px;
-    margin-bottom:12px;
-    border:1px solid #ddd;
-    border-radius:12px;
-}
-
-.lead-box button{
-    width:100%;
-    background:#6d28d9;
+/* FLOAT WHATS */
+.float-whats{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#25D366;
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     color:white;
-    border:none;
-    padding:15px;
-    border-radius:12px;
-    font-size:16px;
-    cursor:pointer;
+    font-size:28px;
+    text-decoration:none;
+    box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+
+/* MOBILE BAR */
+.mobile-bar{
+    display:none;
+}
+
+/* RESPONSIVO */
+@media(max-width:900px){
+    .container{
+        grid-template-columns:1fr;
+    }
+
+    .mobile-bar{
+        display:flex;
+        position:fixed;
+        bottom:0;
+        left:0;
+        right:0;
+        background:white;
+        padding:10px;
+        gap:10px;
+        box-shadow:0 -5px 20px rgba(0,0,0,.1);
+    }
+
+    .mobile-bar a{
+        flex:1;
+        text-align:center;
+        padding:12px;
+        border-radius:10px;
+        color:white;
+        text-decoration:none;
+        font-weight:600;
+    }
 }
 
 </style>
 </head>
+
 <body>
 
 <div class="container">
 
-    {% if imovel.fotos %}
+    <!-- COLUNA ESQUERDA -->
+    <div>
 
-    <div class="galeria-principal">
+        {% if imovel.fotos %}
 
-        <img
-            id="fotoPrincipal"
-            src="/uploads/imoveis/{{ imovel.fotos[0] }}"
-            onclick="abrirGaleria(this.src)"
-        >
+        <div class="galeria-principal">
+            <img id="fotoPrincipal"
+                 src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+                 onclick="abrirGaleria(this.src)">
+        </div>
+
+        <div class="miniaturas">
+            {% for foto in imovel.fotos %}
+            <img src="/uploads/imoveis/{{ foto }}"
+                 onclick="trocarFoto(this.src)">
+            {% endfor %}
+        </div>
+
+        {% endif %}
+
+        <div class="info">
+
+            <div class="titulo">{{ imovel.titulo }}</div>
+
+            <div class="preco">
+                R$ {{ "{:,.2f}".format(imovel.valor|float)
+                    .replace(",", "X").replace(".", ",").replace("X", ".") }}
+            </div>
+
+            <h4>📍 {{ imovel.bairro }} - {{ imovel.cidade }}</h4>
+
+            <div class="caracteristicas">
+                <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
+                <div class="item">🚿 {{ imovel.banheiros }} Banheiros</div>
+                <div class="item">🚗 {{ imovel.vaga_garagem }} Vagas</div>
+                <div class="item">📐 {{ imovel.area }} m²</div>
+            </div>
+
+            <div class="botoes">
+                <a class="btn whatsapp"
+                   target="_blank"
+                   href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+                   WhatsApp
+                </a>
+
+                <a class="btn compartilhar"
+                   href="#"
+                   onclick="compartilhar()">
+                   Compartilhar
+                </a>
+            </div>
+
+            <div class="descricao">
+                <h3>Descrição</h3>
+                <p>{{ imovel.descricao }}</p>
+            </div>
+
+        </div>
 
     </div>
 
-    <div class="miniaturas">
+    <!-- COLUNA DIREITA -->
+    <div>
 
-        {% for foto in imovel.fotos %}
+        <div class="lead-box">
+            <h2>Receba mais informações</h2>
 
-        <img
-            src="/uploads/imoveis/{{ foto }}"
-            onclick="trocarFoto(this.src)"
-        >
+            <form action="/capturar_lead" method="POST">
+                <input type="hidden" name="imovel_id" value="{{ imovel.id }}">
+                <input type="text" name="nome" placeholder="Seu nome" required>
+                <input type="email" name="email" placeholder="Seu e-mail">
+                <input type="text" name="telefone" placeholder="Seu telefone" required>
 
-        {% endfor %}
-
-    </div>
-
-    {% endif %}
-
-    <div class="info">
-
-        <div class="titulo">
-            {{ imovel.titulo }}
+                <button type="submit">Quero ser atendido</button>
+            </form>
         </div>
 
-        <div class="preco">
-            R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
-        </div>
-
-        <h3>
-            📍 {{ imovel.bairro }} - {{ imovel.cidade }}
-        </h3>
-
-        <div class="caracteristicas">
-
-            <div class="item">
-                🛏 {{ imovel.quartos }} Quartos
-            </div>
-
-            <div class="item">
-                🚿 {{ imovel.banheiros }} Banheiros
-            </div>
-
-            <div class="item">
-                🚗 {{ imovel.vaga_garagem }} Vagas
-            </div>
-
-            <div class="item">
-                📐 {{ imovel.area }} m²
-            </div>
-
-        </div>
-
-        <div class="botoes">
-
-            <a
-                class="btn whatsapp"
-                target="_blank"
-                href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-                WhatsApp
-            </a>
-
-            <a
-                href="#"
-                class="btn compartilhar"
-                onclick="compartilhar()">
-                Compartilhar
-            </a>
-
-        </div>
-
-        <div class="descricao">
-
-            <h2>Descrição</h2>
-
-            <p>
-                {{ imovel.descricao }}
+        <!-- FUTURO: IMÓVEIS SEMELHANTES -->
+        <div class="lead-box">
+            <h3>Imóveis semelhantes</h3>
+            <p style="font-size:14px;color:#64748b;">
+                (Aqui você pode puxar IA/match depois)
             </p>
-
         </div>
 
     </div>
 
 </div>
 
+<!-- MODAL -->
 <div class="modal" id="modal">
-
-    <span
-        class="fechar"
-        onclick="fecharGaleria()">
-        ×
-    </span>
-
+    <span class="fechar" onclick="fecharGaleria()">×</span>
     <img id="fotoModal">
-
 </div>
-    <div class="lead-box">
 
-    <h2>Receba mais informações</h2>
+<!-- FLOAT WHATSAPP -->
+<a class="float-whats"
+   target="_blank"
+   href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+   🟢
+</a>
 
-    <form action="/capturar_lead" method="POST">
+<!-- MOBILE BAR -->
+<div class="mobile-bar">
 
-        <input
-            type="hidden"
-            name="imovel_id"
-            value="{{ imovel.id }}">
+    <a class="whatsapp"
+       style="background:#25D366"
+       target="_blank"
+       href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+       WhatsApp
+    </a>
 
-        <input
-            type="text"
-            name="nome"
-            placeholder="Seu nome"
-            required>
-
-        <input
-            type="email"
-            name="email"
-            placeholder="Seu e-mail">
-
-        <input
-            type="text"
-            name="telefone"
-            placeholder="Seu telefone"
-            required>
-
-        <button type="submit">
-            Enviar mensagem
-        </button>
-
-    </form>
+    <a class="compartilhar"
+       style="background:#2563eb"
+       href="#"
+       onclick="compartilhar()">
+       Compartilhar
+    </a>
 
 </div>
 
 <script>
 
 function trocarFoto(src){
-
-    document
-    .getElementById("fotoPrincipal")
-    .src = src;
+    document.getElementById("fotoPrincipal").src = src;
 }
 
 function abrirGaleria(src){
-
-    document
-    .getElementById("modal")
-    .style.display = "block";
-
-    document
-    .getElementById("fotoModal")
-    .src = src;
+    document.getElementById("modal").style.display = "block";
+    document.getElementById("fotoModal").src = src;
 }
 
 function fecharGaleria(){
-
-    document
-    .getElementById("modal")
-    .style.display = "none";
+    document.getElementById("modal").style.display = "none";
 }
 
 function compartilhar(){
 
     if(navigator.share){
-
         navigator.share({
             title: document.title,
             url: window.location.href
         });
-
-    }else{
-
-        navigator.clipboard.writeText(
-            window.location.href
-        );
-
+    } else {
+        navigator.clipboard.writeText(window.location.href);
         alert("Link copiado!");
     }
 }
