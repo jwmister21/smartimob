@@ -266,7 +266,11 @@ footer{
 
                         {% for foto in i.fotos %}
 
-                       <img src="{{ foto }}" alt="{{ i.titulo }}">
+                        <img
+                            src="{{ foto }}"
+                            alt="{{ i.titulo }}"
+                            loading="lazy"
+                            onerror="this.src='https://via.placeholder.com/800x500?text=Sem+Foto';">
 
                         {% endfor %}
 
@@ -275,12 +279,14 @@ footer{
                     {% if i.fotos|length > 1 %}
 
                     <button
+                        type="button"
                         class="carousel-btn prev"
                         onclick="moverSlide({{ i.id }},-1)">
                         ❮
                     </button>
 
                     <button
+                        type="button"
                         class="carousel-btn next"
                         onclick="moverSlide({{ i.id }},1)">
                         ❯
@@ -290,7 +296,19 @@ footer{
 
                 </div>
 
-            
+                {% else %}
+
+                <img
+                    src="https://via.placeholder.com/800x500?text=Sem+Foto"
+                    alt="Sem Foto"
+                    style="
+                        width:100%;
+                        height:250px;
+                        object-fit:cover;
+                    ">
+
+                {% endif %}
+
             </div>
 
             <div class="card-body">
@@ -333,7 +351,7 @@ footer{
 
         </div>
 
-    
+        {% endfor %}
 
     </div>
 
