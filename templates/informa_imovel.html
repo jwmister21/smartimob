@@ -270,10 +270,9 @@ body{
 
             <div class="titulo">{{ imovel.titulo }}</div>
 
-            <div class="preco">
-                R$ {{ "{:,.2f}".format(imovel.valor|float)
-                    .replace(",", "X").replace(".", ",").replace("X", ".") }}
-            </div>
+            <div class="valor">
+             {{ imovel.valor }}
+        </div>
 
             <h4>📍 {{ imovel.bairro }} - {{ imovel.cidade }}</h4>
 
