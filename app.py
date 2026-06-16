@@ -2363,9 +2363,9 @@ def editar_imovel(id):
                 vaga_garagem=?,
                 sacada=?,
                 rua=?,
-                iptu=?
-                parcela=?
-                prazo=?
+                iptu=?,
+                parcela=?,
+                prazo=?,
                 anuais=?
             WHERE id=? AND empresa_id=?
         """, (
