@@ -1458,6 +1458,7 @@ WHERE i.empresa_id = ?
     return render_template("match_ia.html", matches=matches)
 
 
+```python
 @app.route("/site/<slug>")
 def site_publico(slug):
 
@@ -1496,7 +1497,7 @@ def site_publico(slug):
 
         imovel = dict(row)
 
-        # Busca TODAS as fotos do imóvel
+        # Busca todas as fotos
         cursor.execute("""
             SELECT nome_arquivo
             FROM fotos_imoveis
@@ -1506,16 +1507,27 @@ def site_publico(slug):
 
         fotos = cursor.fetchall()
 
-        imovel["fotos"] = [
-            foto["nome_arquivo"]
-            for foto in fotos
-        ]
+        imovel["fotos"] = []
 
-        # Primeira foto para capa
+        for foto in fotos:
+
+            url_foto = (
+                "/data/uploads/imoveis/"
+                + foto["nome_arquivo"]
+            )
+
+            imovel["fotos"].append(url_foto)
+
+        # Foto capa
         if imovel["fotos"]:
             imovel["foto_capa"] = imovel["fotos"][0]
         else:
             imovel["foto_capa"] = None
+
+        print(
+            f"IMÓVEL {imovel['id']} -> "
+            f"{len(imovel['fotos'])} fotos"
+        )
 
         imoveis.append(imovel)
 
@@ -1526,6 +1538,8 @@ def site_publico(slug):
         empresa=empresa,
         imoveis=imoveis
     )
+```
+
  
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
