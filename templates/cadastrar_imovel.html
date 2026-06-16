@@ -132,13 +132,18 @@
     <label>Descrição</label>
     <textarea name="descricao" rows="4"></textarea>
 </div>
-
+ <div style="grid-column: 1 / -1; text-align:left; margin-top:15px;">
+    <button type="submit" class="btn-salvar">
+        💾 Salvar Imóvel
+    </button>
 <div class="campo-box" style="margin-top:20px;">
     <label>Fotos do Imóvel</label>
 
     <label for="input-fotos" class="btn-acao btn-editar" style="width:fit-content;cursor:pointer;">
         ➕ Adicionar Fotos
     </label>
+   
+</div>
 
     <input 
         type="file" 
@@ -151,13 +156,7 @@
     
     <div id="preview-container"></div>
 </div>
-
-<button type="submit" class="btn-salvar">
-    Salvar Imóvel
-</button>
-    </form>
-</div>
-
+            
 <script>
     // 1. Variável global para manter o histórico de arquivos selecionados
     let arquivosParaEnviar = new DataTransfer();
