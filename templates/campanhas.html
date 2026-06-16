@@ -434,7 +434,7 @@ onkeyup="filtrarClientes()">
 
 class="cliente"
 
-data-orcamento="{{c.orcamento or 0}}"
+data-orcamento="{{c.faixa_preco or 0}}"
 
 >
 
@@ -642,7 +642,7 @@ document.querySelectorAll(".cliente")
 
 let preco =
 parseFloat(
-card.dataset.orcamento
+card.dataset.faixa_preco
 );
 
 
