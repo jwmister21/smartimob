@@ -1458,7 +1458,6 @@ WHERE i.empresa_id = ?
     return render_template("match_ia.html", matches=matches)
 
 
-```python
 @app.route("/site/<slug>")
 def site_publico(slug):
 
