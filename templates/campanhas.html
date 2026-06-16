@@ -434,7 +434,7 @@ onkeyup="filtrarClientes()">
 
 class="cliente"
 
-data-orcamento="{{c.faixa_preco or 0}}"
+data-orcamento="{{c.faixa_preco}}"
 
 >
 
@@ -623,16 +623,43 @@ selecionarCliente(check);
 
 
 
+function limparValor(valor){
+
+    if(!valor){
+        return 0;
+    }
+
+
+    valor = valor
+    .replace("R$","")
+    .replace(/\./g,"")
+    .replace(",",".")
+    .trim();
+
+
+    return parseFloat(valor) || 0;
+
+}
+
+
+
 function filtrarClientes(){
 
 
-let valor=
+let campo =
+document.getElementById("filtroValor").value;
 
-parseFloat(
-document.getElementById("filtroValor").value
-)
 
-|| 999999999;
+let limite =
+limparValor(campo);
+
+
+
+if(!limite){
+
+    limite = 999999999;
+
+}
 
 
 
@@ -641,13 +668,13 @@ document.querySelectorAll(".cliente")
 
 
 let preco =
-parseFloat(
-card.dataset.faixa_preco
+limparValor(
+card.dataset.orcamento
 );
 
 
 
-if(preco<=valor){
+if(preco <= limite){
 
 
 card.style.display="flex";
@@ -660,7 +687,6 @@ card.style.display="none";
 
 
 }
-
 
 
 });
