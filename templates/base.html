@@ -9,637 +9,335 @@
 <style>
 
 /* =========================
-RESET
+   RESET
 ========================= */
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
-
 
 /* =========================
-BASE
+   BASE
 ========================= */
-body{
-    background:#f5f7fb;
-    color:#1e293b;
-    transition:.3s;
+body {
+    background: #0b1120;
+    color: white;
+    transition: all .25s ease;
 }
-
 
 /* =========================
-SIDEBAR
+   SIDEBAR (UPGRADE VISUAL)
 ========================= */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    background: #111827;
+    border-right: 1px solid rgba(255,255,255,.06);
+    padding: 25px;
 
-.sidebar{
-
-    position:fixed;
-    left:0;
-    top:0;
-    width:260px;
-    height:100vh;
-
-    background:#ffffff;
-
-    border-right:1px solid #e5e7eb;
-
-    padding:25px;
-
-    display:flex;
-    flex-direction:column;
-
-    box-shadow:4px 0 20px rgba(0,0,0,.04);
-
+    /* 🔥 UPGRADE */
+    display: flex;
+    flex-direction: column;
 }
 
+/* 🔥 SCROLL AQUI */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
 
-/* MENU SCROLL */
-
-.menu{
-
-    display:flex;
-    flex-direction:column;
-    gap:5px;
-
-    overflow-y:auto;
-
-    max-height:calc(100vh - 90px);
-
+    overflow-y: auto;
+    max-height: calc(100vh - 90px);
+    padding-right: 5px;
 }
 
-
-.menu::-webkit-scrollbar{
-    width:5px;
+/* SCROLL BONITO */
+.menu::-webkit-scrollbar {
+    width: 6px;
 }
 
-.menu::-webkit-scrollbar-thumb{
-
-    background:#cbd5e1;
-    border-radius:20px;
-
+.menu::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 10px;
 }
 
-
-
-/* LOGO */
-
-.logo{
-
-    font-size:28px;
-    font-weight:700;
-    margin-bottom:35px;
-
-    color:#111827;
-
+.menu::-webkit-scrollbar-thumb:hover {
+    background: #374151;
+}
+    
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 260px;
+    height: 100vh;
+    background: #111827;
+    border-right: 1px solid rgba(255,255,255,.06);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
 }
 
-
-.logo span{
-
-    color:#2563eb;
-
+.logo {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 35px;
+    letter-spacing: .5px;
 }
 
+.logo span {
+    color: #38bdf8;
+}
 
+/* MENU */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* LINKS */
+.menu a {
+    text-decoration: none;
+    color: #cbd5e1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    transition: .2s;
+}
+
+/* HOVER MAIS SUAVE */
+.menu a:hover {
+    background: #1e293b;
+    color: #ffffff;
+    transform: translateX(3px);
+}
 
 /* =========================
-MENU
+   MAIN
 ========================= */
-
-
-.menu-section-title{
-
-    color:#94a3b8;
-
-    font-size:10px;
-
-    text-transform:uppercase;
-
-    font-weight:700;
-
-    margin:15px 0 5px 12px;
-
+.main {
+    margin-left: 260px;
+    min-height: 100vh;
+    padding: 35px;
 }
 
-
-
-.menu a{
-
-    text-decoration:none;
-
-    color:#475569;
-
-    padding:11px 13px;
-
-    border-radius:12px;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    font-size:14px;
-
-    transition:.2s;
-
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
 }
-
-
-
-.menu a:hover{
-
-    background:#eff6ff;
-
-    color:#2563eb;
-
-    transform:translateX(3px);
-
-}
-
-
-
-.menu a.active{
-
-    background:#2563eb;
-
-    color:white;
-
-    font-weight:600;
-
-    box-shadow:0 8px 20px rgba(37,99,235,.25);
-
-}
-
-
 
 /* =========================
-MAIN
+   USER CONTROLS
 ========================= */
-
-
-.main{
-
-    margin-left:260px;
-
-    min-height:100vh;
-
-    padding:30px;
-
+.user-controls {
+    display: flex;
+    align-items: center;
+    position: relative;
 }
 
-
-
-.topbar{
-
-    background:white;
-
-    padding:18px 25px;
-
-    border-radius:18px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
-
-    margin-bottom:30px;
-
-    box-shadow:
-    0 8px 25px rgba(0,0,0,.05);
-
+.badge {
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    position: absolute;
+    top: -5px;
+    right: 15px;
 }
-
-
-
-.topbar h1{
-
-    color:#111827;
-
-}
-
-
 
 /* =========================
-USUARIO
+   DROPDOWN (UPGRADE LEVE)
 ========================= */
-
-
-.dropbtn{
-
-    background:white;
-
-    border:1px solid #e5e7eb;
-
-    color:#334155;
-
-    padding:10px 15px;
-
-    border-radius:12px;
-
-    cursor:pointer;
-
+.dropdown {
+    position: relative;
+    display: inline-block;
 }
 
-
-
-.dropdown{
-
-    position:relative;
-
+.dropbtn {
+    background: #111827;
+    border: 1px solid #1e293b;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: .2s;
 }
 
-
-
-.dropdown-content{
-
-    display:none;
-
-    position:absolute;
-
-    right:0;
-
-    background:white;
-
-    min-width:170px;
-
-    border-radius:12px;
-
-    border:1px solid #e5e7eb;
-
-    overflow:hidden;
-
-    box-shadow:
-    0 15px 30px rgba(0,0,0,.12);
-
-    z-index:999;
-
+.dropbtn:hover {
+    background: #1e293b;
 }
 
-
-
-.dropdown-content a{
-
-    display:block;
-
-    padding:12px;
-
-    color:#334155;
-
-    text-decoration:none;
-
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #111827;
+    min-width: 160px;
+    border-radius: 12px;
+    border: 1px solid #1e293b;
+    z-index: 1000;
+    overflow: hidden;
 }
 
-
-
-.dropdown-content a:hover{
-
-    background:#f1f5f9;
-
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    transition: .2s;
 }
 
-
-
-.dropdown:hover .dropdown-content{
-
-    display:block;
-
+.dropdown-content a:hover {
+    background-color: #1e293b;
 }
 
-
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
 /* =========================
-NOTIFICAÇÕES
+   NOTIFICAÇÕES
 ========================= */
-
-
-.notif-box{
-
-    display:none;
-
-    position:absolute;
-
-    right:40px;
-
-    top:50px;
-
-    width:280px;
-
-    background:white;
-
-    border-radius:15px;
-
-    padding:15px;
-
-    border:1px solid #e5e7eb;
-
-    box-shadow:0 15px 30px rgba(0,0,0,.12);
-
+.notif-box {
+    display: none;
+    position: absolute;
+    right: 40px;
+    top: 50px;
+    width: 280px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 2000;
 }
 
-
-
-.notif-item{
-
-    color:#334155;
-
-    text-decoration:none;
-
-    display:block;
-
-    padding:10px;
-
+.notif-item {
+    border-bottom: 1px solid #374151;
+    padding: 10px 0;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    font-size: 0.9rem;
 }
 
-
+.notif-item:hover {
+    color: #38bdf8;
+}
 
 /* =========================
-CHAT IA
+   CHAT FLOAT BUTTON
 ========================= */
-
-
-.chat-float-btn{
-
-    position:fixed;
-
-    bottom:25px;
-
-    right:25px;
-
-    width:60px;
-
-    height:60px;
-
-    border-radius:50%;
-
-    border:none;
-
-    background:#2563eb;
-
-    color:white;
-
-    font-size:25px;
-
-    cursor:pointer;
-
-    box-shadow:0 10px 25px rgba(37,99,235,.35);
-
+.chat-float-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #f59e0b;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    z-index: 9999;
+    transition: transform .2s ease;
 }
 
-
-
-.chat-widget{
-
-    position:fixed;
-
-    bottom:100px;
-
-    right:25px;
-
-    width:300px;
-
-    height:400px;
-
-    background:white;
-
-    border-radius:18px;
-
-    display:none;
-
-    flex-direction:column;
-
-    overflow:hidden;
-
-    border:1px solid #e5e7eb;
-
-    box-shadow:
-    0 15px 40px rgba(0,0,0,.15);
-
+.chat-float-btn:hover {
+    transform: scale(1.1);
 }
-
-
-
-.chat-header{
-
-    padding:15px;
-
-    background:#2563eb;
-
-    color:white;
-
-    display:flex;
-
-    justify-content:space-between;
-
-}
-
-
-
-.chat-body{
-
-    flex:1;
-
-    padding:15px;
-
-    overflow:auto;
-
-}
-
-
-
-.chat-footer{
-
-    padding:15px;
-
-    border-top:1px solid #e5e7eb;
-
-}
-
-
-
-#texto_cliente{
-
-    width:100%;
-
-    border:1px solid #d1d5db;
-
-    border-radius:10px;
-
-    padding:10px;
-
-    color:#111827;
-
-}
-
-
-
-.btn-analisar{
-
-    width:100%;
-
-    margin-top:8px;
-
-    background:#2563eb;
-
-    color:white;
-
-    border:none;
-
-    padding:10px;
-
-    border-radius:10px;
-
-}
-
-
 
 /* =========================
-MOBILE
+   CHAT
 ========================= */
-
-@media(max-width:900px){
-
-
-.sidebar{
-
-    width:80px;
-
-    padding:15px;
-
+.chat-widget {
+    position: fixed;
+    bottom: 100px;
+    right: 25px;
+    width: 300px;
+    height: 400px;
+    background: #1a2234;
+    border-radius: 15px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 9998;
+    border: 1px solid #334155;
+    overflow: hidden;
 }
 
-
-.logo{
-
-    font-size:20px;
-
+.chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
 }
 
-
-.menu a{
-
-    font-size:0;
-
-    justify-content:center;
-
+.chat-footer {
+    padding: 15px;
+    background: #0f172a;
+    border-top: 1px solid #334155;
 }
 
-
-.menu a::first-letter{
-
-    font-size:20px;
-
+#texto_cliente {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    resize: none;
 }
 
-
-
-.main{
-
-    margin-left:80px;
-
-    padding:15px;
-
+/* BOTÃO IA */
+.btn-analisar {
+    width: 100%;
+    background: #f59e0b;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: .2s;
 }
 
-
-.topbar{
-
-    border-radius:15px;
-
+.btn-analisar:hover {
+    background: #d97706;
 }
 
-
+/* =========================
+   MENU SECTION TITLE
+========================= */
+.menu-section-title {
+    color: #6b7280;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 8px 0 2px 12px;
+    letter-spacing: .05em;
 }
- 
-.card,
-.card-site,
-.dashboard-card,
-.box,
-.panel,
-.container-card {
-
-    background:#ffffff !important;
-
-    color:#1e293b !important;
-
-    border:1px solid #e5e7eb !important;
-
-    border-radius:18px !important;
-
-    box-shadow:
-    0 10px 30px rgba(0,0,0,.06) !important;
-
+     .menu a.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 0 0 1px rgba(37,99,235,.4);
 }
-
-
-/* títulos dos cards */
-
-.card h1,
-.card h2,
-.card h3,
-.card-site h1,
-.card-site h2,
-.card-site h3 {
-
-    color:#111827 !important;
-
-}
-
-
-/* textos */
-
-.card p,
-.card label,
-.card span {
-
-    color:#475569;
-
-}
-
-
-/* inputs */
-
-input,
-select,
-textarea {
-
-    background:#ffffff !important;
-
-    color:#111827 !important;
-
-    border:1px solid #d1d5db !important;
-
-}
-
-
-/* tabelas */
-
-table {
-
-    background:white !important;
-
-    color:#334155 !important;
-
-}
-
-
-th {
-
-    background:#f1f5f9 !important;
-
-    color:#334155 !important;
-
-}
-
-
-td {
-
-    border-bottom:1px solid #e5e7eb !important;
-
-}   
 </style>
 </head>
 <body>
