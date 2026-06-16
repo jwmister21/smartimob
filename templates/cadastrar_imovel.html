@@ -102,35 +102,49 @@
     <input type="text" name="condominio" id="condominio" placeholder="R$ 0,00">
     
 </div>
-
 <div class="campo-box">
     <label>DRIVER</label>
     <input type="text" name="link" id="link" placeholder="www.drive.com.br">
-    
-</div>            
- <div class="campo-box">
-    <label>ANUAIS</label>
-    <input type="text" name="anuais" id="anuais" placeholder="Anuais" >         
-
 </div>
-    <div class="campo-box">
+
+<div class="campo-box">
+    <label>ANUAIS</label>
+    <input type="text" name="anuais" id="anuais" placeholder="Anuais">
+</div>
+
+<div class="campo-box">
     <label>PARCELA</label>
-    <input type="text" name="parcela" id="parcela" placeholder="PARCELA" >          
-    </div>
-            
-        <div class="campo-box" style="margin-top: 15px;">
-            <label>Descrição</label>
-            <textarea name="descricao" rows="4"></textarea>
-        </div>
+    <input type="text" name="parcela" id="parcela" placeholder="PARCELA">
+</div>
 
-        <div class="campo-box" style="margin-top: 20px;">
-            <label>Fotos do Imóvel</label>
-            <label for="input-fotos" class="btn-acao btn-editar" style="width: fit-content; cursor: pointer;">➕ Adicionar Fotos</label>
-            <input type="file" name="fotos[]" id="input-fotos" accept="image/*" multiple style="display:none" onchange="previewFotos(event)">
-            <div id="preview-container"></div>
-        </div>
+<div class="campo-box" style="margin-top:15px;">
+    <label>Descrição</label>
+    <textarea name="descricao" rows="4"></textarea>
+</div>
 
-        <button type="submit" class="btn-salvar">Salvar Imóvel</button>
+<div class="campo-box" style="margin-top:20px;">
+    <label>Fotos do Imóvel</label>
+
+    <label for="input-fotos" class="btn-acao btn-editar" style="width:fit-content;cursor:pointer;">
+        ➕ Adicionar Fotos
+    </label>
+
+    <input 
+        type="file" 
+        name="fotos[]" 
+        id="input-fotos" 
+        accept="image/*" 
+        multiple 
+        style="display:none" 
+        onchange="previewFotos(event)"
+    >
+
+    <div id="preview-container"></div>
+</div>
+
+<button type="submit" class="btn-salvar">
+    Salvar Imóvel
+</button>
     </form>
 </div>
 
