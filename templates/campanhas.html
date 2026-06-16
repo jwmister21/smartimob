@@ -529,11 +529,25 @@ document.getElementById("qtd")
 function selecionarCliente(check){
 
 
-let tel=check.dataset.tel;
+let tel = check.dataset.tel;
 
 
-let campo=
+// remove tudo que não for número
+tel = tel.replace(/\D/g,'');
+
+
+// adiciona 55 se não existir
+if(!tel.startsWith("55")){
+
+    tel = "55" + tel;
+
+}
+
+
+
+let campo =
 document.getElementById("telefones");
+
 
 
 let lista =
@@ -546,18 +560,19 @@ campo.value
 if(check.checked){
 
 
-if(!lista.includes(tel)){
+    if(!lista.includes(tel)){
 
-lista.push(tel);
+        lista.push(tel);
 
-}
+    }
+
 
 
 }else{
 
 
-lista =
-lista.filter(x=>x!=tel);
+    lista =
+    lista.filter(x=>x != tel);
 
 
 }
@@ -573,9 +588,6 @@ atualizarContador();
 
 
 }
-
-
-
 
 
 
