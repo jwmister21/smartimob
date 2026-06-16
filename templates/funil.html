@@ -15,8 +15,7 @@
             {% for cliente in funil_dados[etapa] %}
             <div class="card-cliente">
                 <p><strong>{{ cliente.nome }}</strong></p>
-                <p>💰 Orçamento: {{ cliente.Orçamento }}</p>
-                <p>Telefone: {{ cliente.telefone }}</p>
+                <p>☎️: {{ cliente.telefone }}</p>
                 <div class="card-actions">
                     <a href="/cliente/{{ cliente.id }}" class="btn-detalhes">Ver Perfil</a>
                 </div>
