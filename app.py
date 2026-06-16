@@ -1252,7 +1252,33 @@ def excluir_foto(foto_id):
 
 @app.route("/campanhas")
 def campanhas():
-    return render_template("campanhas.html")
+
+    usuario_id = session.get("usuario_id")
+
+
+    conn = sqlite3.connect("/data/imobiliaria.db")
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT *
+        FROM clientes
+        WHERE usuario_id = ?
+        ORDER BY id DESC
+    """, (usuario_id,))
+
+
+    clientes = cursor.fetchall()
+
+
+    conn.close()
+
+
+    return render_template(
+        "campanhas.html",
+        clientes=clientes
+    )
 
 
 @app.route("/enviar_mensagem", methods=["POST"])
