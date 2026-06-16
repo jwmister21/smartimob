@@ -96,12 +96,10 @@
             <!-- CORREÇÃO: Adicionado onchange aqui -->
             <select name="status_funil" class="funnel-selector" onchange="verificarData(this)">
                 <option value="Novo" {% if cliente[7] == 'Novo' %}selected{% endif %}>🆕 Lead Novo</option>
-                <option value="Em Atendimento" {% if cliente[7] == 'Em Atendimento' %}selected{% endif %}>💬 Em Atendimento</option>
+                <option value="Negociação" {% if cliente[7] == 'Negociação' %}selected{% endif %}>💬 Negociação</option>
                 <option value="Visita Agendada" {% if cliente[7] == 'Visita Agendada' %}selected{% endif %}>📅 Visita Agendada</option>
-                <option value="Proposta Feita" {% if cliente[7] == 'Proposta Feita' %}selected{% endif %}>📝 Proposta Feita</option>
-                <option value="Contrato Fechado" {% if cliente[7] == 'Contrato Fechado' %}selected{% endif %}>🏆 Venda Concluída!</option>
-                <option value="Desistiu" {% if cliente[7] == 'Desistiu' %}selected{% endif %}>⚠️ Desistiu!</option>
-                <option value="Ja comprou" {% if cliente[7] == 'Ja comprou' %}selected{% endif %}>⛔ Ja Comprou!</option>
+                <option value="Concluido" {% if cliente[7] == 'Concluido' %}selected{% endif %}>🏆 Venda Concluída!</option>
+                <option value="Desistencia" {% if cliente[7] == 'Desistencia' %}selected{% endif %}>⚠️ Desistencia!</option>
             </select>
             
             <div id="campoData" style="margin: 10px 0; display: {% if cliente[7] == 'Visita Agendada' %}block{% else %}none{% endif %};">
