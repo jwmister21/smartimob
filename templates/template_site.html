@@ -318,14 +318,7 @@ footer{
         {{ i.rua or 'Endereço não informado' }}
     </div>
 
-    <div class="valor">
-        R$ {{ i.valor }}
-    </div>
     
-    <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
-        {% if i.condominio %} Cond. R$ {{ i.condominio }} {% endif %}
-        {% if i.iptu %} | IPTU R$ {{ i.iptu }} {% endif %}
-    </div>
 
                 <div class="valor">
                         {{ i.valor }}
