@@ -2629,7 +2629,7 @@ def atualizar_dados_cliente(id):
     return redirect(f"/cliente/{id}")
 
 
-@app.route("/imovel-publico/<int:imovel_id>")
+@app.route("/informa-imovel/<int:imovel_id>")
 def informa_imovel(imovel_id):
 
     conn = sqlite3.connect(DB_PATH)
@@ -2664,28 +2664,12 @@ def informa_imovel(imovel_id):
         for foto in fotos
     ]
 
-    # imóveis parecidos
-    cursor.execute("""
-        SELECT *
-        FROM imoveis
-        WHERE cidade = ?
-        AND id != ?
-        LIMIT 4
-    """, (
-        imovel["cidade"],
-        imovel_id
-    ))
-
-    semelhantes = cursor.fetchall()
-
     conn.close()
 
     return render_template(
         "informa_imovel.html",
-        imovel=imovel,
-        semelhantes=semelhantes
+        imovel=imovel
     )
-
 
 
 
