@@ -1146,6 +1146,66 @@ def exibir_site(subdominio):
         imoveis=imoveis
     )
 
+
+@app.route("/capturar_lead", methods=["POST"])
+def capturar_lead():
+
+    import sqlite3
+
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    email = request.form.get("email")
+    imovel_id = request.form.get("imovel_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id = ?
+    """, (imovel_id,))
+
+    imovel = cursor.fetchone()
+
+    if not imovel:
+        conn.close()
+        return "Imóvel não encontrado"
+
+    cursor.execute("""
+        INSERT INTO clientes (
+            nome,
+            telefone,
+            email,
+            empresa_id,
+            usuario_id,
+            bairro,
+            interesse,
+            status_funil
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        nome,
+        telefone,
+        email,
+        imovel["empresa_id"],
+        imovel["usuario_id"],
+        imovel["bairro"],
+        imovel["titulo"],
+        "Novo Contato"
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return """
+    <script>
+        alert('Solicitação enviada com sucesso!');
+        history.back();
+    </script>
+    """
+
 @app.route("/excluir-foto/<int:foto_id>")
 @verificar_sessao
 def excluir_foto(foto_id):
