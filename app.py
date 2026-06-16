@@ -1536,8 +1536,8 @@ def site_publico(slug):
         "site_publico.html",
         empresa=empresa,
         imoveis=imoveis
-    )
-```
+   )
+
 
  
 @app.route('/admin/configurar-site', methods=['POST'])
