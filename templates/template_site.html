@@ -216,47 +216,91 @@ footer {
 
     {% for i in imoveis %}
 
-    <div class="card">
+<div style="position:relative;">
 
-        <div style="position:relative;">
-            <span class="badge">{{ i.cidade }}</span>
-            {% if i.fotos %}
+    <span class="badge">
+        {{ i.cidade or 'Imóvel' }}
+    </span>
 
-<div class="carousel-container" id="carousel-{{ i.id }}">
+    {% if i.fotos and i.fotos|length > 0 %}
 
-    <div class="carousel-images">
+    <div class="carousel-container" id="carousel-{{ i.id }}">
 
-        {% for foto in i.fotos %}
-            <img src="/uploads/imoveis/{{ foto }}" alt="Imóvel">
-        {% endfor %}
+        <div class="carousel-images">
+
+            {% for foto in i.fotos %}
+            <img src="/uploads/imoveis/{{ foto }}" alt="{{ i.titulo }}">
+            {% endfor %}
+
+        </div>
+
+        {% if i.fotos|length > 1 %}
+
+        <button
+            type="button"
+            class="carousel-btn prev"
+            onclick="event.preventDefault(); moverSlide({{ i.id }}, -1)">
+            ❮
+        </button>
+
+        <button
+            type="button"
+            class="carousel-btn next"
+            onclick="event.preventDefault(); moverSlide({{ i.id }}, 1)">
+            ❯
+        </button>
+
+        {% endif %}
 
     </div>
 
-    {% if i.fotos|length > 1 %}
+    {% else %}
 
-    <button class="carousel-btn prev"
-            onclick="moverSlide({{ i.id }}, -1)">
-        ❮
-    </button>
-
-    <button class="carousel-btn next"
-            onclick="moverSlide({{ i.id }}, 1)">
-        ❯
-    </button>
+    <img
+        src="https://via.placeholder.com/600x400?text=Sem+Foto"
+        alt="Sem foto">
 
     {% endif %}
 
 </div>
 
-{% else %}
+<div class="card-body">
 
-<img src="https://via.placeholder.com/600x400?text=Sem+Foto">
+    <div class="titulo">
+        {{ i.titulo }}
+    </div>
 
-{% endif %}
+    <div class="info">
+        🏠 {{ i.quartos or 0 }} quartos
+    </div>
+
+    <div class="info">
+        📍 {{ i.bairro or '' }}
+    </div>
+
+    {% if i.area %}
+    <div class="info">
+        📐 {{ i.area }} m²
+    </div>
+    {% endif %}
+
+    {% if i.tipo %}
+    <div class="info">
+        🏢 {{ i.tipo }}
+    </div>
+    {% endif %}
+
+    <div class="preco">
+        R$ {{ i.valor }}
+    </div>
+
+    <a class="btn" href="/imovel/{{ i.id }}">
+        Ver detalhes
+    </a>
 
 </div>
-{% endif %}
-        </div>
+
+{% endfor %}
 
         <div class="card-body">
 
