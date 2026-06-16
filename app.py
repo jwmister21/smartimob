@@ -1378,7 +1378,7 @@ def cadastrar_imovel():
             request.form.get("lavabo"),
             request.form.get("prazo"),
             request.form.get("parcela"),
-            request.form.get("anuais")
+            request.form.get("anuais"),
             user_id,
             empresa_id
         ))
