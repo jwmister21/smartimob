@@ -308,30 +308,24 @@ footer{
             </div>
 
             <div class="card-body">
+    <div class="titulo">{{ i.titulo }}</div>
 
-                <div class="titulo">
-                    {{ i.titulo }}
-                </div>
+    <div style="font-weight: bold; margin-bottom: 5px;">
+        📍 {{ i.cidade }} - {{ i.bairro }}
+    </div>
 
-                <div class="info">
-                    🏠 {{ i.quartos or 0 }} quartos
-                </div>
+    <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">
+        {{ i.rua or 'Endereço não informado' }}
+    </div>
 
-                <div class="info">
-                    📍 {{ i.bairro or '' }}
-                </div>
-
-                {% if i.area %}
-                <div class="info">
-                    📐 {{ i.area }} m²
-                </div>
-                {% endif %}
-
-                {% if i.tipo %}
-                <div class="info">
-                    🏢 {{ i.tipo }}
-                </div>
-                {% endif %}
+    <div class="valor">
+        R$ {{ i.valor }}
+    </div>
+    
+    <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+        {% if i.condominio %} Cond. R$ {{ i.condominio }} {% endif %}
+        {% if i.iptu %} | IPTU R$ {{ i.iptu }} {% endif %}
+    </div>
 
                 <div class="valor">
                         {{ i.valor }}
