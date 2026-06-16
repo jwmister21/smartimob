@@ -138,6 +138,54 @@ footer {
     background: #111827;
     color: white;
 }
+
+.carousel-container{
+    position:relative;
+    width:100%;
+    height:260px;
+    overflow:hidden;
+}
+
+.carousel-images{
+    display:flex;
+    height:100%;
+    transition:transform .4s ease;
+}
+
+.carousel-images img{
+    min-width:100%;
+    width:100%;
+    height:260px;
+    object-fit:cover;
+}
+
+.carousel-btn{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(0,0,0,.5);
+    color:white;
+    border:none;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    cursor:pointer;
+    z-index:10;
+}
+
+.prev{
+    left:10px;
+}
+
+.next{
+    right:10px;
+}
+
+.carousel-btn:hover{
+    background:rgba(0,0,0,.8);
+}
+
+
 </style>
 </head>
 
@@ -172,7 +220,33 @@ footer {
 
         <div style="position:relative;">
             <span class="badge">{{ i.cidade }}</span>
-            <img src="/uploads/imoveis/{{ foto }}
+            {% if i.fotos %}
+<div class="carousel-container" id="carousel-{{ i.id }}">
+
+    <div class="carousel-images">
+
+        {% for foto in i.fotos %}
+        <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
+        {% endfor %}
+
+    </div>
+
+    {% if i.fotos|length > 1 %}
+
+    <button class="carousel-btn prev"
+        onclick="moverSlide({{ i.id }}, -1)">
+        ❮
+    </button>
+
+    <button class="carousel-btn next"
+        onclick="moverSlide({{ i.id }}, 1)">
+        ❯
+    </button>
+
+    {% endif %}
+
+</div>
+{% endif %}
         </div>
 
         <div class="card-body">
@@ -200,6 +274,38 @@ footer {
 <footer>
     © {{ empresa.nome }} - Todos os direitos reservados
 </footer>
+<script>
 
+const slides = {};
+
+function moverSlide(id, direcao){
+
+    const carousel =
+        document.querySelector(
+            "#carousel-" + id + " .carousel-images"
+        );
+
+    if(!slides[id]){
+        slides[id] = 0;
+    }
+
+    const total =
+        carousel.children.length;
+
+    slides[id] += direcao;
+
+    if(slides[id] < 0){
+        slides[id] = total - 1;
+    }
+
+    if(slides[id] >= total){
+        slides[id] = 0;
+    }
+
+    carousel.style.transform =
+        `translateX(-${slides[id] * 100}%)`;
+}
+
+</script>
 </body>
 </html>
