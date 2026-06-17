@@ -476,7 +476,11 @@ Imóveis
         <div class="titulo">{{ imovel.titulo }}</div>
 
         <div class="valor">
-              {{ "{:,.0f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+              {% if imovel.valor == 0 %}
+    {{ imovel.valor }}
+{% else %}
+    R$ {{ "{:,.0f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+{% endif %}
         </div>
 
         <div class="detalhes">
