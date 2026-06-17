@@ -472,8 +472,7 @@ onchange="selecionarCliente(this)"
 <span class="valor">
 
 
-R$ {{ "{:,.2f}".format(c.faixa_preco|float).replace(",", "X").replace(".", ",").replace("X",".") }}
-
+{{ c.faixa_preco }}
 
 </span>
 
