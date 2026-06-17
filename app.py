@@ -813,6 +813,31 @@ Se algum campo não for informado:
         "resultado": resultado_html
     })
 
+@app.context_processor
+def total_leads_site():
+
+    try:
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM lead_site
+        """)
+
+        total = cursor.fetchone()[0]
+
+        conn.close()
+
+        return {
+            "total_leads_site": total
+        }
+
+    except:
+        return {
+            "total_leads_site": 0
+        }
 
 
 @app.route("/conectar_whatsapp")
