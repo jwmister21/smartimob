@@ -217,19 +217,207 @@ footer{
 
 }
 
+    .topo-site{
+
+
+height:90px;
+
+background:white;
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+padding:0 40px;
+
+border-bottom:3px solid #22c55e;
+
+box-shadow:0 5px 20px #0001;
+
+}
+
+
+
+.marca{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+}
+
+
+
+.logo{
+
+height:60px;
+
+width:auto;
+
+}
+
+
+
+.marca h1{
+
+margin:0;
+
+font-size:26px;
+
+color:#0f172a;
+
+}
+
+
+
+.marca span{
+
+color:#64748b;
+
+font-size:14px;
+
+}
+
+
+
+.acoes a{
+
+background:#22c55e;
+
+color:white;
+
+padding:12px 25px;
+
+border-radius:25px;
+
+text-decoration:none;
+
+font-weight:bold;
+
+}
+
+
+
+
+/* busca */
+
+
+.busca{
+
+max-width:1050px;
+
+margin:25px auto;
+
+}
+
+
+
+.busca input{
+
+width:100%;
+
+padding:18px;
+
+border-radius:15px;
+
+border:0;
+
+box-shadow:0 5px 20px #0002;
+
+font-size:16px;
+
+}
+
+
+
+
+
+@media(max-width:600px){
+
+
+.topo-site{
+
+padding:15px;
+
+height:auto;
+
+}
+
+
+
+.logo{
+
+height:45px;
+
+}
+
+
+
+.marca h1{
+
+font-size:18px;
+
+}
+
+
+
+.marca span{
+
+display:none;
+
+}
+
+
+
+.acoes{
+
+display:none;
+
+}
+
+
+
+}
+
 </style>
 </head>
 <body>
 
-<header>
+<header class="topo-site">
 
-    <h1>
-        🏢 {{ empresa.nome }}
-    </h1>
 
-    <p>
-        Encontre o imóvel ideal para você
-    </p>
+    <div class="marca">
+
+        <img src="/static/logo_smartzen.png" class="logo">
+
+        <div>
+
+            <h1>SMARTZEN IMOB</h1>
+
+            <span>
+            Encontre o imóvel ideal para você
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="acoes">
+
+        <a href="#">
+            Entrar
+        </a>
+
+    </div>
+
+
 
 </header>
 
