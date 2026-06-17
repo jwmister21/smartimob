@@ -595,41 +595,6 @@ def super_dashboard():
 
 
 
-conn = sqlite3.connect(DB_PATH)
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS conversas_whatsapp (
-
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-    empresa_id INTEGER,
-
-    usuario_id INTEGER,
-
-    sessao TEXT,
-
-    telefone TEXT,
-
-    nome TEXT,
-
-    mensagem TEXT,
-
-    tipo TEXT,
-
-    ia_ativa INTEGER DEFAULT 0,
-
-    status TEXT DEFAULT 'aberta',
-
-    data_hora DATETIME DEFAULT CURRENT_TIMESTAMP
-
-)
-""")
-
-conn.commit()
-conn.close()
-
-print("Tabela criada")
 
 @app.route("/catalogo")
 def catalogo():
