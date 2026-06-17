@@ -650,7 +650,7 @@ button{
     font-family:inherit;
     margin-bottom:10px;
 }
-.mini-imovel{
+.imovel-semelhante{
 
     display:flex;
     gap:12px;
@@ -672,15 +672,14 @@ button{
 }
 
 
-.mini-imovel:hover{
+.imovel-semelhante:hover{
 
     transform:translateY(-3px);
 
 }
 
 
-
-.mini-imovel img{
+.imovel-semelhante img{
 
     width:120px;
 
@@ -691,45 +690,42 @@ button{
 }
 
 
+.sim-info{
 
-.mini-imovel div{
-
-    padding:8px;
+    padding:10px;
 
 }
 
 
-
-.mini-imovel h4{
-
-    margin:0;
+.sim-titulo{
 
     font-size:14px;
 
+    font-weight:700;
+
 }
 
 
-
-.mini-imovel strong{
+.sim-valor{
 
     color:#16a34a;
 
     font-size:18px;
 
+    font-weight:800;
+
 }
 
 
-
-.mini-imovel p{
-
-    margin:5px 0;
+.sim-local{
 
     font-size:12px;
 
     color:#64748b;
 
-}
+    margin-top:5px;
 
+}
 
 </style>
 </head>
@@ -811,7 +807,12 @@ button{
                 <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
                 <input type="text" name="nome" placeholder="Seu nome" required>
                 <input type="text" name="telefone" placeholder="Seu telefone" required>
-                <textarea  name="mensagem" rows="5"  >Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.</textarea>
+                <textarea 
+name="mensagem"
+rows="5"
+placeholder="Digite sua mensagem">
+Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
+</textarea>
 
                 <button type="submit">Quero ser atendido</button>
             </form>
