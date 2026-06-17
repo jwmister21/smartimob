@@ -102,15 +102,28 @@ def buscar_imoveis_ia(empresa_id, texto):
 
 
     bairro = None
+    cidade = None
 
 
     bairros = [
         "guilhermina",
         "boqueirao",
-        "tupi",
         "ocian",
-        "aviacao"
+        "aviacao",
+        "aviação",
+        "tupi",
+        "maracanã",
+        "maracana"
     ]
+
+
+    cidades = [
+        "são paulo",
+        "sao paulo",
+        "praia grande",
+        "santos"
+    ]
+
 
 
     for b in bairros:
@@ -119,22 +132,24 @@ def buscar_imoveis_ia(empresa_id, texto):
             bairro = b
 
 
-    valor = None
+
+    for c in cidades:
+
+        if c in texto:
+            cidade = c
 
 
-    if "500" in texto:
-        valor = 500000
 
 
     sql = """
     SELECT *
     FROM imoveis
     WHERE empresa_id = ?
-    AND status = 'ativo'
     """
 
-
-    params = [empresa_id]
+    params = [
+        empresa_id
+    ]
 
 
 
@@ -144,17 +159,21 @@ def buscar_imoveis_ia(empresa_id, texto):
         AND LOWER(bairro) LIKE ?
         """
 
-        params.append(f"%{bairro}%")
+        params.append(
+            "%" + bairro + "%"
+        )
 
 
 
-    if valor:
+    if cidade:
 
         sql += """
-        AND valor <= ?
+        AND LOWER(cidade) LIKE ?
         """
 
-        params.append(valor)
+        params.append(
+            "%" + cidade + "%"
+        )
 
 
 
