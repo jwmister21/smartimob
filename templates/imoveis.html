@@ -476,7 +476,7 @@ Imóveis
         <div class="titulo">{{ imovel.titulo }}</div>
 
         <div class="valor">
-             {{ imovel.valor }}
+              {{ "{:,.0f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
         </div>
 
         <div class="detalhes">
