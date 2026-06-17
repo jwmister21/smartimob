@@ -782,7 +782,63 @@ def webhook_mensagem_whatsapp():
     nome = data.get("nome")
     mensagem = data.get("mensagem")
 
+    # ==========================
+# PALAVRAS PARA DESLIGAR IA
+# ==========================
 
+desativar_ia = [
+
+    "obrigado",
+    "obrigada",
+    "valeu",
+    "ok",
+    "tudo bem",
+    "resolvido",
+    "já achei",
+    "ja achei",
+    "encontrei",
+    "falar com corretor",
+    "corretor",
+    "atendente"
+
+]
+
+
+mensagem_lower = mensagem.lower()
+
+
+
+if any(palavra in mensagem_lower for palavra in desativar_ia):
+
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        UPDATE controle_ia_whatsapp
+
+        SET
+        ia_ativa = 0,
+        atendendo = 0,
+        ultima_acao = CURRENT_TIMESTAMP
+
+        WHERE telefone = ?
+
+    """,
+    (telefone,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    print("🛑 IA DESATIVADA:", telefone)
+
+
+    return {
+        "status":"ia_desligada"
+    }
 
     usuario_id = None
     empresa_id = None
