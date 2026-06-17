@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Leads do Site</h2>
+
+<div class="grid">
+
+{% for lead in leads %}
+
+<div class="card">
+
+    <h3>{{ lead.nome }}</h3>
+
+    <p>📞 {{ lead.telefone }}</p>
+
+    <p>🏠 {{ lead.titulo }}</p>
+
+
+    <a
+        class="btn"
+        href="https://wa.me/55{{ lead.telefone }}"
+        target="_blank"
+    >
+        WhatsApp
+    </a>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}
