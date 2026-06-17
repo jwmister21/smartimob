@@ -19,6 +19,7 @@ import json
 from openai import OpenAI
 from flask import send_from_directory
 from flask_socketio import SocketIO
+import panda as pd
 
 
 app = Flask(__name__)
