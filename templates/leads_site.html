@@ -93,6 +93,32 @@
     padding:60px;
     font-size:18px;
 }
+    .acoes{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:15px;
+}
+
+.btn-sistema{
+    text-decoration:none;
+    text-align:center;
+    background:#3b82f6;
+    color:white;
+    padding:12px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.btn-excluir{
+    text-decoration:none;
+    text-align:center;
+    background:#ef4444;
+    color:white;
+    padding:12px;
+    border-radius:10px;
+    font-weight:bold;
+}
 
 </style>
 
@@ -139,6 +165,33 @@
         class="btn-whatsapp"
     >
         💬 Chamar no WhatsApp
+    </a>
+
+</div>
+
+    <div class="acoes">
+
+    <a
+        href="https://wa.me/55{{ lead.telefone }}"
+        target="_blank"
+        class="btn-whatsapp"
+    >
+        💬 WhatsApp
+    </a>
+
+    <a
+        href="/converter_lead/{{ lead.id }}"
+        class="btn-sistema"
+    >
+        ➕ Adicionar ao Sistema
+    </a>
+
+    <a
+        href="/excluir_lead/{{ lead.id }}"
+        class="btn-excluir"
+        onclick="return confirm('Deseja excluir este lead?')"
+    >
+        🗑️ Excluir
     </a>
 
 </div>
