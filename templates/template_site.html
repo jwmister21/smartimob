@@ -629,7 +629,22 @@ height:45px;
     </div>
 
     <div class="valor" style="color: var(--texto); font-size: 24px; font-weight: 800;">
-    {{ i.valor }}
+   
+    {% set valor_str = i.valor|string %}
+    
+    {# Verifica se o valor é puramente numérico (float ou int) #}
+    {% if valor_str.replace('.', '', 1).replace(',', '', 1).replace('-', '', 1).isdigit() or (valor_str.replace('.', '', 1).isdigit()) %}
+        
+        {# É um número bruto, aplica a formatação #}
+        R$ {{ "{:,.2f}".format(valor_str|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        
+    {% else %}
+        
+        {# Já está formatado ou é uma string, exibe como está #}
+        {{ i.valor }}
+        
+    {% endif %}
+
 </div>
     
     <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
