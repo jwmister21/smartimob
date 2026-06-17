@@ -317,6 +317,7 @@ def capturar_lead():
 
     nome = request.form.get("nome")
     telefone = request.form.get("telefone")
+    mensagem = request.form.get("mensagem")
     id_imovel = request.form.get("id_imovel")
 
     conn = sqlite3.connect(DB_PATH)
@@ -327,12 +328,14 @@ def capturar_lead():
         (
             nome,
             telefone,
+            mensagem,
             id_imovel
         )
-        VALUES (?, ?, ?)
+        VALUES (?, ?, ?, ?)
     """, (
         nome,
         telefone,
+        mensagem,
         id_imovel
     ))
 
