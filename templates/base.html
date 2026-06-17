@@ -431,96 +431,68 @@ class="logo">
 </div>
 
 <div class="main">
+
     <div class="topbar">
-       <div class="topbar">
-    <h1>{% block pagina %}{% endblock %}</h1>
 
-    <div class="user-controls">
+        <h1>{% block pagina %}{% endblock %}</h1>
 
-        <span style="font-size: 20px; margin-right: 20px; cursor: pointer; position: relative;" onclick="toggleNotificacoes()">
-            🔔
-            {% if lembretes|length > 0 %}
-                <span class="badge">{{ lembretes|length }}</span>
-            {% endif %}
-        </span>
+        <div class="user-controls">
 
-        <a href="/leads_site"
-           style="font-size:20px; cursor:pointer; position:relative; text-decoration:none; color:inherit;">
-            🎯
+            <span
+                style="font-size:20px; margin-right:20px; cursor:pointer; position:relative;"
+                onclick="toggleNotificacoes()"
+            >
+                🔔
 
-            {% if total_leads_site|default(0) > 0 %}
-                <span class="badge">{{ total_leads_site }}</span>
-            {% endif %}
-        </a>
+                {% if lembretes|length > 0 %}
+                    <span class="badge">
+                        {{ lembretes|length }}
+                    </span>
+                {% endif %}
+            </span>
+
+            <a
+                href="/leads_site"
+                style="font-size:20px; cursor:pointer; position:relative; text-decoration:none; color:white;"
+            >
+                🎯
+
+                {% if total_leads_site|default(0) > 0 %}
+                    <span class="badge">
+                        {{ total_leads_site }}
+                    </span>
+                {% endif %}
+            </a>
+
+        </div>
 
     </div>
-</div>
 
-<div id="notificacoes-box" class="notif-box">
-    <h4 style="margin-bottom: 10px; border-bottom: 1px solid #374151; padding-bottom: 5px;">
-        Visitas Hoje
-    </h4>
+    <div id="notificacoes-box" class="notif-box">
 
-    {% for l in lembretes %}
-        <a href="/cliente/{{ l[0] }}" class="notif-item" style="display: block; margin-bottom: 8px;">
-            <div style="font-weight: bold; color: white;">📅 {{ l[1] }}</div>
+        <h4 style="margin-bottom:10px; border-bottom:1px solid #374151; padding-bottom:5px;">
+            Visitas Hoje
+        </h4>
 
-            <div style="font-size: 0.75rem; color: #9ca3af;">
-                Você tem um agendamento hoje {{ l[10].split('T')[1] }}
-            </div>
-        </a>
-    {% else %}
-        <p style="color: #6b7280; font-size: 0.8rem; padding: 10px;">
-            Nenhuma visita hoje.
-        </p>
-    {% endfor %}
-</div>
-            <div id="notificacoes-box" class="notif-box">
-    <h4 style="margin-bottom: 10px; border-bottom: 1px solid #374151; padding-bottom: 5px;">Visitas Hoje</h4>
-    {% for l in lembretes %}
-        <a href="/cliente/{{ l[0] }}" class="notif-item" style="display: block; margin-bottom: 8px;">
-            <div style="font-weight: bold; color: white;">📅 {{ l[1] }}</div>
-            <div style="font-size: 0.75rem; color: #9ca3af;">
-                Você tem um agendamento hoje  {{ l[10].split('T')[1] }}
-            </div>
-        </a>
-    {% else %}
-        <p style="color: #6b7280; font-size: 0.8rem; padding: 10px;">Nenhuma visita hoje.</p>
-    {% endfor %}
-</div>
+        {% for l in lembretes %}
+            <a href="/cliente/{{ l[0] }}" class="notif-item" style="display:block; margin-bottom:8px;">
 
-<a href="/leads_site" class="icone-topo">
-    🎯
+                <div style="font-weight:bold; color:white;">
+                    📅 {{ l[1] }}
+                </div>
 
-    {% if total_leads_site > 0 %}
-    <span class="badge">
-        {{ total_leads_site }}
-    </span>
-    {% endif %}
-</a>
+                <div style="font-size:0.75rem; color:#9ca3af;">
+                    Você tem um agendamento hoje {{ l[10].split('T')[1] }}
+                </div>
 
-<div id="notificacoes-box" class="notif-box">
-    <h4 style="margin-bottom:10px;border-bottom:1px solid #374151;padding-bottom:5px;">
-        Visitas Hoje
-    </h4>
+            </a>
+        {% else %}
+            <p style="color:#6b7280; font-size:0.8rem; padding:10px;">
+                Nenhuma visita hoje.
+            </p>
+        {% endfor %}
 
-    {% for l in lembretes %}
-        <a href="/cliente/{{ l[0] }}" class="notif-item">
-            <div style="font-weight:bold;color:white;">
-                📅 {{ l[1] }}
-            </div>
-
-            <div style="font-size:0.75rem;color:#9ca3af;">
-                Você tem um agendamento hoje {{ l[10].split('T')[1] }}
-            </div>
-        </a>
-    {% else %}
-        <p style="color:#6b7280;font-size:0.8rem;padding:10px;">
-            Nenhuma visita hoje.
-        </p>
-    {% endfor %}
-</div>
-
+    </div>
             
             <div class="dropdown">
                 <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
