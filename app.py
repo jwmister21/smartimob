@@ -89,6 +89,39 @@ def injetar_lembretes():
     return dict(lembretes=lembretes)
 
 
+def verificar_interesse_ia(mensagem):
+
+    mensagem = mensagem.lower()
+
+
+    palavras = [
+        "oi",
+        "olá",
+        "ola",
+        "imóvel",
+        "imovel",
+        "casa",
+        "apartamento",
+        "terreno",
+        "comprar",
+        "alugar",
+        "quero",
+        "gostei",
+        "valor",
+        "preço",
+        "preco",
+        "ver"
+    ]
+
+
+    for palavra in palavras:
+
+        if palavra in mensagem:
+            return True
+
+
+    return False
+
 def verificar_sessao(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -627,15 +660,25 @@ def webhook_mensagem_whatsapp():
     mensagem = data.get("mensagem")
 
 
+    # 🤖 verifica se mensagem tem interesse
+    ativar = verificar_interesse_ia(mensagem)
+
+
     usuario_id = None
     empresa_id = None
 
 
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
 
 
-    # acha o corretor pelo nome da sessão
+
+    # ==========================
+    # BUSCA CORRETOR PELA SESSÃO
+    # ==========================
+
     cursor.execute("""
         SELECT id, empresa_id
         FROM usuarios
@@ -646,11 +689,84 @@ def webhook_mensagem_whatsapp():
     usuario = cursor.fetchone()
 
 
+
     if usuario:
 
-        usuario_id = usuario[0]
-        empresa_id = usuario[1]
+        usuario_id = usuario["id"]
+        empresa_id = usuario["empresa_id"]
 
+
+
+    # ==========================
+    # ATIVA IA
+    # ==========================
+
+    if ativar:
+
+
+        # verifica se já existe controle
+
+        cursor.execute("""
+            SELECT id
+            FROM controle_ia_whatsapp
+            WHERE telefone = ?
+        """,
+        (telefone,))
+
+
+        existe = cursor.fetchone()
+
+
+
+        if existe:
+
+
+            cursor.execute("""
+                UPDATE controle_ia_whatsapp
+
+                SET 
+                ia_ativa = 1,
+                atendendo = 1,
+                ultima_acao = CURRENT_TIMESTAMP
+
+                WHERE telefone = ?
+
+            """,
+            (telefone,))
+
+
+
+        else:
+
+
+            cursor.execute("""
+            INSERT INTO controle_ia_whatsapp
+            (
+                telefone,
+                empresa_id,
+                ia_ativa,
+                atendendo
+            )
+
+            VALUES (?,?,?,?)
+
+            """,
+            (
+                telefone,
+                empresa_id,
+                1,
+                1
+            ))
+
+
+
+        print("🤖 IA ATIVADA PARA:", telefone)
+
+
+
+    # ==========================
+    # SALVA CONVERSA
+    # ==========================
 
     cursor.execute("""
     INSERT INTO conversas_whatsapp
@@ -665,6 +781,7 @@ def webhook_mensagem_whatsapp():
     )
 
     VALUES (?,?,?,?,?,?,?)
+
     """,
     (
         empresa_id,
@@ -677,14 +794,17 @@ def webhook_mensagem_whatsapp():
     ))
 
 
+
     conn.commit()
     conn.close()
 
 
-    return {
-        "status":"ok"
-    }
 
+    return {
+
+        "status":"ok"
+
+    }
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
     nome = request.form.get("nome")
