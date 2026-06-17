@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block pagina %}Importar Clientes{% endblock %}
+
+{% block content %}
+
+<div class="card-importacao">
+
+    <h2>📥 Importar Clientes</h2>
+
+    <p>
+        Envie uma planilha Excel (.xlsx)
+    </p>
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <input
+            type="file"
+            name="arquivo"
+            accept=".xlsx"
+            required
+        >
+
+        <button type="submit">
+            Importar Clientes
+        </button>
+
+    </form>
+
+</div>
+
+<style>
+
+.card-importacao{
+    max-width:600px;
+    margin:auto;
+    background:#1e293b;
+    padding:30px;
+    border-radius:15px;
+    color:white;
+}
+
+input[type=file]{
+    width:100%;
+    margin:20px 0;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:10px;
+    background:#22c55e;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+</style>
+
+{% endblock %}
