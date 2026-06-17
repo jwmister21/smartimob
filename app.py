@@ -782,67 +782,91 @@ def webhook_mensagem_whatsapp():
     nome = data.get("nome")
     mensagem = data.get("mensagem")
 
-    # ==========================
-# PALAVRAS PARA DESLIGAR IA
-# ==========================
 
-desativar_ia = [
-
-    "obrigado",
-    "obrigada",
-    "valeu",
-    "ok",
-    "tudo bem",
-    "resolvido",
-    "já achei",
-    "ja achei",
-    "encontrei",
-    "falar com corretor",
-    "corretor",
-    "atendente"
-
-]
-
-
-mensagem_lower = mensagem.lower()
-
-
-
-if any(palavra in mensagem_lower for palavra in desativar_ia):
-
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-
-    cursor.execute("""
-        UPDATE controle_ia_whatsapp
-
-        SET
-        ia_ativa = 0,
-        atendendo = 0,
-        ultima_acao = CURRENT_TIMESTAMP
-
-        WHERE telefone = ?
-
-    """,
-    (telefone,))
-
-
-    conn.commit()
-    conn.close()
-
-
-    print("🛑 IA DESATIVADA:", telefone)
-
-    ia_desligada = True
 
     usuario_id = None
     empresa_id = None
 
 
 
+    # ==========================
+    # DESLIGAR IA AUTOMATICAMENTE
+    # ==========================
+
+    palavras_desativar = [
+
+        "obrigado",
+        "obrigada",
+        "valeu",
+        "ok",
+        "tudo bem",
+        "resolvido",
+        "já achei",
+        "ja achei",
+        "encontrei",
+        "falar com corretor",
+        "corretor",
+        "atendente"
+
+    ]
+
+
+
+    if mensagem:
+
+
+        mensagem_lower = mensagem.lower()
+
+
+
+        if any(
+            palavra in mensagem_lower 
+            for palavra in palavras_desativar
+        ):
+
+
+            conn = sqlite3.connect(DB_PATH)
+
+            cursor = conn.cursor()
+
+
+            cursor.execute("""
+                UPDATE controle_ia_whatsapp
+
+                SET
+
+                ia_ativa = 0,
+                atendendo = 0,
+                ultima_acao = CURRENT_TIMESTAMP
+
+                WHERE telefone = ?
+
+            """,
+            (telefone,))
+
+
+            conn.commit()
+            conn.close()
+
+
+            print(
+                "🛑 IA DESATIVADA:",
+                telefone
+            )
+
+
+            return {
+                "status":"ia_desligada"
+            }
+
+
+
+    # ==========================
+    # BANCO
+    # ==========================
+
     conn = sqlite3.connect(DB_PATH)
+
     conn.row_factory = sqlite3.Row
 
     cursor = conn.cursor()
@@ -850,45 +874,15 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
 
 
     # ==========================
-    # VERIFICA SE IA JÁ ESTÁ ATIVA
-    # ==========================
-
-    cursor.execute("""
-        SELECT ia_ativa
-        FROM controle_ia_whatsapp
-        WHERE telefone = ?
-    """,
-    (telefone,))
-
-
-    controle_ia = cursor.fetchone()
-
-
-
-    if controle_ia and controle_ia["ia_ativa"] == 1:
-
-        ativar = True
-
-        print(
-            "🤖 CONTINUANDO IA:",
-            telefone
-        )
-
-
-    else:
-
-        ativar = verificar_interesse_ia(mensagem)
-
-
-
-    # ==========================
     # BUSCA CORRETOR
     # ==========================
+
 
     cursor.execute("""
         SELECT id, empresa_id
         FROM usuarios
         WHERE whatsapp_sessao = ?
+
     """,
     (sessao,))
 
@@ -905,9 +899,52 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
 
 
 
+
+    # ==========================
+    # VERIFICA IA EXISTENTE
+    # ==========================
+
+
+    cursor.execute("""
+        SELECT ia_ativa
+        FROM controle_ia_whatsapp
+        WHERE telefone = ?
+
+    """,
+    (telefone,))
+
+
+    controle = cursor.fetchone()
+
+
+
+    if controle and controle["ia_ativa"] == 1:
+
+
+        ativar = True
+
+
+        print(
+            "🤖 CONTINUANDO IA:",
+            telefone
+        )
+
+
+    else:
+
+
+        ativar = verificar_interesse_ia(
+            mensagem
+        )
+
+
+
+
+
     # ==========================
     # ATIVA IA
     # ==========================
+
 
     if ativar:
 
@@ -916,6 +953,7 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
             SELECT id
             FROM controle_ia_whatsapp
             WHERE telefone = ?
+
         """,
         (telefone,))
 
@@ -942,20 +980,19 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
             (telefone,))
 
 
-
         else:
 
 
             cursor.execute("""
-            INSERT INTO controle_ia_whatsapp
-            (
-                telefone,
-                empresa_id,
-                ia_ativa,
-                atendendo
-            )
+                INSERT INTO controle_ia_whatsapp
+                (
+                    telefone,
+                    empresa_id,
+                    ia_ativa,
+                    atendendo
+                )
 
-            VALUES (?,?,?,?)
+                VALUES (?,?,?,?)
 
             """,
             (
@@ -975,23 +1012,25 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
 
 
 
+
     # ==========================
     # SALVA CONVERSA
     # ==========================
 
-    cursor.execute("""
-    INSERT INTO conversas_whatsapp
-    (
-        empresa_id,
-        usuario_id,
-        sessao,
-        telefone,
-        nome,
-        mensagem,
-        tipo
-    )
 
-    VALUES (?,?,?,?,?,?,?)
+    cursor.execute("""
+        INSERT INTO conversas_whatsapp
+        (
+            empresa_id,
+            usuario_id,
+            sessao,
+            telefone,
+            nome,
+            mensagem,
+            tipo
+        )
+
+        VALUES (?,?,?,?,?,?,?)
 
     """,
     (
@@ -1010,9 +1049,12 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
 
 
 
+
+
     # ==========================
-    # IA RESPONDE
+    # RESPOSTA IA
     # ==========================
+
 
     if ativar:
 
@@ -1028,8 +1070,9 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
         if imoveis:
 
 
+
             resposta = (
-                "Encontrei algumas opções para você 😊\n\n"
+                "Encontrei essas opções para você 😊\n\n"
             )
 
 
@@ -1038,19 +1081,19 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
 
 
                 resposta += f"""
-🏡 {imovel['titulo']}
+
+🏡 *{imovel['titulo']}*
 
 📍 {imovel['bairro']} - {imovel['cidade']}
 
-💰 Valor: R$ {imovel['valor']}
+💰 R$ {imovel['valor']}
 
 🛏 Quartos: {imovel['quartos']}
-
 🚗 Vagas: {imovel['vaga_garagem']}
 
 🔗 {imovel['link']}
 
-----------------------
+----------------
 
 """
 
@@ -1059,16 +1102,20 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
         else:
 
 
-            resposta = """
-Olá 😊
+            resposta = f"""
 
-Vou te ajudar a encontrar o imóvel ideal.
+Perfeito 😊
 
-Me fala:
+Anotei: {mensagem}
 
-📍 Qual cidade ou bairro procura?
+Me fala mais um detalhe:
+
+📍 Bairro que procura?
+💰 Qual valor?
 🏡 Casa ou apartamento?
-💰 Qual faixa de valor?
+
+Vou procurar para você.
+
 """
 
 
@@ -1088,7 +1135,6 @@ Me fala:
     return {
         "status":"ok"
     }
-
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
     nome = request.form.get("nome")
