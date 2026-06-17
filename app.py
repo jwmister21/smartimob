@@ -1066,6 +1066,7 @@ def importar_clientes():
     if request.method == "POST":
 
         import pandas as pd
+        import sqlite3
 
         arquivo = request.files["arquivo"]
 
@@ -1073,75 +1074,109 @@ def importar_clientes():
             flash("Selecione um arquivo.")
             return redirect("/importar_clientes")
 
-        df = pd.read_excel(arquivo)
+        nome_arquivo = arquivo.filename.lower()
 
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        try:
 
-        adicionados = 0
+            if nome_arquivo.endswith(".xlsx"):
+                df = pd.read_excel(arquivo, engine="openpyxl")
 
-        for _, row in df.iterrows():
+            elif nome_arquivo.endswith(".csv"):
+                df = pd.read_csv(arquivo)
 
-            nome = str(row.get("NOME", "")).strip()
-            telefone = str(row.get("TELEFONE", "")).strip()
+            else:
+                flash("Envie um arquivo XLSX ou CSV.")
+                return redirect("/importar_clientes")
 
-            if not telefone:
-                continue
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
 
-            cursor.execute("""
-                SELECT id
-                FROM clientes
-                WHERE telefone = ?
-                AND empresa_id = ?
-            """, (
-                telefone,
-                session["empresa_id"]
-            ))
+            adicionados = 0
+            duplicados = 0
 
-            if cursor.fetchone():
-                continue
+            for _, row in df.iterrows():
 
-            cursor.execute("""
-                INSERT INTO clientes
-                (
+                nome = str(row.get("nome", "")).strip()
+
+                telefone = str(row.get("telefone", "")).strip()
+
+                interesse = str(row.get("interesse", "")).strip()
+
+                faixa_preco = str(row.get("faixa_preco", "")).strip()
+
+                if not telefone:
+                    continue
+
+                telefone = (
+                    telefone
+                    .replace(".0", "")
+                    .replace(" ", "")
+                    .replace("-", "")
+                    .replace("(", "")
+                    .replace(")", "")
+                )
+
+                cursor.execute("""
+                    SELECT id
+                    FROM clientes
+                    WHERE telefone = ?
+                    AND empresa_id = ?
+                """, (
+                    telefone,
+                    session["empresa_id"]
+                ))
+
+                if cursor.fetchone():
+                    duplicados += 1
+                    continue
+
+                cursor.execute("""
+                    INSERT INTO clientes
+                    (
+                        nome,
+                        telefone,
+                        email,
+                        interesse,
+                        faixa_preco,
+                        bairro,
+                        sobre,
+                        entrada,
+                        pagamento,
+                        usuario_id,
+                        empresa_id
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
                     nome,
                     telefone,
-                    email,
+                    "",
                     interesse,
                     faixa_preco,
-                    bairro,
-                    sobre,
-                    entrada,
-                    pagamento,
-                    usuario_id,
-                    empresa_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                nome,
-                telefone,
-                "",
-                "",
-                faixa_preco,
-                "",
-                "",
-                "",
-                "",
-                session["usuario_id"],
-                session["empresa_id"]
-            ))
+                    "",
+                    "",
+                    "",
+                    "",
+                    session["usuario_id"],
+                    session["empresa_id"]
+                ))
 
-            adicionados += 1
+                adicionados += 1
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
 
-        flash(f"{adicionados} clientes importados com sucesso!")
+            flash(
+                f"{adicionados} clientes importados | {duplicados} duplicados ignorados"
+            )
 
-        return redirect("/clientes")
+            return redirect("/clientes")
+
+        except Exception as e:
+
+            flash(f"Erro ao importar: {str(e)}")
+            return redirect("/importar_clientes")
 
     return render_template("importar_clientes.html")
-
 @app.route("/teste_envio")
 def teste_envio():
 
