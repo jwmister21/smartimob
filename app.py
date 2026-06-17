@@ -3045,6 +3045,7 @@ def informa_imovel(imovel_id):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+
     # ==========================
     # IMÓVEL PRINCIPAL
     # ==========================
@@ -3057,11 +3058,14 @@ def informa_imovel(imovel_id):
 
     imovel = cursor.fetchone()
 
+
     if not imovel:
         conn.close()
         return "Imóvel não encontrado", 404
 
+
     imovel = dict(imovel)
+
 
     # ==========================
     # FOTOS DO IMÓVEL
@@ -3074,46 +3078,50 @@ def informa_imovel(imovel_id):
         ORDER BY id ASC
     """, (imovel_id,))
 
+
     fotos = cursor.fetchall()
+
 
     imovel["fotos"] = [
         foto["nome_arquivo"]
         for foto in fotos
     ]
 
+
+
     # ==========================
     # IMÓVEIS SEMELHANTES
     # ==========================
 
-    try:
-        valor = float(str(imovel.get("valor", 0)))
-    except:
-        valor = 0
 
-    valor_min = valor * 0.8
-    valor_max = valor * 1.2
+    semelhantes = []
+
 
     cursor.execute("""
         SELECT *
         FROM imoveis
         WHERE id != ?
         AND empresa_id = ?
-        AND valor BETWEEN ? AND ?
+        ORDER BY RANDOM()
         LIMIT 6
-    """, (
+    """,
+    (
         imovel_id,
-        imovel["empresa_id"],
-        valor_min,
-        valor_max
+        imovel.get("empresa_id")
     ))
+
 
     semelhantes_db = cursor.fetchall()
 
-    semelhantes = []
+
 
     for item in semelhantes_db:
 
+
         item = dict(item)
+
+
+        # pega primeira foto
 
         cursor.execute("""
             SELECT nome_arquivo
@@ -3121,19 +3129,28 @@ def informa_imovel(imovel_id):
             WHERE imovel_id = ?
             ORDER BY id ASC
             LIMIT 1
-        """, (item["id"],))
+        """,
+        (item["id"],))
+
 
         foto = cursor.fetchone()
 
-        item["foto"] = (
-            foto["nome_arquivo"]
-            if foto
-            else "sem-foto.jpg"
-        )
+
+
+        if foto:
+            item["foto"] = foto["nome_arquivo"]
+        else:
+            item["foto"] = None
+
+
 
         semelhantes.append(item)
 
+
+
     conn.close()
+
+
 
     return render_template(
         "informa_imovel.html",
