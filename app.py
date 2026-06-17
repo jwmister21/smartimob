@@ -1057,6 +1057,90 @@ def atualizar_status_whatsapp():
     })
 
     return {"sucesso": True}
+
+@app.route("/importar_clientes", methods=["GET", "POST"])
+@verificar_sessao
+def importar_clientes():
+
+    if request.method == "POST":
+
+        import pandas as pd
+
+        arquivo = request.files["arquivo"]
+
+        if not arquivo:
+            flash("Selecione um arquivo.")
+            return redirect("/importar_clientes")
+
+        df = pd.read_excel(arquivo)
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        adicionados = 0
+
+        for _, row in df.iterrows():
+
+            nome = str(row.get("NOME", "")).strip()
+            telefone = str(row.get("TELEFONE", "")).strip()
+
+            if not telefone:
+                continue
+
+            cursor.execute("""
+                SELECT id
+                FROM clientes
+                WHERE telefone = ?
+                AND empresa_id = ?
+            """, (
+                telefone,
+                session["empresa_id"]
+            ))
+
+            if cursor.fetchone():
+                continue
+
+            cursor.execute("""
+                INSERT INTO clientes
+                (
+                    nome,
+                    telefone,
+                    email,
+                    interesse,
+                    faixa_preco,
+                    bairro,
+                    sobre,
+                    entrada,
+                    pagamento,
+                    usuario_id,
+                    empresa_id
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                nome,
+                telefone,
+                "",
+                "",
+                faixa_preco,
+                "",
+                "",
+                "",
+                "",
+                session["usuario_id"],
+                session["empresa_id"]
+            ))
+
+            adicionados += 1
+
+        conn.commit()
+        conn.close()
+
+        flash(f"{adicionados} clientes importados com sucesso!")
+
+        return redirect("/clientes")
+
+    return render_template("importar_clientes.html")
+
 @app.route("/teste_envio")
 def teste_envio():
 
