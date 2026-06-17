@@ -2,117 +2,91 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ imovel.titulo }}</title>
 
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #0f172a; margin: 0; padding: 0; }
+        /* Reset essencial para qualquer tela */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: #f1f5f9; 
+            color: #0f172a; 
+            line-height: 1.5;
+            overflow-x: hidden; /* Previne rolagem horizontal */
+        }
 
-        /* LAYOUT */
-        .container { width: 100%; max-width: 1200px; margin: auto; padding: 20px; display: grid; grid-template-columns: 1fr 360px; gap: 25px; }
+        .container { 
+            width: 95%; /* Adaptação inteligente */
+            max-width: 1200px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: 1fr 350px; 
+            gap: 20px; 
+            padding: 20px 0;
+        }
 
-        /* GALERIA */
-        .galeria-principal { width: 100%; aspect-ratio: 16/10; border-radius: 18px; overflow: hidden; background: #ddd; cursor: pointer; }
-        .galeria-principal img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .miniaturas { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; padding-bottom: 5px; }
-        .miniaturas img { width: 95px; height: 70px; flex-shrink: 0; object-fit: cover; border-radius: 10px; cursor: pointer; }
+        /* Garantia de imagens fluidas */
+        img { max-width: 100%; height: auto; display: block; }
 
-        /* INFO & CARDS */
-        .info { background: white; padding: 25px; margin-top: 20px; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
-        .titulo { font-size: clamp(22px, 3vw, 32px); font-weight: 700; }
-        .valor { color: #16a34a; font-size: clamp(26px, 4vw, 38px); font-weight: 800; margin: 12px 0; }
-        .caracteristicas { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
-        .item { background: #f8fafc; padding: 12px; border-radius: 12px; font-size: 0.9em; }
-
-        /* FORM & SIDEBAR */
-        .lead-box { background: white; padding: 22px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.06); position: sticky; top: 20px; }
-        .lead-box input, .lead-box textarea { width: 100%; padding: 13px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #ddd; display: block; }
-        .lead-box button { width: 100%; padding: 14px; border: 0; border-radius: 12px; background: #7c3aed; color: white; cursor: pointer; }
-
-        /* BOTOES */
-        .botoes { display: flex; gap: 12px; margin-top: 20px; }
-        .btn { flex: 1; padding: 14px; border-radius: 12px; color: white; text-decoration: none; text-align: center; }
-        .whatsapp { background: #25D366; }
-        .compartilhar { background: #2563eb; }
-
-        /* SEMELHANTES */
-        .imovel-semelhante { display: flex; gap: 12px; margin-top: 15px; background: #f8fafc; border-radius: 14px; overflow: hidden; text-decoration: none; color: #0f172a; }
-        .imovel-semelhante img { width: 100px; height: 80px; object-fit: cover; }
-        .sim-info { padding: 10px; }
-        .sim-titulo { font-size: 14px; font-weight: 700; }
-        .sim-valor { color: #16a34a; font-size: 16px; font-weight: 800; }
-
-        /* RESPONSIVIDADE */
-        @media(max-width:900px) {
+        /* Ajuste do grid para mobile */
+        @media (max-width: 850px) {
             .container { grid-template-columns: 1fr; }
-            .lead-box { position: relative; top: 0; }
         }
 
-        @media(max-width:600px) {
-            .mobile-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px; gap: 10px; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
-            .mobile-bar a { flex: 1; padding: 12px; color: white; border-radius: 10px; text-align: center; text-decoration: none; }
-            .float-whats { bottom: 80px; }
+        /* Tipografia responsiva */
+        h2 { font-size: clamp(1.2rem, 4vw, 1.8rem); }
+        .valor { font-size: clamp(1.5rem, 5vw, 2.5rem); color: #16a34a; font-weight: 800; }
+
+        /* Cards de características */
+        .caracteristicas { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+            gap: 10px; 
+            margin: 15px 0; 
         }
+        .item { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; font-size: 0.9rem; }
+
+        /* Formulário e Sidebar */
+        .lead-box { background: white; padding: 20px; border-radius: 12px; position: sticky; top: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        /* Botões */
+        .botoes { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn { flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; text-align: center; text-decoration: none; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div>
-        {% if imovel.fotos %}
+<main class="container">
+    <section>
         <div class="galeria-principal">
-            <img id="fotoPrincipal" src="/uploads/imoveis/{{ imovel.fotos[0] }}" onclick="abrirGaleria(this.src)">
+            <img src="/uploads/imoveis/{{ imovel.fotos[0] }}" alt="Foto do Imóvel">
         </div>
-        <div class="miniaturas">
-            {% for foto in imovel.fotos %}
-            <img src="/uploads/imoveis/{{ foto }}" onclick="trocarFoto(this.src)">
-            {% endfor %}
-        </div>
-        {% endif %}
-
         <div class="info">
-            <div class="titulo">{{ imovel.titulo }}</div>
-            <div class="valor">{{ imovel.valor }}</div>
-            <h4>📍 {{ imovel.bairro }} - {{ imovel.cidade }}</h4>
+            <h1>{{ imovel.titulo }}</h1>
+            <p class="valor">{{ imovel.valor }}</p>
             <div class="caracteristicas">
                 <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
-                <div class="item">🚿 {{ imovel.banheiros }} Suítes</div>
-                <div class="item">🚗 {{ imovel.vaga_garagem }} Vagas</div>
                 <div class="item">📐 {{ imovel.area }} m²</div>
-            </div>
-            <div class="botoes">
-                <a class="btn whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }}">WhatsApp</a>
-                <a class="btn compartilhar" href="#" onclick="compartilhar()">Compartilhar</a>
+                <div class="item">🚗 {{ imovel.vaga_garagem }} Vagas</div>
             </div>
             <div class="descricao">
-                <h3>Descrição</h3>
                 <p>{{ imovel.descricao }}</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div>
+    <aside>
         <div class="lead-box">
-            <h2>Receba mais informações</h2>
+            <h2>Interessado?</h2>
             <form action="/capturar_lead" method="POST">
-                <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
-                <input type="text" name="nome" placeholder="Seu nome" required>
-                <input type="text" name="telefone" placeholder="Seu telefone" required>
-                <textarea name="mensagem" rows="4" placeholder="Olá! Gostei do imóvel {{ imovel.titulo }} e gostaria de mais informações."></textarea>
-                <button type="submit">Quero ser atendido</button>
+                <input type="text" name="nome" placeholder="Seu nome" style="width:100%; padding:10px; margin-bottom:10px;" required>
+                <button type="submit" style="width:100%; padding:12px; background:#7c3aed; color:white; border:none; border-radius:8px;">Quero saber mais</button>
             </form>
         </div>
-    </div>
-</div>
+    </aside>
+</main>
 
-<script>
-    function trocarFoto(src){ document.getElementById("fotoPrincipal").src = src; }
-    function abrirGaleria(src){ /* Adicione aqui a lógica do modal se desejar */ }
-    function compartilhar(){
-        if(navigator.share){ navigator.share({ title: document.title, url: window.location.href }); } 
-        else { alert("Link copiado!"); }
-    }
-</script>
 </body>
 </html>
