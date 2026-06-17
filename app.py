@@ -2100,41 +2100,45 @@ def whatsapp_atendimento():
 
     usuario_id = session["usuario_id"]
 
-
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
 
     cursor = conn.cursor()
 
-
     cursor.execute("""
-        SELECT 
+        SELECT
+            c.id,
             c.telefone,
             c.nome,
             c.mensagem,
             c.tipo,
-            ia.ia_ativa
+            c.data_hora,
+            COALESCE(ia.ia_ativa,0) as ia_ativa
 
         FROM conversas_whatsapp c
 
         LEFT JOIN controle_ia_whatsapp ia
         ON ia.telefone = c.telefone
 
-        WHERE c.usuario_id = ?
+        WHERE c.id IN (
 
-        GROUP BY c.telefone
+            SELECT MAX(id)
+
+            FROM conversas_whatsapp
+
+            WHERE usuario_id = ?
+
+            GROUP BY telefone
+
+        )
 
         ORDER BY c.id DESC
-
     """,
     (usuario_id,))
 
-
     conversas = cursor.fetchall()
 
-
     conn.close()
-
 
     return render_template(
         "whatsapp_atendimento.html",
