@@ -835,10 +835,7 @@ if any(palavra in mensagem_lower for palavra in desativar_ia):
 
     print("🛑 IA DESATIVADA:", telefone)
 
-
-    return {
-        "status":"ia_desligada"
-    }
+    ia_desligada = True
 
     usuario_id = None
     empresa_id = None
