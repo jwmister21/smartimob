@@ -2197,6 +2197,67 @@ def cadastrar_cliente():
 # ==========================================
 # 5. ROTAS DE IMÓVEIS
 # ==========================================
+@app.route("/converter_lead/<int:lead_id>")
+@verificar_sessao
+def converter_lead(lead_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM lead_site
+        WHERE id = ?
+    """, (lead_id,))
+
+    lead = cursor.fetchone()
+
+    if lead:
+
+        cursor.execute("""
+            INSERT INTO clientes
+            (
+                nome,
+                telefone,
+                email,
+                interesse,
+                faixa_preco,
+                bairro,
+                sobre,
+                entrada,
+                pagamento,
+                usuario_id,
+                empresa_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lead["nome"],
+            lead["telefone"],
+            "",
+            "",
+            "",
+            "",
+            lead["mensagem"] if "mensagem" in lead.keys() else "",
+            "",
+            "",
+            session["usuario_id"],
+            session["empresa_id"]
+        ))
+
+        cursor.execute("""
+            DELETE FROM lead_site
+            WHERE id = ?
+        """, (lead_id,))
+
+        conn.commit()
+
+    conn.close()
+
+    flash("Lead adicionado ao sistema com sucesso!")
+
+    return redirect("/leads_site")
+
 @app.route("/imoveis")
 @verificar_sessao
 def imoveis():
