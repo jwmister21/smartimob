@@ -249,8 +249,7 @@ font-weight:bold;
 
 <div class="preview">
 
-{{c.mensagem[:50]}}
-
+{{ (c.mensagem or "")[:50] }}
 </div>
 
 
