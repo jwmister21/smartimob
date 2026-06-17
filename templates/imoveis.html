@@ -476,7 +476,9 @@ Imóveis
         <div class="titulo">{{ imovel.titulo }}</div>
 
         <div class="valor">
-           {% if imovel.valor|string|endswith('.0') %}
+           {% set valor = imovel.valor|string %}
+
+{% if ".0" in valor %}
     R$ {{ "{:,.0f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
 {% else %}
     {{ imovel.valor }}
