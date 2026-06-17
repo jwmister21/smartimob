@@ -5,58 +5,63 @@ Atendimento WhatsApp
 {% endblock %}
 
 
-{% block content %} 
+{% block content %}
 
 
 <style>
 
-.whatsapp-container{
 
+.whatsapp-box{
+
+height:calc(100vh - 140px);
 display:flex;
-height:calc(100vh - 120px);
-background:#f5f7fb;
+background:#111b21;
 border-radius:20px;
 overflow:hidden;
-box-shadow:0 10px 30px #0002;
+box-shadow:0 10px 30px #0004;
 
 }
 
 
+/* =====================
+   LISTA
+===================== */
 
-/* lista */
 
 .lista{
 
-width:320px;
-background:white;
-border-right:1px solid #ddd;
+width:330px;
+background:#202c33;
+color:white;
 overflow-y:auto;
 
 }
 
 
-.lista-topo{
+.lista-title{
 
 padding:20px;
-font-size:20px;
+font-size:22px;
 font-weight:bold;
+border-bottom:1px solid #333;
 
 }
+
 
 
 .contato{
 
 padding:18px;
-border-bottom:1px solid #eee;
+border-bottom:1px solid #333;
 cursor:pointer;
 
 }
 
 
+
 .contato:hover{
 
-background:#202c33;
-color:white;
+background:#2a3942;
 
 }
 
@@ -65,6 +70,7 @@ color:white;
 .nome{
 
 font-weight:bold;
+font-size:16px;
 
 }
 
@@ -72,7 +78,7 @@ font-weight:bold;
 .telefone{
 
 font-size:12px;
-color:#777;
+color:#aaa;
 
 }
 
@@ -81,31 +87,42 @@ color:#777;
 
 margin-top:8px;
 font-size:14px;
-color:#555;
+color:#ddd;
 
 }
 
 
+.ia-on{
 
-.badge-ia{
-
-margin-top:8px;
+color:#22c55e;
 font-size:12px;
-color:#16a34a;
 font-weight:bold;
+margin-top:8px;
+
+}
+
+
+.ia-off{
+
+color:#f87171;
+font-size:12px;
+margin-top:8px;
 
 }
 
 
 
-/* conversa */
+/* =====================
+ CHAT
+===================== */
+
 
 .chat{
 
 flex:1;
 display:flex;
 flex-direction:column;
-background:#111b21;
+background:#0b141a;
 
 }
 
@@ -113,12 +130,21 @@ background:#111b21;
 
 .chat-header{
 
+height:70px;
 background:#202c33;
 color:white;
-padding:18px;
 display:flex;
 justify-content:space-between;
 align-items:center;
+padding:0 20px;
+
+}
+
+
+
+#cliente-atual{
+
+font-weight:bold;
 
 }
 
@@ -129,15 +155,15 @@ align-items:center;
 flex:1;
 padding:20px;
 overflow-y:auto;
-background:#0b141a;
 
 }
 
 
 
-.msg{
 
-max-width:70%;
+.balao{
+
+max-width:65%;
 padding:12px;
 border-radius:12px;
 margin-bottom:15px;
@@ -163,28 +189,43 @@ margin-left:auto;
 }
 
 
-.controle{
 
+
+.controles{
+
+background:#202c33;
 padding:15px;
-background:white;
-border-top:1px solid #ddd;
+display:flex;
+gap:10px;
 
 }
 
 
 
-.btn{
+.controles input{
 
-padding:10px 18px;
+flex:1;
+padding:14px;
+border-radius:20px;
+border:none;
+outline:none;
+
+}
+
+
+
+button{
+
 border:none;
 border-radius:10px;
+padding:12px 18px;
 cursor:pointer;
 font-weight:bold;
 
 }
 
 
-.btn-stop{
+.parar{
 
 background:#ef4444;
 color:white;
@@ -192,17 +233,10 @@ color:white;
 }
 
 
-.btn-start{
+.ligar{
 
 background:#22c55e;
 color:white;
-
-}
-
-
-.status{
-
-font-weight:bold;
 
 }
 
@@ -214,16 +248,21 @@ font-weight:bold;
 
 
 
-<div class="whatsapp-container">
+<div class="whatsapp-box">
 
 
 
-<!-- LISTA -->
+
+
+<!-- =====================
+     CLIENTES
+===================== -->
+
 
 <div class="lista">
 
 
-<div class="lista-topo">
+<div class="lista-title">
 
 💬 WhatsApp
 
@@ -234,7 +273,15 @@ font-weight:bold;
 {% for c in conversas %}
 
 
-<div class="contato">
+<div 
+class="contato"
+
+onclick="
+abrirConversa(
+'{{c.telefone}}',
+'{{c.nome or "Cliente"}}'
+)
+">
 
 
 <div class="nome">
@@ -253,14 +300,15 @@ font-weight:bold;
 
 <div class="preview">
 
-{{ (c.mensagem or "")[:50] }}
+{{(c.mensagem or "")[:40]}}
+
 </div>
 
 
 
 {% if c.ia_ativa == 1 %}
 
-<div class="badge-ia">
+<div class="ia-on">
 
 🤖 IA ativa
 
@@ -269,7 +317,7 @@ font-weight:bold;
 
 {% else %}
 
-<div style="color:#777;font-size:12px">
+<div class="ia-off">
 
 👤 Corretor
 
@@ -283,7 +331,6 @@ font-weight:bold;
 </div>
 
 
-
 {% endfor %}
 
 
@@ -294,7 +341,11 @@ font-weight:bold;
 
 
 
-<!-- CHAT -->
+
+
+<!-- =====================
+       CHAT
+===================== -->
 
 
 <div class="chat">
@@ -306,17 +357,18 @@ font-weight:bold;
 
 <div>
 
-<h3>
 
-Atendimento
-
-</h3>
-
-<span id="status">
+<div id="cliente-atual">
 
 Selecione uma conversa
 
-</span>
+</div>
+
+
+<div id="telefone-atual">
+
+</div>
+
 
 </div>
 
@@ -324,8 +376,9 @@ Selecione uma conversa
 
 <div>
 
+
 <button 
-class="btn btn-stop"
+class="parar"
 onclick="controleIA('desativar')">
 
 🛑 Parar IA
@@ -334,13 +387,32 @@ onclick="controleIA('desativar')">
 
 
 <button 
-class="btn btn-start"
+class="ligar"
 onclick="controleIA('ativar')">
 
 🤖 Ativar IA
 
 </button>
 
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="chat-body" id="mensagens">
+
+
+<div class="balao cliente">
+
+Clique em um cliente 👈
+
 </div>
 
 
@@ -350,45 +422,16 @@ onclick="controleIA('ativar')">
 
 
 
-<div class="chat-body">
 
-
-
-{% for c in conversas %}
-
-
-<div class="msg cliente">
-
-👤 {{c.mensagem}}
-
-</div>
-
-
-{% endfor %}
-
-
-
-</div>
-
-
-
-
-
-<div class="controle">
+<div class="controles">
 
 
 <input 
-style="
-width:80%;
-padding:12px;
-border-radius:10px;
-border:1px solid #ddd;
-"
 placeholder="Digite uma mensagem..."
 >
 
 
-<button class="btn btn-start">
+<button class="ligar">
 
 Enviar
 
@@ -399,12 +442,20 @@ Enviar
 
 
 
+
+
+
 </div>
 
 
 
 
+
 </div>
+
+
+
+
 
 
 
@@ -413,22 +464,77 @@ Enviar
 <script>
 
 
+let telefoneSelecionado = null;
+
+
+
+
+function abrirConversa(
+telefone,
+nome
+){
+
+
+telefoneSelecionado = telefone;
+
+
+
+document.getElementById(
+"cliente-atual"
+).innerHTML = nome;
+
+
+
+document.getElementById(
+"telefone-atual"
+).innerHTML = telefone;
+
+
+
+document.getElementById(
+"mensagens"
+).innerHTML =
+
+`
+<div class="balao cliente">
+Carregando conversa...
+</div>
+`;
+
+
+
+}
+
+
+
+
+
+
+
 function controleIA(acao){
 
 
-let telefone = prompt(
-"Digite telefone do cliente"
+if(!telefoneSelecionado){
+
+
+alert(
+"Selecione um cliente primeiro"
 );
 
+return;
 
-if(!telefone) return;
+}
 
 
 
 fetch(
 "/controle_ia/"
-+telefone+
-"/"+acao,
++
+telefoneSelecionado
++
+"/"
++
+acao,
 {
 
 method:"POST"
@@ -437,9 +543,16 @@ method:"POST"
 
 )
 .then(r=>r.json())
-.then(()=>{
+.then(data=>{
+
+
+alert(
+"IA atualizada"
+);
+
 
 location.reload();
+
 
 });
 
@@ -448,7 +561,10 @@ location.reload();
 
 
 
+
 </script>
+
+
 
 
 
