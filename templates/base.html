@@ -459,7 +459,7 @@ class="logo">
 
     🎯
 
-    {% if total_leads_site > 0 %}
+    {% if total_leads_site|default(0) > 0 %}
     <span class="badge">
         {{ total_leads_site }}
     </span>
