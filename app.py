@@ -2074,7 +2074,6 @@ def whatsapp_atendimento():
         c.telefone,
         c.nome,
         c.mensagem,
-        c.data_envio,
         ia.ia_ativa
 
     FROM conversas_whatsapp c
