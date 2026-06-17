@@ -598,6 +598,23 @@ def tela_gestao():
     )
 
 
+def enviar_resposta_ia(sessao, telefone, mensagem):
+
+    import requests
+
+    r = requests.post(
+        "https://zoom-leggings-viability.ngrok-free.dev/enviar",
+        json={
+            "sessao": sessao,
+            "numero": telefone,
+            "mensagem": mensagem
+        }
+    )
+
+    print("📤 RESPOSTA IA:", r.text)
+
+    return r.json()
+
 # Decorator para o Super Admin
 def super_admin_required(f):
     @wraps(f)
@@ -793,7 +810,30 @@ def webhook_mensagem_whatsapp():
         "cliente"
     ))
 
+             # ==========================
+    # IA RESPONDE
+    # ==========================
 
+    if ativar:
+
+        resposta = """
+Olá 😊 Sou o assistente da SMARTZEN.
+
+Vou te ajudar a encontrar o imóvel ideal.
+Vou verificar algumas opções disponíveis para você.
+
+Me fala:
+🏡 prefere casa ou apartamento?
+📍 qual bairro você procura?
+💰 qual faixa de valor?
+"""
+
+
+        enviar_resposta_ia(
+            sessao,
+            telefone,
+            resposta
+        )
 
     conn.commit()
     conn.close()
