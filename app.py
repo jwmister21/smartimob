@@ -2001,29 +2001,53 @@ def campanhas():
     )
 
 @app.route("/enviar_mensagem", methods=["POST"])
+@verificar_sessao
 def enviar_mensagem():
+
     data = request.get_json()
+
     telefone = data["telefone"]
     mensagem = data["mensagem"]
-    usuario_id = session.get("usuario_id")
+
+    usuario_id = session["usuario_id"]
+
 
     try:
-        conn = sqlite3.connect("/data/imobiliaria.db")
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
         cursor = conn.cursor()
 
+
         cursor.execute("""
-            SELECT whatsapp_sessao
+            SELECT
+                whatsapp_sessao,
+                empresa_id,
+                nome
             FROM usuarios
             WHERE id = ?
-        """, (usuario_id,))
+        """,
+        (usuario_id,))
 
-        resultado = cursor.fetchone()
-        conn.close()
+        usuario = cursor.fetchone()
 
-        if not resultado:
-            return {"status": "error", "erro": "Sessão não encontrada"}
 
-        sessao = resultado[0]
+        if not usuario:
+
+            conn.close()
+
+            return {
+                "status":"error",
+                "erro":"Usuário não encontrado"
+            }
+
+
+        sessao = usuario["whatsapp_sessao"]
+        empresa_id = usuario["empresa_id"]
+
+
+        # ENVIA WHATSAPP
 
         resp = requests.post(
             "https://zoom-leggings-viability.ngrok-free.dev/enviar",
@@ -2033,13 +2057,53 @@ def enviar_mensagem():
                 "mensagem": mensagem
             }
         )
-        print("RESPOSTA NODE:", resp.text)
-        return {"status": "ok", "resposta": resp.text}
+
+
+        # SALVA CONVERSA
+
+        cursor.execute("""
+            INSERT INTO conversas_whatsapp
+            (
+                empresa_id,
+                usuario_id,
+                sessao,
+                telefone,
+                nome,
+                mensagem,
+                tipo,
+                data_hora
+            )
+
+            VALUES (?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+        """,
+        (
+            empresa_id,
+            usuario_id,
+            sessao,
+            telefone,
+            "Corretor",
+            mensagem,
+            "corretor"
+        ))
+
+
+        conn.commit()
+        conn.close()
+
+
+        return {
+            "status":"ok"
+        }
+
 
     except Exception as e:
-        # Este bloco precisa existir para fechar o 'try'
-        print("ERRO:", e)
-        return {"status": "error", "erro": str(e)}
+
+        print(e)
+
+        return {
+            "status":"error",
+            "erro":str(e)
+        }
 
 
 @app.route("/controle_ia/<telefone>/<acao>", methods=["POST"])
