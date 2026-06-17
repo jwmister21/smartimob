@@ -3045,6 +3045,10 @@ def informa_imovel(imovel_id):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # ==========================
+    # IMÓVEL PRINCIPAL
+    # ==========================
+
     cursor.execute("""
         SELECT *
         FROM imoveis
@@ -3058,6 +3062,10 @@ def informa_imovel(imovel_id):
         return "Imóvel não encontrado", 404
 
     imovel = dict(imovel)
+
+    # ==========================
+    # FOTOS DO IMÓVEL
+    # ==========================
 
     cursor.execute("""
         SELECT nome_arquivo
@@ -3073,13 +3081,65 @@ def informa_imovel(imovel_id):
         for foto in fotos
     ]
 
+    # ==========================
+    # IMÓVEIS SEMELHANTES
+    # ==========================
+
+    try:
+        valor = float(str(imovel.get("valor", 0)))
+    except:
+        valor = 0
+
+    valor_min = valor * 0.8
+    valor_max = valor * 1.2
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id != ?
+        AND empresa_id = ?
+        AND valor BETWEEN ? AND ?
+        LIMIT 6
+    """, (
+        imovel_id,
+        imovel["empresa_id"],
+        valor_min,
+        valor_max
+    ))
+
+    semelhantes_db = cursor.fetchall()
+
+    semelhantes = []
+
+    for item in semelhantes_db:
+
+        item = dict(item)
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id ASC
+            LIMIT 1
+        """, (item["id"],))
+
+        foto = cursor.fetchone()
+
+        item["foto"] = (
+            foto["nome_arquivo"]
+            if foto
+            else "sem-foto.jpg"
+        )
+
+        semelhantes.append(item)
+
     conn.close()
 
     return render_template(
         "informa_imovel.html",
-        imovel=imovel
+        imovel=imovel,
+        semelhantes=semelhantes
     )
-
 
 
 
