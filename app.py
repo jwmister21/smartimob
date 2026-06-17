@@ -610,6 +610,81 @@ def catalogo():
 
     return render_template("catalogo.html", imoveis=imoveis)
 
+
+@app.route("/webhook_mensagem_whatsapp", methods=["POST"])
+def webhook_mensagem_whatsapp():
+
+    data = request.get_json()
+
+
+    print("📩 RECEBIDO WHATSAPP")
+    print(data)
+
+
+    sessao = data.get("sessao")
+    telefone = data.get("telefone")
+    nome = data.get("nome")
+    mensagem = data.get("mensagem")
+
+
+    usuario_id = None
+    empresa_id = None
+
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    # acha o corretor pelo nome da sessão
+    cursor.execute("""
+        SELECT id, empresa_id
+        FROM usuarios
+        WHERE whatsapp_sessao = ?
+    """, (sessao,))
+
+
+    usuario = cursor.fetchone()
+
+
+    if usuario:
+
+        usuario_id = usuario[0]
+        empresa_id = usuario[1]
+
+
+    cursor.execute("""
+    INSERT INTO conversas_whatsapp
+    (
+        empresa_id,
+        usuario_id,
+        sessao,
+        telefone,
+        nome,
+        mensagem,
+        tipo
+    )
+
+    VALUES (?,?,?,?,?,?,?)
+    """,
+    (
+        empresa_id,
+        usuario_id,
+        sessao,
+        telefone,
+        nome,
+        mensagem,
+        "cliente"
+    ))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return {
+        "status":"ok"
+    }
+
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
     nome = request.form.get("nome")
