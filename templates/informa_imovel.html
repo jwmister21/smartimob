@@ -1,933 +1,118 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-<title>{{ imovel.titulo }}</title>
-
-<style>
-
-*{
-    box-sizing:border-box;
-}
-
-
-html,body{
-    margin:0;
-    padding:0;
-    width:100%;
-}
-
-
-body{
-    font-family:"Segoe UI",Arial,sans-serif;
-    background:#f1f5f9;
-    color:#0f172a;
-}
-
-
-
-/* LAYOUT */
-
-.container{
-
-    width:100%;
-    max-width:1200px;
-    margin:auto;
-
-    padding:20px;
-
-    display:grid;
-
-    grid-template-columns: minmax(0, 2fr) 360px;
-
-    gap:25px;
-
-}
-
-
-
-/* GALERIA */
-
-.galeria-principal{
-
-    width:100%;
-
-    aspect-ratio:16/10;
-
-    border-radius:18px;
-
-    overflow:hidden;
-
-    background:#ddd;
-
-}
-
-
-
-.galeria-principal img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-    display:block;
-
-}
-
-
-
-
-/* MINIATURAS */
-
-.miniaturas{
-
-    display:flex;
-
-    gap:10px;
-
-    margin-top:12px;
-
-    overflow-x:auto;
-
-}
-
-
-.miniaturas img{
-
-    width:95px;
-
-    height:70px;
-
-    flex-shrink:0;
-
-    object-fit:cover;
-
-    border-radius:10px;
-
-}
-
-
-
-
-/* INFO */
-
-
-.info{
-
-    background:white;
-
-    padding:25px;
-
-    margin-top:20px;
-
-    border-radius:18px;
-
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
-
-}
-
-
-
-.titulo{
-
-    font-size:clamp(22px,3vw,32px);
-
-    font-weight:700;
-
-}
-
-
-
-.valor{
-
-    color:#16a34a;
-
-    font-size:clamp(26px,4vw,38px);
-
-    font-weight:800;
-
-    margin:12px 0;
-
-}
-
-
-
-
-
-/* CARDS */
-
-
-.caracteristicas{
-
-    display:grid;
-
-    grid-template-columns:repeat(2,1fr);
-
-    gap:10px;
-
-    margin-top:20px;
-
-}
-
-
-
-.item{
-
-    background:#f8fafc;
-
-    padding:12px;
-
-    border-radius:12px;
-
-}
-
-
-
-
-/* BOTOES */
-
-.botoes{
-
-    display:flex;
-
-    gap:12px;
-
-    margin-top:20px;
-
-}
-
-
-
-.btn{
-
-    flex:1;
-
-    padding:14px;
-
-    border-radius:12px;
-
-    color:white;
-
-    text-decoration:none;
-
-    text-align:center;
-
-}
-
-
-
-.whatsapp{
-
-    background:#25D366;
-
-}
-
-
-.compartilhar{
-
-    background:#2563eb;
-
-}
-
-
-
-
-/* DESCRICAO */
-
-.descricao{
-
-    margin-top:25px;
-
-    line-height:1.7;
-
-}
-
-
-
-.descricao p{
-
-    overflow-wrap:anywhere;
-
-}
-
-
-
-
-/* FORM */
-
-.lead-box{
-
-    background:white;
-
-    padding:22px;
-
-    border-radius:18px;
-
-    margin-bottom:20px;
-
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
-
-    position:sticky;
-
-    top:20px;
-
-}
-
-
-
-.lead-box input{
-
-    width:100%;
-
-    padding:13px;
-
-    margin-bottom:12px;
-
-    border-radius:10px;
-
-    border:1px solid #ddd;
-
-}
-
-
-
-.lead-box button{
-
-    width:100%;
-
-    padding:14px;
-
-    border:0;
-
-    border-radius:12px;
-
-    background:#7c3aed;
-
-    color:white;
-
-}
-
-
-
-
-
-/* MODAL */
-
-
-.modal{
-
-    display:none;
-
-    position:fixed;
-
-    inset:0;
-
-    background:black;
-
-    z-index:9999;
-
-}
-
-
-
-.modal img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:contain;
-
-}
-
-
-
-.fechar{
-
-    position:absolute;
-
-    right:20px;
-
-    top:20px;
-
-    color:white;
-
-    font-size:40px;
-
-}
-
-
-
-
-
-/* WHATS */
-
-.float-whats{
-
-    position:fixed;
-
-    right:20px;
-
-    bottom:20px;
-
-    width:60px;
-
-    height:60px;
-
-    border-radius:50%;
-
-    background:#25D366;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    color:white;
-
-    z-index:50;
-
-}
-
-
-
-
-.mobile-bar{
-
-    display:none;
-
-}
-
-
-
-
-
-/* TABLET */
-
-@media(max-width:900px){
-
-
-.container{
-
-    grid-template-columns:1fr;
-
-    padding:12px;
-
-}
-
-
-
-.galeria-principal{
-
-    aspect-ratio:4/3;
-
-}
-
-
-
-.lead-box{
-
-    position:relative;
-
-    top:auto;
-
-}
-
-
-
-}
-
-
-
-
-
-/* CELULAR */
-
-@media(max-width:600px){
-
-
-.galeria-principal{
-
-    aspect-ratio:1/0.8;
-
-}
-
-
-
-.info{
-
-    padding:18px;
-
-}
-
-
-
-.caracteristicas{
-
-    grid-template-columns:1fr;
-
-}
-
-
-
-.botoes{
-
-    flex-direction:column;
-
-}
-
-
-
-.mobile-bar{
-
-    display:flex;
-
-    position:fixed;
-
-    bottom:0;
-
-    left:0;
-
-    right:0;
-
-    background:white;
-
-    padding:10px;
-
-    gap:10px;
-
-    z-index:1000;
-
-}
-
-
-
-.mobile-bar a{
-
-    flex:1;
-
-    padding:12px;
-
-    color:white;
-
-    border-radius:10px;
-
-    text-align:center;
-
-    text-decoration:none;
-
-}
-
-
-
-.float-whats{
-
-    bottom:90px;
-
-}
-
-
-html{
-    width:100%;
-    overflow-x:hidden;
-}
-
-
-body{
-    width:100%;
-    overflow-x:hidden;
-}
-
-
-img{
-    max-width:100%;
-}
-
-
-@media(max-width:600px){
-
-
-.container{
-
-    display:block !important;
-
-    width:100%;
-
-    padding:10px;
-
-}
-
-
-
-.galeria-principal{
-
-    width:100%;
-
-    height:auto;
-
-    aspect-ratio:4/3;
-
-}
-
-
-
-.galeria-principal img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-}
-
-
-
-.info{
-
-    width:100%;
-
-    margin-top:15px;
-
-}
-
-
-
-.lead-box{
-
-    width:100%;
-
-}
-
-
-
-input,
-button{
-
-    max-width:100%;
-
-}
-
-
-
-.descricao{
-
-    width:100%;
-
-    overflow-wrap:break-word;
-
-}
-
-
-
-.mobile-bar{
-
-    position:fixed;
-
-    height:auto;
-
-    padding-bottom:calc(10px + env(safe-area-inset-bottom));
-
-}
-
-
-
-}
-
-    .lead-box textarea{
-    width:100%;
-    padding:12px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    resize:vertical;
-    min-height:120px;
-    box-sizing:border-box;
-    font-family:inherit;
-    margin-bottom:10px;
-}
-.imovel-semelhante{
-
-    display:flex;
-    gap:12px;
-
-    margin-top:15px;
-
-    background:#f8fafc;
-
-    border-radius:14px;
-
-    overflow:hidden;
-
-    text-decoration:none;
-
-    color:#0f172a;
-
-    transition:.2s;
-
-}
-
-
-.imovel-semelhante:hover{
-
-    transform:translateY(-3px);
-
-}
-
-
-.imovel-semelhante img{
-
-    width:120px;
-
-    height:90px;
-
-    object-fit:cover;
-
-}
-
-
-.sim-info{
-
-    padding:10px;
-
-}
-
-
-.sim-titulo{
-
-    font-size:14px;
-
-    font-weight:700;
-
-}
-
-
-.sim-valor{
-
-    color:#16a34a;
-
-    font-size:18px;
-
-    font-weight:800;
-
-}
-
-
-.sim-local{
-
-    font-size:12px;
-
-    color:#64748b;
-
-    margin-top:5px;
-
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>{{ imovel.titulo }}</title>
+
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: "Segoe UI", Arial, sans-serif; background: #f1f5f9; color: #0f172a; margin: 0; padding: 0; }
+
+        /* LAYOUT */
+        .container { width: 100%; max-width: 1200px; margin: auto; padding: 20px; display: grid; grid-template-columns: 1fr 360px; gap: 25px; }
+
+        /* GALERIA */
+        .galeria-principal { width: 100%; aspect-ratio: 16/10; border-radius: 18px; overflow: hidden; background: #ddd; cursor: pointer; }
+        .galeria-principal img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .miniaturas { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; padding-bottom: 5px; }
+        .miniaturas img { width: 95px; height: 70px; flex-shrink: 0; object-fit: cover; border-radius: 10px; cursor: pointer; }
+
+        /* INFO & CARDS */
+        .info { background: white; padding: 25px; margin-top: 20px; border-radius: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
+        .titulo { font-size: clamp(22px, 3vw, 32px); font-weight: 700; }
+        .valor { color: #16a34a; font-size: clamp(26px, 4vw, 38px); font-weight: 800; margin: 12px 0; }
+        .caracteristicas { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
+        .item { background: #f8fafc; padding: 12px; border-radius: 12px; font-size: 0.9em; }
+
+        /* FORM & SIDEBAR */
+        .lead-box { background: white; padding: 22px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.06); position: sticky; top: 20px; }
+        .lead-box input, .lead-box textarea { width: 100%; padding: 13px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #ddd; display: block; }
+        .lead-box button { width: 100%; padding: 14px; border: 0; border-radius: 12px; background: #7c3aed; color: white; cursor: pointer; }
+
+        /* BOTOES */
+        .botoes { display: flex; gap: 12px; margin-top: 20px; }
+        .btn { flex: 1; padding: 14px; border-radius: 12px; color: white; text-decoration: none; text-align: center; }
+        .whatsapp { background: #25D366; }
+        .compartilhar { background: #2563eb; }
+
+        /* SEMELHANTES */
+        .imovel-semelhante { display: flex; gap: 12px; margin-top: 15px; background: #f8fafc; border-radius: 14px; overflow: hidden; text-decoration: none; color: #0f172a; }
+        .imovel-semelhante img { width: 100px; height: 80px; object-fit: cover; }
+        .sim-info { padding: 10px; }
+        .sim-titulo { font-size: 14px; font-weight: 700; }
+        .sim-valor { color: #16a34a; font-size: 16px; font-weight: 800; }
+
+        /* RESPONSIVIDADE */
+        @media(max-width:900px) {
+            .container { grid-template-columns: 1fr; }
+            .lead-box { position: relative; top: 0; }
+        }
+
+        @media(max-width:600px) {
+            .mobile-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 10px; gap: 10px; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+            .mobile-bar a { flex: 1; padding: 12px; color: white; border-radius: 10px; text-align: center; text-decoration: none; }
+            .float-whats { bottom: 80px; }
+        }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
-
-    <!-- COLUNA ESQUERDA -->
     <div>
-
         {% if imovel.fotos %}
-
         <div class="galeria-principal">
-            <img id="fotoPrincipal"
-                 src="/uploads/imoveis/{{ imovel.fotos[0] }}"
-                 onclick="abrirGaleria(this.src)">
+            <img id="fotoPrincipal" src="/uploads/imoveis/{{ imovel.fotos[0] }}" onclick="abrirGaleria(this.src)">
         </div>
-
         <div class="miniaturas">
             {% for foto in imovel.fotos %}
-            <img src="/uploads/imoveis/{{ foto }}"
-                 onclick="trocarFoto(this.src)">
+            <img src="/uploads/imoveis/{{ foto }}" onclick="trocarFoto(this.src)">
             {% endfor %}
         </div>
-
         {% endif %}
 
         <div class="info">
-
             <div class="titulo">{{ imovel.titulo }}</div>
-
-            <div class="valor">
-             {{ imovel.valor }}
-        </div>
-
+            <div class="valor">{{ imovel.valor }}</div>
             <h4>📍 {{ imovel.bairro }} - {{ imovel.cidade }}</h4>
-
             <div class="caracteristicas">
                 <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
-                <div class="item">🚿 {{ imovel.banheiros }} Suites</div>
+                <div class="item">🚿 {{ imovel.banheiros }} Suítes</div>
                 <div class="item">🚗 {{ imovel.vaga_garagem }} Vagas</div>
                 <div class="item">📐 {{ imovel.area }} m²</div>
-                <div class="item">💲 {{ imovel.iptu}} iptu</div>
-                <div class="item">🚽 {{ imovel.lavabo}} lavabo</div>
-                
             </div>
-
             <div class="botoes">
-                <a class="btn whatsapp"
-                   target="_blank"
-                   href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-                   WhatsApp
-                </a>
-
-                <a class="btn compartilhar"
-                   href="#"
-                   onclick="compartilhar()">
-                   Compartilhar
-                </a>
+                <a class="btn whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }}">WhatsApp</a>
+                <a class="btn compartilhar" href="#" onclick="compartilhar()">Compartilhar</a>
             </div>
-
             <div class="descricao">
                 <h3>Descrição</h3>
                 <p>{{ imovel.descricao }}</p>
             </div>
-
         </div>
-
     </div>
 
-    <!-- COLUNA DIREITA -->
     <div>
-
         <div class="lead-box">
             <h2>Receba mais informações</h2>
-
             <form action="/capturar_lead" method="POST">
                 <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
                 <input type="text" name="nome" placeholder="Seu nome" required>
                 <input type="text" name="telefone" placeholder="Seu telefone" required>
-                <textarea 
-name="mensagem"
-rows="5"
-placeholder="Digite sua mensagem">
-Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
-</textarea>
-
+                <textarea name="mensagem" rows="4" placeholder="Olá! Gostei do imóvel {{ imovel.titulo }} e gostaria de mais informações."></textarea>
                 <button type="submit">Quero ser atendido</button>
             </form>
         </div>
-
-        <div class="lead-box">
-
-    <h3>🏡 Imóveis Semelhantes</h3>
-
-    {% if semelhantes %}
-
-        {% for item in semelhantes %}
-
-        <a href="/informa-imovel/{{ item.id }}"
-           class="imovel-semelhante">
-
-            {% if item.foto %}
-            <img src="/uploads/imoveis/{{ item.foto }}">
-            {% endif %}
-
-            <div class="sim-info">
-
-                <div class="sim-titulo">
-                    {{ item.titulo }}
-                </div>
-
-                <div class="sim-valor">
-                    {{ item.valor }}
-                </div>
-
-                <div class="sim-local">
-                    📍 {{ item.bairro }} - {{ item.cidade }}
-                </div>
-
-            </div>
-
-        </a>
-
-        {% endfor %}
-
-    {% else %}
-
-        <p style="color:#64748b;">
-            Nenhum imóvel semelhante encontrado.
-        </p>
-
-    {% endif %}
-
-</div>
-
     </div>
-
-</div>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
-    <span class="fechar" onclick="fecharGaleria()">×</span>
-    <img id="fotoModal">
-</div>
-
-<!-- FLOAT WHATSAPP -->
-<a class="float-whats"
-   target="_blank"
-   href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-   🟢
-</a>
-
-<!-- MOBILE BAR -->
-<div class="mobile-bar">
-
-    <a class="whatsapp"
-       style="background:#25D366"
-       target="_blank"
-       href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-       WhatsApp
-    </a>
-
-    <a class="compartilhar"
-       style="background:#2563eb"
-       href="#"
-       onclick="compartilhar()">
-       Compartilhar
-    </a>
-
 </div>
 
 <script>
-
-function trocarFoto(src){
-    document.getElementById("fotoPrincipal").src = src;
-}
-
-function abrirGaleria(src){
-    document.getElementById("modal").style.display = "block";
-    document.getElementById("fotoModal").src = src;
-}
-
-function fecharGaleria(){
-    document.getElementById("modal").style.display = "none";
-}
-
-function compartilhar(){
-
-    if(navigator.share){
-        navigator.share({
-            title: document.title,
-            url: window.location.href
-        });
-    } else {
-        navigator.clipboard.writeText(window.location.href);
-        alert("Link copiado!");
+    function trocarFoto(src){ document.getElementById("fotoPrincipal").src = src; }
+    function abrirGaleria(src){ /* Adicione aqui a lógica do modal se desejar */ }
+    function compartilhar(){
+        if(navigator.share){ navigator.share({ title: document.title, url: window.location.href }); } 
+        else { alert("Link copiado!"); }
     }
-}
-
 </script>
-
 </body>
 </html>
