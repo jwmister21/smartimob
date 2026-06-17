@@ -757,14 +757,11 @@ def webhook_mensagem_whatsapp():
     print(data)
 
 
+
     sessao = data.get("sessao")
     telefone = data.get("telefone")
     nome = data.get("nome")
     mensagem = data.get("mensagem")
-
-
-    # verifica se deve ativar IA
-    ativar = verificar_interesse_ia(mensagem)
 
 
 
@@ -777,6 +774,38 @@ def webhook_mensagem_whatsapp():
     conn.row_factory = sqlite3.Row
 
     cursor = conn.cursor()
+
+
+
+    # ==========================
+    # VERIFICA SE IA JÁ ESTÁ ATIVA
+    # ==========================
+
+    cursor.execute("""
+        SELECT ia_ativa
+        FROM controle_ia_whatsapp
+        WHERE telefone = ?
+    """,
+    (telefone,))
+
+
+    controle_ia = cursor.fetchone()
+
+
+
+    if controle_ia and controle_ia["ia_ativa"] == 1:
+
+        ativar = True
+
+        print(
+            "🤖 CONTINUANDO IA:",
+            telefone
+        )
+
+
+    else:
+
+        ativar = verificar_interesse_ia(mensagem)
 
 
 
@@ -800,6 +829,7 @@ def webhook_mensagem_whatsapp():
 
         usuario_id = usuario["id"]
         empresa_id = usuario["empresa_id"]
+
 
 
 
@@ -828,7 +858,8 @@ def webhook_mensagem_whatsapp():
             cursor.execute("""
                 UPDATE controle_ia_whatsapp
 
-                SET 
+                SET
+
                 ia_ativa = 1,
                 atendendo = 1,
                 ultima_acao = CURRENT_TIMESTAMP
@@ -864,7 +895,10 @@ def webhook_mensagem_whatsapp():
 
 
 
-        print("🤖 IA ATIVADA:", telefone)
+        print(
+            "🤖 IA ATIVADA:",
+            telefone
+        )
 
 
 
@@ -908,8 +942,8 @@ def webhook_mensagem_whatsapp():
     # IA RESPONDE
     # ==========================
 
-
     if ativar:
+
 
 
         imoveis = buscar_imoveis_ia(
@@ -927,6 +961,7 @@ def webhook_mensagem_whatsapp():
             )
 
 
+
             for imovel in imoveis:
 
 
@@ -938,12 +973,15 @@ def webhook_mensagem_whatsapp():
 💰 Valor: R$ {imovel['valor']}
 
 🛏 Quartos: {imovel['quartos']}
+
 🚗 Vagas: {imovel['vaga_garagem']}
 
 🔗 {imovel['link']}
 
 ----------------------
+
 """
+
 
 
         else:
@@ -952,12 +990,13 @@ def webhook_mensagem_whatsapp():
             resposta = """
 Olá 😊
 
-Vou te ajudar a encontrar seu imóvel.
+Vou te ajudar a encontrar o imóvel ideal.
 
 Me fala:
-📍 qual bairro você procura?
-💰 qual faixa de valor?
-🏡 casa ou apartamento?
+
+📍 Qual cidade ou bairro procura?
+🏡 Casa ou apartamento?
+💰 Qual faixa de valor?
 """
 
 
@@ -977,7 +1016,6 @@ Me fala:
     return {
         "status":"ok"
     }
-
 
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
