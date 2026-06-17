@@ -312,6 +312,66 @@ def foto_imovel(filename):
 
 
 
+@app.route("/capturar_lead", methods=["POST"])
+def capturar_lead():
+
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    id_imovel = request.form.get("id_imovel")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO lead_site
+        (
+            nome,
+            telefone,
+            id_imovel
+        )
+        VALUES (?, ?, ?)
+    """, (
+        nome,
+        telefone,
+        id_imovel
+    ))
+
+    conn.commit()
+    conn.close()
+
+    flash("Recebemos seu interesse. Em breve entraremos em contato!")
+
+    return redirect(request.referrer)
+
+
+@app.route("/leads_site")
+@verificar_sessao
+def leads_site():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            l.*,
+            i.titulo
+        FROM lead_site l
+        LEFT JOIN imoveis i
+            ON i.id = l.id_imovel
+        ORDER BY l.id DESC
+    """)
+
+    leads = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "leads_site.html",
+        leads=leads
+    )
+
 @app.route("/enviar_imovel/<int:imovel_id>/<telefone>")
 @verificar_sessao
 def enviar_imovel(imovel_id, telefone):
