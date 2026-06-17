@@ -1531,6 +1531,46 @@ def editar_usuario(user_id):
     return jsonify({"status": "sucesso"})
 
 
+@app.route("/buscar_conversa/<telefone>")
+@verificar_sessao
+def buscar_conversa(telefone):
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+
+    cursor.execute("""
+        SELECT 
+            mensagem,
+            tipo,
+            nome,
+            telefone
+
+        FROM conversas_whatsapp
+
+        WHERE telefone = ?
+
+        ORDER BY id ASC
+
+    """,
+    (telefone,))
+
+
+    mensagens = cursor.fetchall()
+
+
+    conn.close()
+
+
+    return jsonify([
+        dict(m)
+        for m in mensagens
+    ])
+
 
 @app.route("/admin/usuarios")
 @verificar_sessao
