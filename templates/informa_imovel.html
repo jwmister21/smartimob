@@ -1,66 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
 
 <title>{{ imovel.titulo }}</title>
 
+
 <style>
 
+
 *{
-    box-sizing:border-box;
+box-sizing:border-box;
 }
+
 
 
 html,body{
-    margin:0;
-    padding:0;
-    width:100%;
+
+margin:0;
+padding:0;
+width:100%;
+overflow-x:hidden;
+
 }
+
 
 
 body{
-    font-family:"Segoe UI",Arial,sans-serif;
-    background:#f1f5f9;
-    color:#0f172a;
+
+font-family:"Segoe UI",Arial,sans-serif;
+
+background:#f1f5f9;
+
+color:#0f172a;
+
 }
+
 
 
 
 /* LAYOUT */
 
+
 .container{
 
-    width:100%;
-    max-width:1200px;
-    margin:auto;
+width:100%;
 
-    padding:20px;
+max-width:1200px;
 
-    display:grid;
+margin:auto;
 
-    grid-template-columns: minmax(0, 2fr) 360px;
+padding:20px;
 
-    gap:25px;
+display:grid;
+
+grid-template-columns:minmax(0,2fr) 360px;
+
+gap:25px;
 
 }
 
 
 
+
+
 /* GALERIA */
+
 
 .galeria-principal{
 
-    width:100%;
+width:100%;
 
-    aspect-ratio:16/10;
+aspect-ratio:16/10;
 
-    border-radius:18px;
+border-radius:18px;
 
-    overflow:hidden;
+overflow:hidden;
 
-    background:#ddd;
+background:#ddd;
 
 }
 
@@ -68,47 +90,46 @@ body{
 
 .galeria-principal img{
 
-    width:100%;
+width:100%;
 
-    height:100%;
+height:100%;
 
-    object-fit:cover;
+object-fit:cover;
 
-    display:block;
+cursor:pointer;
 
 }
 
 
-
-
-/* MINIATURAS */
 
 .miniaturas{
 
-    display:flex;
+display:flex;
 
-    gap:10px;
+gap:10px;
 
-    margin-top:12px;
+margin-top:12px;
 
-    overflow-x:auto;
+overflow-x:auto;
 
 }
+
 
 
 .miniaturas img{
 
-    width:95px;
+width:95px;
 
-    height:70px;
+height:70px;
 
-    flex-shrink:0;
+flex-shrink:0;
 
-    object-fit:cover;
+object-fit:cover;
 
-    border-radius:10px;
+border-radius:10px;
 
 }
+
 
 
 
@@ -118,15 +139,15 @@ body{
 
 .info{
 
-    background:white;
+background:white;
 
-    padding:25px;
+padding:25px;
 
-    margin-top:20px;
+margin-top:20px;
 
-    border-radius:18px;
+border-radius:18px;
 
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
+box-shadow:0 10px 30px #0001;
 
 }
 
@@ -134,9 +155,9 @@ body{
 
 .titulo{
 
-    font-size:clamp(22px,3vw,32px);
+font-size:32px;
 
-    font-weight:700;
+font-weight:800;
 
 }
 
@@ -144,13 +165,13 @@ body{
 
 .valor{
 
-    color:#16a34a;
+color:#16a34a;
 
-    font-size:clamp(26px,4vw,38px);
+font-size:38px;
 
-    font-weight:800;
+font-weight:900;
 
-    margin:12px 0;
+margin:15px 0;
 
 }
 
@@ -158,18 +179,13 @@ body{
 
 
 
-/* CARDS */
-
-
 .caracteristicas{
 
-    display:grid;
+display:grid;
 
-    grid-template-columns:repeat(2,1fr);
+grid-template-columns:repeat(2,1fr);
 
-    gap:10px;
-
-    margin-top:20px;
+gap:10px;
 
 }
 
@@ -177,26 +193,27 @@ body{
 
 .item{
 
-    background:#f8fafc;
+background:#f8fafc;
 
-    padding:12px;
+padding:12px;
 
-    border-radius:12px;
+border-radius:12px;
 
 }
 
 
 
 
-/* BOTOES */
+/* BOTÕES */
+
 
 .botoes{
 
-    display:flex;
+display:flex;
 
-    gap:12px;
+gap:12px;
 
-    margin-top:20px;
+margin-top:20px;
 
 }
 
@@ -204,17 +221,19 @@ body{
 
 .btn{
 
-    flex:1;
+flex:1;
 
-    padding:14px;
+padding:14px;
 
-    border-radius:12px;
+border-radius:12px;
 
-    color:white;
+color:white;
 
-    text-decoration:none;
+text-decoration:none;
 
-    text-align:center;
+text-align:center;
+
+font-weight:bold;
 
 }
 
@@ -222,74 +241,67 @@ body{
 
 .whatsapp{
 
-    background:#25D366;
+background:#25D366;
 
 }
+
 
 
 .compartilhar{
 
-    background:#2563eb;
+background:#2563eb;
 
 }
 
-
-
-
-/* DESCRICAO */
-
-.descricao{
-
-    margin-top:25px;
-
-    line-height:1.7;
-
-}
-
-
-
-.descricao p{
-
-    overflow-wrap:anywhere;
-
-}
 
 
 
 
 /* FORM */
 
+
 .lead-box{
 
-    background:white;
+background:white;
 
-    padding:22px;
+padding:22px;
 
-    border-radius:18px;
+border-radius:18px;
 
-    margin-bottom:20px;
+margin-bottom:20px;
 
-    box-shadow:0 10px 30px rgba(0,0,0,.06);
+box-shadow:0 10px 30px #0001;
 
-    position:sticky;
+position:sticky;
 
-    top:20px;
+top:20px;
 
 }
 
 
 
-.lead-box input{
+.lead-box input,
+.lead-box textarea{
 
-    width:100%;
+width:100%;
 
-    padding:13px;
+padding:13px;
 
-    margin-bottom:12px;
+margin-bottom:12px;
 
-    border-radius:10px;
+border-radius:10px;
 
-    border:1px solid #ddd;
+border:1px solid #ddd;
+
+}
+
+
+
+.lead-box textarea{
+
+height:120px;
+
+resize:none;
 
 }
 
@@ -297,17 +309,130 @@ body{
 
 .lead-box button{
 
-    width:100%;
+width:100%;
 
-    padding:14px;
+padding:14px;
 
-    border:0;
+border:0;
 
-    border-radius:12px;
+border-radius:12px;
 
-    background:#7c3aed;
+background:#7c3aed;
 
-    color:white;
+color:white;
+
+font-weight:bold;
+
+}
+
+
+
+
+
+/* SEMELHANTES */
+
+
+.imovel-semelhante{
+
+display:flex;
+
+width:100%;
+
+height:95px;
+
+margin-top:12px;
+
+background:#f8fafc;
+
+border-radius:14px;
+
+overflow:hidden;
+
+text-decoration:none;
+
+color:#0f172a;
+
+transition:.2s;
+
+}
+
+
+
+.imovel-semelhante:hover{
+
+transform:translateY(-3px);
+
+box-shadow:0 8px 20px #0002;
+
+}
+
+
+
+.imovel-semelhante img{
+
+width:105px;
+
+min-width:105px;
+
+height:95px;
+
+object-fit:cover;
+
+}
+
+
+
+.sim-info{
+
+flex:1;
+
+min-width:0;
+
+padding:10px;
+
+overflow:hidden;
+
+}
+
+
+
+.sim-titulo{
+
+font-size:14px;
+
+font-weight:700;
+
+white-space:nowrap;
+
+overflow:hidden;
+
+text-overflow:ellipsis;
+
+}
+
+
+
+.sim-valor{
+
+color:#16a34a;
+
+font-weight:800;
+
+font-size:16px;
+
+}
+
+
+
+.sim-local{
+
+font-size:12px;
+
+color:#64748b;
+
+overflow:hidden;
+
+white-space:nowrap;
 
 }
 
@@ -320,15 +445,15 @@ body{
 
 .modal{
 
-    display:none;
+display:none;
 
-    position:fixed;
+position:fixed;
 
-    inset:0;
+inset:0;
 
-    background:black;
+background:#000;
 
-    z-index:9999;
+z-index:9999;
 
 }
 
@@ -336,11 +461,11 @@ body{
 
 .modal img{
 
-    width:100%;
+width:100%;
 
-    height:100%;
+height:100%;
 
-    object-fit:contain;
+object-fit:contain;
 
 }
 
@@ -348,15 +473,15 @@ body{
 
 .fechar{
 
-    position:absolute;
+position:absolute;
 
-    right:20px;
+top:20px;
 
-    top:20px;
+right:20px;
 
-    color:white;
+color:white;
 
-    font-size:40px;
+font-size:40px;
 
 }
 
@@ -366,94 +491,89 @@ body{
 
 /* WHATS */
 
+
 .float-whats{
 
-    position:fixed;
+position:fixed;
 
-    right:20px;
+right:20px;
 
-    bottom:20px;
+bottom:20px;
 
-    width:60px;
+width:60px;
 
-    height:60px;
+height:60px;
 
-    border-radius:50%;
+border-radius:50%;
 
-    background:#25D366;
+background:#25D366;
 
-    display:flex;
+display:flex;
 
-    align-items:center;
+align-items:center;
 
-    justify-content:center;
+justify-content:center;
 
-    color:white;
+color:white;
 
-    z-index:50;
+z-index:100;
 
 }
+
 
 
 
 
 .mobile-bar{
 
-    display:none;
+display:none;
 
 }
+ id="hmtb3a"
+<style>
 
-
-
-
-
-/* TABLET */
 
 @media(max-width:900px){
 
 
 .container{
 
-    grid-template-columns:1fr;
+grid-template-columns:1fr;
 
-    padding:12px;
-
-}
-
-
-
-.galeria-principal{
-
-    aspect-ratio:4/3;
+padding:12px;
 
 }
-
 
 
 .lead-box{
 
-    position:relative;
+position:relative;
 
-    top:auto;
-
-}
-
-
+top:auto;
 
 }
 
 
+}
 
 
-
-/* CELULAR */
 
 @media(max-width:600px){
 
 
+.container{
+
+display:block;
+
+padding:10px;
+
+}
+
+
+
 .galeria-principal{
 
-    aspect-ratio:1/0.8;
+aspect-ratio:4/3;
 
 }
 
@@ -461,7 +581,7 @@ body{
 
 .info{
 
-    padding:18px;
+padding:18px;
 
 }
 
@@ -469,7 +589,7 @@ body{
 
 .caracteristicas{
 
-    grid-template-columns:1fr;
+grid-template-columns:1fr;
 
 }
 
@@ -477,7 +597,7 @@ body{
 
 .botoes{
 
-    flex-direction:column;
+display:none;
 
 }
 
@@ -485,23 +605,23 @@ body{
 
 .mobile-bar{
 
-    display:flex;
+display:flex;
 
-    position:fixed;
+position:fixed;
 
-    bottom:0;
+bottom:0;
 
-    left:0;
+left:0;
 
-    right:0;
+right:0;
 
-    background:white;
+background:white;
 
-    padding:10px;
+padding:10px;
 
-    gap:10px;
+gap:10px;
 
-    z-index:1000;
+z-index:1000;
 
 }
 
@@ -509,17 +629,17 @@ body{
 
 .mobile-bar a{
 
-    flex:1;
+flex:1;
 
-    padding:12px;
+padding:12px;
 
-    color:white;
+border-radius:10px;
 
-    border-radius:10px;
+text-align:center;
 
-    text-align:center;
+color:white;
 
-    text-decoration:none;
+text-decoration:none;
 
 }
 
@@ -527,181 +647,15 @@ body{
 
 .float-whats{
 
-    bottom:90px;
+bottom:90px;
 
 }
 
-
-html{
-    width:100%;
-    overflow-x:hidden;
-}
-
-
-body{
-    width:100%;
-    overflow-x:hidden;
-}
-
-
-img{
-    max-width:100%;
-}
-
-
-@media(max-width:600px){
-
-
-.container{
-
-    display:block !important;
-
-    width:100%;
-
-    padding:10px;
-
-    .imovel-semelhante{
-
-    height:90px;
-
-}
-
-
-.imovel-semelhante img{
-
-    width:90px;
-
-    min-width:90px;
-
-    height:90px;
-
-}
-}
-
-
-
-.galeria-principal{
-
-    width:100%;
-
-    height:auto;
-
-    aspect-ratio:4/3;
-
-}
-
-
-
-.galeria-principal img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-}
-
-
-
-.info{
-
-    width:100%;
-
-    margin-top:15px;
-
-}
-
-
-
-.lead-box{
-
-    width:100%;
-
-}
-
-
-
-input,
-button{
-
-    max-width:100%;
-
-}
-
-
-
-.descricao{
-
-    width:100%;
-
-    overflow-wrap:break-word;
-
-}
-
-
-
-.mobile-bar{
-
-    position:fixed;
-
-    height:auto;
-
-    padding-bottom:calc(10px + env(safe-area-inset-bottom));
-
-}
-
-
-
-}
-
-    .lead-box textarea{
-    width:100%;
-    padding:12px;
-    border:1px solid #ddd;
-    border-radius:8px;
-    resize:vertical;
-    min-height:120px;
-    box-sizing:border-box;
-    font-family:inherit;
-    margin-bottom:10px;
-}
-/* =========================
-   IMÓVEIS SEMELHANTES
-========================= */
 
 
 .imovel-semelhante{
 
-    display:flex;
-
-    width:100%;
-
-    height:95px;
-
-    margin-top:12px;
-
-    background:#f8fafc;
-
-    border-radius:14px;
-
-    overflow:hidden;
-
-    text-decoration:none;
-
-    color:#0f172a;
-
-    transition:.2s;
-
-}
-
-
-
-.imovel-semelhante:hover{
-
-    transform:translateY(-3px);
-
-    box-shadow:0 8px 20px #0002;
+height:90px;
 
 }
 
@@ -709,278 +663,570 @@ button{
 
 .imovel-semelhante img{
 
-    width:105px;
+width:90px;
 
-    min-width:105px;
+min-width:90px;
 
-    height:95px;
-
-    object-fit:cover;
+height:90px;
 
 }
 
 
 
-.sim-info{
+.valor{
 
-    flex:1;
-
-    min-width:0;
-
-    padding:10px;
-
-    overflow:hidden;
+font-size:28px;
 
 }
 
 
-
-.sim-titulo{
-
-    font-size:14px;
-
-    font-weight:700;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-
 }
 
 
-
-.sim-valor{
-
-    color:#16a34a;
-
-    font-size:16px;
-
-    font-weight:800;
-
-    margin-top:5px;
-
-}
-
-
-
-.sim-local{
-
-    font-size:12px;
-
-    color:#64748b;
-
-    margin-top:5px;
-
-    white-space:nowrap;
-
-    overflow:hidden;
-
-    text-overflow:ellipsis;
-
-}
 </style>
+
 </head>
+
+
 
 <body>
 
+
+
 <div class="container">
 
-    <!-- COLUNA ESQUERDA -->
-    <div>
 
-        {% if imovel.fotos %}
 
-        <div class="galeria-principal">
-            <img id="fotoPrincipal"
-                 src="/uploads/imoveis/{{ imovel.fotos[0] }}"
-                 onclick="abrirGaleria(this.src)">
-        </div>
+<!-- ESQUERDA -->
 
-        <div class="miniaturas">
-            {% for foto in imovel.fotos %}
-            <img src="/uploads/imoveis/{{ foto }}"
-                 onclick="trocarFoto(this.src)">
-            {% endfor %}
-        </div>
 
-        {% endif %}
+<div>
 
-        <div class="info">
 
-            <div class="titulo">{{ imovel.titulo }}</div>
 
-            <div class="valor">
-             {{ imovel.valor }}
-        </div>
+{% if imovel.fotos %}
 
-            <h4>📍 {{ imovel.bairro }} - {{ imovel.cidade }}</h4>
 
-            <div class="caracteristicas">
-                <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
-                <div class="item">🚿 {{ imovel.banheiros }} Suites</div>
-                <div class="item">🚗 {{ imovel.vaga_garagem }} Vagas</div>
-                <div class="item">📐 {{ imovel.area }} m²</div>
-                <div class="item">💲 {{ imovel.iptu}} iptu</div>
-                <div class="item">🚽 {{ imovel.lavabo}} lavabo</div>
-                
-            </div>
+<div class="galeria-principal">
 
-            <div class="botoes">
-                <a class="btn whatsapp"
-                   target="_blank"
-                   href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-                   WhatsApp
-                </a>
 
-                <a class="btn compartilhar"
-                   href="#"
-                   onclick="compartilhar()">
-                   Compartilhar
-                </a>
-            </div>
+<img
 
-            <div class="descricao">
-                <h3>Descrição</h3>
-                <p>{{ imovel.descricao }}</p>
-            </div>
+id="fotoPrincipal"
 
-        </div>
+src="/uploads/imoveis/{{ imovel.fotos[0] }}"
 
-    </div>
+onclick="abrirGaleria(this.src)">
 
-    <!-- COLUNA DIREITA -->
-    <div>
-
-        <div class="lead-box">
-            <h2>Receba mais informações</h2>
-
-            <form action="/capturar_lead" method="POST">
-                <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
-                <input type="text" name="nome" placeholder="Seu nome" required>
-                <input type="text" name="telefone" placeholder="Seu telefone" required>
-                <textarea 
-name="mensagem"
-rows="5"
-placeholder="Digite sua mensagem">
-Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
-</textarea>
-
-                <button type="submit">Quero ser atendido</button>
-            </form>
-        </div>
-
-        <div class="lead-box">
-
-    <h3>🏡 Imóveis Semelhantes</h3>
-
-    {% if semelhantes %}
-
-        {% for item in semelhantes %}
-
-        <a href="/informa-imovel/{{ item.id }}"
-           class="imovel-semelhante">
-
-            {% if item.foto %}
-            <img src="/uploads/imoveis/{{ item.foto }}">
-            {% endif %}
-
-            <div class="sim-info">
-
-                <div class="sim-titulo">
-                    {{ item.titulo }}
-                </div>
-
-                <div class="sim-valor">
-                    {{ item.valor }}
-                </div>
-
-                <div class="sim-local">
-                    📍 {{ item.bairro }} - {{ item.cidade }}
-                </div>
-
-            </div>
-
-        </a>
-
-        {% endfor %}
-
-    {% else %}
-
-        <p style="color:#64748b;">
-            Nenhum imóvel semelhante encontrado.
-        </p>
-
-    {% endif %}
 
 </div>
 
-    </div>
+
+
+
+<div class="miniaturas">
+
+
+{% for foto in imovel.fotos %}
+
+
+<img
+
+src="/uploads/imoveis/{{ foto }}"
+
+onclick="trocarFoto(this.src)">
+
+
+
+{% endfor %}
+
 
 </div>
 
-<!-- MODAL -->
-<div class="modal" id="modal">
-    <span class="fechar" onclick="fecharGaleria()">×</span>
-    <img id="fotoModal">
+
+{% endif %}
+
+
+
+
+
+<div class="info">
+
+
+<div class="titulo">
+
+{{ imovel.titulo }}
+
 </div>
 
-<!-- FLOAT WHATSAPP -->
-<a class="float-whats"
-   target="_blank"
-   href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-   🟢
+
+
+<div class="valor">
+
+
+R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X",".") }}
+
+
+</div>
+
+
+
+<h4>
+
+📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+
+</h4>
+
+
+
+
+<div class="caracteristicas">
+
+
+<div class="item">
+🛏 {{ imovel.quartos }} Quartos
+</div>
+
+
+<div class="item">
+🚿 {{ imovel.banheiros }} Banheiros
+</div>
+
+
+<div class="item">
+🚗 {{ imovel.vaga_garagem }} Vagas
+</div>
+
+
+<div class="item">
+📐 {{ imovel.area }} m²
+</div>
+
+
+<div class="item">
+💲 {{ imovel.iptu }} IPTU
+</div>
+
+
+<div class="item">
+🚽 {{ imovel.lavabo }} Lavabo
+</div>
+
+
+
+</div>
+
+
+
+
+<div class="botoes">
+
+
+<a
+
+class="btn whatsapp"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+
+WhatsApp
+
 </a>
 
-<!-- MOBILE BAR -->
-<div class="mobile-bar">
 
-    <a class="whatsapp"
-       style="background:#25D366"
-       target="_blank"
-       href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-       WhatsApp
-    </a>
 
-    <a class="compartilhar"
-       style="background:#2563eb"
-       href="#"
-       onclick="compartilhar()">
-       Compartilhar
-    </a>
+
+<a
+
+class="btn compartilhar"
+
+href="#"
+
+onclick="compartilhar()">
+
+
+Compartilhar
+
+</a>
+
 
 </div>
+
+
+
+
+<div class="descricao">
+
+
+<h3>
+
+Descrição
+
+</h3>
+
+
+<p>
+
+{{ imovel.descricao }}
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<!-- DIREITA -->
+
+
+<div>
+
+
+
+
+<div class="lead-box">
+
+
+<h2>
+
+Receba mais informações
+
+</h2>
+
+
+
+<form action="/capturar_lead" method="POST">
+
+
+
+<input
+
+type="hidden"
+
+name="id_imovel"
+
+value="{{ imovel.id }}">
+
+
+
+<input
+
+type="text"
+
+name="nome"
+
+placeholder="Seu nome"
+
+required>
+
+
+
+<input
+
+type="text"
+
+name="telefone"
+
+placeholder="Seu telefone"
+
+required>
+
+
+
+
+<textarea
+
+name="mensagem">
+
+
+Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
+
+
+</textarea>
+
+
+
+<button>
+
+Quero ser atendido
+
+</button>
+
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+<div class="lead-box">
+
+
+<h3>
+
+🏡 Imóveis Semelhantes
+
+</h3>
+
+
+
+
+{% for item in semelhantes %}
+
+
+
+<a
+
+class="imovel-semelhante"
+
+href="/informa-imovel/{{ item.id }}">
+
+
+
+{% if item.foto %}
+
+<img src="/uploads/imoveis/{{ item.foto }}">
+
+
+{% endif %}
+
+
+
+<div class="sim-info">
+
+
+
+<div class="sim-titulo">
+
+{{ item.titulo }}
+
+</div>
+
+
+
+
+<div class="sim-valor">
+
+
+R$ {{ "{:,.2f}".format(item.valor|float).replace(",", "X").replace(".", ",").replace("X",".") }}
+
+
+</div>
+
+
+
+
+<div class="sim-local">
+
+
+📍 {{ item.bairro }} - {{ item.cidade }}
+
+
+</div>
+
+
+
+
+</div>
+
+
+</a>
+
+
+
+{% endfor %}
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<!-- MODAL -->
+
+
+<div class="modal" id="modal">
+
+
+<span
+
+class="fechar"
+
+onclick="fecharGaleria()">
+
+×
+
+</span>
+
+
+
+<img id="fotoModal">
+
+
+</div>
+
+
+
+
+
+
+
+<a
+
+class="float-whats"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+
+🟢
+
+
+</a>
+
+
+
+
+
+
+<div class="mobile-bar">
+
+
+<a
+
+class="whatsapp"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+
+WhatsApp
+
+
+</a>
+
+
+
+
+<a
+
+class="compartilhar"
+
+onclick="compartilhar()">
+
+
+Compartilhar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+
+
 
 <script>
 
+
 function trocarFoto(src){
-    document.getElementById("fotoPrincipal").src = src;
+
+document.getElementById("fotoPrincipal").src=src;
+
 }
+
+
 
 function abrirGaleria(src){
-    document.getElementById("modal").style.display = "block";
-    document.getElementById("fotoModal").src = src;
+
+document.getElementById("modal").style.display="block";
+
+document.getElementById("fotoModal").src=src;
+
 }
 
+
+
 function fecharGaleria(){
-    document.getElementById("modal").style.display = "none";
+
+document.getElementById("modal").style.display="none";
+
 }
+
+
 
 function compartilhar(){
 
-    if(navigator.share){
-        navigator.share({
-            title: document.title,
-            url: window.location.href
-        });
-    } else {
-        navigator.clipboard.writeText(window.location.href);
-        alert("Link copiado!");
-    }
+
+if(navigator.share){
+
+
+navigator.share({
+
+title:document.title,
+
+url:window.location.href
+
+});
+
+
+}else{
+
+
+navigator.clipboard.writeText(window.location.href);
+
+
+alert("Link copiado!");
+
+
 }
+
+
+}
+
+
 
 </script>
 
+
+
+
 </body>
+
 </html>
