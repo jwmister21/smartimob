@@ -2058,7 +2058,6 @@ def controle_ia(telefone, acao):
 @verificar_sessao
 def whatsapp_atendimento():
 
-
     usuario_id = session["usuario_id"]
 
 
@@ -2068,22 +2067,24 @@ def whatsapp_atendimento():
     cursor = conn.cursor()
 
 
-
     cursor.execute("""
-    SELECT 
-        c.telefone,
-        c.nome,
-        c.mensagem,
-        ia.ia_ativa
+        SELECT 
+            c.telefone,
+            c.nome,
+            c.mensagem,
+            c.tipo,
+            ia.ia_ativa
 
-    FROM conversas_whatsapp c
+        FROM conversas_whatsapp c
 
-    LEFT JOIN controle_ia_whatsapp ia
-    ON ia.telefone = c.telefone
+        LEFT JOIN controle_ia_whatsapp ia
+        ON ia.telefone = c.telefone
 
-    WHERE c.usuario_id = ?
+        WHERE c.usuario_id = ?
 
-    ORDER BY c.id DESC
+        GROUP BY c.telefone
+
+        ORDER BY c.id DESC
 
     """,
     (usuario_id,))
