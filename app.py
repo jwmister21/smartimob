@@ -1957,7 +1957,108 @@ def enviar_mensagem():
         # Este bloco precisa existir para fechar o 'try'
         print("ERRO:", e)
         return {"status": "error", "erro": str(e)}
-              
+
+
+@app.route("/controle_ia/<telefone>/<acao>", methods=["POST"])
+@verificar_sessao
+def controle_ia(telefone, acao):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    if acao == "ativar":
+
+        cursor.execute("""
+            UPDATE controle_ia_whatsapp
+
+            SET 
+            ia_ativa = 1,
+            atendendo = 1,
+            ultima_acao = CURRENT_TIMESTAMP
+
+            WHERE telefone = ?
+
+        """,
+        (telefone,))
+
+
+    elif acao == "desativar":
+
+        cursor.execute("""
+            UPDATE controle_ia_whatsapp
+
+            SET
+            ia_ativa = 0,
+            atendendo = 0,
+            ultima_acao = CURRENT_TIMESTAMP
+
+            WHERE telefone = ?
+
+        """,
+        (telefone,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return jsonify({
+        "status":"ok",
+        "acao":acao
+    })
+
+
+
+
+@app.route("/whatsapp-atendimento")
+@verificar_sessao
+def whatsapp_atendimento():
+
+
+    usuario_id = session["usuario_id"]
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+
+    cursor.execute("""
+    SELECT 
+        c.telefone,
+        c.nome,
+        c.mensagem,
+        c.data_envio,
+        ia.ia_ativa
+
+    FROM conversas_whatsapp c
+
+    LEFT JOIN controle_ia_whatsapp ia
+    ON ia.telefone = c.telefone
+
+    WHERE c.usuario_id = ?
+
+    ORDER BY c.id DESC
+
+    """,
+    (usuario_id,))
+
+
+    conversas = cursor.fetchall()
+
+
+    conn.close()
+
+
+    return render_template(
+        "whatsapp_atendimento.html",
+        conversas=conversas
+    )
+
+
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
