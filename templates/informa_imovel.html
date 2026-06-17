@@ -560,6 +560,22 @@ img{
 
     padding:10px;
 
+    .imovel-semelhante{
+
+    height:90px;
+
+}
+
+
+.imovel-semelhante img{
+
+    width:90px;
+
+    min-width:90px;
+
+    height:90px;
+
+}
 }
 
 
@@ -650,12 +666,20 @@ button{
     font-family:inherit;
     margin-bottom:10px;
 }
+/* =========================
+   IMÓVEIS SEMELHANTES
+========================= */
+
+
 .imovel-semelhante{
 
     display:flex;
-    gap:12px;
 
-    margin-top:15px;
+    width:100%;
+
+    height:95px;
+
+    margin-top:12px;
 
     background:#f8fafc;
 
@@ -672,29 +696,43 @@ button{
 }
 
 
+
 .imovel-semelhante:hover{
 
     transform:translateY(-3px);
 
+    box-shadow:0 8px 20px #0002;
+
 }
+
 
 
 .imovel-semelhante img{
 
-    width:120px;
+    width:105px;
 
-    height:90px;
+    min-width:105px;
+
+    height:95px;
 
     object-fit:cover;
 
 }
 
 
+
 .sim-info{
+
+    flex:1;
+
+    min-width:0;
 
     padding:10px;
 
+    overflow:hidden;
+
 }
+
 
 
 .sim-titulo{
@@ -703,18 +741,28 @@ button{
 
     font-weight:700;
 
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
 }
+
 
 
 .sim-valor{
 
     color:#16a34a;
 
-    font-size:18px;
+    font-size:16px;
 
     font-weight:800;
 
+    margin-top:5px;
+
 }
+
 
 
 .sim-local{
@@ -725,8 +773,13 @@ button{
 
     margin-top:5px;
 
-}
+    white-space:nowrap;
 
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+}
 </style>
 </head>
 
