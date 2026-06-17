@@ -89,6 +89,92 @@ def injetar_lembretes():
     return dict(lembretes=lembretes)
 
 
+
+def buscar_imoveis_ia(empresa_id, texto):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+    texto = texto.lower()
+
+
+    bairro = None
+
+
+    bairros = [
+        "guilhermina",
+        "boqueirao",
+        "tupi",
+        "ocian",
+        "aviacao"
+    ]
+
+
+    for b in bairros:
+
+        if b in texto:
+            bairro = b
+
+
+    valor = None
+
+
+    if "500" in texto:
+        valor = 500000
+
+
+    sql = """
+    SELECT *
+    FROM imoveis
+    WHERE empresa_id = ?
+    AND status = 'ativo'
+    """
+
+
+    params = [empresa_id]
+
+
+
+    if bairro:
+
+        sql += """
+        AND LOWER(bairro) LIKE ?
+        """
+
+        params.append(f"%{bairro}%")
+
+
+
+    if valor:
+
+        sql += """
+        AND valor <= ?
+        """
+
+        params.append(valor)
+
+
+
+    sql += """
+    LIMIT 5
+    """
+
+
+
+    cursor.execute(sql, params)
+
+
+    imoveis = cursor.fetchall()
+
+
+    conn.close()
+
+
+    return imoveis
+
 def verificar_interesse_ia(mensagem):
 
     mensagem = mensagem.lower()
@@ -677,12 +763,14 @@ def webhook_mensagem_whatsapp():
     mensagem = data.get("mensagem")
 
 
-    # 🤖 verifica se mensagem tem interesse
+    # verifica se deve ativar IA
     ativar = verificar_interesse_ia(mensagem)
+
 
 
     usuario_id = None
     empresa_id = None
+
 
 
     conn = sqlite3.connect(DB_PATH)
@@ -693,14 +781,15 @@ def webhook_mensagem_whatsapp():
 
 
     # ==========================
-    # BUSCA CORRETOR PELA SESSÃO
+    # BUSCA CORRETOR
     # ==========================
 
     cursor.execute("""
         SELECT id, empresa_id
         FROM usuarios
         WHERE whatsapp_sessao = ?
-    """, (sessao,))
+    """,
+    (sessao,))
 
 
     usuario = cursor.fetchone()
@@ -720,8 +809,6 @@ def webhook_mensagem_whatsapp():
 
     if ativar:
 
-
-        # verifica se já existe controle
 
         cursor.execute("""
             SELECT id
@@ -777,7 +864,8 @@ def webhook_mensagem_whatsapp():
 
 
 
-        print("🤖 IA ATIVADA PARA:", telefone)
+        print("🤖 IA ATIVADA:", telefone)
+
 
 
 
@@ -810,23 +898,68 @@ def webhook_mensagem_whatsapp():
         "cliente"
     ))
 
-             # ==========================
+
+
+    conn.commit()
+
+
+
+    # ==========================
     # IA RESPONDE
     # ==========================
 
+
     if ativar:
 
-        resposta = """
-Olá 😊 Sou o assistente da SMARTZEN.
 
-Vou te ajudar a encontrar o imóvel ideal.
-Vou verificar algumas opções disponíveis para você.
+        imoveis = buscar_imoveis_ia(
+            empresa_id,
+            mensagem
+        )
+
+
+
+        if imoveis:
+
+
+            resposta = (
+                "Encontrei algumas opções para você 😊\n\n"
+            )
+
+
+            for imovel in imoveis:
+
+
+                resposta += f"""
+🏡 {imovel['titulo']}
+
+📍 {imovel['bairro']} - {imovel['cidade']}
+
+💰 Valor: R$ {imovel['valor']}
+
+🛏 Quartos: {imovel['quartos']}
+🚗 Vagas: {imovel['vaga_garagem']}
+
+🔗 {imovel['link']}
+
+----------------------
+"""
+
+
+        else:
+
+
+            resposta = """
+Olá 😊
+
+Vou te ajudar a encontrar seu imóvel.
 
 Me fala:
-🏡 prefere casa ou apartamento?
 📍 qual bairro você procura?
 💰 qual faixa de valor?
+🏡 casa ou apartamento?
 """
+
 
 
         enviar_resposta_ia(
@@ -835,16 +968,17 @@ Me fala:
             resposta
         )
 
-    conn.commit()
+
+
     conn.close()
 
 
 
     return {
-
         "status":"ok"
-
     }
+
+
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
     nome = request.form.get("nome")
