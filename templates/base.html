@@ -434,6 +434,17 @@ class="logo">
 <div class="topbar">
 <h1>{% block pagina %}{% endblock %}</h1>
 <div class="user-controls">
+  <a href="/leads_site" class="icone-topo">
+
+    🎯
+
+    {% if total_leads_site > 0 %}
+    <span class="badge">
+        {{ total_leads_site }}
+    </span>
+    {% endif %}
+
+</a>
 <span style="font-size: 20px; margin-right: 20px; cursor: pointer; position: relative;" onclick="toggleNotificacoes()">
 🔔
 {% if lembretes|length > 0 %}
@@ -455,19 +466,8 @@ Você tem um agendamento hoje  {{ l[10].split('T')[1] }}
 {% endfor %}
 </div>
 
-<a href="/leads_site" class="icone-topo">
 
-    🎯
-
-    {% if total_leads_site > 0 %}
-    <span class="badge">
-        {{ total_leads_site }}
-    </span>
-    {% endif %}
-
-</a>
-
-            
+          
 <div class="dropdown">
 <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
 <div class="dropdown-content">
