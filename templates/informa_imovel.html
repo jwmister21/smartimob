@@ -639,6 +639,18 @@ button{
 
 }
 
+    .lead-box textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #ddd;
+    border-radius:8px;
+    resize:vertical;
+    min-height:120px;
+    box-sizing:border-box;
+    font-family:inherit;
+    margin-bottom:10px;
+}
+
 </style>
 </head>
 
@@ -713,9 +725,10 @@ button{
             <h2>Receba mais informações</h2>
 
             <form action="/capturar_lead" method="POST">
-                <input type="hidden" name="imovel_id" value="{{ imovel.id }}">
+                <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
                 <input type="text" name="nome" placeholder="Seu nome" required>
                 <input type="text" name="telefone" placeholder="Seu telefone" required>
+                <textarea  name="mensagem" rows="5"  >Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.</textarea>
 
                 <button type="submit">Quero ser atendido</button>
             </form>
