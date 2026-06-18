@@ -102,7 +102,10 @@
 
 .msg {
     max-width: 55%;
-    width: fit-content;
+    /* Alteramos para width: max-content para a caixa não ocupar toda a largura */
+    width: max-content; 
+    /* Adicionamos uma largura mínima para a bolha não ficar estranha em mensagens minúsculas */
+    min-width: 60px; 
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 14px;
@@ -112,7 +115,16 @@
     display: flex;
     flex-direction: column;
 }
-
+.msg div:last-child {
+    font-size: 11px;
+    color: #8696a0;
+    /* Alinha a hora especificamente no final da coluna flex */
+    align-self: flex-end; 
+    margin-top: 3px;
+    /* Evita que a hora quebre linha de forma indesejada */
+    white-space: nowrap; 
+}
+   
 .cliente { align-self: flex-start; background: #202c33; color: #e9edef; border-radius: 0 8px 8px 8px; }
 .corretor { align-self: flex-end; background: #005c4b; color: white; border-radius: 8px 0 8px 8px; }
 
