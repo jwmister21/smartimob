@@ -73,16 +73,6 @@ init_db()
 
 api_key = os.getenv('GCP_API_KEY')
 
-@contextmanager
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-
 @app.context_processor
 def injetar_lembretes():
     # Pega a data de hoje formatada como 'YYYY-MM-DD'
