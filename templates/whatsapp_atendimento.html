@@ -1320,7 +1320,122 @@ enviarMensagem();
 );
 
 
+// ===============================
+// ATUALIZA MENSAGENS SEM F5
+// ===============================
 
+
+setInterval(async()=>{
+
+
+    if(!telefoneSelecionado)
+        return;
+
+
+
+    try{
+
+
+        const resp = await fetch(
+            "/buscar_conversa/" + telefoneSelecionado
+        );
+
+
+        const data = await resp.json();
+
+
+
+        let html = "";
+
+
+
+        data.mensagens.forEach(msg=>{
+
+
+            let classe="cliente";
+
+
+            if(
+                msg.tipo=="corretor" ||
+                msg.tipo=="ia"
+            ){
+
+                classe="corretor";
+
+            }
+
+
+
+            let hora="";
+
+
+            if(msg.data_hora){
+
+                hora =
+                msg.data_hora.substring(11,16);
+
+            }
+
+
+
+            html += `
+
+            <div class="msg ${classe}">
+
+
+                <div>
+                    ${msg.mensagem || ""}
+                </div>
+
+
+                <div>
+                    ${hora}
+                </div>
+
+
+            </div>
+
+            `;
+
+
+        });
+
+
+
+        let chat =
+        document.getElementById("mensagens");
+
+
+
+        // só atualiza se mudou
+
+        if(chat.innerHTML != html){
+
+
+            chat.innerHTML = html;
+
+
+            chat.scrollTop =
+            chat.scrollHeight;
+
+
+        }
+
+
+
+    }
+    catch(e){
+
+        console.log(
+        "erro atualização",
+        e
+        );
+
+    }
+
+
+
+},3000);
 
 
 </script>
