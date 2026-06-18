@@ -1463,7 +1463,22 @@ Exemplo:
         </h3>
 
 
-        💰 R$ {imovel['valor']}
+        💰 R$ <div class="valor">
+    {% set valor_str = imovel.valor|string %}
+    
+    {# Verifica se o valor é puramente numérico (float ou int) #}
+    {% if valor_str.replace('.', '', 1).replace(',', '', 1).replace('-', '', 1).isdigit() or (valor_str.replace('.', '', 1).isdigit()) %}
+        
+        {# É um número bruto, aplica a formatação #}
+        R$ {{ "{:,.2f}".format(valor_str|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        
+    {% else %}
+        
+        {# Já está formatado ou é uma string, exibe como está #}
+        {{ imovel.valor }}
+        
+    {% endif %}
+</div>
 
         <br>
 
