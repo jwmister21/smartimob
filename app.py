@@ -488,6 +488,25 @@ def capturar_lead():
     return redirect(request.referrer)
 
 
+@app.route("/excluir_cliente/<int:cliente_id>", methods=["POST"])
+def excluir_cliente(cliente_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # apaga possíveis dados relacionados primeiro
+    cursor.execute("""
+        DELETE FROM clientes
+        WHERE id = ?
+    """,(cliente_id,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return redirect("/clientes")
+
 @app.route("/leads_site")
 @verificar_sessao
 def leads_site():
