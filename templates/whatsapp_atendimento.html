@@ -6,752 +6,1327 @@
 
 {% block content %}
 
+
 <style>
 
+/* ===============================
+   CONTAINER PRINCIPAL
+================================ */
+
 .whatsapp-box{
-    height:calc(100vh - 140px);
-    display:flex;
-    background:#111b21;
-    border-radius:20px;
-    overflow:hidden;
-    box-shadow:0 10px 30px rgba(0,0,0,.4);
+
+height:calc(100vh - 140px);
+
+display:flex;
+
+background:#111b21;
+
+border-radius:18px;
+
+overflow:hidden;
+
+box-shadow:0 10px 30px rgba(0,0,0,.35);
+
 }
 
-/* ===================================
+
+
+/* ===============================
    SIDEBAR
-=================================== */
+================================ */
 
 .sidebar-chat{
-    width:340px;
-    min-width:340px;
-    background:#202c33;
-    border-right:1px solid #2f3b44;
-    display:flex;
-    flex-direction:column;
+
+width:330px;
+
+min-width:330px;
+
+background:#202c33;
+
+border-right:1px solid #2f3b44;
+
+display:flex;
+
+flex-direction:column;
+
 }
+
+
 
 .sidebar-header{
-    padding:18px 20px;
-    color:white;
-    font-size:22px;
-    font-weight:600;
-    border-bottom:1px solid #2f3b44;
+
+height:64px;
+
+display:flex;
+
+align-items:center;
+
+padding:0 20px;
+
+color:white;
+
+font-size:20px;
+
+font-weight:600;
+
+border-bottom:1px solid #2f3b44;
+
 }
+
+
 
 .lista-contatos{
-    flex:1;
-    overflow-y:auto;
+
+overflow-y:auto;
+
+flex:1;
+
 }
+
+
 
 .lista-contatos::-webkit-scrollbar{
-    width:6px;
+
+width:5px;
+
 }
+
 
 .lista-contatos::-webkit-scrollbar-thumb{
-    background:#3b4a54;
-    border-radius:10px;
+
+background:#3b4a54;
+
+border-radius:10px;
+
 }
+
+
 
 .contato{
-    padding:15px;
-    cursor:pointer;
-    border-bottom:1px solid rgba(255,255,255,.05);
-    transition:.2s;
+
+padding:12px 16px;
+
+min-height:70px;
+
+cursor:pointer;
+
+border-bottom:1px solid rgba(255,255,255,.04);
+
+transition:.2s;
+
 }
+
+
 
 .contato:hover{
-    background:#2a3942;
+
+background:#2a3942;
+
 }
+
 
 .contato.ativo{
-    background:#2a3942;
+
+background:#2a3942;
+
 }
+
+
 
 .nome{
-    color:#fff;
-    font-weight:600;
-    font-size:15px;
+
+color:white;
+
+font-weight:600;
+
+font-size:15px;
+
 }
+
+
 
 .telefone{
-    color:#9ca3af;
-    font-size:11px;
-    margin-top:2px;
+
+font-size:12px;
+
+color:#8696a0;
+
 }
+
+
 
 .preview{
-    color:#c7d1d6;
-    font-size:13px;
-    margin-top:8px;
 
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+font-size:13px;
+
+color:#c7d1d6;
+
+margin-top:5px;
+
+white-space:nowrap;
+
+overflow:hidden;
+
+text-overflow:ellipsis;
+
 }
+
+
 
 .rodape-contato{
-    margin-top:8px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+
+display:flex;
+
+justify-content:space-between;
+
+margin-top:6px;
+
 }
+
+
 
 .hora-lista{
-    color:#8696a0;
-    font-size:11px;
+
+font-size:11px;
+
+color:#8696a0;
+
 }
+
+
 
 .ia-on{
-    color:#22c55e;
-    font-size:12px;
-    font-weight:bold;
+
+color:#22c55e;
+
+font-size:12px;
+
+font-weight:bold;
+
 }
+
+
 
 .ia-off{
-    color:#9ca3af;
-    font-size:12px;
+
+color:#9ca3af;
+
 }
 
-/* ===================================
+
+
+
+
+/* ===============================
    CHAT
-=================================== */
+================================ */
+
 
 .chat{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    background:#0b141a;
-    min-width:0;
+
+flex:1;
+
+display:flex;
+
+flex-direction:column;
+
+background:#0b141a;
+
 }
+
+
 
 .chat-header{
-    height:75px;
-    flex-shrink:0;
 
-    background:#202c33;
-    border-bottom:1px solid #2f3b44;
+height:64px;
 
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+background:#202c33;
 
-    padding:0 20px;
+border-bottom:1px solid #2f3b44;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:0 18px;
+
 }
 
-.cliente-info{
-    color:white;
-}
+
 
 #cliente-atual{
-    font-size:18px;
-    font-weight:600;
+
+color:white;
+
+font-size:16px;
+
+font-weight:600;
+
 }
+
+
 
 #telefone-atual{
-    color:#9ca3af;
-    font-size:12px;
+
+font-size:12px;
+
+color:#8696a0;
+
 }
+
+
 
 #status-ia{
-    margin-top:4px;
-    font-size:12px;
-    font-weight:600;
+
+font-size:12px;
+
+margin-top:3px;
+
 }
+
+
+
+
 
 .header-buttons{
-    display:flex;
-    gap:10px;
+
+display:flex;
+
+gap:8px;
+
 }
+
+
 
 .btn{
-    border:none;
-    border-radius:10px;
-    padding:10px 15px;
-    cursor:pointer;
-    font-weight:600;
+
+border:none;
+
+border-radius:20px;
+
+padding:8px 14px;
+
+cursor:pointer;
+
+font-weight:600;
+
+font-size:13px;
+
 }
+
+
 
 .btn-stop{
-    background:#ef4444;
-    color:white;
+
+background:#ef4444;
+
+color:white;
+
 }
+
+
 
 .btn-start{
-    background:#22c55e;
-    color:white;
+
+background:#00a884;
+
+color:white;
+
 }
 
-/* ===================================
+
+
+
+
+/* ===============================
    MENSAGENS
-=================================== */
+================================ */
+
 
 .chat-body{
-    flex:1;
-    overflow-y:auto;
 
-    display:flex;
-    flex-direction:column;
+flex:1;
 
-    padding:20px;
-    gap:10px;
+overflow-y:auto;
 
-    background:#0b141a;
+padding:20px;
+
+display:flex;
+
+flex-direction:column;
+
+gap:6px;
+
+background:#0b141a;
+
 }
+
+
 
 .chat-body::-webkit-scrollbar{
-    width:8px;
+
+width:7px;
+
 }
+
+
 
 .chat-body::-webkit-scrollbar-thumb{
-    background:#3b4a54;
-    border-radius:20px;
+
+background:#3b4a54;
+
+border-radius:20px;
+
 }
 
-.msg {
-    max-width: 65%;           /* Limite máximo de largura */
-    width: max-content;      /* Faz a bolha ter o tamanho do texto */
-    min-width: 50px;         /* Evita bolhas invisíveis ou muito pequenas */
-    padding: 8px 12px;
-    border-radius: 12px;
-    position: relative;
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-wrap: anywhere;
+
+
+
+.msg{
+
+max-width:65%;
+
+padding:8px 10px;
+
+border-radius:8px;
+
+font-size:14px;
+
+line-height:1.45;
+
+word-break:break-word;
+
+white-space:pre-wrap;
+
+display:flex;
+
+flex-direction:column;
+
 }
 
-/* Garante que o texto dentro não estoure a bolha */
-.msg div {
-    max-width: 100%;
-}
-    
+
+
 .cliente{
-    align-self:flex-start;
-    background:#202c33;
-    color:white;
+
+align-self:flex-start;
+
+background:#202c33;
+
+color:#e9edef;
+
+border-top-left-radius:2px;
+
 }
+
+
 
 .corretor{
 
+align-self:flex-end;
+
 background:#005c4b;
+
 color:white;
+
+border-top-right-radius:2px;
+
+}
+
+
+
+.msg div:first-child{
+
+padding-right:35px;
+
+}
+
+
+
+.msg div:last-child{
+
+font-size:11px;
+
+color:#8696a0;
 
 align-self:flex-end;
 
-border-top-right-radius:4px;
+margin-top:3px;
 
 }
 
-.msg-texto{
-    font-size:14px;
-    line-height:1.5;
-}
 
-.msg-hora{
-    margin-top:6px;
-    font-size:11px;
-    text-align:right;
-    opacity:.7;
-}
 
-/* ===================================
-   RODAPÉ
-=================================== */
+
+/* ===============================
+   RODAPE
+================================ */
+
 
 .chat-footer{
-    flex-shrink:0;
 
-    background:#202c33;
-    border-top:1px solid #2f3b44;
+height:70px;
 
-    display:flex;
-    gap:10px;
+background:#202c33;
 
-    padding:15px;
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+padding:12px;
+
 }
+
+
 
 .chat-footer input{
-    flex:1;
 
-    background:#2a3942;
-    color:white;
+flex:1;
 
-    border:none;
-    outline:none;
+height:45px;
 
-    border-radius:12px;
+background:#2a3942;
 
-    padding:14px;
+border:none;
+
+outline:none;
+
+border-radius:25px;
+
+padding:0 18px;
+
+color:white;
+
 }
+
+
 
 .btn-enviar{
-    background:#00a884;
-    color:white;
 
-    border:none;
-    border-radius:12px;
+height:45px;
 
-    padding:0 25px;
+padding:0 22px;
 
-    cursor:pointer;
-    font-weight:600;
+border:none;
+
+border-radius:25px;
+
+background:#00a884;
+
+color:white;
+
+font-weight:bold;
+
+cursor:pointer;
+
 }
 
-.btn-enviar:hover{
-    background:#06cf9f;
-}
 
-/* ===================================
-   RESPONSIVO
-=================================== */
+
+
 
 @media(max-width:900px){
 
-    .sidebar-chat{
-        width:280px;
-        min-width:280px;
-    }
 
-    .msg{
-        max-width:90%;
-    }
+.sidebar-chat{
+
+width:260px;
+
+min-width:260px;
 
 }
+
+
+.msg{
+
+max-width:85%;
+
+}
+
+
+}
+
+
 
 </style>
 
+
+
 <div class="whatsapp-box">
 
-    <!-- LISTA DE CONVERSAS -->
-    <div class="sidebar-chat">
 
-        <div class="sidebar-header">
-            💬 Conversas
-        </div>
+<div class="sidebar-chat">
 
-        <div class="lista-contatos">
 
-            {% for c in conversas %}
+<div class="sidebar-header">
 
-            <div class="contato"
-                 onclick="abrirConversa('{{ c.telefone }}','{{ c.nome or 'Cliente' }}')">
-
-                <div class="nome">
-                    {{ c.nome or "Cliente" }}
-                </div>
-
-                <div class="telefone">
-                    {{ c.telefone }}
-                </div>
-
-                <div class="preview">
-                    {{ (c.mensagem or "")[:40] }}
-                </div>
-
-                <div class="rodape-contato">
-
-                    <span class="hora-lista">
-                        {{ c.data_hora[-8:-3] if c.data_hora else "" }}
-                    </span>
-
-                    {% if c.ia_ativa == 1 %}
-                        <span class="ia-on">🤖 IA</span>
-                    {% else %}
-                        <span class="ia-off">👤</span>
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-    <!-- CHAT -->
-    <div class="chat">
-
-        <div class="chat-header">
-
-            <div class="cliente-info">
-
-                <div id="cliente-atual">
-                    Selecione uma conversa
-                </div>
-
-                <div id="telefone-atual"></div>
-
-                <div id="status-ia">
-                    ⚪ Sem conversa
-                </div>
-
-            </div>
-
-            <div class="header-buttons">
-
-                <button class="btn btn-stop"
-                        onclick="controleIA('desativar')">
-                    🛑 Parar IA
-                </button>
-
-                <button class="btn btn-start"
-                        onclick="controleIA('ativar')">
-                    🤖 Ativar IA
-                </button>
-
-            </div>
-
-        </div>
-
-        <div class="chat-body" id="mensagens">
-
-            <div class="msg cliente">
-                Selecione uma conversa ao lado.
-            </div>
-
-        </div>
-
-        <div class="chat-footer">
-
-            <input
-                type="text"
-                id="textoMensagem"
-                placeholder="Digite uma mensagem...">
-
-            <button
-                class="btn-enviar"
-                onclick="enviarMensagem()">
-
-                Enviar
-
-            </button>
-
-        </div>
-
-    </div>
+💬 Conversas
 
 </div>
 
+
+
+<div class="lista-contatos">
+
+
+{% for c in conversas %}
+
+
+<div class="contato"
+onclick="abrirConversa('{{c.telefone}}','{{c.nome or 'Cliente'}}')">
+
+
+<div class="nome">
+
+{{c.nome or "Cliente"}}
+
+</div>
+
+
+<div class="telefone">
+
+{{c.telefone}}
+
+</div>
+
+
+<div class="preview">
+
+{{(c.mensagem or "")[:40]}}
+
+</div>
+
+
+<div class="rodape-contato">
+
+
+<span class="hora-lista">
+
+{{ c.data_hora[-8:-3] if c.data_hora else "" }}
+
+</span>
+
+
+{% if c.ia_ativa == 1 %}
+
+<span class="ia-on">
+
+🤖 IA
+
+</span>
+
+{% else %}
+
+<span class="ia-off">
+
+👤
+
+</span>
+
+{% endif %}
+
+
+</div>
+
+
+</div>
+
+
+{% endfor %}
+
+
+</div>
+
+
+</div>
+<!-- ===============================
+     CHAT AREA
+================================ -->
+
+<div class="chat">
+
+
+<div class="chat-header">
+
+
+<div>
+
+
+<div id="cliente-atual">
+
+Selecione uma conversa
+
+</div>
+
+
+<div id="telefone-atual"></div>
+
+
+<div id="status-ia">
+
+⚪ Sem conversa
+
+</div>
+
+
+</div>
+
+
+
+<div class="header-buttons">
+
+
+<button 
+class="btn btn-stop"
+onclick="controleIA('desativar')">
+
+🛑 Parar IA
+
+</button>
+
+
+<button 
+class="btn btn-start"
+onclick="controleIA('ativar')">
+
+🤖 Ativar IA
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- MENSAGENS -->
+
+<div class="chat-body" id="mensagens">
+
+
+<div class="msg cliente">
+
+
+<div>
+
+Selecione uma conversa ao lado.
+
+</div>
+
+
+<div></div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- ENVIO -->
+
+<div class="chat-footer">
+
+
+<input
+
+type="text"
+
+id="textoMensagem"
+
+placeholder="Digite uma mensagem..."
+
+>
+
+
+<button
+
+class="btn-enviar"
+
+onclick="enviarMensagem()"
+
+>
+
+Enviar
+
+</button>
+
+
+</div>
+
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
 <script>
+
 
 let telefoneSelecionado = null;
 
+
+
+
+// ===============================
+// ABRIR CONVERSA
+// ===============================
+
+
 async function abrirConversa(telefone,nome){
 
-    telefoneSelecionado = telefone;
 
-    document.getElementById("cliente-atual").innerText = nome;
-    document.getElementById("telefone-atual").innerText = telefone;
+telefoneSelecionado = telefone;
 
-    try{
 
-        const resp = await fetch(
-            "/buscar_conversa/" + telefone
-        );
 
-        const data = await resp.json();
+document.getElementById(
+"cliente-atual"
+).innerText = nome;
 
-        console.log("CONVERSA:", data);
 
-        // ==========================
-        // STATUS IA
-        // ==========================
 
-        const statusIA =
-        document.getElementById("status-ia");
+document.getElementById(
+"telefone-atual"
+).innerText = telefone;
 
-        if(statusIA){
 
-            if(data.ia_ativa == 1){
 
-                statusIA.innerHTML =
-                "🤖 IA Ativa";
+try{
 
-                statusIA.style.color =
-                "#22c55e";
 
-            }else{
+const resp = await fetch(
 
-                statusIA.innerHTML =
-                "👤 Atendimento Humano";
+"/buscar_conversa/" + telefone
 
-                statusIA.style.color =
-                "#f87171";
+);
 
-            }
 
-        }
 
-        // ==========================
-        // MENSAGENS
-        // ==========================
+const data = await resp.json();
 
-        let html = "";
 
-        data.mensagens.forEach(msg=>{
 
-            let classe = "cliente";
 
-            if(
-                msg.tipo == "corretor" ||
-                msg.tipo == "ia"
-            ){
-                classe = "corretor";
-            }
+// STATUS IA
 
-            let hora = "";
 
-            if(msg.data_hora){
+const status =
+document.getElementById(
+"status-ia"
+);
 
-                hora =
-                msg.data_hora.substring(11,16);
 
-            }
 
-            html += `
-                <div class="msg ${classe}">
+if(data.ia_ativa == 1){
 
-                    <div>
-                        ${msg.mensagem || ""}
-                    </div>
 
-                    <div>
-                        ${hora}
-                    </div>
+status.innerHTML =
+"🤖 IA Ativa";
 
-                </div>
-            `;
 
-        });
+status.style.color =
+"#22c55e";
 
-        document.getElementById(
-            "mensagens"
-        ).innerHTML = html;
 
-        const chat =
-        document.getElementById(
-            "mensagens"
-        );
+}else{
 
-        chat.scrollTop =
-        chat.scrollHeight;
 
-    }
-    catch(erro){
+status.innerHTML =
+"👤 Atendimento Humano";
 
-        console.error(
-            "ERRO AO ABRIR CONVERSA:",
-            erro
-        );
 
-    }
+status.style.color =
+"#f87171";
+
 
 }
 
 
 
-// ==========================
-// ENVIAR MENSAGEM
-// ==========================
 
-async function enviarMensagem(){
 
-    if(!telefoneSelecionado){
 
-        alert(
-            "Selecione uma conversa"
-        );
+// MENSAGENS
 
-        return;
-    }
 
-    let mensagem =
-    document.getElementById(
-        "textoMensagem"
-    ).value;
+let html="";
 
-    if(!mensagem) return;
 
-    try{
 
-        const resp = await fetch(
-            "/enviar_mensagem",
-            {
-                method:"POST",
+data.mensagens.forEach(msg=>{
 
-                headers:{
-                    "Content-Type":
-                    "application/json"
-                },
 
-                body:JSON.stringify({
+let classe="cliente";
 
-                    telefone:
-                    telefoneSelecionado,
 
-                    mensagem:
-                    mensagem
 
-                })
-            }
-        );
+if(
+msg.tipo=="corretor" ||
+msg.tipo=="ia"
+){
 
-        const data =
-        await resp.json();
-
-        if(data.status == "ok"){
-
-            document.getElementById(
-                "textoMensagem"
-            ).value = "";
-
-            abrirConversa(
-                telefoneSelecionado,
-                document.getElementById(
-                    "cliente-atual"
-                ).innerText
-            );
-
-        }else{
-
-            alert(
-                "Erro ao enviar mensagem"
-            );
-
-        }
-
-    }
-    catch(erro){
-
-        console.error(erro);
-
-        alert(
-            "Erro ao enviar mensagem"
-        );
-
-    }
+classe="corretor";
 
 }
 
 
 
-// ==========================
-// CONTROLE IA
-// ==========================
 
-function controleIA(acao){
+let hora="";
 
-    if(!telefoneSelecionado){
 
-        alert(
-            "Selecione um cliente"
-        );
 
-        return;
-    }
+if(msg.data_hora){
 
-    fetch(
 
-        "/controle_ia/" +
-        telefoneSelecionado +
-        "/" +
-        acao,
+hora =
+msg.data_hora.substring(11,16);
 
-        {
-            method:"POST"
-        }
-
-    )
-    .then(r=>r.json())
-    .then(data=>{
-
-        if(acao == "ativar"){
-
-            alert(
-                "🤖 IA ativada"
-            );
-
-        }else{
-
-            alert(
-                "🛑 IA desativada"
-            );
-
-        }
-
-        abrirConversa(
-            telefoneSelecionado,
-            document.getElementById(
-                "cliente-atual"
-            ).innerText
-        );
-
-    })
-    .catch(erro=>{
-
-        console.error(erro);
-
-    });
 
 }
 
 
 
-// ==========================
-// ENTER ENVIA MENSAGEM
-// ==========================
 
-document.addEventListener(
-"DOMContentLoaded",
-function(){
+html += `
 
-    const campo =
-    document.getElementById(
-        "textoMensagem"
-    );
 
-    if(campo){
+<div class="msg ${classe}">
 
-        campo.addEventListener(
-        "keypress",
-        function(e){
 
-            if(e.key === "Enter"){
+<div>
 
-                e.preventDefault();
+${msg.mensagem || ""}
 
-                enviarMensagem();
+</div>
 
-            }
 
-        });
+<div>
 
-    }
+${hora}
+
+</div>
+
+
+</div>
+
+
+`;
+
 
 });
 
 
 
-// ==========================
-// AUTO ATUALIZA CHAT
-// ==========================
 
-setInterval(()=>{
 
-    if(telefoneSelecionado){
+document.getElementById(
+"mensagens"
+).innerHTML = html;
 
-        abrirConversa(
-            telefoneSelecionado,
-            document.getElementById(
-                "cliente-atual"
-            ).innerText
-        );
 
-    }
 
-},5000);
+
+
+// joga para baixo
+
+
+let chat =
+document.getElementById(
+"mensagens"
+);
+
+
+
+chat.scrollTop =
+chat.scrollHeight;
+
+
+
+}
+
+
+catch(e){
+
+
+console.error(
+"Erro:",
+e
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ===============================
+// ENVIAR
+// ===============================
+
+
+
+async function enviarMensagem(){
+
+
+
+if(!telefoneSelecionado){
+
+
+alert(
+"Selecione uma conversa"
+);
+
+
+return;
+
+
+}
+
+
+
+
+let campo =
+document.getElementById(
+"textoMensagem"
+);
+
+
+
+let mensagem =
+campo.value.trim();
+
+
+
+
+if(!mensagem)
+return;
+
+
+
+
+
+try{
+
+
+
+let resp =
+await fetch(
+
+"/enviar_mensagem",
+
+{
+
+
+method:"POST",
+
+
+headers:{
+
+
+"Content-Type":
+"application/json"
+
+
+},
+
+
+body:JSON.stringify({
+
+
+telefone:
+telefoneSelecionado,
+
+
+mensagem:
+mensagem
+
+
+})
+
+
+}
+
+
+);
+
+
+
+
+let data =
+await resp.json();
+
+
+
+
+
+if(data.status=="ok"){
+
+
+
+campo.value="";
+
+
+
+// atualiza somente depois de enviar
+
+await abrirConversa(
+
+telefoneSelecionado,
+
+document.getElementById(
+"cliente-atual"
+).innerText
+
+);
+
+
+
+}else{
+
+
+alert(
+"Erro ao enviar"
+);
+
+
+}
+
+
+
+}
+
+
+
+catch(e){
+
+
+console.log(e);
+
+
+alert(
+"Erro no envio"
+);
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+// ===============================
+// CONTROLE IA
+// ===============================
+
+
+
+function controleIA(acao){
+
+
+
+if(!telefoneSelecionado){
+
+
+alert(
+"Selecione um cliente"
+);
+
+
+return;
+
+
+}
+
+
+
+
+fetch(
+
+"/controle_ia/" +
+
+telefoneSelecionado +
+
+"/" +
+
+acao,
+
+
+{
+
+
+method:"POST"
+
+
+}
+
+
+)
+
+
+.then(r=>r.json())
+
+
+.then(data=>{
+
+
+
+if(acao=="ativar"){
+
+
+alert(
+"🤖 IA ativada"
+);
+
+
+}else{
+
+
+alert(
+"🛑 IA parada"
+);
+
+
+}
+
+
+
+
+abrirConversa(
+
+telefoneSelecionado,
+
+document.getElementById(
+"cliente-atual"
+).innerText
+
+
+);
+
+
+
+})
+
+.catch(e=>{
+
+
+console.log(e);
+
+
+});
+
+
+
+}
+
+
+
+
+
+
+
+
+// ===============================
+// ENTER ENVIA
+// ===============================
+
+
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+()=>{
+
+
+let input =
+document.getElementById(
+"textoMensagem"
+);
+
+
+
+if(input){
+
+
+
+input.addEventListener(
+
+"keypress",
+
+(e)=>{
+
+
+
+if(e.key==="Enter"){
+
+
+e.preventDefault();
+
+
+enviarMensagem();
+
+
+}
+
+
+}
+
+
+
+);
+
+
+
+}
+
+
+
+}
+
+);
+
+
+
+
 
 </script>
+<!-- ===============================
+     FINAL
+================================ -->
+
 
 {% endblock %}
