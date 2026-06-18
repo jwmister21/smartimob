@@ -20,7 +20,6 @@ from openai import OpenAI
 from flask import send_from_directory
 from flask_socketio import SocketIO
 import pandas as pd
-from contextlib import contextmanager
 
 # Configuração do Banco
 
