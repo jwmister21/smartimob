@@ -378,100 +378,307 @@ async function abrirConversa(telefone,nome){
     document.getElementById("cliente-atual").innerText = nome;
     document.getElementById("telefone-atual").innerText = telefone;
 
-   if(data.ia_ativa == 1){
+    try{
 
-    document.getElementById(
-    "status-ia"
-    ).innerHTML =
-    "🤖 IA Ativa";
+        const resp = await fetch(
+            "/buscar_conversa/" + telefone
+        );
 
-    document.getElementById(
-    "status-ia"
-    ).style.color =
-    "#22c55e";
+        const data = await resp.json();
 
-}else{
+        console.log("CONVERSA:", data);
 
-    document.getElementById(
-    "status-ia"
-    ).innerHTML =
-    "👤 Atendimento Humano";
+        // ==========================
+        // STATUS IA
+        // ==========================
 
-    document.getElementById(
-    "status-ia"
-    ).style.color =
-    "#f87171";
+        const statusIA =
+        document.getElementById("status-ia");
+
+        if(statusIA){
+
+            if(data.ia_ativa == 1){
+
+                statusIA.innerHTML =
+                "🤖 IA Ativa";
+
+                statusIA.style.color =
+                "#22c55e";
+
+            }else{
+
+                statusIA.innerHTML =
+                "👤 Atendimento Humano";
+
+                statusIA.style.color =
+                "#f87171";
+
+            }
+
+        }
+
+        // ==========================
+        // MENSAGENS
+        // ==========================
+
+        let html = "";
+
+        data.mensagens.forEach(msg=>{
+
+            let classe = "cliente";
+
+            if(
+                msg.tipo == "corretor" ||
+                msg.tipo == "ia"
+            ){
+                classe = "corretor";
+            }
+
+            let hora = "";
+
+            if(msg.data_hora){
+
+                hora =
+                msg.data_hora.substring(11,16);
+
+            }
+
+            html += `
+                <div class="msg ${classe}">
+
+                    <div>
+                        ${msg.mensagem || ""}
+                    </div>
+
+                    <div style="
+                        margin-top:6px;
+                        font-size:11px;
+                        opacity:.7;
+                        text-align:right;
+                    ">
+                        ${hora}
+                    </div>
+
+                </div>
+            `;
+
+        });
+
+        document.getElementById(
+            "mensagens"
+        ).innerHTML = html;
+
+        const chat =
+        document.getElementById(
+            "mensagens"
+        );
+
+        chat.scrollTop =
+        chat.scrollHeight;
+
+    }
+    catch(erro){
+
+        console.error(
+            "ERRO AO ABRIR CONVERSA:",
+            erro
+        );
+
+    }
 
 }
 
-    const resp = await fetch("/buscar_conversa/" + telefone);
 
-    const data = await resp.json();
 
-    const mensagens = data.mensagens;
-
-    let html = "";
-
-    mensagens.forEach(msg=>{
-
-        let classe = "cliente";
-
-        if(msg.tipo == "corretor"){
-            classe = "corretor";
-        }
-
-        html += `
-            <div class="msg ${classe}">
-                ${msg.mensagem || ""}
-            </div>
-        `;
-    });
-
-    document.getElementById("mensagens").innerHTML = html;
-
-    const chat = document.getElementById("mensagens");
-
-    chat.scrollTop = chat.scrollHeight;
-
-} // ← FECHAMENTO DA FUNÇÃO ABRIRCONVERSA
-
+// ==========================
+// ENVIAR MENSAGEM
+// ==========================
 
 async function enviarMensagem(){
 
     if(!telefoneSelecionado){
 
-        alert("Selecione uma conversa");
-        return;
+        alert(
+            "Selecione uma conversa"
+        );
 
+        return;
     }
 
-    let mensagem = document.getElementById(
+    let mensagem =
+    document.getElementById(
         "textoMensagem"
     ).value;
 
     if(!mensagem) return;
 
-    const resp = await fetch(
-        "/enviar_mensagem",
-        {
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                telefone:telefoneSelecionado,
-                mensagem:mensagem
-            })
+    try{
+
+        const resp = await fetch(
+            "/enviar_mensagem",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+
+                body:JSON.stringify({
+
+                    telefone:
+                    telefoneSelecionado,
+
+                    mensagem:
+                    mensagem
+
+                })
+            }
+        );
+
+        const data =
+        await resp.json();
+
+        if(data.status == "ok"){
+
+            document.getElementById(
+                "textoMensagem"
+            ).value = "";
+
+            abrirConversa(
+                telefoneSelecionado,
+                document.getElementById(
+                    "cliente-atual"
+                ).innerText
+            );
+
+        }else{
+
+            alert(
+                "Erro ao enviar mensagem"
+            );
+
         }
+
+    }
+    catch(erro){
+
+        console.error(erro);
+
+        alert(
+            "Erro ao enviar mensagem"
+        );
+
+    }
+
+}
+
+
+
+// ==========================
+// CONTROLE IA
+// ==========================
+
+function controleIA(acao){
+
+    if(!telefoneSelecionado){
+
+        alert(
+            "Selecione um cliente"
+        );
+
+        return;
+    }
+
+    fetch(
+
+        "/controle_ia/" +
+        telefoneSelecionado +
+        "/" +
+        acao,
+
+        {
+            method:"POST"
+        }
+
+    )
+    .then(r=>r.json())
+    .then(data=>{
+
+        if(acao == "ativar"){
+
+            alert(
+                "🤖 IA ativada"
+            );
+
+        }else{
+
+            alert(
+                "🛑 IA desativada"
+            );
+
+        }
+
+        abrirConversa(
+            telefoneSelecionado,
+            document.getElementById(
+                "cliente-atual"
+            ).innerText
+        );
+
+    })
+    .catch(erro=>{
+
+        console.error(erro);
+
+    });
+
+}
+
+
+
+// ==========================
+// ENTER ENVIA MENSAGEM
+// ==========================
+
+document.addEventListener(
+"DOMContentLoaded",
+function(){
+
+    const campo =
+    document.getElementById(
+        "textoMensagem"
     );
 
-    const data = await resp.json();
+    if(campo){
 
-    if(data.status == "ok"){
+        campo.addEventListener(
+        "keypress",
+        function(e){
 
-        document.getElementById(
-            "textoMensagem"
-        ).value = "";
+            if(e.key === "Enter"){
+
+                e.preventDefault();
+
+                enviarMensagem();
+
+            }
+
+        });
+
+    }
+
+});
+
+
+
+// ==========================
+// AUTO ATUALIZA CHAT
+// ==========================
+
+setInterval(()=>{
+
+    if(telefoneSelecionado){
 
         abrirConversa(
             telefoneSelecionado,
@@ -482,35 +689,7 @@ async function enviarMensagem(){
 
     }
 
-}
-
-
-function controleIA(acao){
-
-    if(!telefoneSelecionado){
-
-        alert("Selecione um cliente");
-        return;
-
-    }
-
-    fetch(
-        "/controle_ia/" +
-        telefoneSelecionado +
-        "/" +
-        acao,
-        {
-            method:"POST"
-        }
-    )
-    .then(r=>r.json())
-    .then(data=>{
-
-        alert("IA atualizada");
-
-    });
-
-}
+},5000);
 
 </script>
 
