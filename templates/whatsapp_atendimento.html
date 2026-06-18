@@ -1,571 +1,498 @@
 {% extends "base.html" %}
 
-{% block title %}
-Atendimento WhatsApp
-{% endblock %}
+{% block title %}Atendimento WhatsApp{% endblock %}
 
+{% block pagina %}Atendimento WhatsApp{% endblock %}
 
 {% block content %}
 
-
 <style>
 
-
 .whatsapp-box{
-
 height:calc(100vh - 140px);
 display:flex;
 background:#111b21;
 border-radius:20px;
 overflow:hidden;
-box-shadow:0 10px 30px #0004;
-
+box-shadow:0 10px 30px rgba(0,0,0,.4);
 }
 
-
-/* =====================
-   LISTA
-===================== */
-
+/* LISTA */
 
 .lista{
-
-width:330px;
+width:350px;
 background:#202c33;
-color:white;
-overflow-y:auto;
-
+display:flex;
+flex-direction:column;
+border-right:1px solid #2f3b44;
 }
 
-
-.lista-title{
-
+.lista-topo{
 padding:20px;
-font-size:22px;
-font-weight:bold;
-border-bottom:1px solid #333;
-
+background:#202c33;
+border-bottom:1px solid #2f3b44;
 }
 
+.lista-topo h2{
+margin:0;
+color:white;
+font-size:20px;
+}
 
+.busca{
+margin-top:15px;
+}
+
+.busca input{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#2a3942;
+color:white;
+outline:none;
+}
+
+.contatos{
+flex:1;
+overflow-y:auto;
+}
+
+.contatos::-webkit-scrollbar{
+width:8px;
+}
+
+.contatos::-webkit-scrollbar-thumb{
+background:#374045;
+border-radius:10px;
+}
 
 .contato{
-
-padding:18px;
-border-bottom:1px solid #333;
+display:flex;
+gap:12px;
+padding:15px;
 cursor:pointer;
-
+border-bottom:1px solid rgba(255,255,255,.05);
+transition:.2s;
 }
-
-
 
 .contato:hover{
-
 background:#2a3942;
-
 }
 
+.avatar{
+width:50px;
+height:50px;
+border-radius:50%;
+background:#00a884;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+font-size:18px;
+color:white;
+flex-shrink:0;
+}
 
+.info{
+flex:1;
+overflow:hidden;
+}
 
 .nome{
-
-font-weight:bold;
-font-size:16px;
-
+font-weight:600;
+color:white;
 }
-
-
-.telefone{
-
-font-size:12px;
-color:#aaa;
-
-}
-
 
 .preview{
-
-margin-top:8px;
-font-size:14px;
-color:#ddd;
-
+font-size:13px;
+color:#bfc8ce;
+margin-top:4px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
 }
 
+.status-ia{
+margin-top:5px;
+font-size:11px;
+font-weight:bold;
+}
 
 .ia-on{
-
 color:#22c55e;
-font-size:12px;
-font-weight:bold;
-margin-top:8px;
-
 }
-
 
 .ia-off{
-
-color:#f87171;
-font-size:12px;
-margin-top:8px;
-
+color:#94a3b8;
 }
 
-
-
-/* =====================
- CHAT
-===================== */
-
+/* CHAT */
 
 .chat{
-
 flex:1;
 display:flex;
 flex-direction:column;
 background:#0b141a;
-
 }
 
-
-
 .chat-header{
-
-height:70px;
+height:72px;
 background:#202c33;
-color:white;
 display:flex;
 justify-content:space-between;
 align-items:center;
 padding:0 20px;
-
+border-bottom:1px solid #2f3b44;
 }
 
+.cliente-info{
+color:white;
+}
 
+.cliente-info h3{
+margin:0;
+font-size:17px;
+}
 
-#cliente-atual{
+.cliente-info span{
+font-size:12px;
+color:#c9d1d9;
+}
 
+.header-botoes{
+display:flex;
+gap:10px;
+}
+
+.btn{
+border:none;
+padding:10px 15px;
+border-radius:10px;
+cursor:pointer;
 font-weight:bold;
-
 }
 
+.btn-stop{
+background:#ef4444;
+color:white;
+}
 
+.btn-start{
+background:#22c55e;
+color:white;
+}
 
 .chat-body{
-
 flex:1;
-padding:20px;
 overflow-y:auto;
-
+padding:20px;
+background:#0b141a;
 }
 
+.chat-body::-webkit-scrollbar{
+width:8px;
+}
 
-
+.chat-body::-webkit-scrollbar-thumb{
+background:#374045;
+border-radius:10px;
+}
 
 .balao{
-
-max-width:65%;
+max-width:70%;
 padding:12px;
-border-radius:12px;
-margin-bottom:15px;
-color:white;
-
+border-radius:10px;
+margin-bottom:12px;
+word-wrap:break-word;
 }
-
-
 
 .cliente{
-
 background:#202c33;
-
+color:white;
 }
-
-
 
 .ia{
-
 background:#005c4b;
+color:white;
 margin-left:auto;
-
 }
 
-
-
-
-.controles{
-
+.chat-footer{
 background:#202c33;
 padding:15px;
 display:flex;
 gap:10px;
-
 }
 
-
-
-.controles input{
-
+.chat-footer input{
 flex:1;
 padding:14px;
-border-radius:20px;
 border:none;
 outline:none;
-
-}
-
-
-
-button{
-
-border:none;
-border-radius:10px;
-padding:12px 18px;
-cursor:pointer;
-font-weight:bold;
-
-}
-
-
-.parar{
-
-background:#ef4444;
+border-radius:12px;
+background:#2a3942;
 color:white;
-
 }
 
-
-.ligar{
-
-background:#22c55e;
+.btn-enviar{
+background:#00a884;
 color:white;
-
 }
-
-
 
 </style>
 
-
-
-
-
 <div class="whatsapp-box">
 
-
-
-
-
-<!-- =====================
-     CLIENTES
-===================== -->
-
-
+```
 <div class="lista">
 
+    <div class="lista-topo">
 
-<div class="lista-title">
+        <h2>💬 WhatsApp</h2>
 
-💬 WhatsApp
+        <div class="busca">
+            <input
+            type="text"
+            id="buscarContato"
+            placeholder="Pesquisar conversa...">
+        </div>
 
-</div>
+    </div>
 
+    <div class="contatos">
 
+        {% for c in conversas %}
 
-{% for c in conversas %}
+        <div
+        class="contato"
+        onclick="abrirConversa('{{ c.telefone }}','{{ c.nome or 'Cliente' }}')">
 
+            <div class="avatar">
+                {{ (c.nome or 'C')[0] }}
+            </div>
 
-<div 
-class="contato"
+            <div class="info">
 
-onclick="
-abrirConversa(
-'{{c.telefone}}',
-'{{c.nome or "Cliente"}}'
-)
-">
+                <div class="nome">
+                    {{ c.nome or "Cliente" }}
+                </div>
 
+                <div class="preview">
+                    {{ (c.mensagem or "")[:40] }}
+                </div>
 
-<div class="nome">
+                {% if c.ia_ativa == 1 %}
+                    <div class="status-ia ia-on">🤖 IA Ativa</div>
+                {% else %}
+                    <div class="status-ia ia-off">👤 Corretor</div>
+                {% endif %}
 
-{{c.nome or "Cliente"}}
+            </div>
 
-</div>
+        </div>
 
+        {% endfor %}
 
-<div class="telefone">
-
-{{c.telefone}}
-
-</div>
-
-
-<div class="preview">
-
-{{(c.mensagem or "")[:40]}}
-
-</div>
-
-
-
-{% if c.ia_ativa == 1 %}
-
-<div class="ia-on">
-
-🤖 IA ativa
+    </div>
 
 </div>
-
-
-{% else %}
-
-<div class="ia-off">
-
-👤 Corretor
-
-</div>
-
-
-{% endif %}
-
-
-
-</div>
-
-
-{% endfor %}
-
-
-
-</div>
-
-
-
-
-
-
-
-<!-- =====================
-       CHAT
-===================== -->
-
 
 <div class="chat">
 
+    <div class="chat-header">
 
+        <div class="cliente-info">
 
-<div class="chat-header">
+            <h3 id="cliente-atual">
+                Selecione uma conversa
+            </h3>
 
+            <span id="telefone-atual"></span>
 
-<div>
+        </div>
 
+        <div class="header-botoes">
 
-<div id="cliente-atual">
+            <button
+            class="btn btn-stop"
+            onclick="controleIA('desativar')">
+            🛑 Parar IA
+            </button>
 
-Selecione uma conversa
+            <button
+            class="btn btn-start"
+            onclick="controleIA('ativar')">
+            🤖 Ativar IA
+            </button>
 
-</div>
+        </div>
 
+    </div>
 
-<div id="telefone-atual">
+    <div
+    class="chat-body"
+    id="mensagens">
 
-</div>
+        <div class="balao cliente">
+            Clique em um cliente para visualizar a conversa.
+        </div>
 
+    </div>
 
-</div>
+    <div class="chat-footer">
 
+        <input
+        id="textoMensagem"
+        placeholder="Digite uma mensagem...">
 
+        <button
+        class="btn btn-enviar"
+        onclick="enviarMensagem()">
+        Enviar
+        </button>
 
-<div>
-
-
-<button 
-class="parar"
-onclick="controleIA('desativar')">
-
-🛑 Parar IA
-
-</button>
-
-
-<button 
-class="ligar"
-onclick="controleIA('ativar')">
-
-🤖 Ativar IA
-
-</button>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-<div class="chat-body" id="mensagens">
-
-
-<div class="balao cliente">
-
-Clique em um cliente 👈
+    </div>
 
 </div>
-
-
-</div>
-
-
-
-
-
-
-<div class="controles">
-
-
-<input 
-placeholder="Digite uma mensagem..."
->
-
-
-<button class="ligar">
-
-Enviar
-
-</button>
-
+```
 
 </div>
-
-
-
-
-
-
-</div>
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
 
 <script>
 
-
 let telefoneSelecionado = null;
 
-
-
-
-function abrirConversa(
+async function abrirConversa(
 telefone,
 nome
 ){
 
+    telefoneSelecionado = telefone;
 
-telefoneSelecionado = telefone;
+    document.getElementById(
+    "cliente-atual"
+    ).innerText = nome;
 
+    document.getElementById(
+    "telefone-atual"
+    ).innerText = telefone;
 
+    const chat =
+    document.getElementById("mensagens");
 
-document.getElementById(
-"cliente-atual"
-).innerHTML = nome;
+    chat.innerHTML =
+    "<div class='balao cliente'>Carregando...</div>";
 
+    const resp =
+    await fetch(
+        "/buscar_conversa/" + telefone
+    );
 
+    const mensagens =
+    await resp.json();
 
-document.getElementById(
-"telefone-atual"
-).innerHTML = telefone;
+    let html = "";
 
+    mensagens.forEach(msg=>{
 
+        let classe = "cliente";
 
-document.getElementById(
-"mensagens"
-).innerHTML =
+        if(
+            msg.tipo == "ia" ||
+            msg.tipo == "corretor"
+        ){
+            classe = "ia";
+        }
 
-`
-<div class="balao cliente">
-Carregando conversa...
-</div>
-`;
+        html += `
+        <div class="balao ${classe}">
+            ${msg.mensagem}
+        </div>
+        `;
 
+    });
 
+    chat.innerHTML = html;
 
+    chat.scrollTop =
+    chat.scrollHeight;
 }
 
+async function enviarMensagem(){
 
+    if(!telefoneSelecionado){
+        alert("Selecione uma conversa");
+        return;
+    }
 
+    const campo =
+    document.getElementById(
+    "textoMensagem"
+    );
 
+    const mensagem =
+    campo.value;
 
+    if(!mensagem){
+        return;
+    }
 
+    const resp =
+    await fetch(
+        "/enviar_mensagem",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                telefone:telefoneSelecionado,
+                mensagem:mensagem
+            })
+        }
+    );
+
+    const data =
+    await resp.json();
+
+    if(data.status=="ok"){
+
+        campo.value = "";
+
+        abrirConversa(
+            telefoneSelecionado,
+            document.getElementById(
+            "cliente-atual"
+            ).innerText
+        );
+
+    }
+}
 
 function controleIA(acao){
 
+    if(!telefoneSelecionado){
+        alert("Selecione uma conversa");
+        return;
+    }
 
-if(!telefoneSelecionado){
-
-
-alert(
-"Selecione um cliente primeiro"
-);
-
-return;
-
-}
-
-
-
-fetch(
-"/controle_ia/"
-+
-telefoneSelecionado
-+
-"/"
-+
-acao,
-{
-
-method:"POST"
+    fetch(
+        "/controle_ia/"
+        + telefoneSelecionado
+        + "/"
+        + acao,
+        {
+            method:"POST"
+        }
+    )
+    .then(r=>r.json())
+    .then(()=>{
+        alert("IA atualizada");
+    });
 
 }
-
-)
-.then(r=>r.json())
-.then(data=>{
-
-
-alert(
-"IA atualizada"
-);
-
-
-location.reload();
-
-
-});
-
-
-}
-
-
-
 
 </script>
-
-
-
-
 
 {% endblock %}
