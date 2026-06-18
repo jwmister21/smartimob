@@ -208,18 +208,22 @@
 }
 
 .msg {
-    max-width: 65%;
-    width: fit-content; /* A caixa vai abraçar o texto */
-    padding: 12px 14px;
-    border-radius:12px;
-
-    position:relative;
-
-    white-space:pre-wrap;
-    word-break:break-word;
-    overflow-wrap:anywhere;
+    max-width: 65%;           /* Limite máximo de largura */
+    width: max-content;      /* Faz a bolha ter o tamanho do texto */
+    min-width: 50px;         /* Evita bolhas invisíveis ou muito pequenas */
+    padding: 8px 12px;
+    border-radius: 12px;
+    position: relative;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
+/* Garante que o texto dentro não estoure a bolha */
+.msg div {
+    max-width: 100%;
+}
+    
 .cliente{
     align-self:flex-start;
     background:#202c33;
