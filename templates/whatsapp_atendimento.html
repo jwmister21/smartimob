@@ -42,11 +42,7 @@
     border-bottom: 1px solid #2f3b44;
 }
 
-.lista-contatos {
-    overflow-y: auto;
-    flex: 1;
-}
-
+.lista-contatos { overflow-y: auto; flex: 1; }
 .lista-contatos::-webkit-scrollbar { width: 5px; }
 .lista-contatos::-webkit-scrollbar-thumb { background: #3b4a54; border-radius: 10px; }
 
@@ -57,7 +53,6 @@
     border-bottom: 1px solid rgba(255,255,255,.04);
     transition: .2s;
 }
-
 .contato:hover, .contato.ativo { background: #2a3942; }
 
 .nome { color: white; font-weight: 600; font-size: 15px; }
@@ -102,9 +97,7 @@
 
 .msg {
     max-width: 55%;
-    /* Alteramos para width: max-content para a caixa não ocupar toda a largura */
     width: max-content; 
-    /* Adicionamos uma largura mínima para a bolha não ficar estranha em mensagens minúsculas */
     min-width: 60px; 
     padding: 8px 12px;
     border-radius: 8px;
@@ -115,23 +108,18 @@
     display: flex;
     flex-direction: column;
 }
-.msg div:last-child {
-    font-size: 11px;
-    color: #8696a0;
-    /* Alinha a hora especificamente no final da coluna flex */
-    align-self: flex-end; 
-    margin-top: 3px;
-    /* Evita que a hora quebre linha de forma indesejada */
-    white-space: nowrap; 
-}
-   
+
 .cliente { align-self: flex-start; background: #202c33; color: #e9edef; border-radius: 0 8px 8px 8px; }
 .corretor { align-self: flex-end; background: #005c4b; color: white; border-radius: 8px 0 8px 8px; }
 
 .msg div:first-child { padding-right: 35px; }
-.msg div:last-child { font-size: 11px; color: #8696a0; align-self: flex-end; margin-top: 3px; }
-
-.cliente-info { max-width: 60%; overflow: hidden; }
+.msg div:last-child { 
+    font-size: 11px; 
+    color: #8696a0; 
+    align-self: flex-end; 
+    margin-top: 3px;
+    white-space: nowrap;
+}
 
 /* ===============================
    RODAPÉ (ENVIO)
@@ -147,9 +135,8 @@
     .sidebar-chat { width: 260px; min-width: 260px; }
     .msg { max-width: 85%; }
 }
+
 </style>
-
-
 <div class="whatsapp-box">
 
 
