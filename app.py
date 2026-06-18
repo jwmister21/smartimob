@@ -2173,10 +2173,17 @@ def whatsapp_atendimento():
         SELECT
             c.id,
             c.telefone,
-            c.nome,
+
+            CASE
+                WHEN c.nome IS NULL OR c.nome = ''
+                THEN c.telefone
+                ELSE c.nome
+            END as nome,
+
             c.mensagem,
             c.tipo,
             c.data_hora,
+
             COALESCE(ia.ia_ativa,0) as ia_ativa
 
         FROM conversas_whatsapp c
@@ -2197,6 +2204,7 @@ def whatsapp_atendimento():
         )
 
         ORDER BY c.id DESC
+
     """,
     (usuario_id,))
 
@@ -2208,7 +2216,6 @@ def whatsapp_atendimento():
         "whatsapp_atendimento.html",
         conversas=conversas
     )
-
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
