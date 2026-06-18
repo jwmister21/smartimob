@@ -1099,7 +1099,6 @@ def analisar_cliente():
     import json
 
     dados = request.get_json()
-
     msg = dados.get('mensagem','').strip()
 
 
@@ -1127,13 +1126,11 @@ def analisar_cliente():
 
     try:
 
-
         response = client.chat.completions.create(
 
             model="llama-3.3-70b-versatile",
 
             messages=[
-
 
             {
             "role":"system",
@@ -1164,20 +1161,25 @@ comercial
 
 Regras:
 
-Se o cliente falar:
-"até 500 mil"
+Se falar "até 500 mil":
+
 valor_maximo = 500000
 
+
 Se não falar valor:
+
 valor_maximo = 999999999
 
 
-Se falar:
+Se falar quartos:
+
 "3 quartos"
+
 quartos = 3
 
 
 Responda SOMENTE JSON.
+
 
 Exemplo:
 
@@ -1191,9 +1193,7 @@ Exemplo:
 }
 
 """
-
             },
-
 
             {
             "role":"user",
@@ -1203,7 +1203,6 @@ Exemplo:
             ]
 
         )
-
 
 
         texto = response.choices[0].message.content
@@ -1217,16 +1216,13 @@ Exemplo:
         )
 
 
-
         filtros = json.loads(texto)
 
 
 
     except Exception as e:
 
-
         print("ERRO IA:",e)
-
 
         return jsonify({
             "resultado":"Erro ao entender busca."
@@ -1236,24 +1232,21 @@ Exemplo:
 
 
     bairro = filtros.get("bairro","").strip()
-
     cidade = filtros.get("cidade","").strip()
-
     tipo = filtros.get("tipo","").lower().strip()
 
 
+
     try:
-        quartos=int(
-            filtros.get("quartos",0)
-        )
+        quartos = int(filtros.get("quartos",0))
     except:
-        quartos=0
+        quartos = 0
 
 
 
     try:
 
-        valor=float(
+        valor = float(
             filtros.get(
                 "valor_maximo",
                 999999999
@@ -1262,20 +1255,18 @@ Exemplo:
 
     except:
 
-        valor=999999999
+        valor = 999999999
 
 
 
 
 
-
-    conn=get_db()
-
-    cursor=conn.cursor()
+    conn = get_db()
+    cursor = conn.cursor()
 
 
 
-    query="""
+    query = """
 
     SELECT
 
@@ -1295,23 +1286,20 @@ Exemplo:
 
 
 
-    parametros=[empresa_id]
+    parametros = [empresa_id]
 
 
 
 
-    # =====================
-    # FILTROS INTELIGENTES
-    # =====================
+    # somente corretor logado
+
+    query += """
+    AND usuario_id = ?
+    """
+
+    parametros.append(usuario_id)
 
 
-    if usuario_id:
-
-        query += """
-        AND usuario_id = ?
-        """
-
-        parametros.append(usuario_id)
 
 
 
@@ -1352,11 +1340,8 @@ Exemplo:
 
     if quartos > 0:
 
-
         query += """
-
         AND quartos >= ?
-
         """
 
         parametros.append(quartos)
@@ -1364,18 +1349,13 @@ Exemplo:
 
 
 
-
     if valor < 999999999:
 
-
         query += """
-
         AND valor <= ?
-
         """
 
         parametros.append(valor)
-
 
 
 
@@ -1391,20 +1371,13 @@ Exemplo:
 
 
 
-
-    print("BUSCA IA")
-    print(query)
-    print(parametros)
-
-
-
     cursor.execute(
         query,
         parametros
     )
 
 
-    imoveis=cursor.fetchall()
+    imoveis = cursor.fetchall()
 
 
     conn.close()
@@ -1415,47 +1388,50 @@ Exemplo:
 
     if not imoveis:
 
-
         return jsonify({
 
-        "resultado":
+            "resultado":
 
-        """
-
-        <div style='padding:15px'>
-
-        Nenhum imóvel encontrado.
-        Tente alterar os filtros.
-
-        </div>
-
-        """
+            """
+            <div style='padding:15px'>
+            Nenhum imóvel encontrado.
+            </div>
+            """
 
         })
-     valor_imovel = imovel['valor']
-
-     try:
-         valor_formatado = (
-        "R$ {:,.0f}".format(float(valor_imovel))
-        .replace(",", "X")
-        .replace(".", ",")
-        .replace("X", ".")
-    )
-
-    except:
-    valor_formatado = valor_imovel
 
 
 
 
 
-
-    resultado=""
+    resultado = ""
 
 
 
 
     for imovel in imoveis:
+
+
+        # FORMATAR VALOR
+
+        try:
+
+            valor_formatado = (
+                "R$ {:,.0f}".format(
+                    float(imovel['valor'])
+                )
+                .replace(",", "X")
+                .replace(".", ",")
+                .replace("X",".")
+            )
+
+
+        except:
+
+            valor_formatado = imovel['valor']
+
+
+
 
 
         resultado += f"""
@@ -1468,6 +1444,7 @@ Exemplo:
         border-left:4px solid #10b981;">
 
 
+
         <h3 style="color:white">
 
         {imovel['titulo']}
@@ -1475,19 +1452,34 @@ Exemplo:
         </h3>
 
 
-        💰 R$ {valor_formatado}
+
+        <div style="
+        color:#10b981;
+        font-weight:bold;
+        font-size:18px;">
+
+        💰 {valor_formatado}
+
+        </div>
+
 
         <br>
+
 
         📍 {imovel['bairro']}
 
+
         <br>
+
 
         🏠 {imovel['tipo']}
 
+
         <br>
 
+
         🛏 {imovel['quartos']} quartos
+
 
 
         <br><br>
@@ -1507,7 +1499,6 @@ Exemplo:
         </div>
 
         """
-
 
 
 
