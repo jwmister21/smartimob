@@ -4,79 +4,69 @@
 {% block pagina %}Ficha do Cliente / Funil{% endblock %}
 
 {% block content %}
+
 <style>
-    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 15px; }
-    .perfil-card { background: #111827; border: 1px solid #374151; border-radius: 16px; padding: 25px; }
-    .info-label { color: #9ca3af; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 4px; display: block; }
-    .info-val { color: white; font-size: 1.1rem; margin-bottom: 18px; font-weight: 500; }
-    .funnel-selector { background: #1f2937; border: 1px solid #4b5563; color: white; padding: 10px; border-radius: 8px; width: 100%; font-size: 1rem; margin-bottom: 15px; }
-    .btn-salvar-status { background: #0ea5e9; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
-    .btn-salvar-status:hover { background: #0284c7; }
-     /* OCORRÊNCIAS */
 
-.ocorrencia-form textarea{
-    width:100%;
-    min-height:120px;
-    background:#1f2937;
+.perfil-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    margin-top:15px;
+}
+
+.perfil-card{
+    background:#111827;
     border:1px solid #374151;
+    border-radius:16px;
+    padding:25px;
+}
+
+.info-label{
+    color:#9ca3af;
+    font-size:.85rem;
+    text-transform:uppercase;
+    margin-bottom:4px;
+    display:block;
+}
+
+.info-val{
     color:white;
-    padding:15px;
-    border-radius:12px;
-    resize:vertical;
-    font-size:14px;
-    outline:none;
-    box-sizing:border-box;
+    font-size:1.1rem;
+    margin-bottom:18px;
+    font-weight:500;
 }
 
-.ocorrencia-form textarea:focus{
-    border-color:#0ea5e9;
+
+.funnel-selector{
+    background:#1f2937;
+    border:1px solid #4b5563;
+    color:white;
+    padding:10px;
+    border-radius:8px;
+    width:100%;
+    font-size:1rem;
+    margin-bottom:15px;
 }
 
-.btn-ocorrencia{
-    margin-top:12px;
+
+.btn-salvar-status{
     background:#0ea5e9;
     color:white;
     border:none;
-    padding:12px 20px;
-    border-radius:10px;
+    padding:10px 15px;
+    border-radius:8px;
     cursor:pointer;
-    font-weight:600;
+    font-weight:bold;
+    width:100%;
 }
 
-.btn-ocorrencia:hover{
+
+.btn-salvar-status:hover{
     background:#0284c7;
 }
 
-.ocorrencia-item{
-    background:#111827;
-    border:1px solid #374151;
-    border-left:4px solid #0ea5e9;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:12px;
-}
 
-.ocorrencia-topo{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:10px;
-}
-
-.ocorrencia-topo strong{
-    color:#fff;
-}
-
-.ocorrencia-topo span{
-    color:#9ca3af;
-    font-size:12px;
-}
-
-.ocorrencia-texto{
-    color:#e5e7eb;
-    line-height:1.5;
-    white-space:pre-wrap;
-}
-    
+/* EXCLUIR */
 
 .btn-excluir{
     background:#dc3545;
@@ -86,147 +76,499 @@
     border-radius:10px;
     cursor:pointer;
     font-weight:bold;
+    width:100%;
 }
+
 
 .btn-excluir:hover{
     background:#b02a37;
 }
 
 
+
+/* OCORRENCIAS */
+
+
+.ocorrencia-form textarea{
+
+    width:100%;
+    min-height:120px;
+    background:#1f2937;
+    border:1px solid #374151;
+    color:white;
+    padding:15px;
+    border-radius:12px;
+    resize:vertical;
+    box-sizing:border-box;
+
+}
+
+
+.btn-ocorrencia{
+
+    margin-top:12px;
+    background:#0ea5e9;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+
+}
+
+
+
+.ocorrencia-item{
+
+    background:#111827;
+    border:1px solid #374151;
+    border-left:4px solid #0ea5e9;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:12px;
+
+}
+
+
+.ocorrencia-topo{
+
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+
+}
+
+
+.ocorrencia-texto{
+
+color:#e5e7eb;
+white-space:pre-wrap;
+
+}
+
+
 </style>
 
+
+
 <div class="perfil-grid">
-    <div class="perfil-card">
-        <span style="color: #0ea5e9; font-weight: bold;">👤 Cadastro Geral</span>
-        <h2 style="color: white; margin: 5px 0 25px 0;">{{ cliente[1] }}</h2>
 
-        <div style="background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid #f59e0b;">
-            <span class="info-label" style="color: #f59e0b;">📍 Estágio Atual no Funil</span>
-            <div style="font-size: 1.3rem; font-weight: bold; color: white; margin-top: 5px;">
-                {{ cliente[7] if cliente[7] else 'Novo' }}
-            </div>
-        </div>
 
-        <form action="/cliente/atualizar_status/{{ cliente[0] }}" method="POST">
-            <label class="info-label">Mudar Etapa:</label>
-            <!-- CORREÇÃO: Adicionado onchange aqui -->
-            <select name="status_funil" class="funnel-selector" onchange="verificarData(this)">
-                <option value="Lead Novo" {% if cliente[7] == 'Lead Novo' %}selected{% endif %}>🆕 Lead Novo</option>
-                <option value="Negociação" {% if cliente[7] == 'Negociação' %}selected{% endif %}>💬 Negociação</option>
-                <option value="Visita Agendada" {% if cliente[7] == 'Visita Agendada' %}selected{% endif %}>📅 Visita Agendada</option>
-                <option value="Concluido" {% if cliente[7] == 'Concluido' %}selected{% endif %}>🏆 Venda Concluída!</option>
-                <option value="Desistencia" {% if cliente[7] == 'Desistencia' %}selected{% endif %}>⚠️ Desistencia!</option>
-            </select>
-            
-            <div id="campoData" style="margin: 10px 0; display: {% if cliente[7] == 'Visita Agendada' %}block{% else %}none{% endif %};">
-                <label style="color: #ccc; font-size: 0.8rem;">Data e Hora da Visita:</label>
-                <!-- Ajustado para cliente[10] (ou índice correspondente à sua coluna data_visita) -->
-                <input type="datetime-local" name="data_visita" class="funnel-selector" value="{{ cliente[10] }}">
-            </div>
+<!-- ================= CLIENTE ================= -->
 
-            <button type="submit" class="btn-salvar-status">💾 Atualizar Status</button>
-        </form>
 
-        <script>
-            function verificarData(select) {
-                var campoData = document.getElementById('campoData');
-                if (select.value === 'Visita Agendada') {
-                    campoData.style.display = 'block';
-                } else {
-                    campoData.style.display = 'none';
-                }
-            }
-        </script>
-
-        <hr style="border: 0; border-top: 1px solid #374151; margin: 20px 0;">
-        <span class="info-label">Telefone</span> <div class="info-val">📞 {{ cliente[2] }}</div>
-        <span class="info-label">Orçamento</span> <div class="info-val" style="color: #10b981;">💰  {{ cliente[5] }}</div>
-
-        <form action="/cliente/atualizar_dados/{{ cliente[0] }}" method="POST" style="margin-top: 25px; background: #1f2937; padding: 15px; border-radius: 12px;">
-            <span style="color: #0ea5e9; font-weight: bold; margin-bottom: 10px; display: block;">📋 Informações Adicionais</span>
-            <label class="info-label">Telefone</label>
-            <input type="text" name="telefone" value="{{ cliente[2] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
-            <button type="submit" class="btn-salvar-status">💾 Salvar Alterações</button>
-            <form action="{{ url_for('excluir_cliente', cliente_id=cliente.id) }}"
-      method="POST"
-      onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');">
-
-    <button type="submit" class="btn-excluir">
-        🗑 Excluir Cliente
-    </button>
-
-</form>
-        </form>
-    </div>
-    <div class="perfil-card">
-        <span style="color: #10b981; font-weight: bold;">🧠 Sugestões do Match IA</span>
-        <h2 style="color: white; margin: 5px 0 25px 0;">Imóveis Ideais</h2>
-        {% for match in matches %}
-        <div style="background: #1f2937; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #374151;">
-            <h4 style="margin: 0; color: white;">{{ match.titulo }}</h4>
-            <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.9rem;">
-              {{ match.valor }}
-           </p>
-            <a href="/imovel/{{ match.id }}" style="color: #0ea5e9; text-decoration: none; font-size: 0.8rem;">Ver detalhes</a>
-        </div>
-        {% else %}
-        <p style="color: #9ca3af;">Nenhum imóvel encontrado para este perfil.</p>
-        {% endfor %}
-    </div>
-    
-</div>
 <div class="perfil-card">
 
-    <h3>📝 Ocorrências</h3>
 
-    <form
-        class="ocorrencia-form"
-        method="POST"
-        action="/cliente/adicionar_ocorrencia/{{ cliente[0] }}">
+<span style="color:#0ea5e9;font-weight:bold;">
+👤 Cadastro Geral
+</span>
 
-        <textarea
-            name="ocorrencia"
-            placeholder="Ex: Cliente pediu retorno amanhã às 14h..."
-            required></textarea>
 
-        <button
-            type="submit"
-            class="btn-ocorrencia">
+<h2 style="color:white;">
+{{ cliente[1] }}
+</h2>
 
-            ➕ Adicionar Ocorrência
 
-        </button>
 
-    </form>
+<div style="
+background:#1f2937;
+padding:15px;
+border-radius:12px;
+border-left:5px solid #f59e0b;">
+
+
+<span class="info-label">
+📍 Estágio Atual
+</span>
+
+
+<div style="color:white;font-size:1.3rem;font-weight:bold;">
+
+{{ cliente[7] if cliente[7] else 'Novo' }}
+
+</div>
 
 </div>
 
-    <div class="perfil-card">
 
-    <h3>📋 Histórico</h3>
 
-    {% for o in ocorrencias %}
 
-    <div class="ocorrencia-item">
 
-        <div class="ocorrencia-topo">
-            <strong>{{ o["usuario_nome"] }}</strong>
-            <span>{{ o["data_criacao"] }}</span>
-        </div>
+<form action="/cliente/atualizar_status/{{ cliente[0] }}" method="POST">
 
-        <div class="ocorrencia-texto">
-            {{ o["ocorrencia"] }}
-        </div>
 
-    </div>
+<label class="info-label">
+Mudar etapa
+</label>
 
-    {% else %}
 
-    <p style="color:#999;">
-        Nenhuma ocorrência cadastrada.
-    </p>
+<select 
+name="status_funil"
+class="funnel-selector"
+onchange="verificarData(this)">
 
-    {% endfor %}
+
+
+<option value="Lead Novo">
+🆕 Lead Novo
+</option>
+
+
+<option value="Negociação">
+💬 Negociação
+</option>
+
+
+<option value="Visita Agendada">
+📅 Visita Agendada
+</option>
+
+
+<option value="Concluido">
+🏆 Venda Concluída
+</option>
+
+
+<option value="Desistencia">
+⚠️ Desistência
+</option>
+
+
+</select>
+
+
+
+<div id="campoData"
+style="display:none;">
+
+
+<label class="info-label">
+Data da visita
+</label>
+
+
+<input 
+type="datetime-local"
+name="data_visita"
+class="funnel-selector"
+value="{{ cliente[10] }}">
+
 
 </div>
+
+
+
+<button class="btn-salvar-status">
+
+💾 Atualizar Status
+
+</button>
+
+
+</form>
+
+
+
+
+<hr style="
+border:0;
+border-top:1px solid #374151;
+margin:20px 0;">
+
+
+
+<span class="info-label">
+Telefone
+</span>
+
+<div class="info-val">
+📞 {{ cliente[2] }}
+</div>
+
+
+
+<span class="info-label">
+Orçamento
+</span>
+
+<div class="info-val" style="color:#10b981;">
+💰 {{ cliente[5] }}
+</div>
+
+
+
+
+
+
+<!-- DADOS -->
+
+
+<form 
+action="/cliente/atualizar_dados/{{ cliente[0] }}"
+method="POST"
+style="
+background:#1f2937;
+padding:15px;
+border-radius:12px;">
+
+
+
+<span style="
+color:#0ea5e9;
+font-weight:bold;">
+
+📋 Informações adicionais
+
+</span>
+
+
+
+<label class="info-label">
+Telefone
+</label>
+
+
+<input
+type="text"
+name="telefone"
+value="{{ cliente[2] or '' }}"
+class="funnel-selector">
+
+
+
+<button class="btn-salvar-status">
+
+💾 Salvar Alterações
+
+</button>
+
+
+</form>
+
+
+
+
+
+<!-- EXCLUIR FORA DO FORM -->
+
+
+<form
+action="{{ url_for('excluir_cliente', cliente_id=cliente[0]) }}"
+method="POST"
+onsubmit="return confirm('Excluir esse cliente definitivamente?');"
+style="margin-top:15px;">
+
+
+<button class="btn-excluir">
+
+🗑 Excluir Cliente
+
+</button>
+
+
+</form>
+
+
+
+
+</div>
+
+
+
+
+
+<!-- ================= MATCH IA ================= -->
+
+
+
+<div class="perfil-card">
+
+
+<span style="color:#10b981;font-weight:bold;">
+🧠 Sugestões Match IA
+</span>
+
+
+<h2 style="color:white;">
+Imóveis Ideais
+</h2>
+
+
+
+{% for match in matches %}
+
+
+<div style="
+background:#1f2937;
+padding:15px;
+border-radius:12px;
+margin-bottom:10px;">
+
+
+<h4 style="color:white;">
+{{ match.titulo }}
+</h4>
+
+
+<p style="color:#10b981;">
+{{ match.valor }}
+</p>
+
+
+<a href="/imovel/{{ match.id }}"
+style="color:#0ea5e9;">
+
+Ver imóvel
+
+</a>
+
+
+</div>
+
+
+{% else %}
+
+
+<p style="color:#9ca3af;">
+Nenhum imóvel encontrado.
+</p>
+
+
+{% endfor %}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- ================= OCORRENCIAS ================= -->
+
+
+<div class="perfil-card">
+
+
+<h3>
+📝 Ocorrências
+</h3>
+
+
+
+<form
+class="ocorrencia-form"
+method="POST"
+action="/cliente/adicionar_ocorrencia/{{ cliente[0] }}">
+
+
+<textarea
+name="ocorrencia"
+placeholder="Digite uma observação..."
+required></textarea>
+
+
+
+<button class="btn-ocorrencia">
+
+➕ Adicionar Ocorrência
+
+</button>
+
+
+</form>
+
+
+</div>
+
+
+
+
+
+<div class="perfil-card">
+
+
+<h3>
+📋 Histórico
+</h3>
+
+
+{% for o in ocorrencias %}
+
+
+<div class="ocorrencia-item">
+
+
+<div class="ocorrencia-topo">
+
+<strong>
+{{ o["usuario_nome"] }}
+</strong>
+
+
+<span>
+{{ o["data_criacao"] }}
+</span>
+
+
+</div>
+
+
+
+<div class="ocorrencia-texto">
+
+{{ o["ocorrencia"] }}
+
+</div>
+
+
+</div>
+
+
+
+{% else %}
+
+
+<p style="color:#999;">
+Nenhuma ocorrência.
+</p>
+
+
+{% endfor %}
+
+
+
+</div>
+
+
+
+
+<script>
+
+function verificarData(select){
+
+let campo=document.getElementById("campoData");
+
+
+if(select.value=="Visita Agendada"){
+
+campo.style.display="block";
+
+}else{
+
+campo.style.display="none";
+
+}
+
+
+}
+
+</script>
+
+
+
 {% endblock %}
