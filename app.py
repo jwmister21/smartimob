@@ -1535,42 +1535,38 @@ def editar_usuario(user_id):
 @verificar_sessao
 def buscar_conversa(telefone):
 
-
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
 
-
-
     cursor.execute("""
-        SELECT 
+        SELECT
             mensagem,
             tipo,
             nome,
-            telefone
-
+            telefone,
+            data_hora
         FROM conversas_whatsapp
-
         WHERE telefone = ?
-
         ORDER BY id ASC
+    """, (telefone,))
 
-    """,
-    (telefone,))
+    mensagens = [dict(x) for x in cursor.fetchall()]
 
+    cursor.execute("""
+        SELECT COALESCE(ia_ativa,0)
+        FROM controle_ia_whatsapp
+        WHERE telefone = ?
+    """, (telefone,))
 
-    mensagens = cursor.fetchall()
-
+    ia = cursor.fetchone()
 
     conn.close()
 
-
-    return jsonify([
-        dict(m)
-        for m in mensagens
-    ])
-
+    return jsonify({
+        "mensagens": mensagens,
+        "ia_ativa": ia[0] if ia else 0
+    })
 
 @app.route("/admin/usuarios")
 @verificar_sessao
