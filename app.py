@@ -1095,187 +1095,414 @@ def atualizar_cliente(id):
 
 @app.route('/analisar_cliente', methods=['POST'])
 def analisar_cliente():
+
     import json
 
     dados = request.get_json()
-    msg = dados.get('mensagem', '').strip()
+
+    msg = dados.get('mensagem','').strip()
+
+
+    if not msg:
+        return jsonify({
+            "resultado":"Digite uma busca."
+        })
+
+
+
+    # =============================
+    # USUARIO LOGADO
+    # =============================
+
+    usuario_id = session.get("usuario_id")
+    empresa_id = session.get("empresa_id")
+
+
+    if not usuario_id or not empresa_id:
+        return jsonify({
+            "resultado":"Usuário não autenticado."
+        })
+
+
 
     try:
+
+
         response = client.chat.completions.create(
+
             model="llama-3.3-70b-versatile",
+
             messages=[
-                {
-                    "role": "system",
-                    "content": """
-Você é um extrator de informações imobiliárias.
 
-Extraia da mensagem:
 
-- bairro
-- valor
-- quartos
-- tipo
+            {
+            "role":"system",
+            "content":"""
 
-Tipos possíveis:
-- casa
-- apartamento
-- sobrado
-- terreno
-- comercial
+Você é um especialista imobiliário.
+
+Analise a mensagem do cliente.
+
+Extraia:
+
+bairro
+cidade
+valor_maximo
+quartos
+tipo
+palavras_chave
+
+
+Tipos aceitos:
+
+casa
+apartamento
+sobrado
+terreno
+comercial
+
+
+Regras:
+
+Se o cliente falar:
+"até 500 mil"
+valor_maximo = 500000
+
+Se não falar valor:
+valor_maximo = 999999999
+
+
+Se falar:
+"3 quartos"
+quartos = 3
+
 
 Responda SOMENTE JSON.
 
 Exemplo:
 
 {
-    "bairro": "Guaianases",
-    "valor": 450000,
-    "quartos": 3,
-    "tipo": "casa"
+"bairro":"Tatuapé",
+"cidade":"",
+"valor_maximo":500000,
+"quartos":3,
+"tipo":"apartamento",
+"palavras_chave":"perto metro"
 }
 
-Se algum campo não for informado:
-
-{
-    "bairro": "",
-    "valor": 999999999,
-    "quartos": 0,
-    "tipo": ""
-}
 """
-                },
-                {
-                    "role": "user",
-                    "content": msg
-                }
+
+            },
+
+
+            {
+            "role":"user",
+            "content":msg
+            }
+
             ]
+
         )
 
-        texto_limpo = (
-            response.choices[0]
-            .message.content
-            .replace("```json", "")
-            .replace("```", "")
+
+
+        texto = response.choices[0].message.content
+
+
+        texto = (
+            texto
+            .replace("```json","")
+            .replace("```","")
             .strip()
         )
 
-        print("RESPOSTA IA:", texto_limpo)
 
-        filtros = json.loads(texto_limpo)
 
-    except json.JSONDecodeError:
-        return jsonify({
-            "resultado": "<p>Não consegui interpretar sua busca.</p>"
-        })
+        filtros = json.loads(texto)
+
+
 
     except Exception as e:
-        print("ERRO IA:", str(e))
+
+
+        print("ERRO IA:",e)
+
 
         return jsonify({
-            "resultado": "<p>Erro ao processar a IA.</p>"
+            "resultado":"Erro ao entender busca."
         })
 
-    bairro = filtros.get("bairro", "").strip()
-    tipo = filtros.get("tipo", "").strip().lower()
+
+
+
+    bairro = filtros.get("bairro","").strip()
+
+    cidade = filtros.get("cidade","").strip()
+
+    tipo = filtros.get("tipo","").lower().strip()
+
 
     try:
-        quartos = int(filtros.get("quartos", 0))
+        quartos=int(
+            filtros.get("quartos",0)
+        )
     except:
-        quartos = 0
+        quartos=0
+
+
 
     try:
-        valor_busca = float(filtros.get("valor", 999999999))
+
+        valor=float(
+            filtros.get(
+                "valor_maximo",
+                999999999
+            )
+        )
+
     except:
-        valor_busca = 999999999
 
-    print("BAIRRO:", bairro)
-    print("TIPO:", tipo)
-    print("QUARTOS:", quartos)
-    print("VALOR:", valor_busca)
+        valor=999999999
 
-    conn = get_db()
-    cursor = conn.cursor()
 
-    query = """
+
+
+
+
+    conn=get_db()
+
+    cursor=conn.cursor()
+
+
+
+    query="""
+
     SELECT
-        id,
-        titulo,
-        valor,
-        bairro,
-        quartos,
-        tipo
+
+    id,
+    titulo,
+    valor,
+    bairro,
+    cidade,
+    quartos,
+    tipo
+
     FROM imoveis
-    WHERE 1=1
+
+    WHERE empresa_id = ?
+
     """
 
-    parametros = []
+
+
+    parametros=[empresa_id]
+
+
+
+
+    # =====================
+    # FILTROS INTELIGENTES
+    # =====================
+
+
+    if usuario_id:
+
+        query += """
+        AND usuario_id = ?
+        """
+
+        parametros.append(usuario_id)
+
+
 
     if bairro:
-        query += " AND LOWER(bairro) LIKE LOWER(?)"
-        parametros.append(f"%{bairro}%")
 
-    if quartos > 0:
-        query += " AND quartos >= ?"
-        parametros.append(quartos)
+        query += """
+        AND LOWER(bairro) LIKE LOWER(?)
+        """
+
+        parametros.append(
+            f"%{bairro}%"
+        )
+
+
+
+    if cidade:
+
+        query += """
+        AND LOWER(cidade) LIKE LOWER(?)
+        """
+
+        parametros.append(
+            f"%{cidade}%"
+        )
+
+
 
     if tipo:
-        query += " AND LOWER(tipo) = ?"
+
+        query += """
+        AND LOWER(tipo)=?
+        """
+
         parametros.append(tipo)
 
-    query += " LIMIT 10"
 
-    print("QUERY:", query)
-    print("PARAMETROS:", parametros)
 
-    cursor.execute(query, parametros)
 
-    imoveis = cursor.fetchall()
+    if quartos > 0:
 
-    print("IMOVEIS ENCONTRADOS:", len(imoveis))
+
+        query += """
+
+        AND quartos >= ?
+
+        """
+
+        parametros.append(quartos)
+
+
+
+
+
+    if valor < 999999999:
+
+
+        query += """
+
+        AND valor <= ?
+
+        """
+
+        parametros.append(valor)
+
+
+
+
+
+    query += """
+
+    ORDER BY valor ASC
+
+    LIMIT 10
+
+    """
+
+
+
+
+
+    print("BUSCA IA")
+    print(query)
+    print(parametros)
+
+
+
+    cursor.execute(
+        query,
+        parametros
+    )
+
+
+    imoveis=cursor.fetchall()
+
 
     conn.close()
 
+
+
+
+
     if not imoveis:
+
+
         return jsonify({
-            "resultado": """
-            <div style='padding:10px'>
-                Nenhum imóvel encontrado com esses critérios.
-            </div>
-            """
+
+        "resultado":
+
+        """
+
+        <div style='padding:15px'>
+
+        Nenhum imóvel encontrado.
+        Tente alterar os filtros.
+
+        </div>
+
+        """
+
         })
 
-    resultado_html = ""
+
+
+
+
+
+    resultado=""
+
+
+
 
     for imovel in imoveis:
 
-        resultado_html += f"""
+
+        resultado += f"""
+
         <div style="
-            background:#0f172a;
-            padding:12px;
-            border-radius:8px;
-            margin-top:8px;
-            border-left:4px solid #f59e0b;
+        background:#0f172a;
+        padding:15px;
+        border-radius:12px;
+        margin-top:10px;
+        border-left:4px solid #10b981;">
+
+
+        <h3 style="color:white">
+
+        {imovel['titulo']}
+
+        </h3>
+
+
+        💰 R$ {imovel['valor']}
+
+        <br>
+
+        📍 {imovel['bairro']}
+
+        <br>
+
+        🏠 {imovel['tipo']}
+
+        <br>
+
+        🛏 {imovel['quartos']} quartos
+
+
+        <br><br>
+
+
+        <a href="/imovel/{imovel['id']}"
+        style="
+        color:#10b981;
+        font-weight:bold;
         ">
-            <strong>{imovel['titulo']}</strong><br>
 
-            🏠 {imovel['tipo']}<br>
-            💰 {imovel['valor']}<br>
-            📍 {imovel['bairro']}<br>
-            🛏 {imovel['quartos']} quartos<br><br>
+        Ver imóvel
 
-            <a href="/imovel/{imovel['id']}"
-               style="
-                    color:#f59e0b;
-                    font-weight:bold;
-                    text-decoration:none;
-               ">
-                ➔ Ver Detalhes
-            </a>
+        </a>
+
+
         </div>
+
         """
 
+
+
+
     return jsonify({
-        "resultado": resultado_html
+
+        "resultado":resultado
+
     })
 
 @app.context_processor
