@@ -395,84 +395,86 @@ async function abrirConversa(telefone,nome){
 
     document.getElementById("mensagens").innerHTML = html;
 
-    document.getElementById("mensagens").scrollTop =
-        document.getElementById("mensagens").scrollHeight;
+    const chat = document.getElementById("mensagens");
+
+    chat.scrollTop = chat.scrollHeight;
+
+} // ← FECHAMENTO DA FUNÇÃO ABRIRCONVERSA
+
 
 async function enviarMensagem(){
 
-if(!telefoneSelecionado){
+    if(!telefoneSelecionado){
 
-alert("Selecione uma conversa");
+        alert("Selecione uma conversa");
+        return;
 
-return;
+    }
+
+    let mensagem = document.getElementById(
+        "textoMensagem"
+    ).value;
+
+    if(!mensagem) return;
+
+    const resp = await fetch(
+        "/enviar_mensagem",
+        {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                telefone:telefoneSelecionado,
+                mensagem:mensagem
+            })
+        }
+    );
+
+    const data = await resp.json();
+
+    if(data.status == "ok"){
+
+        document.getElementById(
+            "textoMensagem"
+        ).value = "";
+
+        abrirConversa(
+            telefoneSelecionado,
+            document.getElementById(
+                "cliente-atual"
+            ).innerText
+        );
+
+    }
+
 }
 
-let mensagem = document.getElementById(
-"textoMensagem"
-).value;
-
-if(!mensagem) return;
-
-const resp = await fetch(
-"/enviar_mensagem",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-telefone:telefoneSelecionado,
-mensagem:mensagem
-})
-}
-);
-
-const data = await resp.json();
-
-if(data.status == "ok"){
-
-document.getElementById(
-"textoMensagem"
-).value = "";
-
-abrirConversa(
-telefoneSelecionado,
-document.getElementById(
-"cliente-atual"
-).innerText
-);
-
-}
-
-}
 
 function controleIA(acao){
 
-if(!telefoneSelecionado){
+    if(!telefoneSelecionado){
 
-alert("Selecione um cliente");
+        alert("Selecione um cliente");
+        return;
 
-return;
-}
+    }
 
-fetch(
-"/controle_ia/"
-+
-telefoneSelecionado
-+
-"/"
-+
-acao,
-{
-method:"POST"
-}
-)
-.then(r=>r.json())
-.then(data=>{
+    fetch(
+        "/controle_ia/" +
+        telefoneSelecionado +
+        "/" +
+        acao,
+        {
+            method:"POST"
+        }
+    )
+    .then(r=>r.json())
+    .then(data=>{
 
-alert("IA atualizada");
+        alert("IA atualizada");
 
-});
+    });
 
 }
 
