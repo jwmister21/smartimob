@@ -77,6 +77,22 @@
     white-space:pre-wrap;
 }
     
+
+.btn-excluir{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.btn-excluir:hover{
+    background:#b02a37;
+}
+
+
 </style>
 
 <div class="perfil-grid">
@@ -131,6 +147,15 @@
             <label class="info-label">Telefone</label>
             <input type="text" name="telefone" value="{{ cliente[2] or '' }}" class="funnel-selector" style="margin-bottom: 10px;">
             <button type="submit" class="btn-salvar-status">💾 Salvar Alterações</button>
+            <form action="{{ url_for('excluir_cliente', cliente_id=cliente.id) }}"
+      method="POST"
+      onsubmit="return confirm('Tem certeza que deseja excluir este cliente?');">
+
+    <button type="submit" class="btn-excluir">
+        🗑 Excluir Cliente
+    </button>
+
+</form>
         </form>
     </div>
     <div class="perfil-card">
