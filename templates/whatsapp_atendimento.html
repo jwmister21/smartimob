@@ -243,7 +243,13 @@ overflow-y:auto;
 .hora-lista{
     color:#8696a0;
     font-size:11px;
-}                            
+}     
+
+   #status-ia{
+font-size:12px;
+margin-top:4px;
+font-weight:600;
+}
 
 </style>
 
@@ -372,9 +378,37 @@ async function abrirConversa(telefone,nome){
     document.getElementById("cliente-atual").innerText = nome;
     document.getElementById("telefone-atual").innerText = telefone;
 
+   if(data.ia_ativa == 1){
+
+    document.getElementById(
+    "status-ia"
+    ).innerHTML =
+    "🤖 IA Ativa";
+
+    document.getElementById(
+    "status-ia"
+    ).style.color =
+    "#22c55e";
+
+}else{
+
+    document.getElementById(
+    "status-ia"
+    ).innerHTML =
+    "👤 Atendimento Humano";
+
+    document.getElementById(
+    "status-ia"
+    ).style.color =
+    "#f87171";
+
+}
+
     const resp = await fetch("/buscar_conversa/" + telefone);
 
-    const mensagens = await resp.json();
+    const data = await resp.json();
+
+    const mensagens = data.mensagens;
 
     let html = "";
 
