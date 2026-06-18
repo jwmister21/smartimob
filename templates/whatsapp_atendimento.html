@@ -386,23 +386,25 @@ border-radius:20px;
 
 .msg{
 
-max-width:65%;
+    max-width:55%;
 
-padding:8px 10px;
+    width:fit-content;
 
-border-radius:8px;
+    padding:8px 12px;
 
-font-size:14px;
+    border-radius:8px;
 
-line-height:1.45;
+    font-size:14px;
 
-word-break:break-word;
+    line-height:1.35;
 
-white-space:pre-wrap;
+    word-break:break-word;
 
-display:flex;
+    white-space:pre-wrap;
 
-flex-direction:column;
+    display:flex;
+
+    flex-direction:column;
 
 }
 
@@ -416,10 +418,9 @@ background:#202c33;
 
 color:#e9edef;
 
-border-top-left-radius:2px;
+border-radius:0 8px 8px 8px;
 
 }
-
 
 
 .corretor{
@@ -430,11 +431,9 @@ background:#005c4b;
 
 color:white;
 
-border-top-right-radius:2px;
+border-radius:8px 0 8px 8px;
 
 }
-
-
 
 .msg div:first-child{
 
@@ -457,7 +456,24 @@ margin-top:3px;
 }
 
 
+.cliente-info{
 
+max-width:60%;
+
+overflow:hidden;
+
+}
+
+
+#cliente-atual{
+
+white-space:nowrap;
+
+overflow:hidden;
+
+text-overflow:ellipsis;
+
+}
 
 /* ===============================
    RODAPE
