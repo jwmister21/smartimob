@@ -249,118 +249,115 @@ overflow-y:auto;
 
 <div class="whatsapp-box">
 
-<div class="sidebar-chat">
+    <!-- LISTA DE CONVERSAS -->
+    <div class="sidebar-chat">
 
-<div class="sidebar-header">
-💬 Conversas
-</div>
+        <div class="sidebar-header">
+            💬 Conversas
+        </div>
 
-<div class="lista-contatos">
+        <div class="lista-contatos">
 
-{% for c in conversas %}
+            {% for c in conversas %}
 
-<div
-class="contato"
-onclick="abrirConversa('{{ c.telefone }}','{{ c.nome or 'Cliente' }}')">
+            <div class="contato"
+                 onclick="abrirConversa('{{ c.telefone }}','{{ c.nome or 'Cliente' }}')">
 
-<div class="nome">
-{{ c.nome or "Cliente" }}
-</div>
+                <div class="nome">
+                    {{ c.nome or "Cliente" }}
+                </div>
 
-<div class="telefone">
-{{ c.telefone }}
-</div>
+                <div class="telefone">
+                    {{ c.telefone }}
+                </div>
 
-<div class="preview">
-{{ (c.mensagem or "")[:40] }}
-</div>
+                <div class="preview">
+                    {{ (c.mensagem or "")[:40] }}
+                </div>
 
-<div class="rodape-contato">
+                <div class="rodape-contato">
 
-    <span class="hora-lista">
-        {{ c.data_hora[-8:-3] if c.data_hora else "" }}
-    </span>
+                    <span class="hora-lista">
+                        {{ c.data_hora[-8:-3] if c.data_hora else "" }}
+                    </span>
 
-    {% if c.ia_ativa == 1 %}
-        <span class="ia-on">🤖 IA</span>
-    {% else %}
-        <span class="ia-off">👤</span>
-    {% endif %}
+                    {% if c.ia_ativa == 1 %}
+                        <span class="ia-on">🤖 IA</span>
+                    {% else %}
+                        <span class="ia-off">👤</span>
+                    {% endif %}
 
-</div>
+                </div>
 
-{% endfor %}
+            </div>
 
-</div>
+            {% endfor %}
 
-</div>
-   
-</div>
+        </div>
 
-<div class="chat">
+    </div>
 
-<div class="chat-header">
+    <!-- CHAT -->
+    <div class="chat">
 
-<div class="cliente-info">
+        <div class="chat-header">
 
-<div id="cliente-atual">
-Selecione uma conversa
-</div>
+            <div class="cliente-info">
 
-<div id="telefone-atual"></div>
+                <div id="cliente-atual">
+                    Selecione uma conversa
+                </div>
 
-</div>
+                <div id="telefone-atual"></div>
 
-<div class="header-buttons">
+                <div id="status-ia">
+                    ⚪ Sem conversa
+                </div>
 
-<button
-class="btn btn-stop"
-onclick="controleIA('desativar')">
+            </div>
 
-🛑 Parar IA
+            <div class="header-buttons">
 
-</button>
+                <button class="btn btn-stop"
+                        onclick="controleIA('desativar')">
+                    🛑 Parar IA
+                </button>
 
-<button
-class="btn btn-start"
-onclick="controleIA('ativar')">
+                <button class="btn btn-start"
+                        onclick="controleIA('ativar')">
+                    🤖 Ativar IA
+                </button>
 
-🤖 Ativar IA
+            </div>
 
-</button>
+        </div>
 
-</div>
+        <div class="chat-body" id="mensagens">
 
-</div>
+            <div class="msg cliente">
+                Selecione uma conversa ao lado.
+            </div>
 
-<div
-class="chat-body"
-id="mensagens">
+        </div>
 
-<div class="msg cliente">
-Selecione uma conversa ao lado.
-</div>
+        <div class="chat-footer">
 
-</div>
+            <input
+                type="text"
+                id="textoMensagem"
+                placeholder="Digite uma mensagem...">
 
-<div class="chat-footer">
+            <button
+                class="btn-enviar"
+                onclick="enviarMensagem()">
 
-<input
-type="text"
-id="textoMensagem"
-placeholder="Digite uma mensagem...">
+                Enviar
 
-<button
-class="btn-enviar"
-onclick="enviarMensagem()">
+            </button>
 
-Enviar
+        </div>
 
-</button>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 
@@ -370,45 +367,36 @@ let telefoneSelecionado = null;
 
 async function abrirConversa(telefone,nome){
 
-telefoneSelecionado = telefone;
+    telefoneSelecionado = telefone;
 
-document.getElementById(
-"cliente-atual"
-).innerText = nome;
+    document.getElementById("cliente-atual").innerText = nome;
+    document.getElementById("telefone-atual").innerText = telefone;
 
-document.getElementById(
-"telefone-atual"
-).innerText = telefone;
+    const resp = await fetch("/buscar_conversa/" + telefone);
 
-const resp = await fetch(
-"/buscar_conversa/" + telefone
-);
+    const mensagens = await resp.json();
 
-const mensagens = await resp.json();
+    let html = "";
 
-let html = "";
+    mensagens.forEach(msg=>{
 
-mensagens.forEach(msg=>{
+        let classe = "cliente";
 
-let classe = "cliente";
+        if(msg.tipo == "corretor"){
+            classe = "corretor";
+        }
 
-if(msg.tipo == "corretor"){
-classe = "corretor";
-}
+        html += `
+            <div class="msg ${classe}">
+                ${msg.mensagem || ""}
+            </div>
+        `;
+    });
 
-html += `
-<div class="msg ${classe}">
-${msg.mensagem}
-</div>
-`;
+    document.getElementById("mensagens").innerHTML = html;
 
-});
-
-document.getElementById(
-"mensagens"
-).innerHTML = html;
-
-}
+    document.getElementById("mensagens").scrollTop =
+        document.getElementById("mensagens").scrollHeight;
 
 async function enviarMensagem(){
 
