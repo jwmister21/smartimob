@@ -283,12 +283,18 @@ border: 1px solid #334155;
 overflow: hidden;
 }
 
-.chat-body {
-flex: 1;
-padding: 15px;
-overflow-y: auto;
+.chat-body{
+    flex:1;
+    overflow-y:auto;
+    overflow-x:hidden;
 }
+.chat{
+    flex:1;
+    display:flex;
+    flex-direction:column;
 
+    overflow:hidden;
+}
 .chat-footer {
 padding: 15px;
 background: #0f172a;
@@ -305,6 +311,20 @@ padding: 10px;
 margin-bottom: 10px;
 font-size: 0.9rem;
 resize: none;
+}
+  .cliente{
+    background:#202c33;
+    color:white;
+
+    max-width:70%;
+}
+
+.corretor{
+    background:#005c4b;
+    color:white;
+
+    max-width:70%;
+    margin-left:auto;
 }
 
 /* BOTÃO IA */
@@ -380,6 +400,20 @@ color:white;
     font-size:11px;
     font-weight:bold;
 }
+
+   .msg{
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:12px;
+
+    max-width:70%;
+
+    word-wrap:break-word;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+
+    white-space:pre-wrap;
+}  
 </style>
 </head>
 <body>
