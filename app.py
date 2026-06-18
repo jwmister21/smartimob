@@ -1432,6 +1432,18 @@ Exemplo:
         """
 
         })
+     valor_imovel = imovel['valor']
+
+     try:
+         valor_formatado = (
+        "R$ {:,.0f}".format(float(valor_imovel))
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
+
+    except:
+    valor_formatado = valor_imovel
 
 
 
@@ -1463,7 +1475,8 @@ Exemplo:
         </h3>
 
 
-        💰 R$ {imovel['valor']}
+        💰 R$ {valor_formatado}
+
         <br>
 
         📍 {imovel['bairro']}
