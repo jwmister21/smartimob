@@ -20,6 +20,9 @@ from openai import OpenAI
 from flask import send_from_directory
 from flask_socketio import SocketIO
 import pandas as pd
+from contextlib import contextmanager
+
+# Configuração do Banco
 
 
 app = Flask(__name__)
@@ -70,6 +73,16 @@ def init_db():
 init_db()
 
 api_key = os.getenv('GCP_API_KEY')
+
+@contextmanager
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
 
 @app.context_processor
 def injetar_lembretes():
@@ -766,6 +779,291 @@ def catalogo():
     return render_template("catalogo.html", imoveis=imoveis)
 
 
+
+def carregar_contexto(telefone):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT mensagem, tipo
+        FROM conversas_whatsapp
+        WHERE telefone = ?
+        ORDER BY id DESC
+        LIMIT 15
+    """,
+    (telefone,))
+
+
+    dados = cursor.fetchall()
+
+    conn.close()
+
+
+    return dados
+
+
+
+# ================================
+# ENTENDER INTENÇÃO
+# ================================
+
+def detectar_intencao(mensagem):
+
+    msg = mensagem.lower()
+
+
+    if any(x in msg for x in [
+        "visita",
+        "ver imóvel",
+        "conhecer",
+        "agendar"
+    ]):
+
+        return "visita"
+
+
+
+    if any(x in msg for x in [
+        "corretor",
+        "humano",
+        "atendente"
+    ]):
+
+        return "corretor"
+
+
+
+    if any(x in msg for x in [
+        "comprar",
+        "procuro",
+        "quero",
+        "apartamento",
+        "casa",
+        "imóvel"
+    ]):
+
+        return "buscar_imovel"
+
+
+
+    if any(x in msg for x in [
+        "preço",
+        "valor",
+        "quanto"
+    ]):
+
+        return "preco"
+
+
+
+    return "conversa"
+
+
+
+
+
+# ================================
+# EXTRAIR FILTROS
+# ================================
+
+def extrair_filtros(mensagem):
+
+
+    texto = mensagem.lower()
+
+
+    dados = {
+
+        "bairro":None,
+        "cidade":None,
+        "valor":None,
+        "quartos":None,
+        "tipo":None
+
+    }
+
+
+
+    if "apartamento" in texto:
+
+        dados["tipo"]="apartamento"
+
+
+    if "casa" in texto:
+
+        dados["tipo"]="casa"
+
+
+
+    # valor
+
+    import re
+
+
+    numeros = re.findall(
+        r'\d+',
+        texto
+    )
+
+
+    if numeros:
+
+        valor = int(numeros[-1])
+
+
+        if valor < 10000:
+
+            valor = valor * 1000
+
+
+        dados["valor"] = valor
+
+
+
+
+    return dados
+
+
+
+
+
+# ================================
+# GERADOR DE RESPOSTA
+# ================================
+
+
+def agente_imobiliario(
+    empresa_id,
+    telefone,
+    mensagem
+):
+
+
+    intencao = detectar_intencao(
+        mensagem
+    )
+
+
+    print(
+        "🧠 INTENÇÃO:",
+        intencao
+    )
+
+
+
+    if intencao == "buscar_imovel":
+
+
+
+        filtros = extrair_filtros(
+            mensagem
+        )
+
+
+        print(
+            "🔎 FILTROS:",
+            filtros
+        )
+
+        resposta = agente_imobiliario(
+            empresa_id,
+            telefone,
+            mensagem
+         )
+
+
+
+        if imoveis:
+
+
+            resposta = (
+                "Encontrei algumas opções para você 😊\n\n"
+            )
+
+
+
+            for i in imoveis:
+
+
+                resposta += f"""
+🏡 {i['titulo']}
+
+📍 {i['bairro']} - {i['cidade']}
+
+💰 R$ {i['valor']}
+
+🛏 {i['quartos']} quartos
+
+🔗 {i['link']}
+
+----------------
+"""
+
+
+            return resposta
+
+
+
+        return """
+Perfeito 😊
+
+Vou procurar opções para você.
+
+Me informe:
+
+📍 Bairro desejado
+💰 Faixa de valor
+🏡 Casa ou apartamento
+🛏 Quantos quartos?
+"""
+
+
+
+
+    if intencao == "visita":
+
+
+        return """
+Ótimo 😊
+
+Vou verificar disponibilidade para visita.
+
+Qual dia e horário prefere?
+"""
+
+
+
+
+    if intencao == "corretor":
+
+
+        return """
+Vou transferir você para um corretor humano 👍
+"""
+
+
+
+
+    return """
+Olá 😊
+
+Sou o assistente imobiliário.
+
+Posso te ajudar a encontrar:
+
+🏡 Casas
+🏢 Apartamentos
+💰 Valores
+📅 Visitas
+
+Me diga o que procura.
+"""
+
+
 @app.route("/webhook_mensagem_whatsapp", methods=["POST"])
 def webhook_mensagem_whatsapp():
 
@@ -820,7 +1118,7 @@ def webhook_mensagem_whatsapp():
 
 
         if any(
-            palavra in mensagem_lower 
+            palavra in mensagem_lower
             for palavra in palavras_desativar
         ):
 
@@ -849,6 +1147,7 @@ def webhook_mensagem_whatsapp():
             conn.close()
 
 
+
             print(
                 "🛑 IA DESATIVADA:",
                 telefone
@@ -858,6 +1157,7 @@ def webhook_mensagem_whatsapp():
             return {
                 "status":"ia_desligada"
             }
+
 
 
 
@@ -901,7 +1201,7 @@ def webhook_mensagem_whatsapp():
 
 
     # ==========================
-    # VERIFICA IA EXISTENTE
+    # VERIFICA IA
     # ==========================
 
 
@@ -940,11 +1240,9 @@ def webhook_mensagem_whatsapp():
 
 
 
-
     # ==========================
     # ATIVA IA
     # ==========================
-
 
     if ativar:
 
@@ -1012,9 +1310,8 @@ def webhook_mensagem_whatsapp():
 
 
 
-
     # ==========================
-    # SALVA CONVERSA
+    # SALVA MENSAGEM
     # ==========================
 
 
@@ -1052,72 +1349,24 @@ def webhook_mensagem_whatsapp():
 
 
     # ==========================
-    # RESPOSTA IA
+    # CHAMA AGENTE IA
     # ==========================
 
 
     if ativar:
 
 
-
-        imoveis = buscar_imoveis_ia(
+        resposta = agente_imobiliario(
             empresa_id,
+            telefone,
             mensagem
         )
 
 
-
-        if imoveis:
-
-
-
-            resposta = (
-                "Encontrei essas opções para você 😊\n\n"
-            )
-
-
-
-            for imovel in imoveis:
-
-
-                resposta += f"""
-
-🏡 *{imovel['titulo']}*
-
-📍 {imovel['bairro']} - {imovel['cidade']}
-
-💰 R$ {imovel['valor']}
-
-🛏 Quartos: {imovel['quartos']}
-🚗 Vagas: {imovel['vaga_garagem']}
-
-🔗 {imovel['link']}
-
-----------------
-
-"""
-
-
-
-        else:
-
-
-            resposta = f"""
-
-Perfeito 😊
-
-Anotei: {mensagem}
-
-Me fala mais um detalhe:
-
-📍 Bairro que procura?
-💰 Qual valor?
-🏡 Casa ou apartamento?
-
-Vou procurar para você.
-
-"""
-
+        print(
+            "🤖 RESPOSTA:",
+            resposta
+        )
 
 
         enviar_resposta_ia(
@@ -1128,6 +1377,7 @@ Vou procurar para você.
 
 
 
+
     conn.close()
 
 
@@ -1135,6 +1385,8 @@ Vou procurar para você.
     return {
         "status":"ok"
     }
+
+ 
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
     nome = request.form.get("nome")
