@@ -233,6 +233,18 @@ flex:1;
 overflow-y:auto;
 }
 
+ .rodape-contato{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:8px;
+}
+
+.hora-lista{
+    color:#8696a0;
+    font-size:11px;
+}                            
+
 </style>
 
 <div class="whatsapp-box">
@@ -263,15 +275,17 @@ onclick="abrirConversa('{{ c.telefone }}','{{ c.nome or 'Cliente' }}')">
 {{ (c.mensagem or "")[:40] }}
 </div>
 
-{% if c.ia_ativa == 1 %}
-<div class="ia-on">
-🤖 IA ativa
-</div>
-{% else %}
-<div class="ia-off">
-👤 Corretor
-</div>
-{% endif %}
+<div class="rodape-contato">
+
+    <span class="hora-lista">
+        {{ c.data_hora[-8:-3] if c.data_hora else "" }}
+    </span>
+
+    {% if c.ia_ativa == 1 %}
+        <span class="ia-on">🤖 IA</span>
+    {% else %}
+        <span class="ia-off">👤</span>
+    {% endif %}
 
 </div>
 
