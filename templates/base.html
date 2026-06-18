@@ -458,7 +458,15 @@ class="logo">
 <a href="/cliente/{{ l[0] }}" class="notif-item" style="display: block; margin-bottom: 8px;">
 <div style="font-weight: bold; color: white;">📅 {{ l[1] }}</div>
 <div style="font-size: 0.75rem; color: #9ca3af;">
-Você tem um agendamento hoje  {{ l[10].split('T')[1] }}
+{% if l[10] and 'T' in l[10] %}
+
+Você tem um agendamento hoje {{ l[10].split('T')[1] }}
+
+{% else %}
+
+Você tem um agendamento hoje
+
+{% endif %}
 </div>
 </a>
 {% else %}
