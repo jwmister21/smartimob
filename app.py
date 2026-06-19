@@ -724,23 +724,6 @@ def tela_gestao():
     )
 
 
-def enviar_resposta_ia(sessao, telefone, mensagem):
-
-    import requests
-
-    r = requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/enviar",
-        json={
-            "sessao": sessao,
-            "numero": telefone,
-            "mensagem": mensagem
-        }
-    )
-
-    print("📤 RESPOSTA IA:", r.text)
-
-    return r.json()
-
 # Decorator para o Super Admin
 def super_admin_required(f):
     @wraps(f)
@@ -788,288 +771,7 @@ def catalogo():
 
 
 
-def carregar_contexto(telefone):
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
-
-
-    cursor.execute("""
-        SELECT mensagem, tipo
-        FROM conversas_whatsapp
-        WHERE telefone = ?
-        ORDER BY id DESC
-        LIMIT 15
-    """,
-    (telefone,))
-
-
-    dados = cursor.fetchall()
-
-    conn.close()
-
-
-    return dados
-
-
-
-# ================================
-# ENTENDER INTENÇÃO
-# ================================
-
-def detectar_intencao(mensagem):
-
-    msg = mensagem.lower()
-
-
-    if any(x in msg for x in [
-        "visita",
-        "ver imóvel",
-        "conhecer",
-        "agendar"
-    ]):
-
-        return "visita"
-
-
-
-    if any(x in msg for x in [
-        "corretor",
-        "humano",
-        "atendente"
-    ]):
-
-        return "corretor"
-
-
-
-    if any(x in msg for x in [
-        "comprar",
-        "procuro",
-        "quero",
-        "apartamento",
-        "casa",
-        "imóvel"
-    ]):
-
-        return "buscar_imovel"
-
-
-
-    if any(x in msg for x in [
-        "preço",
-        "valor",
-        "quanto"
-    ]):
-
-        return "preco"
-
-
-
-    return "conversa"
-
-
-
-
-
-# ================================
-# EXTRAIR FILTROS
-# ================================
-
-def extrair_filtros(mensagem):
-
-
-    texto = mensagem.lower()
-
-
-    dados = {
-
-        "bairro":None,
-        "cidade":None,
-        "valor":None,
-        "quartos":None,
-        "tipo":None
-
-    }
-
-
-
-    if "apartamento" in texto:
-
-        dados["tipo"]="apartamento"
-
-
-    if "casa" in texto:
-
-        dados["tipo"]="casa"
-
-
-
-    # valor
-
-    import re
-
-
-    numeros = re.findall(
-        r'\d+',
-        texto
-    )
-
-
-    if numeros:
-
-        valor = int(numeros[-1])
-
-
-        if valor < 10000:
-
-            valor = valor * 1000
-
-
-        dados["valor"] = valor
-
-
-
-
-    return dados
-
-
-
-
-
-# ================================
-# GERADOR DE RESPOSTA
-# ================================
-
-
-def agente_imobiliario(
-    empresa_id,
-    telefone,
-    mensagem
-):
-
-
-    intencao = detectar_intencao(
-        mensagem
-    )
-
-
-    print(
-        "🧠 INTENÇÃO:",
-        intencao
-    )
-
-
-
-    if intencao == "buscar_imovel":
-
-
-
-        filtros = extrair_filtros(
-            mensagem
-        )
-
-
-        print(
-            "🔎 FILTROS:",
-            filtros
-        )
-
-        resposta = agente_imobiliario(
-            empresa_id,
-            telefone,
-            mensagem
-         )
-
-
-
-        if imoveis:
-
-
-            resposta = (
-                "Encontrei algumas opções para você 😊\n\n"
-            )
-
-
-
-            for i in imoveis:
-
-
-                resposta += f"""
-🏡 {i['titulo']}
-
-📍 {i['bairro']} - {i['cidade']}
-
-💰 R$ {i['valor']}
-
-🛏 {i['quartos']} quartos
-
-🔗 {i['link']}
-
-----------------
-"""
-
-
-            return resposta
-
-
-
-        return """
-Perfeito 😊
-
-Vou procurar opções para você.
-
-Me informe:
-
-📍 Bairro desejado
-💰 Faixa de valor
-🏡 Casa ou apartamento
-🛏 Quantos quartos?
-"""
-
-
-
-
-    if intencao == "visita":
-
-
-        return """
-Ótimo 😊
-
-Vou verificar disponibilidade para visita.
-
-Qual dia e horário prefere?
-"""
-
-
-
-
-    if intencao == "corretor":
-
-
-        return """
-Vou transferir você para um corretor humano 👍
-"""
-
-
-
-
-    return """
-Olá 😊
-
-Sou o assistente imobiliário.
-
-Posso te ajudar a encontrar:
-
-🏡 Casas
-🏢 Apartamentos
-💰 Valores
-📅 Visitas
-
-Me diga o que procura.
-"""
  
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
 def atualizar_cliente(id):
@@ -1697,42 +1399,7 @@ def editar_usuario(user_id):
     return jsonify({"status": "sucesso"})
 
 
-@app.route("/buscar_conversa/<telefone>")
-@verificar_sessao
-def buscar_conversa(telefone):
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            mensagem,
-            tipo,
-            nome,
-            telefone,
-            data_hora
-        FROM conversas_whatsapp
-        WHERE telefone = ?
-        ORDER BY id ASC
-    """, (telefone,))
-
-    mensagens = [dict(x) for x in cursor.fetchall()]
-
-    cursor.execute("""
-        SELECT COALESCE(ia_ativa,0)
-        FROM controle_ia_whatsapp
-        WHERE telefone = ?
-    """, (telefone,))
-
-    ia = cursor.fetchone()
-
-    conn.close()
-
-    return jsonify({
-        "mensagens": mensagens,
-        "ia_ativa": ia[0] if ia else 0
-    })
 
 @app.route("/admin/usuarios")
 @verificar_sessao
@@ -2168,11 +1835,10 @@ def enviar_mensagem():
 
     data = request.get_json()
 
-    telefone = data["telefone"]
-    mensagem = data["mensagem"]
+    telefone = data.get("telefone")
+    mensagem = data.get("mensagem")
 
     usuario_id = session["usuario_id"]
-
 
     try:
 
@@ -2181,203 +1847,45 @@ def enviar_mensagem():
 
         cursor = conn.cursor()
 
-
         cursor.execute("""
-            SELECT
-                whatsapp_sessao,
-                empresa_id,
-                nome
+            SELECT whatsapp_sessao
             FROM usuarios
             WHERE id = ?
-        """,
-        (usuario_id,))
+        """, (usuario_id,))
 
         usuario = cursor.fetchone()
 
+        conn.close()
 
         if not usuario:
 
-            conn.close()
-
-            return {
-                "status":"error",
-                "erro":"Usuário não encontrado"
-            }
-
-
-        sessao = usuario["whatsapp_sessao"]
-        empresa_id = usuario["empresa_id"]
-
-
-        # ENVIA WHATSAPP
+            return jsonify({
+                "status": "error",
+                "erro": "Usuário não encontrado"
+            })
 
         resp = requests.post(
             "https://zoom-leggings-viability.ngrok-free.dev/enviar",
             json={
-                "sessao": sessao,
+                "sessao": usuario["whatsapp_sessao"],
                 "numero": telefone,
                 "mensagem": mensagem
-            }
+            },
+            timeout=20
         )
 
-
-        # SALVA CONVERSA
-
-        cursor.execute("""
-            INSERT INTO conversas_whatsapp
-            (
-                empresa_id,
-                usuario_id,
-                sessao,
-                telefone,
-                nome,
-                mensagem,
-                tipo,
-                data_hora
-            )
-
-            VALUES (?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
-        """,
-        (
-            empresa_id,
-            usuario_id,
-            sessao,
-            telefone,
-            "Corretor",
-            mensagem,
-            "corretor"
-        ))
-
-
-        conn.commit()
-        conn.close()
-
-
-        return {
-            "status":"ok"
-        }
-
+        return jsonify(resp.json())
 
     except Exception as e:
 
-        print(e)
+        print("ERRO ENVIO:", e)
 
-        return {
-            "status":"error",
-            "erro":str(e)
-        }
-
-
-@app.route("/controle_ia/<telefone>/<acao>", methods=["POST"])
-@verificar_sessao
-def controle_ia(telefone, acao):
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+        return jsonify({
+            "status": "error",
+            "erro": str(e)
+        })
 
 
-    if acao == "ativar":
-
-        cursor.execute("""
-            UPDATE controle_ia_whatsapp
-
-            SET 
-            ia_ativa = 1,
-            atendendo = 1,
-            ultima_acao = CURRENT_TIMESTAMP
-
-            WHERE telefone = ?
-
-        """,
-        (telefone,))
-
-
-    elif acao == "desativar":
-
-        cursor.execute("""
-            UPDATE controle_ia_whatsapp
-
-            SET
-            ia_ativa = 0,
-            atendendo = 0,
-            ultima_acao = CURRENT_TIMESTAMP
-
-            WHERE telefone = ?
-
-        """,
-        (telefone,))
-
-
-    conn.commit()
-    conn.close()
-
-
-    return jsonify({
-        "status":"ok",
-        "acao":acao
-    })
-
-
-
-
-@app.route("/whatsapp-atendimento")
-@verificar_sessao
-def whatsapp_atendimento():
-
-    usuario_id = session["usuario_id"]
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            c.id,
-            c.telefone,
-
-            CASE
-                WHEN c.nome IS NULL OR c.nome = ''
-                THEN c.telefone
-                ELSE c.nome
-            END as nome,
-
-            c.mensagem,
-            c.tipo,
-            c.data_hora,
-
-            COALESCE(ia.ia_ativa,0) as ia_ativa
-
-        FROM conversas_whatsapp c
-
-        LEFT JOIN controle_ia_whatsapp ia
-        ON ia.telefone = c.telefone
-
-        WHERE c.id IN (
-
-            SELECT MAX(id)
-
-            FROM conversas_whatsapp
-
-            WHERE usuario_id = ?
-
-            GROUP BY telefone
-
-        )
-
-        ORDER BY c.id DESC
-
-    """,
-    (usuario_id,))
-
-    conversas = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        "whatsapp_atendimento.html",
-        conversas=conversas
-    )
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
