@@ -573,7 +573,7 @@ def enviar_imovel(imovel_id, telefone):
     if not foto:
         return "Imóvel sem fotos cadastradas"
 
-   imagem = ("https://smartimob-production.up.railway.app/uploads/imoveis/" + foto["nome_arquivo"] )
+    imagem = ("https://smartimob-production.up.railway.app/uploads/imoveis/" + foto["nome_arquivo"] )
   
     print("FOTO:", foto["nome_arquivo"])
     print("URL IMAGEM:", imagem)
