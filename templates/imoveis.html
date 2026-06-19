@@ -605,55 +605,87 @@ async function enviarImovelWhatsapp(){
     const imovelId =
         document.getElementById("imovelSelecionado").value;
 
+
     if(!telefone){
 
         alert("Digite o telefone");
         return;
+
     }
+
 
     document.getElementById(
         "loadingWhatsapp"
     ).style.display = "flex";
 
+
     try{
 
+
         const resp = await fetch(
-            `/enviar_imovel/${imovelId}/${telefone}`
+
+            `/enviar_imovel_link/${imovelId}/${telefone}`
+
         );
 
+
         const dados = await resp.json();
+
+
 
         document.getElementById(
             "loadingWhatsapp"
         ).style.display = "none";
 
+
+
         if(dados.sucesso){
 
+
             fecharModalWhatsapp();
+
 
             document.getElementById(
                 "telefoneDestino"
             ).value = "";
 
-            alert("✅ Imóvel enviado com sucesso!");
+
+            alert(
+                "✅ Imóvel enviado com link!"
+            );
+
 
         }else{
 
-            alert("❌ Erro ao enviar imóvel");
+
+            alert(
+                "❌ Erro: " + 
+                (dados.erro || "falha no envio")
+            );
+
+
         }
 
+
+
     }catch(err){
+
 
         document.getElementById(
             "loadingWhatsapp"
         ).style.display = "none";
 
-        alert("❌ Erro ao enviar");
+
+        alert(
+            "❌ Erro ao enviar"
+        );
+
 
         console.log(err);
-    }
-}
 
+    }
+
+}
     
 function mudarFoto(carouselId, direcao) {
     const container = document.getElementById(carouselId).querySelector('.carousel-images');
