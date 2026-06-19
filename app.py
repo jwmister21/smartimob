@@ -2325,7 +2325,7 @@ def login():
             session["is_admin"] = usuario['is_admin']
             session["user_email"] = usuario['email']
             conn.close()
-            return redirect('/index')
+            return redirect('/sistema')
 
         conn.close()
         return render_template("login.html", erro="E-mail ou senha incorretos.")
