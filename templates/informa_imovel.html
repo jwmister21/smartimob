@@ -4,7 +4,23 @@
 <head>
 
 <meta charset="UTF-8">
+<meta property="og:title"
+content="{{ imovel.titulo }}">
 
+
+<meta property="og:description"
+content="
+R$ {{ imovel.valor }} |
+{{ imovel.quartos }} quartos |
+{{ imovel.bairro }} - {{ imovel.cidade }}
+">
+
+
+{% if foto %}
+
+<meta property="og:image"
+content="{{ request.host_url }}uploads/imoveis/{{ foto.nome_arquivo }}">
+{% endif %}
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 
