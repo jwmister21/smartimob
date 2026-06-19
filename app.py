@@ -559,7 +559,7 @@ R$ {valor}
 
             },
 
-            timeout=60
+            timeout=120
 
         )
 
@@ -1855,7 +1855,7 @@ def enviar_mensagem():
 
             },
 
-            timeout=30
+            timeout=120
 
         )
 
