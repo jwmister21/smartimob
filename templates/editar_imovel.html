@@ -1,162 +1,35 @@
 {% extends 'base.html' %}
 
 {% block title %}Editar Imóvel{% endblock %}
-
 {% block pagina %}Editar Imóvel{% endblock %} 
 
 {% block content %}
 <style>
-    .card { background: #111827; padding: 25px; border-radius: 20px; border: 1px solid #1f2937; }
-    
-    .form-grid { 
-        display: grid; 
-        grid-template-columns: repeat(3, 1fr); 
-        gap: 15px; 
-    }
-
+    .card { background: #111827; padding: 25px; border-radius: 20px; border: 1px solid #1f2937; color: white; }
+    .section-title { color: #0ea5e9; margin: 25px 0 15px 0; border-bottom: 1px solid #1f2937; padding-bottom: 5px; font-size: 1.1em; }
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
     .campo-box { display: flex; flex-direction: column; gap: 5px; }
     .campo-box label { color: #9ca3af; font-size: 13px; margin-left: 5px; }
-
-    .form-grid input, .form-grid select {
-        width: 100%;
-        padding: 12px;
-        background: #0f172a;
-        border: 1px solid #374151;
-        border-radius: 10px;
-        color: white;
-        box-sizing: border-box;
-    }
-
+    .form-grid input, .form-grid select, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #374151; border-radius: 10px; color: white; box-sizing: border-box; }
     .img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #374151; }
-
     .btn-voltar { color: #9ca3af; text-decoration: none; margin-right: 15px; }
-    
-    .btn {
-        background: #0ea5e9;
-        color: white;
-        padding: 12px 25px;
-        border-radius: 10px;
-        border: none;
-        cursor: pointer;
-        font-weight: bold;
-    }
+    .btn { background: #0ea5e9; color: white; padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
 </style>
 
 <div class="card">
     <form method="POST" enctype="multipart/form-data">
+        
+        <h3 class="section-title">Informações Principais</h3>
         <div class="form-grid">
-            <div class="campo-box">
-                <label>Título</label>
-                <input type="text" name="titulo" value="{{ imovel['titulo'] }}" required>
-            </div>
-
-            <div class="campo-box">
-                <label>Tipo</label>
+            <div class="campo-box"><label>Título</label><input type="text" name="titulo" value="{{ imovel['titulo'] }}" required></div>
+            <div class="campo-box"><label>Tipo</label>
                 <select name="tipo">
-                    {% for t in ['Casa', 'Apartamento', 'Terreno', 'Comercial'] %}
+                    {% for t in ['Casa', 'Apartamento', 'Terreno', 'Comercial', 'Duplex', 'Triplex', 'Kitnet', 'Bangalo'] %}
                         <option value="{{ t }}" {% if imovel['tipo'] == t %}selected{% endif %}>{{ t }}</option>
                     {% endfor %}
                 </select>
             </div>
-
-            <div class="campo-box">
-                <label>Valor (R$)</label>
-                <input type="text" name="valor" id="valor-input" value="{{ imovel['valor'] }}">
-            </div>
-
-            <div class="campo-box">
-                <label>Cidade</label>
-                <input type="text" name="cidade" value="{{ imovel['cidade'] }}">
-            </div>
-            <div class="campo-box">
-                 <label>Condiminio </label>
-                 <input type="text" name="condominio" value="{{ imovel['condominio'] }}">
-            </div>
-
-            <div class="campo-box">
-                <label>link driver</label>
-                <input type="text" name="link" value="{{ imovel['link'] }}">
-            </div>
-            <div class="campo-box">
-                <label>Cep</label>
-                <input type="text" name="cep" value="{{ imovel['cep'] }}">
-             </div>   
-                
-            
-            <div class="campo-box">
-                <label>Bairro</label>
-                <input type="text" name="bairro" value="{{ imovel['bairro'] }}">
-            </div>
-
-            <div class="campo-box">
-                <label>Quartos</label>
-                <input type="number" name="quartos" value="{{ imovel['quartos'] or 0 }}">
-            </div>
-
-            <div class="campo-box">
-                <label>Suite</label>
-                <input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}">
-            </div>
-
-            <div class="campo-box">
-                <label>Anuais</label>
-                <input type="text" name="anuais" value="{{ imovel['anuais'] }}">
-            </div>
-
-            <div class="campo-box">
-                <label>Parcela</label>
-                <input type="text" name="parcela" value="{{ imovel['parcela'] }}">
-            </div>
-
-            <div class="campo-box">
-                <label>Prazo</label>
-                <input type="text" name="prazo" value="{{ imovel['prazo'] }}">
-            </div>
-
-
-            <div class="campo-box">
-                <label>Área (m²)</label>
-                <input type="number" name="area" value="{{ imovel['area'] or 0 }}">
-            </div>
-
-            <div class="campo-box">
-    <label>Rua</label>
-    <input type="text" name="rua" value="{{ imovel['rua'] or '' }}">
-</div>
-
-<div class="campo-box">
-    <label>IPTU</label>
-    <input type="text" name="iptu" value="{{ imovel['iptu'] or '' }}">
-</div>
-
-<div class="campo-box">
-    <label>Vagas de Garagem</label>
-    <input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}">
-</div>
-
-<div class="campo-box">
-    <label>Área de Lazer</label>
-    <input type="text" name="lazer" value="{{ imovel['lazer'] or '' }}" placeholder="Piscina, Churrasqueira, Academia...">
-</div>
-
-<div class="campo-box">
-    <label>Lavabo</label>
-    <select name="lavabo">
-        <option value="0" {% if not imovel['lavabo'] %}selected{% endif %}>Não</option>
-        <option value="1" {% if imovel['lavabo'] %}selected{% endif %}>Sim</option>
-    </select>
-</div>
-
-<div class="campo-box">
-    <label>Sacada</label>
-    <select name="sacada">
-        <option value="0" {% if not imovel['sacada'] %}selected{% endif %}>Não</option>
-        <option value="1" {% if imovel['sacada'] %}selected{% endif %}>Sim</option>
-    </select>
-</div>
-
-            <div class="campo-box">
-                <label>Status</label>
+            <div class="campo-box"><label>Status (Comercialização)</label>
                 <select name="status">
                     <option value="Venda" {% if imovel['status'] == 'Venda' %}selected{% endif %}>Venda</option>
                     <option value="Aluguel" {% if imovel['status'] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
@@ -164,40 +37,54 @@
             </div>
         </div>
 
-        <div class="campo-box" style="margin-top: 20px;">
-            <label>Fotos Atuais:</label>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-        {% for foto in fotos %}
-            <div style="position: relative;">
-                <img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview">
-                <br>
-                <a href="/excluir-foto/{{ foto['id'] }}" style="color: #ff4d4d; font-size: 12px;">Excluir</a>
+        <h3 class="section-title">Localização</h3>
+        <div class="form-grid">
+            <div class="campo-box"><label>CEP</label><input type="text" name="cep" value="{{ imovel['cep'] }}"></div>
+            <div class="campo-box"><label>Cidade</label><input type="text" name="cidade" value="{{ imovel['cidade'] }}"></div>
+            <div class="campo-box"><label>Bairro</label><input type="text" name="bairro" value="{{ imovel['bairro'] }}"></div>
+            <div class="campo-box" style="grid-column: span 3;"><label>Rua / Logradouro</label><input type="text" name="rua" value="{{ imovel['rua'] }}"></div>
+        </div>
+
+        <h3 class="section-title">Detalhes do Imóvel</h3>
+        <div class="form-grid">
+            <div class="campo-box"><label>Área (m²)</label><input type="number" name="area" value="{{ imovel['area'] or 0 }}"></div>
+            <div class="campo-box"><label>Quartos</label><input type="number" name="quartos" value="{{ imovel['quartos'] or 0 }}"></div>
+            <div class="campo-box"><label>Suítes</label><input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}"></div>
+            <div class="campo-box"><label>Vagas Garagem</label><input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}"></div>
+            <div class="campo-box"><label>Lavabo</label>
+                <select name="lavabo"><option value="0" {% if not imovel['lavabo'] %}selected{% endif %}>Não</option><option value="1" {% if imovel['lavabo'] %}selected{% endif %}>Sim</option></select>
             </div>
-        {% endfor %}
-    </div>
-</div>
+            <div class="campo-box"><label>Sacada</label>
+                <select name="sacada"><option value="0" {% if not imovel['sacada'] %}selected{% endif %}>Não</option><option value="1" {% if imovel['sacada'] %}selected{% endif %}>Sim</option></select>
+            </div>
+            <div class="campo-box" style="grid-column: span 3;"><label>Área de Lazer</label><input type="text" name="lazer" value="{{ imovel['lazer'] or '' }}"></div>
+        </div>
 
-        <div class="campo-box" style="margin-top:20px;">
-    <label>Adicionar Novas Fotos</label>
+        <h3 class="section-title">Financeiro</h3>
+        <div class="form-grid">
+            <div class="campo-box"><label>Valor (R$)</label><input type="text" name="valor" class="moeda" value="{{ imovel['valor'] }}"></div>
+            <div class="campo-box"><label>Condomínio (R$)</label><input type="text" name="condominio" class="moeda" value="{{ imovel['condominio'] }}"></div>
+            <div class="campo-box"><label>IPTU (R$)</label><input type="text" name="iptu" class="moeda" value="{{ imovel['iptu'] }}"></div>
+            <div class="campo-box"><label>Entrada</label><input type="text" name="entrada" class="moeda" value="{{ imovel['entrada'] }}"></div>
+            <div class="campo-box"><label>Parcela</label><input type="text" name="parcela" class="moeda" value="{{ imovel['parcela'] }}"></div>
+            <div class="campo-box"><label>Anuais</label><input type="text" name="anuais" class="moeda" value="{{ imovel['anuais'] }}"></div>
+            <div class="campo-box" style="grid-column: span 3;"><label>Prazo</label><input type="text" name="prazo" value="{{ imovel['prazo'] }}"></div>
+            <div class="campo-box" style="grid-column: span 3;"><label>Link Drive</label><input type="text" name="link" value="{{ imovel['link'] }}"></div>
+        </div>
 
-    <input
-    type="file"
-    id="fotos"
-    name="fotos[]"
-    multiple
-    accept="image/*">
+        <h3 class="section-title">Fotos e Descrição</h3>
+        <div class="campo-box">
+            <label>Fotos Atuais</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% for foto in fotos %}
+                    <div style="position: relative;"><img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview"><br><a href="/excluir-foto/{{ foto['id'] }}" style="color: #ff4d4d; font-size: 12px;">Excluir</a></div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="campo-box" style="margin-top: 15px;"><label>Adicionar Novas Fotos</label><input type="file" name="fotos[]" multiple accept="image/*" id="input-fotos"><div id="preview-fotos" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div></div>
+        <div class="campo-box" style="margin-top: 15px;"><label>Descrição</label><textarea name="descricao" rows="5">{{ imovel['descricao'] }}</textarea></div>
 
-         <div id="preview-fotos"
-         style="display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;">
-    </div>   
-  </div>
-
-        
-
-        <label style="color: #9ca3af; font-size: 13px; display: block; margin-top: 15px;">Descrição</label>
-        <textarea name="descricao" rows="5" style="width:100%; padding:15px; border-radius:12px; background:#0f172a; border:1px solid #374151; color:white;">{{ imovel['descricao'] }}</textarea>
-
-        <div style="margin-top: 20px;">
+        <div style="margin-top: 30px;">
             <a href="/imoveis" class="btn-voltar">← Voltar</a>
             <button type="submit" class="btn">Salvar Alterações</button>
         </div>
@@ -205,62 +92,31 @@
 </div>
 
 <script>
-document.getElementById("fotos").addEventListener("change", function() {
-
+// Preview de fotos
+document.getElementById("input-fotos").addEventListener("change", function() {
     let preview = document.getElementById("preview-fotos");
-
     preview.innerHTML = "";
-
     Array.from(this.files).forEach(file => {
-
         let reader = new FileReader();
-
-        reader.onload = function(e) {
-
+        reader.onload = (e) => {
             let img = document.createElement("img");
-
             img.src = e.target.result;
-
-            img.style.width = "120px";
-            img.style.height = "120px";
-            img.style.objectFit = "cover";
-            img.style.borderRadius = "10px";
-            img.style.border = "2px solid #374151";
-
+            img.className = "img-preview";
             preview.appendChild(img);
         };
-
         reader.readAsDataURL(file);
     });
-
 });
 
-
- 
-
-// Função unificada para formatar
-function formatarMoeda(valor) {
-    if (!valor) return "";
-    let valorNumerico = valor.toString().replace(/\D/g, '');
-    return (Number(valorNumerico) / 100).toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
+// Formatação de Moeda
+function formatarMoeda(e) {
+    let v = e.target.value.replace(/\D/g, '');
+    e.target.value = (Number(v) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-// 1. Ao digitar
-const inputValor = document.getElementById('valor-input');
-inputValor.addEventListener('input', (e) => {
-    e.target.value = formatarMoeda(e.target.value);
+document.querySelectorAll('.moeda').forEach(input => {
+    input.addEventListener('input', formatarMoeda);
+    if(input.value) input.value = (Number(input.value.replace(/\D/g, '')) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 });
-
-// 2. Ao carregar a página
-window.addEventListener("load", function() {
-    const input = document.getElementById('valor-input');
-    if (input.value) {
-        input.value = formatarMoeda(input.value);
-    }
-});
-
 </script>
 {% endblock %}
