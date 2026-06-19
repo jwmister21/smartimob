@@ -19,7 +19,7 @@ R$ {{ imovel.valor }} |
 {% if foto %}
 
 <meta property="og:image"
-content="{{ request.host_url }}uploads/imoveis/{{ foto.nome_arquivo }}">
+content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
 {% endif %}
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
