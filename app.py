@@ -1797,12 +1797,16 @@ def campanhas():
 @verificar_sessao
 def enviar_mensagem():
 
+    WPP_URL = "https://solomon-sustainability-commerce-classroom.trycloudflare.com"
+
+
     data = request.get_json()
 
     telefone = data.get("telefone")
     mensagem = data.get("mensagem")
 
     usuario_id = session["usuario_id"]
+
 
     try:
 
@@ -1811,15 +1815,19 @@ def enviar_mensagem():
 
         cursor = conn.cursor()
 
+
         cursor.execute("""
             SELECT whatsapp_sessao
             FROM usuarios
             WHERE id = ?
         """, (usuario_id,))
 
+
         usuario = cursor.fetchone()
 
         conn.close()
+
+
 
         if not usuario:
 
@@ -1828,27 +1836,49 @@ def enviar_mensagem():
                 "erro": "Usuário não encontrado"
             })
 
+
+
         resp = requests.post(
-            "https://zoom-leggings-viability.ngrok-free.dev/enviar",
+
+            f"{WPP_URL}/enviar",
+
             json={
-                "sessao": usuario["whatsapp_sessao"],
-                "numero": telefone,
-                "mensagem": mensagem
+
+                "sessao":
+                    usuario["whatsapp_sessao"],
+
+                "numero":
+                    telefone,
+
+                "mensagem":
+                    mensagem
+
             },
-            timeout=20
+
+            timeout=30
+
         )
 
-        return jsonify(resp.json())
+
+        return jsonify(
+            resp.json()
+        )
+
+
 
     except Exception as e:
 
+
         print("ERRO ENVIO:", e)
 
-        return jsonify({
-            "status": "error",
-            "erro": str(e)
-        })
 
+        return jsonify({
+
+            "status": "error",
+
+            "erro": str(e)
+
+        })
 
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
@@ -2292,12 +2322,16 @@ def login():
 @verificar_sessao
 def buscar_qr():
 
+    WPP_URL = "https://solomon-sustainability-commerce-classroom.trycloudflare.com"
+
     usuario_id = session["usuario_id"]
+
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
 
     cursor = conn.cursor()
+
 
     cursor.execute("""
         SELECT whatsapp_sessao
@@ -2305,15 +2339,46 @@ def buscar_qr():
         WHERE id=?
     """, (usuario_id,))
 
+
     usuario = cursor.fetchone()
 
     conn.close()
 
-    r = requests.get(
-        f"https://zoom-leggings-viability.ngrok-free.dev/qr/{usuario['whatsapp_sessao']}"
-    )
 
-    return r.json()
+    if not usuario:
+        return jsonify({
+            "erro": "Usuário não encontrado"
+        }), 404
+
+
+    sessao = usuario["whatsapp_sessao"]
+
+
+    if not sessao:
+        return jsonify({
+            "erro": "Sessão WhatsApp não configurada"
+        }), 400
+
+
+
+    try:
+
+        r = requests.get(
+            f"{WPP_URL}/qr/{sessao}",
+            timeout=15
+        )
+
+
+        return jsonify(
+            r.json()
+        )
+
+
+    except Exception as e:
+
+        return jsonify({
+            "erro": str(e)
+        }), 500
 
 @app.route("/cadastrar_usuario", methods=["GET", "POST"])
 def cadastrar_usuario():
