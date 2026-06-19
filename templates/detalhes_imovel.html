@@ -1,91 +1,168 @@
-{% extends 'base.html' %}
+adiciona os campos que falta exibir e organiza {% extends 'base.html' %}
 
 {% block title %}{{ imovel.titulo }}{% endblock %}
 
 {% block content %}
 <style>
-    .detalhes-card { background: #111827; border-radius: 20px; overflow: hidden; color: white; margin: 20px 0; border: 1px solid #1f2937; }
-    .info { padding: 30px; }
-    .titulo { font-size: 32px; font-weight: bold; margin-bottom: 5px; color: #f8fafc; }
-    .valor { font-size: 28px; color: #22c55e; font-weight: bold; margin-bottom: 25px; }
-    .section-title { color: #0ea5e9; margin: 25px 0 15px 0; font-size: 1.2em; border-bottom: 1px solid #1f2937; padding-bottom: 5px; }
-    .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-    .item { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; font-size: 0.95em; }
-    .label-item { color: #94a3b8; display: block; font-size: 0.8em; margin-bottom: 4px; }
-    .acoes-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #334155; }
-    .btn-acao { padding: 12px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none; transition: 0.3s; }
-    .btn-editar { background: #0ea5e9; color: white; }
-    .btn-excluir { background: transparent; color: #ef4444; border: 1px solid #ef4444; }
-    .btn-drive { background: #10b981; color: white; }
+    /* Reaproveitando o CSS do Carrossel que já temos no sistema */
+    .carousel-container { position: relative; width: 100%; height: 400px; overflow: hidden; border-radius: 20px 20px 0 0; }
+    .carousel-images { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
+    .carousel-images img { min-width: 100%; height: 400px; object-fit: cover; }
+    .btn-nav { position: absolute; top: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; padding: 15px; font-size: 20px; z-index: 10; }
+
+    /* Estilos da Página */
+    .detalhes-card { background: #111827; border-radius: 20px; overflow: hidden; color: white; margin: 20px 0; }
+    .info { padding: 30px; }
+    .titulo { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: #f8fafc; }
+    .valor { font-size: 28px; color: #22c55e; font-weight: bold; margin-bottom: 25px; }
+    .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .item { background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid #374151; }
+    .acoes-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #334155; }
+    .btn-acao { padding: 12px 24px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; cursor: pointer; border: none; }
+    .btn-editar { background: #0ea5e9; color: white; }
+    .btn-excluir { background: #374151; color: #ef4444; border: 1px solid #ef4444; }
+    .btn-voltar { background: transparent; color: #94a3b8; border: 1px solid #334155; }
+    .btn-compartilhar { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; }
 </style>
 
 <div class="detalhes-card">
-    {% if imovel.fotos %}
-    <div class="carousel-container" id="carousel-detalhe">
-        <div class="carousel-images">
-            {% for foto in imovel.fotos %}
-                <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
+    
+    {% if imovel.fotos %}
+    <div class="carousel-container" id="carousel-detalhe">
+        <div class="carousel-images">
+            {% for foto in imovel.fotos %}
+                <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
+            {% endfor %}
+        </div>
+        {% if imovel.fotos|length > 1 %}
+            <button class="btn-nav" style="left:0" onclick="mudarFoto('carousel-detalhe', -1)">❮</button>
+            <button class="btn-nav" style="right:0" onclick="mudarFoto('carousel-detalhe', 1)">❯</button>
+        {% endif %}
+    </div>
+    {% endif %}
 
-    <div class="info">
-        <div class="titulo">{{ imovel.titulo }}</div>
-        <div class="valor">{{ imovel.valor }}</div>
+    <div class="info">
+        <div class="titulo">{{ imovel.titulo }}</div>
+<div class="valor">
+    {% set valor_str = imovel.valor|string %}
+    
+    {# Verifica se o valor é puramente numérico (float ou int) #}
+    {% if valor_str.replace('.', '', 1).replace(',', '', 1).replace('-', '', 1).isdigit() or (valor_str.replace('.', '', 1).isdigit()) %}
+        
+        {# É um número bruto, aplica a formatação #}
+        R$ {{ "{:,.2f}".format(valor_str|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        
+    {% else %}
+        
+        {# Já está formatado ou é uma string, exibe como está #}
+        {{ imovel.valor }}
+        
+    {% endif %}
+</div>
 
-        <h3 class="section-title">Dados do Imóvel</h3>
-        <div class="grid-info">
-            <div class="item"><span class="label-item">Tipo</span> {{ imovel.tipo }}</div>
-            <div class="item"><span class="label-item">Status</span> {{ imovel.status }}</div>
-            <div class="item"><span class="label-item">Área</span> {{ imovel.area }} m²</div>
-            <div class="item"><span class="label-item">Quartos</span> {{ imovel.quartos }}</div>
-            <div class="item"><span class="label-item">Suítes</span> {{ imovel.banheiros }}</div>
-            <div class="item"><span class="label-item">Vagas</span> {{ imovel.vaga_garagem or 0 }}</div>
-            <div class="item"><span class="label-item">Lavabo</span> {{ 'Sim' if imovel.lavabo else 'Não' }}</div>
-            <div class="item"><span class="label-item">Sacada</span> {{ 'Sim' if imovel.sacada else 'Não' }}</div>
-            <div class="item" style="grid-column: span 1;"><span class="label-item">Lazer</span> {{ imovel.lazer or 'Não informado' }}</div>
-        </div>
+<div class="grid-info">
+    <div class="item">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
+    <div class="item">🛣 Rua: {{ imovel.rua or 'Não especificada' }}</div>
 
-        <h3 class="section-title">Localização</h3>
-        <div class="grid-info">
-            <div class="item"><span class="label-item">Cidade/Bairro</span> {{ imovel.cidade }} / {{ imovel.bairro }}</div>
-            <div class="item"><span class="label-item">Rua</span> {{ imovel.rua or 'N/A' }}</div>
-            <div class="item"><span class="label-item">CEP</span> {{ imovel.cep or 'N/A' }}</div>
-        </div>
+    <div class="item">🏠 {{ imovel.tipo }}</div>
+    <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
+    <div class="item">🚿 {{ imovel.banheiros }} Suites</div>
 
-        <h3 class="section-title">Condições Financeiras</h3>
-        <div class="grid-info">
-            <div class="item"><span class="label-item">Condomínio</span> {{ imovel.condominio or 'R$ 0,00' }}</div>
-            <div class="item"><span class="label-item">IPTU</span> {{ imovel.iptu or 'R$ 0,00' }}</div>
-            <div class="item"><span class="label-item">Entrada</span> {{ imovel.entrada or 'N/A' }}</div>
-            <div class="item"><span class="label-item">Parcela</span> {{ imovel.parcela or 'N/A' }}</div>
-            <div class="item"><span class="label-item">Anuais</span> {{ imovel.anuais or 'N/A' }}</div>
-            <div class="item"><span class="label-item">Prazo</span> {{ imovel.prazo or 'N/A' }}</div>
-        </div>
+    <div class="item">📐 {{ imovel.area }} m²</div>
 
-        <h3 class="section-title">Descrição</h3>
-        <div class="item" style="background: transparent; border: none; padding-left: 0;">{{ imovel.descricao }}</div>
+    <div class="item">💰 IPTU: R$ {{ imovel.iptu or '0.00' }}</div>
+    <div class="item">🏢 Condomínio: R$ {{ imovel.condominio or '0.00' }}</div>
 
-        <div class="acoes-container">
-            <a href="/imoveis" class="btn-acao" style="background:#374151;">← Voltar</a>
-            <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
-            <button onclick="copiarLink('{{ imovel['link'] }}')" class="btn-acao btn-drive">🔗 Copiar Drive</button>
-            <button onclick="compartilharImovel()" class="btn-acao" style="background:#6366f1;">📱 Compartilhar</button>
-            <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Excluir este imóvel?')">🗑 Excluir</a>
-        </div>
-    </div>
+    <div class="item">📄 Status: {{ imovel.status }}</div>
+    <div class="item">📮 CEP: {{ imovel.cep or 'Não informado' }}</div>
+
+    <div class="item">🚗 Vagas: {{ imovel.vaga_garagem or 0 }}</div>
+
+    <div class="item">
+        🚻 Lavabo:
+        {% if imovel.lavabo %}
+            Sim
+        {% else %}
+            Não
+        {% endif %}
+    </div>
+
+    <div class="item">
+        🌴 Área de Lazer:
+        {% if imovel.lazer %}
+            {{ imovel.lazer }}
+        {% else %}
+            Não informado
+        {% endif %}
+    </div>
+
+    <div class="item">
+        🌅 Sacada:
+        {% if imovel.sacada %}
+            Sim
+        {% else %}
+            Não
+        {% endif %}
+    </div>
+
+    {% if imovel.link %}
+    <div class="item">
+        🔗 <a href="{{ imovel.link }}" target="_blank" style="color:#38bdf8;">
+            Ver Pasta do Imóvel
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<h3>Descrição</h3>
+<div class="item">{{ imovel.descricao }}</div>
+
+        <div class="acoes-container">
+            <a href="/imoveis" class="btn-acao btn-voltar">← Voltar</a>
+            <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
+            <button onclick="compartilharImovel()" class="btn-acao btn-compartilhar">📱 Compartilhar</button>
+            <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Deseja excluir?')">🗑 Excluir</a>
+            <button class="btn-drive" 
+            onclick="copiarLink('{{ imovel['link'] }}')" 
+            style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+        Copiar Drive
+    </button>
+        </div>
+    </div>
 </div>
 
 <script>
-    function copiarLink(texto) {
-        if (!texto || texto === "None" || texto === "") { alert("Sem link de Drive cadastrado."); return; }
-        navigator.clipboard.writeText(texto).then(() => alert("Link copiado!"));
-    }
-    function compartilharImovel() {
-        const link = window.location.href;
-        if (navigator.share) navigator.share({title: '{{ imovel.titulo }}', url: link}).catch(console.error);
-        else { navigator.clipboard.writeText(link); alert("Link copiado!"); }
-    }
+
+    function copiarLink(texto) {
+    if (!texto || texto === "None" || texto === "") {
+        alert("Este imóvel não possui um link de Drive cadastrado.");
+        return;
+    }
+
+    navigator.clipboard.writeText(texto).then(() => {
+        alert("Link copiado para a área de transferência!");
+    }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+    });
+    }
+    // Mesma função que usamos na listagem
+    function mudarFoto(carouselId, direcao) {
+        const container = document.getElementById(carouselId).querySelector('.carousel-images');
+        const total = container.children.length;
+        let index = parseInt(container.dataset.index || 0);
+        index = (index + direcao + total) % total;
+        container.dataset.index = index;
+        container.style.transform = `translateX(-${index * 100}%)`;
+    }
+
+    function compartilharImovel() {
+        const link = window.location.href;
+        if (navigator.share) {
+            navigator.share({title: '{{ imovel.titulo }}', url: link}).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(link);
+            alert("Link copiado!");
+        }
+    }
 </script>
 {% endblock %}
