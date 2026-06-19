@@ -618,10 +618,10 @@ Fale comigo agora!
     print("STATUS:", r.status_code)
     print("RESPOSTA:", r.text)
  
-try:
-    resultado = r.json()
-except:
-    return r.text
+    try:
+        resultado = r.json()
+    except:
+        return r.text
 
     return jsonify(resultado)
 
