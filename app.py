@@ -399,192 +399,102 @@ def leads_site():
         leads=leads
     )
 
-@app.route("/enviar_imovel/<int:imovel_id>/<telefone>")
+@app.route("/enviar_imovel_link/<int:imovel_id>/<telefone>")
 @verificar_sessao
-def enviar_imovel(imovel_id, telefone):
+def enviar_imovel_link(imovel_id, telefone):
 
     WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # ==========================
-    # 1. Busca imóvel
-    # ==========================
 
     cursor.execute(
-        "SELECT * FROM imoveis WHERE id = ?",
+        """
+        SELECT *
+        FROM imoveis
+        WHERE id = ?
+        """,
         (imovel_id,)
     )
+
 
     imovel = cursor.fetchone()
 
-    if not imovel:
-        conn.close()
-        return "Imóvel não encontrado"
-
-
-    # ==========================
-    # 2. Busca foto
-    # ==========================
-
-    cursor.execute(
-        "SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ? LIMIT 1",
-        (imovel_id,)
-    )
-
-    foto = cursor.fetchone()
 
     conn.close()
 
 
-    if not foto:
-        return "Imóvel sem fotos cadastradas"
+    if not imovel:
+        return jsonify({
+            "erro":"Imóvel não encontrado"
+        })
 
 
+    # link público do imóvel
 
-    # ==========================
-    # 3. Converte imagem Base64
-    # ==========================
-
-    url_imagem = (
-        f"{request.host_url.rstrip('/')}"
-        f"/uploads/imoveis/{foto['nome_arquivo']}"
+    link_imovel = (
+        f"https://smartimob-production.up.railway.app/"
+        f"informa-imovel/{imovel_id}"
     )
 
 
-    try:
-
-        response = requests.get(
-            url_imagem,
-            timeout=10
-        )
-
-
-        if response.status_code != 200:
-            return "Erro ao acessar imagem"
-
-
-        base64_img = base64.b64encode(
-            response.content
-        ).decode("utf-8")
-
-
-        imagem_data = (
-            f"data:image/jpeg;base64,{base64_img}"
-        )
-
-
-    except Exception as e:
-
-        return f"Erro ao processar imagem: {str(e)}"
-
-
-
-
-    # ==========================
-    # 4. Mensagem do imóvel
-    # ==========================
-
-    valor = (
-        "{:,.0f}".format(
-            float(imovel["valor"])
-        )
-        .replace(",", "X")
-        .replace(".", ",")
-        .replace("X", ".")
-    )
-
-
-    legenda = f"""
+    mensagem = f"""
 🏡 *{imovel['titulo']}*
 
 📍 *Localização:*
 {imovel['bairro']} - {imovel['cidade']}
 
+
 💰 *Valor:*
-R$ {valor}
+R$ {imovel['valor']}
 
-🛏 {imovel['quartos']} quartos
-🚗 {imovel['vaga_garagem']} vagas
 
-{imovel['descricao'] or ""}
+🛏 Quartos: {imovel['quartos']}
+🚗 Vagas: {imovel['vaga_garagem']}
+
+
+Veja fotos e detalhes:
+
+🔗 {link_imovel}
 """
-
-
-
-    # ==========================
-    # 5. Formata WhatsApp
-    # ==========================
-
-    numero = (
-        telefone
-        .replace(" ", "")
-        .replace("-", "")
-        .replace("+", "")
-    )
-
-
-    if "@c.us" not in numero:
-
-        numero += "@c.us"
-
-
-
-
-    # ==========================
-    # 6. Envia para WPPConnect
-    # ==========================
+Descrição: {imovel['descricao']}
 
     try:
 
-        r = requests.post(
+        resp = requests.post(
 
-            f"{WPP_URL}/enviar-imagem",
+            f"{WPP_URL}/enviar-imovel",
 
             json={
 
                 "sessao":
-                    f"corretor_{session.get('usuario_id')}",
+                f"corretor_{session.get('usuario_id')}",
 
                 "numero":
-                    numero,
+                telefone,
 
-                "imagem":
-                    imagem_data,
-
-                "legenda":
-                    legenda
+                "mensagem":
+                mensagem
 
             },
 
-            timeout=120
+            timeout=30
 
         )
 
 
-
-        if r.status_code == 200:
-
-            return jsonify(
-                r.json()
-            )
-
-
-        return (
-            f"Erro WPPConnect: "
-            f"{r.status_code} - {r.text}"
-        )
-
+        return jsonify(resp.json())
 
 
     except Exception as e:
 
-        return (
-            "Falha conexão WhatsApp: "
-            f"{str(e)}"
-        )
+        return jsonify({
+            "erro":str(e)
+        })
+
 
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
