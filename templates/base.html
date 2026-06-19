@@ -6,297 +6,124 @@
 <title>{% block title %}SMARTZEN IMOB{% endblock %}</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 {% set path = request.path %}
-  <style>
+<style>
 /* =========================
-   RESET & BASE (MODO CLEAN)
+   ESTILO CLEAN & WHITE
 ========================= */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-body {
-    background: #f8fafc; /* Fundo bem claro */
-    color: #1e293b;     /* Texto cinza muito escuro (melhor leitura que preto puro) */
-    transition: all .25s ease;
-}
+body { background: #f8fafc; color: #1e293b; transition: all .25s ease; }
 
-/* =========================
-   SIDEBAR (WHITE VERSION)
-========================= */
+/* SIDEBAR */
 .sidebar {
-    position: fixed;
-    left: 0; top: 0; width: 260px; height: 100vh;
-    background: #ffffff; /* Fundo branco */
-    border-right: 1px solid #e2e8f0; /* Borda sutil */
+    position: fixed; left: 0; top: 0; width: 260px; height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e2e8f0;
     padding: 25px;
     display: flex; flex-direction: column;
 }
 
+.logo { width: 150px; height: auto; object-fit: contain; }
+.logo-area { display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+
+.menu { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+.menu-section-title {
+    color: #94a3b8; font-size: 10px; text-transform: uppercase;
+    font-weight: 700; margin: 15px 0 5px 12px;
+}
+
 .menu a {
-    text-decoration: none;
-    color: #64748b; /* Cinza para itens inativos */
-    padding: 10px 12px;
-    border-radius: 10px;
-    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: #64748b; padding: 10px 12px;
+    border-radius: 8px; display: flex; align-items: center; gap: 10px;
     font-size: 14px; transition: .2s;
 }
 
-.menu a:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-}
+.menu a:hover { background: #f1f5f9; color: #0f172a; }
+.menu a.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
 
-.menu a.active {
-    background: #eff6ff; /* Azul bem claro */
-    color: #2563eb;
-    font-weight: 600;
-}
-
-.menu-section-title {
-    color: #94a3b8;
-    font-size: 10px;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin: 15px 0 5px 12px;
-}
-
-/* =========================
-   MAIN & TOPBAR
-========================= */
+/* MAIN CONTENT */
 .main { margin-left: 260px; min-height: 100vh; padding: 35px; }
 
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+/* CONTROLES E DROPDOWN */
+.user-controls { display: flex; align-items: center; gap: 15px; }
 .dropbtn {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #1e293b;
-    padding: 10px 15px;
-    border-radius: 12px;
-    cursor: pointer;
+    background: #ffffff; border: 1px solid #e2e8f0; color: #1e293b;
+    padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;
 }
-
 .dropdown-content {
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    display: none; position: absolute; right: 0; background: #ffffff;
+    min-width: 160px; border-radius: 8px; border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 1000;
 }
+.dropdown:hover .dropdown-content { display: block; }
+.dropdown-content a { color: #1e293b; padding: 10px 16px; text-decoration: none; display: block; }
+.dropdown-content a:hover { background: #f8fafc; }
 
-.notif-box {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #1e293b;
+/* BADGES E NOTIFICAÇÕES */
+.badge {
+    background: #ef4444; color: white; padding: 2px 6px; border-radius: 50%;
+    font-size: 10px; position: absolute; top: -5px; right: -5px;
 }
+.icone-topo { position: relative; font-size: 20px; cursor: pointer; }
 
-/* =========================
-   CHAT WIDGET (MODO CLEAN)
-========================= */
+/* CHAT WIDGET */
 .chat-widget {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    position: fixed; bottom: 100px; right: 25px; width: 300px; height: 400px;
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+    display: none; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
 }
-
-#texto_cliente {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #1e293b;
-}
-
-.chat-footer { background: #ffffff; }
-
-.btn-analisar {
-    background: #f59e0b;
-    color: white;
-}
-
-/* Ajustes gerais de contraste */
-.badge { background: #ef4444; color: white; }
+.chat-footer { padding: 15px; border-top: 1px solid #f1f5f9; }
+#texto_cliente { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+.btn-analisar { width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+.chat-float-btn { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: #2563eb; color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 10px 15px rgba(37,99,235,0.3); }
 </style>
 </head>
 <body>
 
 <div class="sidebar">
-
-<div class="logo-area">
-
-<img src="{{ url_for('static', filename='logo_smartzen.png') }}"
-class="logo">
-
-
-</div>
-
-<div class="menu">
-
-<div class="menu-section-title">Principal</div>
-
-<a href="/sistema">🏠 Dashboard</a>
-
-<div class="menu-section-title">CRM</div>
-<a href="/clientes" class="{% if '/clientes' in path %}active{% endif %}">👥 Clientes</a>
-<a href="/funil" class="{% if '/funil' in path %}active{% endif %}">⚡ Funil</a>
-
-<div class="menu-section-title">Imóveis</div>
-<a href="/imoveis" class="{% if '/imoveis' in path %}active{% endif %}">🏢 Imóveis</a>
-<a href="/match_ia" class="{% if '/match_ia' in path %}active{% endif %}">🤝 Match IA</a>
-
-<div class="menu-section-title">Marketing</div>
-<a href="/gerar_anuncio" class="{% if '/gerar_anuncio' in path %}active{% endif %}">🧠 Gerar Anúncio</a>
-<a href="/campanhas" class="{% if '/campanhas' in path %}active{% endif %}">📢 Campanhas</a>
-
-<div class="menu-section-title">Sistema</div>
-<a href="/configuracoes" class="{% if '/configuracoes' in path %}active{% endif %}">⚙ Configurações</a>
-<a href="/whatsapp" class="{% if '/whatsapp' in path %}active{% endif %}">🟢 Whatsapp</a>
-<a href="/simulador_financiamento" class="{% if '/simulador_financiamento' in path %}active{% endif %}">💰 Financiamento</a>    
-
-
-{% if session.get('is_admin') == 1 %}
-
-<div class="menu-section-title">Administração</div>
-
-<a href="/admin/gestao">📊 Gestão</a>
-<a href="/admin/novo-usuario">➕ Novo Usuário</a>
-
-{% endif %}
-
-</div>
+    <div class="logo-area">
+        <img src="{{ url_for('static', filename='logo_smartzen.png') }}" class="logo">
+    </div>
+    <div class="menu">
+        <div class="menu-section-title">Principal</div>
+        <a href="/sistema">🏠 Dashboard</a>
+        <div class="menu-section-title">CRM</div>
+        <a href="/clientes" class="{% if '/clientes' in path %}active{% endif %}">👥 Clientes</a>
+        <a href="/funil" class="{% if '/funil' in path %}active{% endif %}">⚡ Funil</a>
+        <div class="menu-section-title">Imóveis</div>
+        <a href="/imoveis" class="{% if '/imoveis' in path %}active{% endif %}">🏢 Imóveis</a>
+        <a href="/match_ia" class="{% if '/match_ia' in path %}active{% endif %}">🤝 Match IA</a>
+        <div class="menu-section-title">Marketing</div>
+        <a href="/gerar_anuncio" class="{% if '/gerar_anuncio' in path %}active{% endif %}">🧠 Gerar Anúncio</a>
+        <a href="/campanhas" class="{% if '/campanhas' in path %}active{% endif %}">📢 Campanhas</a>
+    </div>
 </div>
 
 <div class="main">
-<div class="topbar">
-<h1>{% block pagina %}{% endblock %}</h1>
-<div class="user-controls">
-  <a href="/leads_site" class="icone-topo">
+    <div class="topbar">
+        <h1>{% block pagina %}{% endblock %}</h1>
+        <div class="user-controls">
+            <a href="/leads_site" class="icone-topo">🎯 {% if total_leads_site > 0 %}<span class="badge">{{ total_leads_site }}</span>{% endif %}</a>
+            <div class="dropdown">
+                <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
+                <div class="dropdown-content">
+                    <a href="/configuracoes">⚙ Configurações</a>
+                    <a href="/logout" style="color: #ef4444;">🚪 Sair</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    🎯
-
-    {% if total_leads_site > 0 %}
-    <span class="badge">
-        {{ total_leads_site }}
-    </span>
-    {% endif %}
-
-</a>
-<span style="font-size: 20px; margin-right: 20px; cursor: pointer; position: relative;" onclick="toggleNotificacoes()">
-🔔
-{% if lembretes|length > 0 %}
-<span class="badge">{{ lembretes|length }}</span>
-{% endif %}
-</span>
-
-<div id="notificacoes-box" class="notif-box">
-<h4 style="margin-bottom: 10px; border-bottom: 1px solid #374151; padding-bottom: 5px;">Visitas Hoje</h4>
-{% for l in lembretes %}
-<a href="/cliente/{{ l[0] }}" class="notif-item" style="display: block; margin-bottom: 8px;">
-<div style="font-weight: bold; color: white;">📅 {{ l[1] }}</div>
-<div style="font-size: 0.75rem; color: #9ca3af;">
-{% if l[10] and 'T' in l[10] %}
-
-Você tem um agendamento hoje {{ l[10].split('T')[1] }}
-
-{% else %}
-
-Você tem um agendamento hoje
-
-{% endif %}
-</div>
-</a>
-{% else %}
-<p style="color: #6b7280; font-size: 0.8rem; padding: 10px;">Nenhuma visita hoje.</p>
-{% endfor %}
-</div>
-
-
-          
-<div class="dropdown">
-<button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
-<div class="dropdown-content">
-<a href="/configuracoes">⚙ Configurações</a>
-<a href="/logout" style="color: #ff4d4d;">🚪 Sair</a>
-</div>
-</div>
-</div>
-</div>
-
-<div class="chat-widget" id="chat-widget">
-<div class="chat-header">
-<span>🧠 IA SmartZen</span>
-<button onclick="toggleChat()">X</button>
-</div>
-
-<div class="chat-body" id="chat-body">
-<p style="color: #94a3b8; font-size: 0.85rem;">Como posso ajudar você a encontrar o imóvel ideal hoje?</p>
-</div>
-
-<div class="chat-footer">
-<textarea id="texto_cliente" placeholder="Cole a mensagem aqui..." rows="2"></textarea>
-<button class="btn-analisar" onclick="analisarIA()">Analisar</button>
-</div>
-</div>
-
-<button class="chat-float-btn" onclick="toggleChat()">🧠</button>
-
-{% block content %}
-{% endblock %}
+    {% block content %}{% endblock %}
 </div>
 
 <script>
-function toggleNotificacoes() {
-var box = document.getElementById("notificacoes-box");
-box.style.display = (box.style.display === "block") ? "none" : "block";
-}
-
 function toggleChat() {
-const chat = document.getElementById('chat-widget');
-if (chat.style.display === 'flex') {
-chat.style.display = 'none';
-} else {
-chat.style.display = 'flex';
+    const chat = document.getElementById('chat-widget');
+    chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
 }
-}
-
-async function analisarIA() {
-const texto = document.getElementById('texto_cliente').value;
-const chatBody = document.getElementById('chat-body');
-
-if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
-
-// Feedback visual
-chatBody.innerHTML = "<p>Processando com IA...</p>";
-
-const response = await fetch('/analisar_cliente', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ mensagem: texto })
-});
-
-const data = await response.json();
-
-// Exibe o resultado da análise no chat
-chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
-}
-
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-
-const valorInput = document.getElementById("valor");
-
-valorInput.addEventListener("input", function(e) {
-
-let valor = e.target.value.replace(/\D/g, "");
-
-if (valor === "") {
-e.target.value = "";
-return;
-}
-
-valor = (parseInt(valor) / 100).toFixed(2);
-
-valor = valor.replace(".", ",");
-
-valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-e.target.value = "R$ " + valor;
-});
-
-});
 </script>
 </body>
 </html>
