@@ -20,6 +20,7 @@ from openai import OpenAI
 from flask import send_from_directory
 from flask_socketio import SocketIO
 import pandas as pd
+import base64
 
 # Configuração do Banco
 
@@ -91,143 +92,6 @@ def injetar_lembretes():
     return dict(lembretes=lembretes)
 
 
-
-def buscar_imoveis_ia(empresa_id, texto):
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
-
-
-    texto = texto.lower()
-
-
-    bairro = None
-    cidade = None
-
-
-    bairros = [
-        "guilhermina",
-        "boqueirao",
-        "ocian",
-        "aviacao",
-        "aviação",
-        "tupi",
-        "maracanã",
-        "maracana"
-    ]
-
-
-    cidades = [
-        "são paulo",
-        "sao paulo",
-        "praia grande",
-        "santos"
-    ]
-
-
-
-    for b in bairros:
-
-        if b in texto:
-            bairro = b
-
-
-
-    for c in cidades:
-
-        if c in texto:
-            cidade = c
-
-
-
-
-    sql = """
-    SELECT *
-    FROM imoveis
-    WHERE empresa_id = ?
-    """
-
-    params = [
-        empresa_id
-    ]
-
-
-
-    if bairro:
-
-        sql += """
-        AND LOWER(bairro) LIKE ?
-        """
-
-        params.append(
-            "%" + bairro + "%"
-        )
-
-
-
-    if cidade:
-
-        sql += """
-        AND LOWER(cidade) LIKE ?
-        """
-
-        params.append(
-            "%" + cidade + "%"
-        )
-
-
-
-    sql += """
-    LIMIT 5
-    """
-
-
-
-    cursor.execute(sql, params)
-
-
-    imoveis = cursor.fetchall()
-
-
-    conn.close()
-
-
-    return imoveis
-
-def verificar_interesse_ia(mensagem):
-
-    mensagem = mensagem.lower()
-
-
-    palavras = [
-        "oi",
-        "olá",
-        "ola",
-        "imóvel",
-        "imovel",
-        "casa",
-        "apartamento",
-        "terreno",
-        "comprar",
-        "alugar",
-        "quero",
-        "gostei",
-        "valor",
-        "preço",
-        "preco",
-        "ver"
-    ]
-
-
-    for palavra in palavras:
-
-        if palavra in mensagem:
-            return True
-
-
-    return False
 
 def verificar_sessao(f):
     @wraps(f)
@@ -538,94 +402,73 @@ def leads_site():
 @app.route("/enviar_imovel/<int:imovel_id>/<telefone>")
 @verificar_sessao
 def enviar_imovel(imovel_id, telefone):
-
-    import requests
-    import sqlite3
-
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Busca o imóvel
-    cursor.execute(
-        "SELECT * FROM imoveis WHERE id = ?",
-        (imovel_id,)
-    )
-
+    # 1. Busca imóvel
+    cursor.execute("SELECT * FROM imoveis WHERE id = ?", (imovel_id,))
     imovel = cursor.fetchone()
-
     if not imovel:
         conn.close()
         return "Imóvel não encontrado"
 
-    # Busca a primeira foto do imóvel
-    cursor.execute("""
-        SELECT nome_arquivo
-        FROM fotos_imoveis
-        WHERE imovel_id = ?
-        LIMIT 1
-    """, (imovel_id,))
-
+    # 2. Busca foto
+    cursor.execute("SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ? LIMIT 1", (imovel_id,))
     foto = cursor.fetchone()
-
     conn.close()
 
     if not foto:
         return "Imóvel sem fotos cadastradas"
 
-    imagem = (
-    request.host_url.rstrip("/")
-    + "/uploads/imoveis/"
-    + foto["nome_arquivo"]
-    )
-  
-    print("FOTO:", foto["nome_arquivo"])
-    print("URL IMAGEM:", imagem)
+    # 3. Monta a URL e Converte para Base64
+    url_imagem = f"{request.host_url.rstrip('/')}/uploads/imoveis/{foto['nome_arquivo']}"
+    
+    try:
+        response = requests.get(url_imagem, timeout=10)
+        if response.status_code == 200:
+            base64_img = base64.b64encode(response.content).decode('utf-8')
+            imagem_data = f"data:image/jpeg;base64,{base64_img}"
+        else:
+            return "Erro ao acessar o arquivo de imagem"
+    except Exception as e:
+        return f"Erro ao processar imagem: {str(e)}"
 
+    # 4. Monta legenda
     legenda = f"""
 🏡 *{imovel['titulo']}*
-
 📍 *Localização:* {imovel['bairro']} - {imovel['cidade']}
-
 💰 *Valor:* R$ {imovel['valor']}
-
-🛏 {imovel['quartos']} quartos  | 🚿 {imovel['banheiros']} banheiros  | 🚗 {imovel['vaga_garagem']} vagas
-📐 Área: {imovel['area']} m²
-
-✨ *Destaques:*
-{imovel['descricao'] or "Entre em contato para mais informações sobre este imóvel."}
-
-📲 *Quer agendar uma visita ou receber mais opções parecidas?*
-Fale comigo agora!
+🛏 {imovel['quartos']} quartos | 🚗 {imovel['vaga_garagem']} vagas
+{imovel['descricao'] or ""}
 """
 
-    numero = telefone.replace(" ", "").replace("-", "")
-
+    # 5. Formata número
+    numero = telefone.replace(" ", "").replace("-", "").replace("+", "")
     if "@c.us" not in numero:
         numero += "@c.us"
 
-    r = requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/enviar-imagem",
-        json={
-            "sessao": f"corretor_{session['usuario_id']}",
-            "numero": numero,
-            "imagem": imagem,
-            "legenda": legenda
-        }
-    )
-
-    print("RESPOSTA NODE:", r.text)
-    print("STATUS:", r.status_code)
-    print("RESPOSTA:", r.text)
- 
+    # 6. Envia para o Node.js
     try:
-        resultado = r.json()
-    except:
-        return r.text
-
-    return jsonify(resultado)
-
-
+        r = requests.post(
+            "https://zoom-leggings-viability.ngrok-free.dev/enviar-imagem",
+            json={
+                "sessao": f"corretor_{session.get('usuario_id')}",
+                "numero": numero,
+                "imagem": imagem_data, # Agora enviamos os bytes codificados
+                "legenda": legenda
+            },
+            timeout=30 # Timeout maior para garantir o envio
+        )
+        
+        # Verifica se a resposta do Node é um JSON válido
+        if r.status_code == 200:
+            return jsonify(r.json())
+        else:
+            return f"Erro no servidor de envio: {r.status_code} - {r.text}"
+            
+    except Exception as e:
+        return f"Falha na conexão com o servidor de envio: {str(e)}"
 
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
