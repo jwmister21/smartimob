@@ -2060,19 +2060,17 @@ def atualizar_senha():
     return redirect("/configuracoes")
 
 
-@app.route("/")
+@app.route("/sistema")
 @verificar_sessao
 def index():
 
     empresa_id = session.get("empresa_id")
-
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
 
-    # Contagem clientes
     cursor.execute(
         "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
         (empresa_id,)
@@ -2081,8 +2079,6 @@ def index():
     total_clientes = cursor.fetchone()[0]
 
 
-
-    # Contagem imóveis
     cursor.execute(
         "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
         (empresa_id,)
@@ -2090,9 +2086,6 @@ def index():
 
     total_imoveis = cursor.fetchone()[0]
 
-
-
-    # VERIFICA SITE DA EMPRESA
 
     cursor.execute("""
         SELECT *
@@ -2104,9 +2097,7 @@ def index():
     site = cursor.fetchone()
 
 
-
     conn.close()
-
 
 
     return render_template(
@@ -2115,6 +2106,11 @@ def index():
         total_imoveis=total_imoveis,
         site=site
     )
+
+@app.route("/")
+def landing():
+
+    return render_template("landing.html")
 # ==========================================
 # 2. SISTEMA DE LOGIN, USUÁRIOS E LOGOUT
 # ==========================================
