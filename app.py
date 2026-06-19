@@ -574,7 +574,8 @@ def enviar_imovel(imovel_id, telefone):
         return "Imóvel sem fotos cadastradas"
 
     imagem = (
-    "https://smartimob-production.up.railway.app/uploads/imoveis/"
+    request.host_url.rstrip("/")
+    + "/uploads/imoveis/"
     + foto["nome_arquivo"]
     )
   
