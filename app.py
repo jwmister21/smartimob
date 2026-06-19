@@ -402,73 +402,189 @@ def leads_site():
 @app.route("/enviar_imovel/<int:imovel_id>/<telefone>")
 @verificar_sessao
 def enviar_imovel(imovel_id, telefone):
+
+    WPP_URL = "https://solomon-sustainability-commerce-classroom.trycloudflare.com"
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # ==========================
     # 1. Busca imóvel
-    cursor.execute("SELECT * FROM imoveis WHERE id = ?", (imovel_id,))
+    # ==========================
+
+    cursor.execute(
+        "SELECT * FROM imoveis WHERE id = ?",
+        (imovel_id,)
+    )
+
     imovel = cursor.fetchone()
+
     if not imovel:
         conn.close()
         return "Imóvel não encontrado"
 
+
+    # ==========================
     # 2. Busca foto
-    cursor.execute("SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ? LIMIT 1", (imovel_id,))
+    # ==========================
+
+    cursor.execute(
+        "SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ? LIMIT 1",
+        (imovel_id,)
+    )
+
     foto = cursor.fetchone()
+
     conn.close()
+
 
     if not foto:
         return "Imóvel sem fotos cadastradas"
 
-    # 3. Monta a URL e Converte para Base64
-    url_imagem = f"{request.host_url.rstrip('/')}/uploads/imoveis/{foto['nome_arquivo']}"
-    
+
+
+    # ==========================
+    # 3. Converte imagem Base64
+    # ==========================
+
+    url_imagem = (
+        f"{request.host_url.rstrip('/')}"
+        f"/uploads/imoveis/{foto['nome_arquivo']}"
+    )
+
+
     try:
-        response = requests.get(url_imagem, timeout=10)
-        if response.status_code == 200:
-            base64_img = base64.b64encode(response.content).decode('utf-8')
-            imagem_data = f"data:image/jpeg;base64,{base64_img}"
-        else:
-            return "Erro ao acessar o arquivo de imagem"
+
+        response = requests.get(
+            url_imagem,
+            timeout=10
+        )
+
+
+        if response.status_code != 200:
+            return "Erro ao acessar imagem"
+
+
+        base64_img = base64.b64encode(
+            response.content
+        ).decode("utf-8")
+
+
+        imagem_data = (
+            f"data:image/jpeg;base64,{base64_img}"
+        )
+
+
     except Exception as e:
+
         return f"Erro ao processar imagem: {str(e)}"
 
-    # 4. Monta legenda
+
+
+
+    # ==========================
+    # 4. Mensagem do imóvel
+    # ==========================
+
+    valor = (
+        "{:,.0f}".format(
+            float(imovel["valor"])
+        )
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
+
+
     legenda = f"""
 🏡 *{imovel['titulo']}*
-📍 *Localização:* {imovel['bairro']} - {imovel['cidade']}
-💰 *Valor:* R$ {imovel['valor']}
-🛏 {imovel['quartos']} quartos | 🚗 {imovel['vaga_garagem']} vagas
+
+📍 *Localização:*
+{imovel['bairro']} - {imovel['cidade']}
+
+💰 *Valor:*
+R$ {valor}
+
+🛏 {imovel['quartos']} quartos
+🚗 {imovel['vaga_garagem']} vagas
+
 {imovel['descricao'] or ""}
 """
 
-    # 5. Formata número
-    numero = telefone.replace(" ", "").replace("-", "").replace("+", "")
+
+
+    # ==========================
+    # 5. Formata WhatsApp
+    # ==========================
+
+    numero = (
+        telefone
+        .replace(" ", "")
+        .replace("-", "")
+        .replace("+", "")
+    )
+
+
     if "@c.us" not in numero:
+
         numero += "@c.us"
 
-    # 6. Envia para o Node.js
+
+
+
+    # ==========================
+    # 6. Envia para WPPConnect
+    # ==========================
+
     try:
+
         r = requests.post(
-            "https://zoom-leggings-viability.ngrok-free.dev/enviar-imagem",
+
+            f"{WPP_URL}/enviar-imagem",
+
             json={
-                "sessao": f"corretor_{session.get('usuario_id')}",
-                "numero": numero,
-                "imagem": imagem_data, # Agora enviamos os bytes codificados
-                "legenda": legenda
+
+                "sessao":
+                    f"corretor_{session.get('usuario_id')}",
+
+                "numero":
+                    numero,
+
+                "imagem":
+                    imagem_data,
+
+                "legenda":
+                    legenda
+
             },
-            timeout=30 # Timeout maior para garantir o envio
+
+            timeout=60
+
         )
-        
-        # Verifica se a resposta do Node é um JSON válido
+
+
+
         if r.status_code == 200:
-            return jsonify(r.json())
-        else:
-            return f"Erro no servidor de envio: {r.status_code} - {r.text}"
-            
+
+            return jsonify(
+                r.json()
+            )
+
+
+        return (
+            f"Erro WPPConnect: "
+            f"{r.status_code} - {r.text}"
+        )
+
+
+
     except Exception as e:
-        return f"Falha na conexão com o servidor de envio: {str(e)}"
+
+        return (
+            "Falha conexão WhatsApp: "
+            f"{str(e)}"
+        )
 
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
