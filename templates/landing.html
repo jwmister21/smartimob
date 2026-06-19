@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}SMARTZEN IMOB - CRM Imobiliário{% endblock %}
+
+{% block content %}
+
+<style>
+
+body{
+    background:#050816;
+}
+
+.landing{
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+
+/* HERO */
+
+.hero{
+    min-height:90vh;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:40px;
+    padding:60px;
+    background:
+    radial-gradient(circle at top right,#16a34a55,transparent 35%);
+}
+
+
+.hero-text{
+    max-width:600px;
+}
+
+
+.badge{
+    background:#22c55e;
+    padding:8px 18px;
+    border-radius:30px;
+    display:inline-block;
+    font-size:14px;
+}
+
+
+.hero h1{
+    font-size:55px;
+    line-height:1.1;
+}
+
+
+.hero span{
+    color:#22c55e;
+}
+
+
+.hero p{
+    font-size:20px;
+    color:#cbd5e1;
+}
+
+
+.btn{
+    display:inline-block;
+    margin-top:25px;
+    background:#22c55e;
+    color:white;
+    padding:16px 35px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+
+
+.dashboard{
+    background:#111827;
+    padding:25px;
+    border-radius:25px;
+    width:450px;
+    box-shadow:0 20px 50px #000;
+}
+
+
+.card-mini{
+    background:#1f2937;
+    padding:20px;
+    margin:15px 0;
+    border-radius:15px;
+}
+
+
+
+/* SECTIONS */
+
+
+.section{
+    padding:70px 60px;
+}
+
+
+.title{
+    text-align:center;
+    font-size:40px;
+    margin-bottom:40px;
+}
+
+
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+
+
+
+.box{
+    background:#111827;
+    padding:30px;
+    border-radius:20px;
+    border:1px solid #1f2937;
+}
+
+
+
+.box h3{
+    color:#22c55e;
+}
+
+
+
+.sponsor{
+
+    text-align:center;
+    padding:50px;
+    background:#0f172a;
+    border-radius:25px;
+
+}
+
+
+.sponsor h2{
+    color:#22c55e;
+    font-size:35px;
+}
+
+
+
+/* CTA */
+
+
+.cta{
+    text-align:center;
+    padding:80px;
+}
+
+
+
+footer{
+    padding:30px;
+    text-align:center;
+    color:#94a3b8;
+}
+
+
+</style>
+
+
+
+<div class="landing">
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+
+<div class="hero-text">
+
+
+<div class="badge">
+CRM Inteligente Imobiliário
+</div>
+
+
+<h1>
+Venda mais imóveis com o
+<span>SMARTZEN IMOB</span>
+</h1>
+
+
+<p>
+
+Gerencie clientes, imóveis, leads e atendimento
+com inteligência artificial e WhatsApp integrado.
+
+</p>
+
+
+<a class="btn" href="#">
+Começar agora
+</a>
+
+
+</div>
+
+
+
+<div class="dashboard">
+
+
+<h2>SMARTZEN DASHBOARD</h2>
+
+
+<div class="card-mini">
+🏠 Cadastro de imóveis
+</div>
+
+
+<div class="card-mini">
+👥 Gestão de clientes e leads
+</div>
+
+
+<div class="card-mini">
+🤖 IA para anúncios e vendas
+</div>
+
+
+<div class="card-mini">
+💬 WhatsApp + Disparo em massa
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<!-- BENEFICIOS -->
+
+
+<section class="section">
+
+
+<h2 class="title">
+Tudo em um único sistema
+</h2>
+
+
+
+<div class="grid">
+
+
+<div class="box">
+<h3>🏠 Imóveis</h3>
+<p>
+Cadastre imóveis com fotos, valores
+e informações completas.
+</p>
+</div>
+
+
+
+<div class="box">
+<h3>🎯 Match Inteligente</h3>
+<p>
+Encontre imóveis ideais para cada cliente.
+</p>
+</div>
+
+
+
+
+<div class="box">
+<h3>💬 WhatsApp</h3>
+
+<p>
+Atenda clientes pelo CRM e envie
+mensagens de forma rápida.
+</p>
+
+</div>
+
+
+
+
+<div class="box">
+
+<h3>🚀 Disparo em Massa</h3>
+
+<p>
+Crie campanhas e envie mensagens
+para sua base de clientes e leads.
+</p>
+
+</div>
+
+
+
+<div class="box">
+
+<h3>🤖 Inteligência Artificial</h3>
+
+<p>
+Gere anúncios, textos comerciais
+e abordagens automaticamente.
+</p>
+
+</div>
+
+
+
+<div class="box">
+
+<h3>📊 Dashboard</h3>
+
+<p>
+Acompanhe oportunidades,
+vendas e resultados.
+</p>
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<!-- PATROCINADOR -->
+
+
+<section class="section">
+
+
+<div class="sponsor">
+
+
+<h2>
+Patrocinadora Oficial
+</h2>
+
+
+<h1>
+🏢 WJ IMOBILIÁRIA
+</h1>
+
+
+<p>
+Parceira estratégica na transformação
+digital do mercado imobiliário.
+</p>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+<section class="cta">
+
+
+<h1>
+Pronto para vender mais?
+</h1>
+
+
+<p>
+Tenha o controle da sua operação imobiliária.
+</p>
+
+
+<a class="btn" href="#">
+Criar minha conta
+</a>
+
+
+</section>
+
+
+
+
+<footer>
+
+SMARTZEN IMOB © 2026
+
+<br>
+
+Patrocinadora oficial:
+<strong>WJ IMOBILIÁRIA</strong>
+
+</footer>
+
+
+
+</div>
+
+
+{% endblock %}
