@@ -423,22 +423,26 @@ def enviar_imovel_link(imovel_id, telefone):
 
     imovel = cursor.fetchone()
 
-
     conn.close()
 
 
+
     if not imovel:
+
         return jsonify({
+
+            "sucesso":False,
             "erro":"Imóvel não encontrado"
+
         })
 
 
-    # link público do imóvel
 
     link_imovel = (
         f"https://smartimob-production.up.railway.app/"
         f"informa-imovel/{imovel_id}"
     )
+
 
 
     mensagem = f"""
@@ -459,10 +463,25 @@ R$ {imovel['valor']}
 Veja fotos e detalhes:
 
 🔗 {link_imovel}
+
+
+📝 *Descrição:*
+{imovel['descricao'] or ""}
 """
-Descrição: {imovel['descricao']}
+
+
+
+    telefone = (
+        telefone
+        .replace(" ","")
+        .replace("-","")
+        .replace("+","")
+    )
+
+
 
     try:
+
 
         resp = requests.post(
 
@@ -473,8 +492,10 @@ Descrição: {imovel['descricao']}
                 "sessao":
                 f"corretor_{session.get('usuario_id')}",
 
+
                 "numero":
                 telefone,
+
 
                 "mensagem":
                 mensagem
@@ -489,12 +510,20 @@ Descrição: {imovel['descricao']}
         return jsonify(resp.json())
 
 
+
     except Exception as e:
 
-        return jsonify({
-            "erro":str(e)
-        })
 
+        print("ERRO IMOVEL:", e)
+
+
+        return jsonify({
+
+            "sucesso":False,
+
+            "erro":str(e)
+
+        })
 
 
 @app.route("/editar_cliente/<int:id>", methods=["GET"])
