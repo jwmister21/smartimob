@@ -35,108 +35,66 @@
 
 <div class="card">
     <form method="POST" enctype="multipart/form-data">
+        
+        <h3 class="section-title">Informações Gerais</h3>
         <div class="form-grid">
-            <div class="campo-box"><label>TITULO</label><input type="text" name="titulo" required></div>
-            <div class="campo-box"><label>Tipo</label>
-                <select name="tipo"><option>Casa</option><option>Apartamento</option><option>Terreno</option><option>Duplex</option><option>Triplex</option><option>Kitnet</option><option>Bangalo</option><option>Ponto Comercial</option></select>
+            <div class="campo-box"><label>Título</label><input type="text" name="titulo" required></div>
+            <div class="campo-box">
+                <label>Tipo</label>
+                <select name="tipo">
+                    <option>Casa</option><option>Apartamento</option><option>Terreno</option>
+                    <option>Duplex</option><option>Triplex</option><option>Kitnet</option>
+                    <option>Bangalo</option><option>Ponto Comercial</option>
+                </select>
             </div>
             <div class="campo-box">
-            <label>VALOR (R$)</label>
-            <input type="text" name="valor" id="valor" placeholder="R$ 0,00">
+                <label>Comercialização</label>
+                <select name="status">
+                    <option>Venda</option><option>Aluguel</option>
+                </select>
             </div>
+        </div>
 
-            <div class="campo-box">
-    <label>CEP</label>
-    <input type="text" name="cep" id="cep" placeholder="00000-000" onblur="buscarCep()">
-</div>
-<div class="campo-box">
-    <label>CIDADE</label>
-    <input type="text" name="cidade" id="cidade">
-</div>
-<div class="campo-box">
-    <label>BAIRRO</label>
-    <input type="text" name="bairro" id="bairro">
-</div>
+        <h3 class="section-title">Localização</h3>
+        <div class="form-grid">
+            <div class="campo-box"><label>CEP</label><input type="text" name="cep" id="cep" placeholder="00000-000" onblur="buscarCep()"></div>
+            <div class="campo-box"><label>Rua / Logradouro</label><input type="text" name="rua" id="rua"></div>
+            <div class="campo-box"><label>Bairro</label><input type="text" name="bairro" id="bairro"></div>
+            <div class="campo-box"><label>Cidade</label><input type="text" name="cidade" id="cidade"></div>
+        </div>
 
-<div class="campo-box">
-    <label>LAVABO </label>
-    <input type="number" name="lavabo" id="lavabo">
-</div>
+        <h3 class="section-title">Detalhes do Imóvel</h3>
+        <div class="form-grid">
+            <div class="campo-box"><label>Área (m²)</label><input type="number" name="area"></div>
+            <div class="campo-box"><label>Quartos</label><input type="number" name="quartos"></div>
+            <div class="campo-box"><label>Suítes</label><input type="number" name="banheiros"></div>
+            <div class="campo-box"><label>Lavabo</label><input type="number" name="lavabo" id="lavabo"></div>
+            <div class="campo-box"><label>Vagas de Garagem</label><input type="number" name="vaga_garagem" id="vaga_garagem"></div>
+            <div class="campo-box"><label>Sacadas</label><input type="number" name="sacada" id="sacada"></div>
+            <div class="campo-box"><label>Lazer</label><input type="text" name="lazer" id="lazer"></div>
+        </div>
 
-<div class="campo-box">
-    <label>ENTRADA </label>
-    <input type="text" name="entrada" id="entrada">
-</div>
-            
-<div class="campo-box">
-    <label>VAGA_GARAGEM </label>
-    <input type="number" name="vaga_garagem" id="vaga_garagem">
-</div>   
-<div class="campo-box">
-    <label>LAZER  </label>
-    <input type="text" name="lazer" id="lazer">
-</div>          
-<div class="campo-box">
-    <label>SACADA  </label>
-    <input type="number" name="sacada" id="sacada">
-</div>                  
-<div class="campo-box">
-    <label>RUA / LOGADOURO</label>
-    <input type="text" name="rua" id="rua">
-</div>
+        <h3 class="section-title">Valores e Pagamento</h3>
+        <div class="form-grid">
+            <div class="campo-box"><label>Valor (R$)</label><input type="text" name="valor" id="valor" placeholder="R$ 0,00"></div>
+            <div class="campo-box"><label>Valor IPTU (R$)</label><input type="text" name="iptu" id="iptu" placeholder="R$ 0,00"></div>
+            <div class="campo-box"><label>Valor Condomínio (R$)</label><input type="text" name="condominio" id="condominio" placeholder="R$ 0,00"></div>
+            <div class="campo-box"><label>Entrada</label><input type="text" name="entrada" id="entrada"></div>
+            <div class="campo-box"><label>Parcela</label><input type="text" name="parcela" id="parcela" placeholder="Parcela"></div>
+            <div class="campo-box"><label>Anuais</label><input type="text" name="anuais" id="anuais" placeholder="Anuais"></div>
+            <div class="campo-box"><label>Prazo</label><input type="text" name="prazo" id="prazo" placeholder="Prazo"></div>
+        </div>
 
-<div class="campo-box">
-    <label>QUARTOS</label>
-    <input type="number" name="quartos">
-</div>
-<div class="campo-box">
-    <label>SUITE</label>
-    <input type="number" name="banheiros">
-</div>
-<div class="campo-box">
-    <label>ÁREA (m²)</label>
-    <input type="number" name="area">
-</div>
-            <div class="campo-box">
-    <label>VALOR IPTU (R$)</label>
-    <input type="text" name="iptu" id="iptu" placeholder="R$ 0,00">
-</div>
+        <div class="campo-box">
+            <label>Link (Drive/Fotos)</label>
+            <input type="text" name="link" id="link" placeholder="www.drive.com.br">
+        </div>
 
-<div class="campo-box">
-    <label>COMERCIALIZAÇÃO </label>
-    <select name="status">
-        <option>Venda</option>
-        <option>Aluguel</option>
-    </select>
-</div>
-   <div class="campo-box">
-    <label>PRAZO</label>
-    <input type="text" name="prazo" id="prazo" placeholder="PRAZO" >          
-    </div>
-                      
-<div class="campo-box">
-    <label>VALOR CONDOMINIO (R$)</label>
-    <input type="text" name="condominio" id="condominio" placeholder="R$ 0,00">
-    
-</div>
-<div class="campo-box">
-    <label>DRIVER</label>
-    <input type="text" name="link" id="link" placeholder="www.drive.com.br">
-</div>
-
-<div class="campo-box">
-    <label>ANUAIS</label>
-    <input type="text" name="anuais" id="anuais" placeholder="Anuais">
-</div>
-
-<div class="campo-box">
-    <label>PARCELA</label>
-    <input type="text" name="parcela" id="parcela" placeholder="PARCELA">
-</div>
-
-<div class="campo-box" style="margin-top:15px;">
-    <label>Descrição</label>
-    <textarea name="descricao" rows="4"></textarea>
+        <div class="campo-box">
+            <label>Descrição</label>
+            <textarea name="descricao" rows="4" style="width: 100%;"></textarea>
+        </div>
+    </form>
 </div>
  <div style="grid-column: 1 / -1; text-align:left; margin-top:15px;">
     
