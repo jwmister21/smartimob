@@ -3036,7 +3036,7 @@ def editar_imovel(id):
                 iptu=?,
                 parcela=?,
                 prazo=?,
-                anuais=?
+                anuais=?,
                 entrada=?
             WHERE id=? AND empresa_id=?
         """, (
