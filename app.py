@@ -403,7 +403,7 @@ def leads_site():
 @verificar_sessao
 def enviar_imovel(imovel_id, telefone):
 
-    WPP_URL = "https://solomon-sustainability-commerce-classroom.trycloudflare.com"
+    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -1797,7 +1797,7 @@ def campanhas():
 @verificar_sessao
 def enviar_mensagem():
 
-    WPP_URL = "https://solomon-sustainability-commerce-classroom.trycloudflare.com"
+    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
 
     data = request.get_json()
@@ -2322,7 +2322,7 @@ def login():
 @verificar_sessao
 def buscar_qr():
 
-    WPP_URL = "https://solomon-sustainability-commerce-classroom.trycloudflare.com"
+    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
     usuario_id = session["usuario_id"]
 
