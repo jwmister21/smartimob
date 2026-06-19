@@ -704,7 +704,58 @@ def catalogo():
     return render_template("catalogo.html", imoveis=imoveis)
 
 
+@app.route("/excluir_lead/<int:lead_id>", methods=["POST"])
+@verificar_sessao
+def excluir_lead(lead_id):
 
+    empresa_id = session.get("empresa_id")
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    # verifica se o lead pertence à empresa atual
+
+    cursor.execute("""
+        SELECT 
+            l.id
+        FROM lead_site l
+        LEFT JOIN imoveis i
+            ON i.id = l.id_imovel
+        WHERE l.id = ?
+        AND i.empresa_id = ?
+    """, (lead_id, empresa_id))
+
+
+    lead = cursor.fetchone()
+
+
+    if not lead:
+
+        conn.close()
+
+        return jsonify({
+            "sucesso": False,
+            "erro": "Lead não encontrado"
+        })
+
+
+
+    cursor.execute("""
+        DELETE FROM lead_site
+        WHERE id = ?
+    """, (lead_id,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return jsonify({
+        "sucesso": True
+    })
 
  
 @app.route("/atualizar_cliente/<int:id>", methods=["POST"])
