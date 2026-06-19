@@ -4,26 +4,31 @@
 
 {% block content %}
 <style>
-    /* Reaproveitando o CSS do Carrossel */
+    /* Estilos do Carrossel (Mantidos conforme solicitado) */
     .carousel-container { position: relative; width: 100%; height: 400px; overflow: hidden; border-radius: 20px 20px 0 0; }
     .carousel-images { display: flex; transition: transform 0.5s ease-in-out; height: 100%; }
     .carousel-images img { min-width: 100%; height: 400px; object-fit: cover; }
     .btn-nav { position: absolute; top: 50%; background: rgba(0,0,0,0.5); color: white; border: none; cursor: pointer; padding: 15px; font-size: 20px; z-index: 10; }
 
-    /* Estilos da Página */
-    .detalhes-card { background: #111827; border-radius: 20px; overflow: hidden; color: white; margin: 20px 0; }
+    /* Layout Organizado */
+    .detalhes-card { background: #111827; border-radius: 20px; overflow: hidden; color: white; margin: 20px 0; border: 1px solid #1f2937; }
     .info { padding: 30px; }
-    .titulo { font-size: 32px; font-weight: bold; margin-bottom: 10px; color: #f8fafc; }
+    .titulo { font-size: 32px; font-weight: bold; margin-bottom: 5px; color: #f8fafc; }
     .valor { font-size: 28px; color: #22c55e; font-weight: bold; margin-bottom: 25px; }
-    .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .item { background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid #374151; }
+    
+    /* Grid de Informações com Labels */
+    .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .item { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid #1e293b; }
+    .label-item { display: block; color: #94a3b8; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; font-weight: 600; }
+    .valor-item { font-size: 14px; font-weight: 500; color: #e2e8f0; }
+
     .acoes-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #334155; }
-    .btn-acao { padding: 12px 24px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; cursor: pointer; border: none; }
+    .btn-acao { padding: 12px 20px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; cursor: pointer; border: none; }
     .btn-editar { background: #0ea5e9; color: white; }
     .btn-excluir { background: #374151; color: #ef4444; border: 1px solid #ef4444; }
     .btn-voltar { background: transparent; color: #94a3b8; border: 1px solid #334155; }
-    .btn-compartilhar { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; }
-    .btn-drive { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    .btn-compartilhar { background: #6366f1; color: white; }
+    .btn-drive { background: #10b981; color: white; }
 </style>
 
 <div class="detalhes-card">
@@ -46,48 +51,44 @@
         <div class="valor">{{ imovel.valor }}</div>
 
         <div class="grid-info">
-            <div class="item">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
-            <div class="item">🛣 Rua: {{ imovel.rua or 'Não especificada' }}</div>
-            <div class="item">🏠 Tipo: {{ imovel.tipo }}</div>
-            <div class="item">📄 Status: {{ imovel.status }}</div>
-            <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
-            <div class="item">🚿 {{ imovel.banheiros }} Suítes</div>
-            <div class="item">📐 Área: {{ imovel.area }} m²</div>
-            <div class="item">🚗 Vagas: {{ imovel.vaga_garagem or 0 }}</div>
-            <div class="item">💰 IPTU: R$ {{ imovel.iptu or '0.00' }}</div>
-            <div class="item">🏢 Condomínio: R$ {{ imovel.condominio or '0.00' }}</div>
-            
-            <div class="item">💵 Entrada: {{ imovel.entrada or 'Não informado' }}</div>
-            <div class="item">💳 Parcela: {{ imovel.parcela or 'Não informado' }}</div>
-            <div class="item">🗓 Anuais: {{ imovel.anuais or 'Não informado' }}</div>
-            <div class="item">⏳ Prazo: {{ imovel.prazo or 'Não informado' }}</div>
-            <div class="item">📮 CEP: {{ imovel.cep or 'Não informado' }}</div>
-            <div class="item">🚻 Lavabo: {{ 'Sim' if imovel.lavabo else 'Não' }}</div>
-            <div class="item">🌅 Sacada: {{ 'Sim' if imovel.sacada else 'Não' }}</div>
-            <div class="item">🌴 Lazer: {{ imovel.lazer or 'Não informado' }}</div>
-
-            {% if imovel.link %}
-            <div class="item">🔗 <a href="{{ imovel.link }}" target="_blank" style="color:#38bdf8;">Ver Pasta do Imóvel</a></div>
-            {% endif %}
+            <div class="item"><span class="label-item">Cidade</span><span class="valor-item">{{ imovel.cidade }}</span></div>
+            <div class="item"><span class="label-item">Bairro</span><span class="valor-item">{{ imovel.bairro }}</span></div>
+            <div class="item"><span class="label-item">Rua</span><span class="valor-item">{{ imovel.rua or 'N/A' }}</span></div>
+            <div class="item"><span class="label-item">CEP</span><span class="valor-item">{{ imovel.cep or 'N/A' }}</span></div>
+            <div class="item"><span class="label-item">Tipo</span><span class="valor-item">{{ imovel.tipo }}</span></div>
+            <div class="item"><span class="label-item">Status</span><span class="valor-item">{{ imovel.status }}</span></div>
+            <div class="item"><span class="label-item">Quartos</span><span class="valor-item">{{ imovel.quartos }}</span></div>
+            <div class="item"><span class="label-item">Suítes</span><span class="valor-item">{{ imovel.banheiros }}</span></div>
+            <div class="item"><span class="label-item">Área</span><span class="valor-item">{{ imovel.area }} m²</span></div>
+            <div class="item"><span class="label-item">Vagas</span><span class="valor-item">{{ imovel.vaga_garagem or 0 }}</span></div>
+            <div class="item"><span class="label-item">Condomínio</span><span class="valor-item">{{ imovel.condominio or 'R$ 0,00' }}</span></div>
+            <div class="item"><span class="label-item">IPTU</span><span class="valor-item">{{ imovel.iptu or 'R$ 0,00' }}</span></div>
+            <div class="item"><span class="label-item">Entrada</span><span class="valor-item">{{ imovel.entrada or 'N/A' }}</span></div>
+            <div class="item"><span class="label-item">Parcela</span><span class="valor-item">{{ imovel.parcela or 'N/A' }}</span></div>
+            <div class="item"><span class="label-item">Anuais</span><span class="valor-item">{{ imovel.anuais or 'N/A' }}</span></div>
+            <div class="item"><span class="label-item">Prazo</span><span class="valor-item">{{ imovel.prazo or 'N/A' }}</span></div>
+            <div class="item"><span class="label-item">Lavabo</span><span class="valor-item">{{ 'Sim' if imovel.lavabo else 'Não' }}</span></div>
+            <div class="item"><span class="label-item">Sacada</span><span class="valor-item">{{ 'Sim' if imovel.sacada else 'Não' }}</span></div>
+            <div class="item" style="grid-column: span 1;"><span class="label-item">Lazer</span><span class="valor-item">{{ imovel.lazer or 'N/A' }}</span></div>
         </div>
 
         <h3>Descrição</h3>
-        <div class="item">{{ imovel.descricao }}</div>
+        <div class="item" style="background: transparent; border: 1px solid #374151;">{{ imovel.descricao }}</div>
 
         <div class="acoes-container">
             <a href="/imoveis" class="btn-acao btn-voltar">← Voltar</a>
             <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
             <button onclick="compartilharImovel()" class="btn-acao btn-compartilhar">📱 Compartilhar</button>
-            <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Deseja excluir?')">🗑 Excluir</a>
-            <button class="btn-drive" onclick="copiarLink('{{ imovel['link'] }}')">Copiar Drive</button>
+            <button class="btn-acao btn-drive" onclick="copiarLink('{{ imovel['link'] }}')">🔗 Copiar Drive</button>
+            <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Excluir este imóvel?')">🗑 Excluir</a>
         </div>
     </div>
 </div>
 
 <script>
     function copiarLink(texto) {
-        if (!texto || texto === "None" || texto === "") { alert("Este imóvel não possui um link de Drive."); return; }
-        navigator.clipboard.writeText(texto).then(() => alert("Link copiado!"));
+        if (!texto || texto === "None" || texto === "") { alert("Sem link de Drive cadastrado."); return; }
+        navigator.clipboard.writeText(texto).then(() => alert("Link copiado para a área de transferência!"));
     }
     function mudarFoto(carouselId, direcao) {
         const container = document.getElementById(carouselId).querySelector('.carousel-images');
