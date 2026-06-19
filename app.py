@@ -446,29 +446,59 @@ def enviar_imovel_link(imovel_id, telefone):
 
 
     mensagem = f"""
-🏡 *{imovel['titulo']}*
+🏡 *OPORTUNIDADE DE IMÓVEL*
 
-📍 *Localização:*
+✨ *{imovel['titulo']}*
+
+━━━━━━━━━━━━━━
+
+📍 *Localização*
+{imovel['rua'] or ''} 
 {imovel['bairro']} - {imovel['cidade']}
 
-
-💰 *Valor:*
+💰 *Valor*
 R$ {imovel['valor']}
 
+🏠 *Detalhes do imóvel*
 
 🛏 Quartos: {imovel['quartos']}
+🚿 Banheiros: {imovel['banheiros']}
 🚗 Vagas: {imovel['vaga_garagem']}
+📐 Área: {imovel['area']} m²
 
+{"🚽 Lavabo: Sim" if imovel['lavabo'] else ""}
+{"🌴 Lazer: " + str(imovel['lazer']) if imovel['lazer'] else ""}
+{"🌅 Sacada: Sim" if imovel['sacada'] else ""}
 
-Veja fotos e detalhes:
+━━━━━━━━━━━━━━
+
+💳 *Condições*
+
+🏦 Financiamento:
+{"Sim" if imovel['financiamento'] else "Não"}
+
+📄 Condomínio:
+R$ {imovel['condominio'] or 'Não informado'}
+
+🏛 IPTU:
+R$ {imovel['iptu'] or 'Não informado'}
+
+━━━━━━━━━━━━━━
+
+📝 *Descrição*
+
+{imovel['descricao'] or 'Consulte detalhes'}
+
+━━━━━━━━━━━━━━
+
+Veja fotos, localização e mais informações:
 
 🔗 {link_imovel}
 
 
-📝 *Descrição:*
-{imovel['descricao'] or ""}
+💬 Gostou desse imóvel?
+Posso te ajudar com mais informações 😊
 """
-
 
 
     telefone = (
