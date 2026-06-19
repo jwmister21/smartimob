@@ -399,6 +399,7 @@ def leads_site():
         leads=leads
     )
 
+
 @app.route("/enviar_imovel_link/<int:imovel_id>/<telefone>")
 @verificar_sessao
 def enviar_imovel_link(imovel_id, telefone):
