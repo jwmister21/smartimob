@@ -731,6 +731,31 @@ padding:60px 20px;
 
 }
 
+  .logo-patrocinadora{
+
+width:220px;
+
+max-width:80%;
+
+margin:30px auto;
+
+display:block;
+
+object-fit:contain;
+
+filter:
+drop-shadow(0 0 25px rgba(34,197,94,.35));
+
+transition:.3s;
+
+}
+
+
+.logo-patrocinadora:hover{
+
+transform:scale(1.08);
+
+}
 </style>
 
 
@@ -1070,9 +1095,10 @@ Patrocinadora Oficial
 </h2>
 
 
-<h1>
-🏢 WJ IMOBILIÁRIA
-</h1>
+<img 
+src="{{ url_for('static', filename='Logowj.png') }}"
+class="logo-patrocinadora"
+alt="WJ Imobiliária">
 
 
 </div>
