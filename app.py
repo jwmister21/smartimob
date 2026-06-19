@@ -1880,10 +1880,10 @@ def cadastrar_imovel():
                 titulo, tipo, valor, cidade, bairro,
                 quartos, banheiros, area, status, descricao,
                 rua, iptu, condominio, link, cep,
-                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais,
+                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada,
                 usuario_id, empresa_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
@@ -1907,6 +1907,7 @@ def cadastrar_imovel():
             request.form.get("prazo"),
             request.form.get("parcela"),
             request.form.get("anuais"),
+            request.form.get("entrada"),
             user_id,
             empresa_id
         ))
@@ -2961,6 +2962,7 @@ def editar_imovel(id):
         parcela = request.form.get("parcela", "")
         prazo = request.form.get("prazo", "")
         anuais = request.form.get("anuais", "")
+        entrada = request.form.get("entrada", "")
 
         # Atualiza os dados do imóvel
         cursor.execute("""
@@ -2987,6 +2989,7 @@ def editar_imovel(id):
                 parcela=?,
                 prazo=?,
                 anuais=?
+                entrada=?
             WHERE id=? AND empresa_id=?
         """, (
             titulo,
@@ -3011,6 +3014,7 @@ def editar_imovel(id):
             parcela,
             prazo,
             anuais,
+            entrada,
             id,
             empresa_id
         ))
