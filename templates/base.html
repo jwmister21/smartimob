@@ -6,414 +6,108 @@
 <title>{% block title %}SMARTZEN IMOB{% endblock %}</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 {% set path = request.path %}
-<style>
-
+  <style>
 /* =========================
-  RESET
+   RESET & BASE (MODO CLEAN)
 ========================= */
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-font-family: 'Poppins', sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-/* =========================
-  BASE
-========================= */
 body {
-background: #0b1120;
-color: white;
-transition: all .25s ease;
+    background: #f8fafc; /* Fundo bem claro */
+    color: #1e293b;     /* Texto cinza muito escuro (melhor leitura que preto puro) */
+    transition: all .25s ease;
 }
 
 /* =========================
-  SIDEBAR (UPGRADE VISUAL)
+   SIDEBAR (WHITE VERSION)
 ========================= */
 .sidebar {
-position: fixed;
-left: 0;
-top: 0;
-width: 260px;
-height: 100vh;
-background: #111827;
-border-right: 1px solid rgba(255,255,255,.06);
-padding: 25px;
-
-/* 🔥 UPGRADE */
-display: flex;
-flex-direction: column;
+    position: fixed;
+    left: 0; top: 0; width: 260px; height: 100vh;
+    background: #ffffff; /* Fundo branco */
+    border-right: 1px solid #e2e8f0; /* Borda sutil */
+    padding: 25px;
+    display: flex; flex-direction: column;
 }
 
-/* 🔥 SCROLL AQUI */
-.menu {
-display: flex;
-flex-direction: column;
-gap: 3px;
-
-overflow-y: auto;
-max-height: calc(100vh - 90px);
-padding-right: 5px;
-}
-
-/* SCROLL BONITO */
-.menu::-webkit-scrollbar {
-width: 6px;
-}
-
-.menu::-webkit-scrollbar-thumb {
-background: #1f2937;
-border-radius: 10px;
-}
-
-.menu::-webkit-scrollbar-thumb:hover {
-background: #374151;
-}
-
-.sidebar {
-position: fixed;
-left: 0;
-top: 0;
-width: 260px;
-height: 100vh;
-background: #111827;
-border-right: 1px solid rgba(255,255,255,.06);
-padding: 25px;
-display: flex;
-flex-direction: column;
-}
-
-..logo {
-font-size: 50px;       /* Aumentado de 28px para 36px */
-font-weight: 700;
-margin-bottom: 10px;
-letter-spacing: .5px;
-display: block;        /* Ajuda no alinhamento e no controle de tamanho */
-text-align: center;    /* Centraliza o logo na barra lateral */
-}
-
-.logo span {
-color: #38bdf8;
-}
-
-/* MENU */
-.menu {
-display: flex;
-flex-direction: column;
-gap: 3px;
-}
-
-/* LINKS */
 .menu a {
-text-decoration: none;
-color: #cbd5e1;
-padding: 10px 12px;
-border-radius: 10px;
-display: flex;
-align-items: center;
-gap: 10px;
-font-size: 14px;
-transition: .2s;
+    text-decoration: none;
+    color: #64748b; /* Cinza para itens inativos */
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; transition: .2s;
 }
 
-/* HOVER MAIS SUAVE */
 .menu a:hover {
-background: #1e293b;
-color: #ffffff;
-transform: translateX(3px);
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.menu a.active {
+    background: #eff6ff; /* Azul bem claro */
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.menu-section-title {
+    color: #94a3b8;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 15px 0 5px 12px;
 }
 
 /* =========================
-  MAIN
+   MAIN & TOPBAR
 ========================= */
-.main {
-margin-left: 260px;
-min-height: 100vh;
-padding: 35px;
-}
-
-.topbar {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 30px;
-}
-
-/* =========================
-  USER CONTROLS
-========================= */
-.user-controls {
-display: flex;
-align-items: center;
-position: relative;
-}
-
-.badge {
-background: #ef4444;
-color: white;
-border-radius: 50%;
-padding: 2px 6px;
-font-size: 10px;
-position: absolute;
-top: -5px;
-right: 15px;
-}
-
-/* =========================
-  DROPDOWN (UPGRADE LEVE)
-========================= */
-.dropdown {
-position: relative;
-display: inline-block;
-}
+.main { margin-left: 260px; min-height: 100vh; padding: 35px; }
 
 .dropbtn {
-background: #111827;
-border: 1px solid #1e293b;
-color: white;
-padding: 10px 15px;
-border-radius: 12px;
-cursor: pointer;
-font-size: 14px;
-transition: .2s;
-}
-
-.dropbtn:hover {
-background: #1e293b;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    padding: 10px 15px;
+    border-radius: 12px;
+    cursor: pointer;
 }
 
 .dropdown-content {
-display: none;
-position: absolute;
-right: 0;
-background-color: #111827;
-min-width: 160px;
-border-radius: 12px;
-border: 1px solid #1e293b;
-z-index: 1000;
-overflow: hidden;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
 }
 
-.dropdown-content a {
-color: white;
-padding: 12px 16px;
-text-decoration: none;
-display: block;
-font-size: 14px;
-transition: .2s;
-}
-
-.dropdown-content a:hover {
-background-color: #1e293b;
-}
-
-.dropdown:hover .dropdown-content {
-display: block;
-}
-
-/* =========================
-  NOTIFICAÇÕES
-========================= */
 .notif-box {
-display: none;
-position: absolute;
-right: 40px;
-top: 50px;
-width: 280px;
-background: #111827;
-border: 1px solid #374151;
-border-radius: 12px;
-padding: 10px;
-box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-z-index: 2000;
-}
-
-.notif-item {
-border-bottom: 1px solid #374151;
-padding: 10px 0;
-color: #fff;
-text-decoration: none;
-display: block;
-font-size: 0.9rem;
-}
-
-.notif-item:hover {
-color: #38bdf8;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
 }
 
 /* =========================
-  CHAT FLOAT BUTTON
-========================= */
-.chat-float-btn {
-position: fixed;
-bottom: 25px;
-right: 25px;
-width: 60px;
-height: 60px;
-border-radius: 50%;
-background: #f59e0b;
-border: none;
-font-size: 28px;
-cursor: pointer;
-box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-z-index: 9999;
-transition: transform .2s ease;
-}
-
-.chat-float-btn:hover {
-transform: scale(1.1);
-}
-
-/* =========================
-  CHAT
+   CHAT WIDGET (MODO CLEAN)
 ========================= */
 .chat-widget {
-position: fixed;
-bottom: 100px;
-right: 25px;
-width: 300px;
-height: 400px;
-background: #1a2234;
-border-radius: 15px;
-display: none;
-flex-direction: column;
-box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-z-index: 9998;
-border: 1px solid #334155;
-overflow: hidden;
-}
-
-.chat-body{
-    flex:1;
-    overflow-y:auto;
-    overflow-x:hidden;
-}
-.chat{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-
-    overflow:hidden;
-}
-.chat-footer {
-padding: 15px;
-background: #0f172a;
-border-top: 1px solid #334155;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
 }
 
 #texto_cliente {
-width: 100%;
-background: #1e293b;
-border: 1px solid #475569;
-border-radius: 8px;
-color: white;
-padding: 10px;
-margin-bottom: 10px;
-font-size: 0.9rem;
-resize: none;
-}
-  .cliente{
-    background:#202c33;
-    color:white;
-
-    max-width:70%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
 }
 
-.corretor{
-    background:#005c4b;
-    color:white;
+.chat-footer { background: #ffffff; }
 
-    max-width:70%;
-    margin-left:auto;
-}
-
-/* BOTÃO IA */
 .btn-analisar {
-width: 100%;
-background: #f59e0b;
-border: none;
-padding: 8px;
-border-radius: 6px;
-font-weight: bold;
-cursor: pointer;
-transition: .2s;
+    background: #f59e0b;
+    color: white;
 }
 
-.btn-analisar:hover {
-background: #d97706;
-}
-
-/* =========================
-  MENU SECTION TITLE
-========================= */
-.menu-section-title {
-color: #6b7280;
-font-size: 10px;
-text-transform: uppercase;
-font-weight: 700;
-margin: 8px 0 2px 12px;
-letter-spacing: .05em;
-}
-.menu a.active {
-background: #2563eb;
-color: #ffffff;
-font-weight: 600;
-box-shadow: 0 0 0 1px rgba(37,99,235,.4);
-}
-
-.logo{
-width:150px;
-height:150px;
-object-fit:contain;
-}
-
-.logo-area{
-display:flex;
-align-items:center;
-gap:90px;
-color:white;
-}
-
-    .icone-topo{
-    position:relative;
-    font-size:26px;
-    text-decoration:none;
-}
-
-.badge{
-    position:absolute;
-    top:-8px;
-    right:-10px;
-
-    background:#ef4444;
-    color:white;
-
-    min-width:20px;
-    height:20px;
-
-    border-radius:50%;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    font-size:11px;
-    font-weight:bold;
-}
-
-   .msg{
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:12px;
-
-    max-width:70%;
-
-    word-wrap:break-word;
-    overflow-wrap:anywhere;
-    word-break:break-word;
-
-    white-space:pre-wrap;
-}  
+/* Ajustes gerais de contraste */
+.badge { background: #ef4444; color: white; }
 </style>
 </head>
 <body>
