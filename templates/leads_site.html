@@ -186,13 +186,12 @@
         ➕ Adicionar ao Sistema
     </a>
 
-    <a
-        href="/excluir_lead/{{ lead.id }}"
-        class="btn-excluir"
-        onclick="return confirm('Deseja excluir este lead?')"
-    >
-        🗑️ Excluir
-    </a>
+    <button
+    onclick="excluirLead({{ lead.id }})"
+    class="btn-excluir"
+>
+    🗑️ Excluir
+</button>
 
 </div>
 
@@ -207,5 +206,51 @@
 </div>
 
 {% endif %}
+<script>
 
+function excluirLead(id){
+
+    if(!confirm("Deseja excluir este lead?")){
+        return;
+    }
+
+
+    fetch(`/excluir_lead/${id}`, {
+
+        method:"POST"
+
+    })
+    .then(response => response.json())
+
+    .then(data => {
+
+
+        if(data.sucesso){
+
+            alert("✅ Lead excluído");
+
+            location.reload();
+
+        }else{
+
+            alert(
+                "❌ " + data.erro
+            );
+
+        }
+
+
+    })
+
+    .catch(err=>{
+
+        alert("Erro ao excluir");
+
+        console.log(err);
+
+    });
+
+}
+
+</script>
 {% endblock %}
