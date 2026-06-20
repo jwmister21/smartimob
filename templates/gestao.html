@@ -1,89 +1,357 @@
 {% extends 'base.html' %}
+
+{% block title %}Painel de Gestão{% endblock %}
+{% block pagina %}Painel de Gestão{% endblock %}
+
 {% block content %}
 
 <style>
-    .box { background: #ffffff; padding: 30px; border-radius: 20px; border: 1px solid #e2e8f0; }
-    
-    .cards-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 25px; }
-    
-    .card-dashboard { 
-        background: #f8fafc; padding: 25px; border-radius: 16px; 
-        text-align: center; border: 1px solid #e2e8f0;
-    }
-    
-    .card-dashboard h3 { margin-bottom: 10px; color: #64748b; font-size: 0.9rem; text-transform: uppercase; }
-    .card-dashboard span { font-size: 36px; font-weight: 800; color: #2563eb; }
 
-    .tabela-admin { width: 100%; margin-top: 30px; border-collapse: separate; border-spacing: 0; }
-    .tabela-admin th { background: #f8fafc; padding: 15px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; text-align: left; border-bottom: 2px solid #e2e8f0; }
-    .tabela-admin td { padding: 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+.gestao-container{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
 
-    /* Estilos das Badges (Status do Funil) */
-    .badge { padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.70rem; margin-right: 3px; }
-    .b-novo { background: #e0f2fe; color: #0369a1; }     /* Azul claro */
-    .b-negoc { background: #e0e7ff; color: #4338ca; }    /* Indigo */
-    .b-visita { background: #fef3c7; color: #92400e; }   /* Amarelo */
-    .b-venda { background: #dcfce7; color: #166534; }    /* Verde */
-    .b-desist { background: #fee2e2; color: #991b1b; }   /* Vermelho */
+/* =========================
+   CABEÇALHO
+========================= */
 
-    .btn-admin { 
-        display: inline-block; padding: 12px 20px; background: #2563eb; 
-        color: white; text-decoration: none; border-radius: 10px; margin-right: 10px; font-weight: 600;
-    }
-    .btn-admin:hover { background: #1d4ed8; }
+.page-header{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 4px 12px rgba(0,0,0,.04);
+}
+
+.page-header h2{
+    color:#0f172a;
+    margin-bottom:5px;
+}
+
+.page-header p{
+    color:#64748b;
+}
+
+/* =========================
+   KPIS
+========================= */
+
+.cards-dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card-dashboard{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    padding:25px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.04);
+
+    transition:.2s;
+}
+
+.card-dashboard:hover{
+    transform:translateY(-4px);
+}
+
+.card-info h3{
+    font-size:13px;
+    text-transform:uppercase;
+    color:#64748b;
+    margin-bottom:10px;
+}
+
+.card-info span{
+    font-size:34px;
+    font-weight:800;
+    color:#2563eb;
+}
+
+.card-icon{
+    width:65px;
+    height:65px;
+
+    background:#eff6ff;
+
+    border-radius:16px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:28px;
+}
+
+/* =========================
+   TABELA
+========================= */
+
+.box-tabela{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 4px 12px rgba(0,0,0,.04);
+}
+
+.box-tabela h3{
+    margin-bottom:20px;
+    color:#0f172a;
+}
+
+.table-responsive{
+    overflow-x:auto;
+}
+
+.tabela-admin{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.tabela-admin thead th{
+    background:#f8fafc;
+    color:#64748b;
+    font-size:12px;
+    text-transform:uppercase;
+    padding:15px;
+    text-align:left;
+    border-bottom:2px solid #e2e8f0;
+}
+
+.tabela-admin tbody td{
+    padding:15px;
+    border-bottom:1px solid #f1f5f9;
+}
+
+.tabela-admin tbody tr:hover{
+    background:#f8fafc;
+}
+
+/* =========================
+   BADGES
+========================= */
+
+.badge-funil{
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.b-novo{
+    background:#e0f2fe;
+    color:#0369a1;
+}
+
+.b-negoc{
+    background:#e0e7ff;
+    color:#4338ca;
+}
+
+.b-visita{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.b-venda{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.b-desist{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* =========================
+   AÇÕES
+========================= */
+
+.acoes{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-top:25px;
+}
+
+.btn-admin{
+    background:#2563eb;
+    color:white;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:12px;
+    font-weight:600;
+    transition:.2s;
+}
+
+.btn-admin:hover{
+    background:#1d4ed8;
+}
+
+.btn-secundario{
+    background:#64748b;
+}
+
+.btn-secundario:hover{
+    background:#475569;
+}
+
 </style>
 
-<div class="box">
-    <h2 style="color: #1e293b;">📊 Painel de Gestão</h2>
- 
+<div class="gestao-container">
+
+    <div class="page-header">
+
+        <h2>📊 Painel de Gestão</h2>
+
+        <p>
+            Acompanhe o desempenho dos corretores e indicadores da imobiliária.
+        </p>
+
+    </div>
+
     <div class="cards-dashboard">
+
         <div class="card-dashboard">
-            <h3>👥 Usuários</h3>
-            <span>{{ total_usuarios }}</span>
+
+            <div class="card-info">
+                <h3>Usuários</h3>
+                <span>{{ total_usuarios }}</span>
+            </div>
+
+            <div class="card-icon">
+                👥
+            </div>
+
         </div>
+
         <div class="card-dashboard">
-            <h3>🏠 Imóveis</h3>
-            <span>{{ total_imoveis }}</span>
+
+            <div class="card-info">
+                <h3>Imóveis</h3>
+                <span>{{ total_imoveis }}</span>
+            </div>
+
+            <div class="card-icon">
+                🏠
+            </div>
+
         </div>
+
         <div class="card-dashboard">
-            <h3>📋 Clientes</h3>
-            <span>{{ total_clientes }}</span>
+
+            <div class="card-info">
+                <h3>Clientes</h3>
+                <span>{{ total_clientes }}</span>
+            </div>
+
+            <div class="card-icon">
+                📋
+            </div>
+
         </div>
+
     </div>
 
-    <h3 style="margin-top: 40px; color: #1e293b;">Performance dos Corretores</h3>
+    <div class="box-tabela">
 
-    <table class="tabela-admin">
-        <thead>
-            <tr>
-                <th>Corretor</th>
-                <th>Total</th>
-                <th>Novo</th>
-                <th>Negoc.</th>
-                <th>Visita</th>
-                <th>Venda</th>
-                <th>Desist.</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in corretores %}
-            <tr>
-                <td style="font-weight: 600;">{{ c[0] }}</td>
-                <td style="font-weight: 800;">{{ c[1] }}</td>
-                <td><span class="badge b-novo">{{ c[2] }}</span></td>
-                <td><span class="badge b-negoc">{{ c[3] }}</span></td>
-                <td><span class="badge b-visita">{{ c[4] }}</span></td>
-                <td><span class="badge b-venda">{{ c[5] }}</span></td>
-                <td><span class="badge b-desist">{{ c[6] }}</span></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <h3>👨‍💼 Performance dos Corretores</h3>
 
-    <div style="margin-top: 30px;">
-        <a href="/admin/novo-usuario" class="btn-admin">➕ Novo Corretor</a>
-        <a href="/admin/usuarios" class="btn-admin" style="background: #64748b;">👥 Gerenciar Usuários</a>
+        <div class="table-responsive">
+
+            <table class="tabela-admin">
+
+                <thead>
+                    <tr>
+                        <th>Corretor</th>
+                        <th>Total</th>
+                        <th>Novos</th>
+                        <th>Negociação</th>
+                        <th>Visita</th>
+                        <th>Venda</th>
+                        <th>Desistência</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for c in corretores %}
+
+                    <tr>
+
+                        <td>
+                            <strong>{{ c.nome }}</strong>
+                        </td>
+
+                        <td>
+                            <strong>{{ c.total }}</strong>
+                        </td>
+
+                        <td>
+                            <span class="badge-funil b-novo">
+                                {{ c.novo }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge-funil b-negoc">
+                                {{ c.negoc }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge-funil b-visita">
+                                {{ c.visita }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge-funil b-venda">
+                                {{ c.venda }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge-funil b-desist">
+                                {{ c.desist }}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="acoes">
+
+            <a href="/admin/novo-usuario"
+               class="btn-admin">
+                ➕ Novo Corretor
+            </a>
+
+            <a href="/admin/usuarios"
+               class="btn-admin btn-secundario">
+                👥 Gerenciar Usuários
+            </a>
+
+        </div>
+
     </div>
+
 </div>
 
 {% endblock %}
