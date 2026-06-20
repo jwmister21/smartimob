@@ -219,9 +219,8 @@ body{
 .user-controls{
     display:flex;
     align-items:center;
-    gap:30px;
+    gap:12px;
 }
-
 /* ===================================
    BADGE
 =================================== */
@@ -263,12 +262,10 @@ body{
     align-items:center;
     justify-content:center;
 
-    width:40px;
-    height:40px;
+    width:34px;
+    height:34px;
 
-    text-decoration:none;
-
-    font-size:28px;
+    font-size:22px;
 }
 
 /* ===================================
@@ -542,6 +539,7 @@ body{
 <div class="menu-section-title">CRM</div>
 <a href="/clientes" class="{% if '/clientes' in path %}active{% endif %}">👥 Clientes</a>
 <a href="/funil" class="{% if '/funil' in path %}active{% endif %}">⚡ Funil</a>
+<a href="/leads_site" class="{% if '/leads_site' in path %}active{% endif %}">🎯 Leads Site</a>   
 
 <div class="menu-section-title">Imóveis</div>
 <a href="/imoveis" class="{% if '/imoveis' in path %}active{% endif %}">🏢 Imóveis</a>
@@ -573,17 +571,7 @@ body{
 <div class="topbar">
 <h1>{% block pagina %}{% endblock %}</h1>
 <div class="user-controls">
-  <a href="/leads_site" class="icone-topo">
-
-    🎯
-
-    {% if total_leads_site > 0 %}
-    <span class="badge">
-        {{ total_leads_site }}
-    </span>
-    {% endif %}
-
-</a>
+ 
 <div class="icone-topo" onclick="toggleNotificacoes()" style="cursor:pointer;">
 
 🔔
