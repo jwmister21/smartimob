@@ -52,19 +52,30 @@
         {% endif %}
 
         <div class="info">
-            <div class="valor">{{ imovel.valor }}</div>
-            <div class="titulo">{{ imovel.titulo }}</div>
-            <div class="detalhes">
-                📍 {{ imovel.bairro }} | 🛏 {{ imovel.quartos }} Qts | 🛁 {{ imovel.banheiros }} Ban | 🚗 {{ imovel.vagas }} Vagas
-            </div>
+        <div class="valor">{{ imovel.valor }}</div>
+        
+        <div class="titulo" style="font-weight:700; color:#1e293b; margin-bottom:5px;">
+            {{ imovel.tipo }} à {{ imovel.status }} com {{ imovel.quartos }} quartos, {{ imovel.area }}m²
         </div>
-    </a>
+        
+        <div class="local" style="color:#64748b; font-size:13px; margin-bottom:12px;">
+            📍 {{ imovel.bairro }}, {{ imovel.cidade }}
+        </div>
+        
+        <div class="detalhes" style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; color:#475569; font-size:13px;">
+            <div>🛏 {{ imovel.quartos }} Quartos</div>
+            <div>🛁 {{ imovel.banheiros }} Suites</div>
+            <div>🚗 {{ imovel.vagas }} Vagas</div>
+            <div>📐 {{ imovel.area }} m²</div>
+        </div>
+    </div>
+</a>
 
     <div class="acoes">
-        <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">✏️</a>
-        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-base btn-excluir" onclick="return confirm('Excluir?')">🗑</a>
-        <button class="btn-base btn-drive" onclick="copiarLink('{{ imovel.link }}')">🔗</button>
-        <button class="btn-base btn-whatsapp" onclick="abrirModalEnviar('{{ imovel.id }}')">📲</button>
+        <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">✏️ Editar</a>
+        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-base btn-excluir" onclick="return confirm('Excluir?')">🗑 Deletar</a>
+        <button class="btn-base btn-drive" onclick="copiarLink('{{ imovel.link }}')">🔗 Copiar</button>
+        <button class="btn-base btn-whatsapp" onclick="abrirModalEnviar('{{ imovel.id }}')">📲 Whatsapp</button>
     </div>
 </div>
 {% endfor %}
