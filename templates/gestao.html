@@ -15,8 +15,16 @@
     .card-dashboard span { font-size: 36px; font-weight: 800; color: #2563eb; }
 
     .tabela-admin { width: 100%; margin-top: 30px; border-collapse: separate; border-spacing: 0; }
-    .tabela-admin th { background: #f8fafc; padding: 15px; color: #64748b; font-size: 0.8rem; text-transform: uppercase; text-align: left; border-bottom: 2px solid #e2e8f0; }
+    .tabela-admin th { background: #f8fafc; padding: 15px; color: #64748b; font-size: 0.75rem; text-transform: uppercase; text-align: left; border-bottom: 2px solid #e2e8f0; }
     .tabela-admin td { padding: 15px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+
+    /* Estilos das Badges (Status do Funil) */
+    .badge { padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.70rem; margin-right: 3px; }
+    .b-novo { background: #e0f2fe; color: #0369a1; }     /* Azul claro */
+    .b-negoc { background: #e0e7ff; color: #4338ca; }    /* Indigo */
+    .b-visita { background: #fef3c7; color: #92400e; }   /* Amarelo */
+    .b-venda { background: #dcfce7; color: #166534; }    /* Verde */
+    .b-desist { background: #fee2e2; color: #991b1b; }   /* Vermelho */
 
     .btn-admin { 
         display: inline-block; padding: 12px 20px; background: #2563eb; 
@@ -43,20 +51,30 @@
         </div>
     </div>
 
-    <h3 style="margin-top: 40px; color: #1e293b;">Ranking de Corretores (Clientes Cadastrados)</h3>
+    <h3 style="margin-top: 40px; color: #1e293b;">Performance dos Corretores</h3>
 
     <table class="tabela-admin">
         <thead>
             <tr>
                 <th>Corretor</th>
-                <th>Clientes</th>
+                <th>Total</th>
+                <th>Novo</th>
+                <th>Negoc.</th>
+                <th>Visita</th>
+                <th>Venda</th>
+                <th>Desist.</th>
             </tr>
         </thead>
         <tbody>
-            {% for corretor in corretores %}
+            {% for c in corretores %}
             <tr>
-                <td>{{ corretor[1] }}</td>
-                <td>{{ corretor[2] }}</td>
+                <td style="font-weight: 600;">{{ c[0] }}</td>
+                <td style="font-weight: 800;">{{ c[1] }}</td>
+                <td><span class="badge b-novo">{{ c[2] }}</span></td>
+                <td><span class="badge b-negoc">{{ c[3] }}</span></td>
+                <td><span class="badge b-visita">{{ c[4] }}</span></td>
+                <td><span class="badge b-venda">{{ c[5] }}</span></td>
+                <td><span class="badge b-desist">{{ c[6] }}</span></td>
             </tr>
             {% endfor %}
         </tbody>
