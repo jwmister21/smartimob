@@ -578,73 +578,39 @@ def pagina_editar(id):
 @verificar_sessao
 @admin_required
 def tela_gestao():
-
     empresa_id = session.get("empresa_id")
-
     conn = get_db()
     cursor = conn.cursor()
 
-    # Total de usuários
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM usuarios
-        WHERE empresa_id = ?
-    """, (empresa_id,))
+    # Totais Gerais
+    cursor.execute("SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?", (empresa_id,))
     total_usuarios = cursor.fetchone()[0]
 
-    # Total de imóveis
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM imoveis
-        WHERE empresa_id = ?
-    """, (empresa_id,))
+    cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id = ?", (empresa_id,))
     total_imoveis = cursor.fetchone()[0]
 
-    # Total de clientes
     try:
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM clientes
-            WHERE empresa_id = ?
-        """, (empresa_id,))
+        cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id = ?", (empresa_id,))
         total_clientes = cursor.fetchone()[0]
     except:
         total_clientes = 0
 
-    # Imóveis disponíveis
+    # Ranking de corretores com detalhamento de Funil (Status)
     cursor.execute("""
-        SELECT COUNT(*)
-        FROM imoveis
-        WHERE empresa_id = ?
-        AND status = 'Venda'
-    """, (empresa_id,))
-    imoveis_disponiveis = cursor.fetchone()[0]
-
-    # Imóveis fechados
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM imoveis
-        WHERE empresa_id = ?
-        AND status <> 'Venda'
-    """, (empresa_id,))
-    imoveis_fechados = cursor.fetchone()[0]
-
-    # Ranking de corretores
-    cursor.execute("""
-        SELECT
-            u.id,
+        SELECT 
             u.nome,
-            COUNT(i.id) AS total_imoveis
+            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id) as total,
+            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Lead Novo') as novo,
+            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Negociação') as negociacao,
+            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Visita Agendada') as visita,
+            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Concluido') as concluido,
+            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Desistencia') as desistencias
         FROM usuarios u
-        LEFT JOIN imoveis i
-            ON u.id = i.usuario_id
         WHERE u.empresa_id = ?
-        GROUP BY u.id, u.nome
-        ORDER BY total_imoveis DESC
+        ORDER BY total DESC
     """, (empresa_id,))
 
     corretores = cursor.fetchall()
-
     conn.close()
 
     return render_template(
@@ -652,11 +618,8 @@ def tela_gestao():
         total_usuarios=total_usuarios,
         total_imoveis=total_imoveis,
         total_clientes=total_clientes,
-        imoveis_disponiveis=imoveis_disponiveis,
-        imoveis_fechados=imoveis_fechados,
         corretores=corretores
     )
-
 
 # Decorator para o Super Admin
 def super_admin_required(f):
