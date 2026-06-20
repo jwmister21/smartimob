@@ -8,12 +8,10 @@
 {% set path = request.path %}
 <style>
 
-/* =========================
-  RESET
-========================= */
-/* =========================
+/* ===================================
    RESET
-========================= */
+=================================== */
+
 *{
     margin:0;
     padding:0;
@@ -21,38 +19,70 @@
     font-family:'Poppins',sans-serif;
 }
 
-/* =========================
-   BODY
-========================= */
-body{
-    background:#f4f6f9;
-    color:#1f2937;
-    transition:.25s;
+/* ===================================
+   CORES
+=================================== */
+
+:root{
+    --bg:#f4f6f9;
+    --white:#ffffff;
+    --primary:#2563eb;
+    --primary-light:#eff6ff;
+    --text:#111827;
+    --text-light:#64748b;
+    --border:#e5e7eb;
 }
 
-/* =========================
+/* ===================================
+   BODY
+=================================== */
+
+body{
+    background:var(--bg);
+    color:var(--text);
+}
+
+/* ===================================
    SIDEBAR
-========================= */
+=================================== */
+
 .sidebar{
     position:fixed;
     left:0;
     top:0;
+
     width:260px;
     height:100vh;
 
-    background:#ffffff;
+    background:#fff;
 
-    border-right:1px solid #e5e7eb;
+    border-right:1px solid var(--border);
+
     box-shadow:4px 0 20px rgba(0,0,0,.04);
-    padding:25px;
+
+    padding:20px;
 
     display:flex;
     flex-direction:column;
+
+    z-index:1000;
 }
 
-/* =========================
+/* ===================================
    LOGO
-========================= */
+=================================== */
+
+.logo-area{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    padding-bottom:20px;
+    margin-bottom:20px;
+
+    border-bottom:1px solid var(--border);
+}
 
 .logo{
     width:90px;
@@ -62,32 +92,30 @@ body{
     margin-bottom:10px;
 }
 
-.logo-area{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-
-    margin-bottom:30px;
-
-    padding-bottom:20px;
-
-    border-bottom:1px solid #e5e7eb;
+.brand{
+    text-align:center;
 }
 
+.brand-title{
+    font-size:24px;
+    font-weight:700;
+    color:#111827;
+}
 
-/* =========================
+.brand-subtitle{
+    color:#2563eb;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:2px;
+}
+
+/* ===================================
    MENU
-========================= */
+=================================== */
 
 .menu{
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-
+    flex:1;
     overflow-y:auto;
-    max-height:calc(100vh - 180px);
-
     padding-right:5px;
 }
 
@@ -97,77 +125,57 @@ body{
 
 .menu::-webkit-scrollbar-thumb{
     background:#d1d5db;
-    border-radius:20px;
+    border-radius:10px;
 }
 
-/* =========================
-   TITULOS MENU
-========================= */
+/* ===================================
+   MENU TITLES
+=================================== */
 
 .menu-section-title{
-    color:#94a3b8;
+    margin:18px 0 8px 12px;
 
     font-size:11px;
-
     font-weight:700;
 
+    color:#94a3b8;
+
     text-transform:uppercase;
-
     letter-spacing:.08em;
-
-    margin:20px 0 8px 12px;
 }
-/* =========================
-   LINKS MENU
-========================= */
+
+/* ===================================
+   MENU LINKS
+=================================== */
 
 .menu a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    padding:12px 16px;
+
+    margin-bottom:4px;
+
+    border-radius:12px;
 
     text-decoration:none;
 
     color:#475569;
 
-    padding:12px 16px;
-
-    border-radius:12px;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
-
     font-size:14px;
-
     font-weight:500;
 
     transition:.2s;
 }
 
 .menu a:hover{
-
     background:#f8fafc;
-
     color:#2563eb;
-
-    transform:none;
-}
-
-/* =========================
-   MAIN
-========================= */
-
-   .main{
-    margin-left:260px;
-    min-height:100vh;
-    padding:30px;
-    background:#f4f6f9;
 }
 
 .menu a.active{
-
     background:#eff6ff;
-
     color:#2563eb;
 
     font-weight:600;
@@ -175,46 +183,89 @@ body{
     border-left:4px solid #2563eb;
 }
 
-/* =========================
+/* ===================================
+   MAIN
+=================================== */
+
+.main{
+    margin-left:260px;
+    min-height:100vh;
+
+    padding:30px;
+
+    background:#f4f6f9;
+}
+
+/* ===================================
    TOPBAR
-========================= */
+=================================== */
 
 .topbar{
     display:flex;
-    align-items:center;
     justify-content:space-between;
+    align-items:center;
+
     gap:20px;
+
+    margin-bottom:25px;
 }
 
-.topbar h1{
-    color:#111827;
-    font-weight:700;
+/* ===================================
+   SEARCH
+=================================== */
+
+.search-box{
+    flex:1;
+    max-width:600px;
 }
 
-/* =========================
+.search-box input{
+    width:100%;
+    height:52px;
+
+    border:1px solid var(--border);
+
+    border-radius:16px;
+
+    background:white;
+
+    padding:0 20px;
+
+    font-size:14px;
+
+    outline:none;
+}
+
+.search-box input:focus{
+    border-color:#2563eb;
+}
+
+/* ===================================
    USER CONTROLS
-========================= */
+=================================== */
 
 .user-controls{
     display:flex;
     align-items:center;
-    gap:15px;
+    gap:20px;
     position:relative;
 }
 
-/* =========================
+/* ===================================
    BADGE
-========================= */
+=================================== */
 
 .badge{
     position:absolute;
+
     top:-8px;
     right:-10px;
 
     background:#ef4444;
+
     color:white;
 
-    min-width:20px;
+    width:20px;
     height:20px;
 
     border-radius:50%;
@@ -227,35 +278,38 @@ body{
     font-weight:700;
 }
 
-/* =========================
+/* ===================================
+   ICONES TOPO
+=================================== */
+
+.icone-topo{
+    position:relative;
+    text-decoration:none;
+    font-size:24px;
+}
+
+/* ===================================
    DROPDOWN
-========================= */
+=================================== */
 
 .dropdown{
     position:relative;
 }
 
 .dropbtn{
-    background:#ffffff;
+    background:white;
 
-    color:#111827;
+    border:1px solid var(--border);
 
-    border:1px solid #e5e7eb;
+    padding:12px 18px;
 
-    padding:10px 15px;
-
-    border-radius:12px;
+    border-radius:14px;
 
     cursor:pointer;
 
+    color:#111827;
+
     font-size:14px;
-    font-weight:500;
-
-    transition:.2s;
-}
-
-.dropbtn:hover{
-    background:#f9fafb;
 }
 
 .dropdown-content{
@@ -264,27 +318,31 @@ body{
     position:absolute;
 
     right:0;
+    top:55px;
 
-    background:#ffffff;
+    width:200px;
 
-    min-width:180px;
+    background:white;
+
+    border:1px solid var(--border);
 
     border-radius:12px;
-
-    border:1px solid #e5e7eb;
 
     box-shadow:0 10px 30px rgba(0,0,0,.08);
 
     overflow:hidden;
 
-    z-index:1000;
+    z-index:9999;
 }
 
 .dropdown-content a{
-    color:#374151;
-    text-decoration:none;
     display:block;
+
     padding:12px 16px;
+
+    text-decoration:none;
+
+    color:#374151;
 }
 
 .dropdown-content a:hover{
@@ -295,62 +353,74 @@ body{
     display:block;
 }
 
-/* =========================
+/* ===================================
    NOTIFICAÇÕES
-========================= */
+=================================== */
 
 .notif-box{
     display:none;
 
     position:absolute;
 
-    right:40px;
+    right:0;
     top:50px;
 
-    width:300px;
+    width:320px;
 
-    background:#ffffff;
+    background:white;
 
-    border:1px solid #e5e7eb;
+    border:1px solid var(--border);
 
     border-radius:16px;
 
-    box-shadow:0 15px 35px rgba(0,0,0,.08);
-
     padding:12px;
 
-    z-index:2000;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    z-index:9999;
 }
 
 .notif-item{
     display:block;
 
-    text-decoration:none;
-
-    color:#111827;
-
     padding:10px;
 
     border-radius:10px;
 
-    margin-bottom:5px;
+    text-decoration:none;
 
-    transition:.2s;
+    color:#111827;
 }
 
 .notif-item:hover{
     background:#f3f4f6;
 }
 
-/* =========================
+/* ===================================
+   CARDS
+=================================== */
+
+.card{
+    background:white;
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.04);
+}
+
+/* ===================================
    CHAT BOTÃO
-========================= */
+=================================== */
 
 .chat-float-btn{
     position:fixed;
 
-    bottom:25px;
     right:25px;
+    bottom:25px;
 
     width:60px;
     height:60px;
@@ -367,20 +437,20 @@ body{
 
     cursor:pointer;
 
-    box-shadow:0 10px 30px rgba(37,99,235,.25);
+    box-shadow:0 10px 25px rgba(37,99,235,.25);
 
     z-index:9999;
 }
 
-/* =========================
+/* ===================================
    CHAT
-========================= */
+=================================== */
 
 .chat-widget{
     position:fixed;
 
-    bottom:100px;
     right:25px;
+    bottom:95px;
 
     width:340px;
     height:450px;
@@ -389,7 +459,7 @@ body{
 
     border-radius:20px;
 
-    border:1px solid #e5e7eb;
+    border:1px solid var(--border);
 
     box-shadow:0 15px 40px rgba(0,0,0,.12);
 
@@ -409,22 +479,17 @@ body{
 
 .chat-footer{
     padding:15px;
-    border-top:1px solid #e5e7eb;
-    background:#ffffff;
+    border-top:1px solid var(--border);
 }
 
 #texto_cliente{
     width:100%;
 
+    padding:10px;
+
     border:1px solid #d1d5db;
 
-    background:white;
-
-    color:#111827;
-
     border-radius:10px;
-
-    padding:10px;
 
     margin-bottom:10px;
 }
@@ -438,29 +503,22 @@ body{
 
     color:white;
 
-    padding:10px;
+    padding:12px;
 
     border-radius:10px;
-
-    font-weight:600;
 
     cursor:pointer;
 }
 
-.btn-analisar:hover{
-    background:#1d4ed8;
-}
-
-/* =========================
+/* ===================================
    MENSAGENS
-========================= */
+=================================== */
 
 .msg{
     padding:12px;
     border-radius:12px;
     margin-bottom:12px;
     max-width:70%;
-    white-space:pre-wrap;
 }
 
 .cliente{
@@ -474,52 +532,7 @@ body{
     margin-left:auto;
 }
 
-/* =========================
-   ÍCONES TOPO
-========================= */
-
-.icone-topo{
-    position:relative;
-    font-size:26px;
-    text-decoration:none;
-}
-  
-.brand{
-    text-align:center;
-}
-
-.brand-title{
-    font-size:20px;
-    font-weight:700;
-    color:#0f172a;
-    letter-spacing:.5px;
-}
-
-.brand-subtitle{
-    font-size:14px;
-    font-weight:600;
-    color:#2563eb;
-
-    margin-top:2px;
-}
-   .search-box{
-    width:450px;
-}
-
-.search-box input{
-    width:100%;
-    padding:14px 20px;
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    background:white;
-}
-   .card{
-    background:white;
-    border-radius:20px;
-    border:1px solid #e5e7eb;
-    padding:25px;
-    box-shadow:0 2px 10px rgba(0,0,0,.04);
-}
+</style>
 </style>
 </head>
 <body>
