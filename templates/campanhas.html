@@ -4,11 +4,12 @@
 
 {% block content %}
 <style>
-    /* Reset e ajuste para o padrão Clean */
+    /* Estilos Gerais */
     .campanha-area {
         width: 100%;
         max-width: 1400px;
         margin: 0 auto;
+        padding: 20px;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 25px;
@@ -23,8 +24,7 @@
     }
 
     h2 { margin-top: 0; color: #1e293b; font-size: 1.5rem; }
-    
-    label { color: #64748b; display: block; margin-top: 15px; font-weight: 500; }
+    label { color: #64748b; display: block; margin-top: 15px; font-weight: 600; font-size: 0.9rem; }
 
     input, textarea {
         width: 100%; box-sizing: border-box;
@@ -40,16 +40,39 @@
     }
     button:hover { background: #1d4ed8; transform: translateY(-2px); }
 
+    /* Estilos da Lista de Clientes (O design "mais fino") */
     .lista { height: 520px; overflow-y: auto; margin-top: 15px; padding-right: 5px; }
 
     .cliente {
-        background: #f8fafc; padding: 14px; margin-bottom: 10px;
-        border-radius: 12px; display: flex; align-items: center; gap: 12px;
+        background: #ffffff;
+        padding: 18px;
+        margin-bottom: 12px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
         border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
     }
-    .cliente:hover { background: #f1f5f9; }
+    .cliente:hover { border-color: #94a3b8; transform: translateX(5px); }
 
-    .valor { color: #059669; font-weight: bold; }
+    .checkCliente { width: 20px; height: 20px; cursor: pointer; accent-color: #2563eb; }
+
+    .info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+    .nome-cliente {
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #1e293b;
+        text-transform: uppercase;
+        letter-spacing: 1.2px; /* Nome esticado */
+    }
+
+    .detalhe-cliente { font-size: 0.85rem; color: #64748b; }
+    .valor { color: #059669; font-weight: 700; }
+    
+    .btn-selecionar { background: #1e293b !important; font-size: 0.9rem; letter-spacing: 0.5px; }
+
     .contador { margin-top: 15px; color: #64748b; font-weight: 600; }
     #status { margin-top: 10px; color: #059669; font-weight: bold; }
 
@@ -57,7 +80,7 @@
 </style>
 
 <div class="campanha-area">
-    <!-- DISPARO -->
+    <!-- COLUNA DISPARO -->
     <div class="card">
         <h2>📢 Disparo WhatsApp</h2>
         <label>📱 Telefones selecionados</label>
@@ -75,20 +98,22 @@
         <div id="status"></div>
     </div>
 
-    <!-- CLIENTES -->
+    <!-- COLUNA CLIENTES -->
     <div class="card">
         <h2>👥 Clientes</h2>
-        <input id="filtroValor" placeholder="Filtrar por orçamento máximo (Ex: 300.000)" oninput="formatarFiltro(); filtrarClientes()">
-        <button onclick="selecionarTodos()" style="background: #64748b;">☑ Selecionar todos visíveis</button>
+        <input id="filtroValor" placeholder="🔍 Filtrar orçamento máximo (Ex: 300.000)" 
+               oninput="formatarFiltro(); filtrarClientes()">
+
+        <button class="btn-selecionar" onclick="selecionarTodos()">☑ SELECIONAR VISÍVEIS</button>
 
         <div class="lista">
             {% for c in clientes %}
             <div class="cliente" data-orcamento="{{c.faixa_preco}}">
                 <input type="checkbox" class="checkCliente" data-tel="{{c.telefone}}" onchange="selecionarCliente(this)">
                 <div class="info">
-                    <b>{{c.nome}}</b><br>
-                    📱 {{c.telefone}}<br>
-                    💰 <span class="valor">{{ c.faixa_preco }}</span>
+                    <span class="nome-cliente">{{c.nome}}</span>
+                    <span class="detalhe-cliente">📱 {{c.telefone}}</span>
+                    <span class="detalhe-cliente">💰 <span class="valor">{{ c.faixa_preco }}</span></span>
                 </div>
             </div>
             {% endfor %}
@@ -97,7 +122,7 @@
 </div>
 
 <script>
-    // Mantendo sua lógica original intacta
+    // LÓGICA ORIGINAL MANTIDA
     function atualizarContador(){
         let qtd = document.querySelectorAll(".checkCliente:checked").length;
         document.getElementById("qtd").innerHTML = qtd;
