@@ -2,315 +2,163 @@
 
 {% block title %}WhatsApp{% endblock %}
 {% block pagina %}WhatsApp do Corretor{% endblock %}
- 
-{% block content %} 
- 
+
+{% block content %}
 <style>
+    .whatsapp-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 600px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
 
-.whatsapp-card{
-    background:#111827;
-    border:1px solid #374151;
-    border-radius:16px;
-    padding:25px;
-    max-width:700px;
-}
+    .whatsapp-status {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+    }
 
-.whatsapp-status{
-    background:#1f2937;
-    border-radius:12px;
-    padding:15px;
-    margin-bottom:20px;
-}
+    .whatsapp-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    .whatsapp-btn:hover { background: #1d4ed8; }
 
-.whatsapp-btn{
-    background:#22c55e;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-}
+    #qr {
+        width: 250px;
+        height: 250px;
+        object-fit: contain;
+        margin-top: 20px;
+        border-radius: 12px;
+        background: #ffffff;
+        padding: 10px;
+        border: 2px solid #e2e8f0;
+    }
 
-.whatsapp-btn:hover{
-    opacity:.9;
-}
-
-#qr{
-    width:280px;
-    height:280px;
-    object-fit: contain;
-    margin-top:20px;
-    border-radius:12px;
-    background:white;
-    padding:10px;
-}
-
-.conectado{
-    background:#064e3b;
-    color:#6ee7b7;
-    padding:15px;
-    border-radius:12px;
-    margin-top:15px;
-    font-weight:600;
-}
-
-    
-
-.btn-desconectar{
-    display:inline-block;
-    margin-top:15px;
-    background:#dc2626;
-    color:white;
-    text-decoration:none;
-    padding:12px 18px;
-    border-radius:10px;
-    font-weight:600;
-}
-
-.btn-desconectar:hover{
-    background:#b91c1c;
-}
-
-
+    .btn-desconectar {
+        display: inline-block;
+        margin-top: 15px;
+        background: #fef2f2;
+        color: #dc2626;
+        text-decoration: none;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        border: 1px solid #fee2e2;
+    }
+    .btn-desconectar:hover { background: #fee2e2; }
 </style>
 
 <div class="whatsapp-card">
-
     <h2>📱 WhatsApp do Corretor</h2>
 
-    <br>
-
     <div class="whatsapp-status">
-
         <p><strong>Sessão:</strong> {{ sessao }}</p>
-
-        <p>
-            <strong>Status:</strong>
-            <span id="status">
-                {{ status }}
-            </span>
-        </p>
-
-        <p>
-            <strong>Número:</strong>
-            <span id="numero">
-                {{ numero or "Não conectado" }}
-            </span>
-        </p>
-
+        <p><strong>Status:</strong> <span id="status">{{ status }}</span></p>
+        <p><strong>Número:</strong> <span id="numero">{{ numero or "Não conectado" }}</span></p>
     </div>
 
-     <button
-    class="whatsapp-btn"
-    onclick="verificarConexao()">
-    🔄 Verificar conexão
-    </button>
+    <button class="whatsapp-btn" onclick="verificarConexao()">🔄 Verificar conexão</button>
+    
+    <button id="btnConectar" class="whatsapp-btn" onclick="conectarWhatsapp()">Conectar WhatsApp</button>
+    
+    <a href="/desconectar_whatsapp" id="btnDesconectar" class="btn-desconectar" style="display:none;">🔴 Desconectar</a>
 
-    <button
-        id="btnConectar"
-        class="whatsapp-btn"
-        onclick="conectarWhatsapp()">
-        Conectar WhatsApp
-    </button>
-<a href="/desconectar_whatsapp"
-   id="btnDesconectar"
-   class="btn-desconectar"
-   style="display:none;">
-   🔴 Desconectar WhatsApp
-</a>
     <div id="areaQr">
-
-        <img
-            id="qr"
-            style="display:none;"
-        >
-
+        <img id="qr" style="display:none;">
     </div>
-
 </div>
+
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-
 <script>
+    const socket = io("https://smartimob-production.up.railway.app");
+    let carregandoQR = false;
+    let pararQR = false;
 
-/* =========================
-   SOCKET (TEMPO REAL)
-========================= */
-const socket = io("https://smartimob-production.up.railway.app");
+    socket.on("whatsapp_status", function(data) {
+        if (data.sessao !== "{{ sessao }}") return;
+        atualizarStatus(data.status);
+    });
 
-
-/* =========================
-   ESTADOS GLOBAIS
-========================= */
-let carregandoQR = false;
-let pararQR = false;
-
-
-/* =========================
-   SOCKET EVENT
-========================= */
-socket.on("whatsapp_status", function(data) {
-
-    console.log("📡 STATUS AO VIVO:", data);
-
-    if (data.sessao !== "{{ sessao }}") return;
-
-    atualizarStatus(data.status);
-});
-
-
-/* =========================
-   VERIFICAR CONEXÃO (FORCE SYNC)
-========================= */
-async function verificarConexao() {
-
-    document.getElementById("status").innerText =
-        "🔄 Verificando conexão...";
-
-    try {
-
-        const resp = await fetch("/verificar_conexao_whatsapp");
-        const dados = await resp.json();
-
-        console.log("VERIFICAÇÃO:", dados);
-
-        if (dados.status) {
-            atualizarStatus(dados.status);
-        }
-
-    } catch (err) {
-        console.error("Erro ao verificar conexão:", err);
+    async function verificarConexao() {
+        document.getElementById("status").innerText = "🔄 Verificando...";
+        try {
+            const resp = await fetch("/verificar_conexao_whatsapp");
+            const dados = await resp.json();
+            if (dados.status) atualizarStatus(dados.status);
+        } catch (err) { console.error(err); }
     }
-}
 
+    function atualizarStatus(status) {
+        const statusEl = document.getElementById("status");
+        const numeroEl = document.getElementById("numero");
+        const btnConectar = document.getElementById("btnConectar");
+        const btnDesconectar = document.getElementById("btnDesconectar");
+        const qr = document.getElementById("qr");
 
-/* =========================
-   ATUALIZA UI STATUS
-========================= */
-function atualizarStatus(status) {
+        if (status === "conectado") {
+            statusEl.innerText = "🟢 Conectado";
+            numeroEl.innerText = "✔ WhatsApp conectado";
+            btnConectar.style.display = "none";
+            btnDesconectar.style.display = "inline-block";
+            pararQR = true;
+            if (qr) qr.style.display = "none";
+            mostrarToast("✅ WhatsApp conectado!");
+        } else {
+            statusEl.innerText = "🔴 Desconectado";
+            numeroEl.innerText = "Não conectado";
+            btnConectar.style.display = "inline-block";
+            btnDesconectar.style.display = "none";
+            pararQR = false;
+        }
+    }
 
-    const statusEl = document.getElementById("status");
-    const numeroEl = document.getElementById("numero");
-    const btnConectar = document.getElementById("btnConectar");
-    const btnDesconectar = document.getElementById("btnDesconectar");
-    const qr = document.getElementById("qr");
-
-    if (status === "conectado") {
-
-        statusEl.innerText = "🟢 Conectado";
-        numeroEl.innerText = "✔ WhatsApp conectado";
-
-        btnConectar.style.display = "none";
-        btnDesconectar.style.display = "inline-block"; // 🔥 AQUI
-
-        pararQR = true;
-
-        if (qr) qr.style.display = "none";
-
-        mostrarToast("✅ WhatsApp conectado com sucesso!");
-
-    } else if (status === "desconectado") {
-
-        statusEl.innerText = "🔴 Desconectado";
-        numeroEl.innerText = "Não conectado";
-
-        btnConectar.style.display = "inline-block";
-        btnDesconectar.style.display = "none"; // 🔥 AQUI
-
+    function conectarWhatsapp(){
+        document.getElementById("status").innerText = "📲 Gerando QR Code...";
+        fetch("/conectar_whatsapp");
         pararQR = false;
+        carregarQR();
     }
-}
 
-
-/* =========================
-   CONECTAR WHATSAPP
-========================= */
-function conectarWhatsapp(){
-
-    document.getElementById("status").innerText =
-        "📲 Gerando QR Code...";
-
-    fetch("/conectar_whatsapp");
-
-    pararQR = false;
-    carregarQR();
-}
-
-
-/* =========================
-   QR CODE LOOP
-========================= */
-async function carregarQR(){
-
-    if (carregandoQR || pararQR) return;
-
-    carregandoQR = true;
-
-    try {
-
-        const resp = await fetch("/buscar_qr");
-        const dados = await resp.json();
-
-        if (dados.qrcode) {
-
-            const img = document.getElementById("qr");
-
-            let qrFinal = dados.qrcode;
-
-            if (!qrFinal.startsWith("data:image")) {
-                qrFinal = "data:image/png;base64," + qrFinal;
+    async function carregarQR(){
+        if (carregandoQR || pararQR) return;
+        carregandoQR = true;
+        try {
+            const resp = await fetch("/buscar_qr");
+            const dados = await resp.json();
+            if (dados.qrcode) {
+                const img = document.getElementById("qr");
+                img.src = dados.qrcode.startsWith("data:image") ? dados.qrcode : "data:image/png;base64," + dados.qrcode;
+                img.style.display = "block";
             }
+        } catch (err) { console.error(err); }
+        carregandoQR = false;
+        setTimeout(carregarQR, 3000);
+    }
 
-            img.src = qrFinal;
-            img.style.display = "block";
+    function mostrarToast(msg) {
+        let toast = document.getElementById("toast");
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "toast";
+            toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#22c55e; color:#fff; padding:12px 20px; border-radius:10px; z-index:9999;";
+            document.body.appendChild(toast);
         }
-
-    } catch (err) {
-        console.error("❌ Erro QR:", err);
+        toast.innerText = msg;
+        toast.style.display = "block";
+        setTimeout(() => toast.style.display = "none", 3000);
     }
 
-    carregandoQR = false;
-
-    setTimeout(carregarQR, 3000);
-}
-
-
-/* =========================
-   TOAST NOTIFICAÇÃO
-========================= */
-function mostrarToast(msg) {
-
-    let toast = document.getElementById("toast");
-
-    if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "toast";
-        toast.style.position = "fixed";
-        toast.style.bottom = "20px";
-        toast.style.right = "20px";
-        toast.style.background = "#22c55e";
-        toast.style.color = "#fff";
-        toast.style.padding = "12px 18px";
-        toast.style.borderRadius = "10px";
-        toast.style.fontWeight = "600";
-        toast.style.zIndex = "9999";
-        document.body.appendChild(toast);
-    }
-
-    toast.innerText = msg;
-    toast.style.display = "block";
-
-    setTimeout(() => {
-        toast.style.display = "none";
-    }, 3000);
-}
-
-
-/* =========================
-   INIT
-========================= */
-carregarQR();
-
+    carregarQR();
 </script>
 {% endblock %}
