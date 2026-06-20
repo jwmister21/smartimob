@@ -216,10 +216,10 @@ body{
    USER CONTROLS
 =================================== */
 
-.user-controls{
-    display:flex;
-    align-items:center;
-    gap:12px;
+.user-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Espaçamento entre o sino e o usuário */
 }
 /* ===================================
    BADGE
@@ -255,18 +255,13 @@ body{
    ICONES TOPO
 =================================== */
 
-.icone-topo{
-    position:relative;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    width:34px;
-    height:34px;
-
-    font-size:22px;
+icone-topo {
+    position: relative;
+    cursor: pointer;
+    color: #64748b;
+    transition: 0.2s;
 }
+.icone-topo:hover { color: #2563eb; }
 
 /* ===================================
    DROPDOWN
@@ -337,40 +332,28 @@ body{
    NOTIFICAÇÕES
 =================================== */
 
-.notif-box{
-    display:none;
-
-    position:absolute;
-
-    right:0;
-    top:50px;
-
-    width:320px;
-
-    background:white;
-
-    border:1px solid var(--border);
-
-    border-radius:16px;
-
-    padding:12px;
-
-    box-shadow:0 10px 30px rgba(0,0,0,.08);
-
-    z-index:9999;
+.notif-box {
+    display: none;
+    position: absolute;
+    right: 180px; /* Ajuste conforme necessário para alinhar com o sino */
+    top: 70px;
+    width: 300px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    z-index: 9999;
 }
-
-.notif-item{
-    display:block;
-
-    padding:10px;
-
-    border-radius:10px;
-
-    text-decoration:none;
-
-    color:#111827;
+.notif-item {
+    padding: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: block;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
 }
+.notif-item:hover { background: #f8fafc; }
 
 .notif-item:hover{
     background:#f3f4f6;
@@ -571,51 +554,42 @@ body{
 <div class="topbar">
 <h1>{% block pagina %}{% endblock %}</h1>
 <div class="user-controls">
- 
-<div class="icone-topo" onclick="toggleNotificacoes()" style="cursor:pointer;">
+    <!-- Ícone de Sino (SVG) -->
+    <div class="icone-topo" onclick="toggleNotificacoes()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        {% if lembretes|length > 0 %}
+            <span class="badge">{{ lembretes|length }}</span>
+        {% endif %}
+    </div>
 
-🔔
+    <!-- Caixa de Notificação -->
+    <div id="notificacoes-box" class="notif-box">
+        <h4 style="padding: 10px; color: #111827; font-size: 0.9rem;">Visitas Hoje</h4>
+        {% for l in lembretes %}
+        <a href="/cliente/{{ l[0] }}" class="notif-item">
+            <div style="font-weight: 600; font-size: 0.85rem;">📅 {{ l[1] }}</div>
+            <div style="font-size: 0.75rem; color: #64748b;">
+                {{ l[10].split('T')[1] if (l[10] and 'T' in l[10]) else "Agendamento confirmado" }}
+            </div>
+        </a>
+        {% else %}
+        <p style="color: #94a3b8; font-size: 0.8rem; padding: 15px; text-align: center;">Nenhuma visita hoje.</p>
+        {% endfor %}
+    </div>
 
-{% if lembretes|length > 0 %}
-<span class="badge">
-    {{ lembretes|length }}
-</span>
-{% endif %}
-
+    <!-- Dropdown do Usuário -->
+    <div class="dropdown">
+        <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
+        <div class="dropdown-content">
+            <a href="/configuracoes">⚙ Configurações</a>
+            <a href="/logout" style="color: #ef4444;">🚪 Sair</a>
+        </div>
+    </div>
 </div>
-<div id="notificacoes-box" class="notif-box">
-<h4 style="margin-bottom: 10px; border-bottom: 1px solid #374151; padding-bottom: 5px;">Visitas Hoje</h4>
-{% for l in lembretes %}
-<a href="/cliente/{{ l[0] }}" class="notif-item" style="display: block; margin-bottom: 8px;">
-<div style="font-weight: bold; color: white;">📅 {{ l[1] }}</div>
-<div style="font-size: 0.75rem; color: #9ca3af;">
-{% if l[10] and 'T' in l[10] %}
 
-Você tem um agendamento hoje {{ l[10].split('T')[1] }}
-
-{% else %}
-
-Você tem um agendamento hoje
-
-{% endif %}
-</div>
-</a>
-{% else %}
-<p style="color: #6b7280; font-size: 0.8rem; padding: 10px;">Nenhuma visita hoje.</p>
-{% endfor %}
-</div>
-
-
-          
-<div class="dropdown">
-<button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
-<div class="dropdown-content">
-<a href="/configuracoes">⚙ Configurações</a>
-<a href="/logout" style="color: #ff4d4d;">🚪 Sair</a>
-</div>
-</div>
-</div>
-</div>
 
 <div class="chat-widget" id="chat-widget">
 <div class="chat-header">
