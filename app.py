@@ -738,101 +738,299 @@ def atualizar_cliente(id):
 @app.route('/analisar_cliente', methods=['POST'])
 def analisar_cliente():
     import json
+
     dados = request.get_json()
     msg = dados.get('mensagem', '').strip()
 
     if not msg:
-        return jsonify({"resultado": "Por favor, digite uma busca."})
+        return jsonify({
+            "resultado": """
+            <div style='color:#94a3b8;padding:10px;'>
+                Digite o que o cliente procura.
+            </div>
+            """
+        })
 
-    usuario_id = session.get("usuario_id")
     empresa_id = session.get("empresa_id")
 
-    if not usuario_id or not empresa_id:
-        return jsonify({"resultado": "Usuário não autenticado."})
+    if not empresa_id:
+        return jsonify({
+            "resultado": """
+            <div style='color:#ef4444;padding:10px;'>
+                Usuário não autenticado.
+            </div>
+            """
+        })
 
-    # 1. IA Extraindo Filtros
+    # ==================================================
+    # IA ANALISA O PEDIDO
+    # ==================================================
+
     try:
+
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": """
-                Você é um especialista imobiliário. Analise a mensagem do cliente e extraia os filtros:
-                bairro, cidade, valor_maximo, quartos, suites, vagas, tipo (casa, apartamento, sobrado, terreno, comercial).
-                Regras: Retorne APENAS um JSON válido. Se não encontrar um filtro, retorne null.
-                Exemplo: {"bairro":"Tatuapé", "cidade":"São Paulo", "valor_maximo":500000, "quartos":3, "suites":null, "vagas":null, "tipo":"apartamento"}
-                """},
-                {"role": "user", "content": msg}
+                {
+                    "role": "system",
+                    "content": """
+Você é um especialista imobiliário.
+
+Analise a mensagem do cliente e extraia:
+
+bairro
+cidade
+valor_maximo
+quartos
+suites
+vagas
+tipo
+
+Tipos permitidos:
+apartamento
+casa
+sobrado
+terreno
+comercial
+
+Retorne APENAS JSON.
+
+Exemplo:
+
+{
+  "bairro":"Tatuapé",
+  "cidade":"São Paulo",
+  "valor_maximo":500000,
+  "quartos":3,
+  "suites":1,
+  "vagas":2,
+  "tipo":"apartamento"
+}
+"""
+                },
+                {
+                    "role": "user",
+                    "content": msg
+                }
             ]
         )
-        texto = response.choices[0].message.content.replace("```json", "").replace("```", "").strip()
-        filtros = json.loads(texto)
-    except Exception as e:
-        return jsonify({"resultado": "Erro ao processar a análise."})
 
-    # 2. Montagem da Query Dinâmica
+        texto = (
+            response.choices[0]
+            .message.content
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+        print("RESPOSTA IA:", texto)
+
+        try:
+            filtros = json.loads(texto)
+        except:
+            filtros = {}
+
+    except Exception as erro:
+        print("ERRO IA:", erro)
+
+        return jsonify({
+            "resultado": """
+            <div style='color:#ef4444;padding:10px;'>
+                Erro ao analisar o pedido do cliente.
+            </div>
+            """
+        })
+
+    # ==================================================
+    # FILTROS
+    # ==================================================
+
     bairro = filtros.get("bairro")
     cidade = filtros.get("cidade")
-    tipo = filtros.get("tipo", "").lower() if filtros.get("tipo") else None
+    tipo = filtros.get("tipo")
+
     quartos = int(filtros.get("quartos") or 0)
     suites = int(filtros.get("suites") or 0)
     vagas = int(filtros.get("vagas") or 0)
-    valor = float(filtros.get("valor_maximo") or 999999999)
+
+    valor_maximo = float(
+        filtros.get("valor_maximo") or 999999999
+    )
+
+    # ==================================================
+    # QUERY
+    # ==================================================
 
     conn = get_db()
     cursor = conn.cursor()
 
-    query = "SELECT id, titulo, valor, bairro, cidade, quartos, tipo FROM imoveis WHERE empresa_id = ? AND usuario_id = ?"
-    parametros = [empresa_id, usuario_id]
+    query = """
+    SELECT *
+    FROM imoveis
+    WHERE empresa_id = ?
+    """
+
+    parametros = [empresa_id]
 
     if bairro:
         query += " AND LOWER(bairro) LIKE ?"
         parametros.append(f"%{bairro.lower()}%")
+
     if cidade:
         query += " AND LOWER(cidade) LIKE ?"
         parametros.append(f"%{cidade.lower()}%")
+
     if tipo:
         query += " AND LOWER(tipo) = ?"
-        parametros.append(tipo)
+        parametros.append(tipo.lower())
+
     if quartos > 0:
         query += " AND quartos >= ?"
         parametros.append(quartos)
+
     if suites > 0:
         query += " AND suites >= ?"
         parametros.append(suites)
+
     if vagas > 0:
         query += " AND vagas >= ?"
         parametros.append(vagas)
-    if valor < 999999999:
-        query += " AND valor <= ?"
-        parametros.append(valor)
 
-    query += " ORDER BY valor ASC LIMIT 5"
+    if valor_maximo < 999999999:
+        query += " AND valor <= ?"
+        parametros.append(valor_maximo)
+
+    query += """
+    ORDER BY valor ASC
+    LIMIT 20
+    """
+
     cursor.execute(query, parametros)
+
     imoveis = cursor.fetchall()
+
     conn.close()
 
-    # 3. Montagem do Resultado Visual
+    # ==================================================
+    # SEM RESULTADO
+    # ==================================================
+
     if not imoveis:
-        return jsonify({"resultado": "<div style='color: #64748b; padding: 10px;'>Nenhum imóvel encontrado com esses critérios.</div>"})
+
+        return jsonify({
+            "resultado": """
+            <div style="
+                background:#111827;
+                border:1px solid #374151;
+                border-radius:12px;
+                padding:15px;
+                color:#cbd5e1;
+            ">
+                Nenhum imóvel encontrado com esses critérios.
+            </div>
+            """
+        })
+
+    # ==================================================
+    # MONTA RESULTADO
+    # ==================================================
 
     resultado = ""
+
     for imovel in imoveis:
-        valor_formatado = f"R$ {float(imovel['valor']):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        
-        # O HTML abaixo usa as classes CSS que definimos anteriormente para garantir a cor branca
+
+        score = 0
+
+        if bairro and imovel["bairro"]:
+            if bairro.lower() in imovel["bairro"].lower():
+                score += 30
+
+        if cidade and imovel["cidade"]:
+            if cidade.lower() in imovel["cidade"].lower():
+                score += 20
+
+        if tipo and imovel["tipo"]:
+            if tipo.lower() == imovel["tipo"].lower():
+                score += 20
+
+        if quartos > 0:
+            score += 15
+
+        if suites > 0:
+            score += 5
+
+        if vagas > 0:
+            score += 5
+
+        if valor_maximo < 999999999:
+            score += 5
+
+        score = min(score, 100)
+
+        valor = float(imovel["valor"] or 0)
+
+        valor_formatado = (
+            f"R$ {valor:,.2f}"
+            .replace(",", "X")
+            .replace(".", ",")
+            .replace("X", ".")
+        )
+
         resultado += f"""
         <div class="card-msg-imovel">
-            <h3 style="color: #ffffff; margin-bottom: 5px;">{imovel['titulo']}</h3>
-            <div style="color: #10b981; font-weight: 800; font-size: 16px;">💰 {valor_formatado}</div>
-            <div style="font-size: 13px; color: #cbd5e1; margin-top: 8px;">
-                📍 {imovel['bairro']} | 🏠 {imovel['tipo']}<br>
-                🛏 {imovel['quartos']} quartos
+
+            <div style="
+                color:#facc15;
+                font-weight:700;
+                margin-bottom:8px;
+            ">
+                ⭐ Match IA: {score}%
             </div>
-            <a href="/imovel/{imovel['id']}" style="color: #10b981; font-weight: 600; display: inline-block; margin-top: 10px; text-decoration: none;">Ver imóvel →</a>
+
+            <h3 style="
+                color:#ffffff;
+                margin-bottom:8px;
+            ">
+                {imovel['titulo']}
+            </h3>
+
+            <div style="
+                color:#10b981;
+                font-size:18px;
+                font-weight:800;
+            ">
+                💰 {valor_formatado}
+            </div>
+
+            <div style="
+                color:#cbd5e1;
+                margin-top:10px;
+                font-size:14px;
+                line-height:1.6;
+            ">
+                📍 {imovel.get('bairro','')} - {imovel.get('cidade','')}<br>
+                🏠 {imovel.get('tipo','')}<br>
+                🛏 {imovel.get('quartos',0)} quartos<br>
+                🚗 {imovel.get('vagas',0)} vagas
+            </div>
+
+            <a href="/informa_imovel/{imovel['id']}"
+               style="
+                   display:inline-block;
+                   margin-top:12px;
+                   color:#10b981;
+                   font-weight:700;
+                   text-decoration:none;
+               ">
+               Ver imóvel →
+            </a>
+
         </div>
         """
 
-    return jsonify({"resultado": resultado})
+    return jsonify({
+        "resultado": resultado
+    })
 
 @app.context_processor
 def total_leads_site():
