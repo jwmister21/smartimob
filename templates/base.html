@@ -212,43 +212,14 @@ body{
 
 /* ===================================
    SEARCH
-=================================== */
 
-.search-box{
-    flex:1;
-    max-width:600px;
-}
-
-.search-box input{
-    width:100%;
-    height:52px;
-
-    border:1px solid var(--border);
-
-    border-radius:16px;
-
-    background:white;
-
-    padding:0 20px;
-
-    font-size:14px;
-
-    outline:none;
-}
-
-.search-box input:focus{
-    border-color:#2563eb;
-}
-
-/* ===================================
    USER CONTROLS
 =================================== */
 
 .user-controls{
     display:flex;
     align-items:center;
-    gap:20px;
-    position:relative;
+    gap:30px;
 }
 
 /* ===================================
@@ -258,34 +229,46 @@ body{
 .badge{
     position:absolute;
 
-    top:-8px;
-    right:-10px;
+    top:-5px;
+    right:-8px;
+
+    min-width:18px;
+    height:18px;
+
+    padding:0 5px;
 
     background:#ef4444;
 
     color:white;
 
-    width:20px;
-    height:20px;
-
-    border-radius:50%;
+    border-radius:999px;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
-    font-size:11px;
+    font-size:10px;
     font-weight:700;
-}
 
+    line-height:1;
+}
 /* ===================================
    ICONES TOPO
 =================================== */
 
 .icone-topo{
     position:relative;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    width:40px;
+    height:40px;
+
     text-decoration:none;
-    font-size:24px;
+
+    font-size:28px;
 }
 
 /* ===================================
@@ -589,11 +572,6 @@ body{
 <div class="main">
 <div class="topbar">
 <h1>{% block pagina %}{% endblock %}</h1>
-<div class="search-box">
-    <input
-        type="text"
-        placeholder="Buscar imóveis, clientes, leads...">
-</div>   
 <div class="user-controls">
   <a href="/leads_site" class="icone-topo">
 
@@ -606,13 +584,17 @@ body{
     {% endif %}
 
 </a>
-<span style="font-size: 20px; margin-right: 20px; cursor: pointer; position: relative;" onclick="toggleNotificacoes()">
-🔔
-{% if lembretes|length > 0 %}
-<span class="badge">{{ lembretes|length }}</span>
-{% endif %}
-</span>
+<div class="icone-topo" onclick="toggleNotificacoes()" style="cursor:pointer;">
 
+🔔
+
+{% if lembretes|length > 0 %}
+<span class="badge">
+    {{ lembretes|length }}
+</span>
+{% endif %}
+
+</div>
 <div id="notificacoes-box" class="notif-box">
 <h4 style="margin-bottom: 10px; border-bottom: 1px solid #374151; padding-bottom: 5px;">Visitas Hoje</h4>
 {% for l in lembretes %}
