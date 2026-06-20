@@ -1,256 +1,91 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
 <style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .page-title { color: #1e293b; font-size: 24px; font-weight: 700; }
+    
+    .total-leads { 
+        background: #f1f5f9; color: #475569; padding: 8px 16px; 
+        border-radius: 12px; font-weight: 600; font-size: 14px; 
+    }
 
-.page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:25px;
-}
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
 
-.page-title{
-    color:#fff;
-    font-size:28px;
-    font-weight:700;
-}
+    .card { 
+        background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; 
+        padding: 20px; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .card:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
-.total-leads{
-    background:#22c55e;
-    color:#fff;
-    padding:10px 18px;
-    border-radius:12px;
-    font-weight:600;
-}
+    .nome { font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 15px; }
+    .info { color: #64748b; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
 
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(380px,1fr));
-    gap:20px;
-}
+    .mensagem { 
+        margin: 15px 0; background: #f8fafc; border-left: 4px solid #cbd5e1; 
+        padding: 12px; border-radius: 8px; color: #475569; line-height: 1.5; font-size: 0.9rem;
+    }
 
-.card{
-    background:#1e293b;
-    border:1px solid #334155;
-    border-radius:20px;
-    padding:20px;
-    transition:.3s;
-}
+    /* Agrupamento de ações dentro do card */
+    .acoes { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+    
+    .btn-base { text-decoration: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: 0.2s; }
+    .btn-whatsapp { background: #dcfce7; color: #166534; }
+    .btn-whatsapp:hover { background: #bbf7d0; }
+    .btn-sistema { background: #eff6ff; color: #1e40af; }
+    .btn-sistema:hover { background: #dbeafe; }
+    .btn-excluir { background: #fef2f2; color: #991b1b; border: none; cursor: pointer; }
+    .btn-excluir:hover { background: #fee2e2; }
 
-.card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 10px 30px rgba(0,0,0,.3);
-}
-
-.nome{
-    font-size:22px;
-    font-weight:700;
-    color:#fff;
-    margin-bottom:15px;
-}
-
-.info{
-    color:#cbd5e1;
-    margin-bottom:10px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-.mensagem{
-    margin-top:15px;
-    background:#0f172a;
-    border-left:4px solid #22c55e;
-    padding:15px;
-    border-radius:10px;
-    color:#e2e8f0;
-    line-height:1.6;
-}
-
-.btn-whatsapp{
-    display:block;
-    width:100%;
-    margin-top:18px;
-    text-align:center;
-    text-decoration:none;
-    background:#22c55e;
-    color:#fff;
-    padding:14px;
-    border-radius:12px;
-    font-weight:700;
-    transition:.3s;
-}
-
-.btn-whatsapp:hover{
-    transform:scale(1.02);
-}
-
-.sem-leads{
-    text-align:center;
-    color:#94a3b8;
-    padding:60px;
-    font-size:18px;
-}
-    .acoes{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-top:15px;
-}
-
-.btn-sistema{
-    text-decoration:none;
-    text-align:center;
-    background:#3b82f6;
-    color:white;
-    padding:12px;
-    border-radius:10px;
-    font-weight:bold;
-}
-
-.btn-excluir{
-    text-decoration:none;
-    text-align:center;
-    background:#ef4444;
-    color:white;
-    padding:12px;
-    border-radius:10px;
-    font-weight:bold;
-}
-
+    .sem-leads { text-align: center; color: #94a3b8; padding: 60px; }
 </style>
 
 <div class="page-header">
-
-    <div class="page-title">
-        🎯 Leads do Site
-    </div>
-
-    <div class="total-leads">
-        {{ leads|length }} Leads
-    </div>
-
+    <div class="page-title">🎯 Leads do Site</div>
+    <div class="total-leads">{{ leads|length }} novos leads</div>
 </div>
 
 {% if leads %}
-
 <div class="grid">
+    {% for lead in leads %}
+    <div class="card">
+        <div class="nome">👤 {{ lead.nome }}</div>
+        <div class="info">📞 {{ lead.telefone }}</div>
+        <div class="info">🏠 {{ lead.titulo }}</div>
+        
+        <div class="mensagem">
+            <strong>Mensagem:</strong><br>
+            {{ lead.mensagem }}
+        </div>
 
-{% for lead in leads %}
-
-<div class="card">
-
-    <div class="nome">
-        👤 {{ lead.nome }}
+        <div class="acoes">
+            <a href="https://wa.me/55{{ lead.telefone }}" target="_blank" class="btn-base btn-whatsapp">
+                💬 Conversar no WhatsApp
+            </a>
+            <a href="/converter_lead/{{ lead.id }}" class="btn-base btn-sistema">
+                ➕ Adicionar ao Sistema
+            </a>
+            <button onclick="excluirLead({{ lead.id }})" class="btn-base btn-excluir">
+                🗑️ Excluir Lead
+            </button>
+        </div>
     </div>
-
-    <div class="info">
-        📞 {{ lead.telefone }}
-    </div>
-
-    <div class="info">
-        🏠 {{ lead.titulo }}
-    </div>
-
-    <div class="mensagem">
-        <strong>Mensagem:</strong><br><br>
-        {{ lead.mensagem }}
-    </div>
-
-    <a
-        href="https://wa.me/55{{ lead.telefone }}"
-        target="_blank"
-        class="btn-whatsapp"
-    >
-        💬 Chamar no WhatsApp
-    </a>
-
+    {% endfor %}
 </div>
-
-    <div class="acoes">
-
-    <a
-        href="https://wa.me/55{{ lead.telefone }}"
-        target="_blank"
-        class="btn-whatsapp"
-    >
-        💬 WhatsApp
-    </a>
-
-    <a
-        href="/converter_lead/{{ lead.id }}"
-        class="btn-sistema"
-    >
-        ➕ Adicionar ao Sistema
-    </a>
-
-    <button
-    onclick="excluirLead({{ lead.id }})"
-    class="btn-excluir"
->
-    🗑️ Excluir
-</button>
-
-</div>
-
-{% endfor %}
-
-</div>
-
 {% else %}
-
-<div class="sem-leads">
-    🎯 Nenhum lead recebido ainda.
-</div>
-
+<div class="sem-leads">Nenhum lead pendente no momento.</div>
 {% endif %}
+
 <script>
-
-function excluirLead(id){
-
-    if(!confirm("Deseja excluir este lead?")){
-        return;
+    function excluirLead(id){
+        if(!confirm("Deseja excluir este lead?")){ return; }
+        fetch(`/excluir_lead/${id}`, { method:"POST" })
+        .then(response => response.json())
+        .then(data => {
+            if(data.sucesso){ location.reload(); }
+            else{ alert("❌ " + data.erro); }
+        })
+        .catch(err => { alert("Erro ao excluir"); });
     }
-
-
-    fetch(`/excluir_lead/${id}`, {
-
-        method:"POST"
-
-    })
-    .then(response => response.json())
-
-    .then(data => {
-
-
-        if(data.sucesso){
-
-            alert("✅ Lead excluído");
-
-            location.reload();
-
-        }else{
-
-            alert(
-                "❌ " + data.erro
-            );
-
-        }
-
-
-    })
-
-    .catch(err=>{
-
-        alert("Erro ao excluir");
-
-        console.log(err);
-
-    });
-
-}
-
 </script>
 {% endblock %}
