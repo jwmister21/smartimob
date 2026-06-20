@@ -11,409 +11,455 @@
 /* =========================
   RESET
 ========================= */
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-font-family: 'Poppins', sans-serif;
+/* =========================
+   RESET
+========================= */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
 }
 
 /* =========================
-  BASE
+   BODY
 ========================= */
-body {
-background: #0b1120;
-color: white;
-transition: all .25s ease;
+body{
+    background:#f4f6f9;
+    color:#1f2937;
+    transition:.25s;
 }
 
 /* =========================
-  SIDEBAR (UPGRADE VISUAL)
+   SIDEBAR
 ========================= */
-.sidebar {
-position: fixed;
-left: 0;
-top: 0;
-width: 260px;
-height: 100vh;
-background: #111827;
-border-right: 1px solid rgba(255,255,255,.06);
-padding: 25px;
+.sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    width:260px;
+    height:100vh;
 
-/* 🔥 UPGRADE */
-display: flex;
-flex-direction: column;
-}
+    background:#ffffff;
 
-/* 🔥 SCROLL AQUI */
-.menu {
-display: flex;
-flex-direction: column;
-gap: 3px;
+    border-right:1px solid #e5e7eb;
 
-overflow-y: auto;
-max-height: calc(100vh - 90px);
-padding-right: 5px;
-}
+    box-shadow:0 0 20px rgba(0,0,0,.04);
 
-/* SCROLL BONITO */
-.menu::-webkit-scrollbar {
-width: 6px;
-}
+    padding:25px;
 
-.menu::-webkit-scrollbar-thumb {
-background: #1f2937;
-border-radius: 10px;
-}
-
-.menu::-webkit-scrollbar-thumb:hover {
-background: #374151;
-}
-
-.sidebar {
-position: fixed;
-left: 0;
-top: 0;
-width: 260px;
-height: 100vh;
-background: #111827;
-border-right: 1px solid rgba(255,255,255,.06);
-padding: 25px;
-display: flex;
-flex-direction: column;
-}
-
-..logo {
-font-size: 50px;       /* Aumentado de 28px para 36px */
-font-weight: 700;
-margin-bottom: 10px;
-letter-spacing: .5px;
-display: block;        /* Ajuda no alinhamento e no controle de tamanho */
-text-align: center;    /* Centraliza o logo na barra lateral */
-}
-
-.logo span {
-color: #38bdf8;
-}
-
-/* MENU */
-.menu {
-display: flex;
-flex-direction: column;
-gap: 3px;
-}
-
-/* LINKS */
-.menu a {
-text-decoration: none;
-color: #cbd5e1;
-padding: 10px 12px;
-border-radius: 10px;
-display: flex;
-align-items: center;
-gap: 10px;
-font-size: 14px;
-transition: .2s;
-}
-
-/* HOVER MAIS SUAVE */
-.menu a:hover {
-background: #1e293b;
-color: #ffffff;
-transform: translateX(3px);
+    display:flex;
+    flex-direction:column;
 }
 
 /* =========================
-  MAIN
+   LOGO
 ========================= */
-.main {
-margin-left: 260px;
-min-height: 100vh;
-padding: 35px;
-}
-
-.topbar {
-display: flex;
-justify-content: space-between;
-align-items: center;
-margin-bottom: 30px;
-}
-
-/* =========================
-  USER CONTROLS
-========================= */
-.user-controls {
-display: flex;
-align-items: center;
-position: relative;
-}
-
-.badge {
-background: #ef4444;
-color: white;
-border-radius: 50%;
-padding: 2px 6px;
-font-size: 10px;
-position: absolute;
-top: -5px;
-right: 15px;
-}
-
-/* =========================
-  DROPDOWN (UPGRADE LEVE)
-========================= */
-.dropdown {
-position: relative;
-display: inline-block;
-}
-
-.dropbtn {
-background: #111827;
-border: 1px solid #1e293b;
-color: white;
-padding: 10px 15px;
-border-radius: 12px;
-cursor: pointer;
-font-size: 14px;
-transition: .2s;
-}
-
-.dropbtn:hover {
-background: #1e293b;
-}
-
-.dropdown-content {
-display: none;
-position: absolute;
-right: 0;
-background-color: #111827;
-min-width: 160px;
-border-radius: 12px;
-border: 1px solid #1e293b;
-z-index: 1000;
-overflow: hidden;
-}
-
-.dropdown-content a {
-color: white;
-padding: 12px 16px;
-text-decoration: none;
-display: block;
-font-size: 14px;
-transition: .2s;
-}
-
-.dropdown-content a:hover {
-background-color: #1e293b;
-}
-
-.dropdown:hover .dropdown-content {
-display: block;
-}
-
-/* =========================
-  NOTIFICAÇÕES
-========================= */
-.notif-box {
-display: none;
-position: absolute;
-right: 40px;
-top: 50px;
-width: 280px;
-background: #111827;
-border: 1px solid #374151;
-border-radius: 12px;
-padding: 10px;
-box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-z-index: 2000;
-}
-
-.notif-item {
-border-bottom: 1px solid #374151;
-padding: 10px 0;
-color: #fff;
-text-decoration: none;
-display: block;
-font-size: 0.9rem;
-}
-
-.notif-item:hover {
-color: #38bdf8;
-}
-
-/* =========================
-  CHAT FLOAT BUTTON
-========================= */
-.chat-float-btn {
-position: fixed;
-bottom: 25px;
-right: 25px;
-width: 60px;
-height: 60px;
-border-radius: 50%;
-background: #f59e0b;
-border: none;
-font-size: 28px;
-cursor: pointer;
-box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-z-index: 9999;
-transition: transform .2s ease;
-}
-
-.chat-float-btn:hover {
-transform: scale(1.1);
-}
-
-/* =========================
-  CHAT
-========================= */
-.chat-widget {
-position: fixed;
-bottom: 100px;
-right: 25px;
-width: 300px;
-height: 400px;
-background: #1a2234;
-border-radius: 15px;
-display: none;
-flex-direction: column;
-box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-z-index: 9998;
-border: 1px solid #334155;
-overflow: hidden;
-}
-
-.chat-body{
-    flex:1;
-    overflow-y:auto;
-    overflow-x:hidden;
-}
-.chat{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-
-    overflow:hidden;
-}
-.chat-footer {
-padding: 15px;
-background: #0f172a;
-border-top: 1px solid #334155;
-}
-
-#texto_cliente {
-width: 100%;
-background: #1e293b;
-border: 1px solid #475569;
-border-radius: 8px;
-color: white;
-padding: 10px;
-margin-bottom: 10px;
-font-size: 0.9rem;
-resize: none;
-}
-  .cliente{
-    background:#202c33;
-    color:white;
-
-    max-width:70%;
-}
-
-.corretor{
-    background:#005c4b;
-    color:white;
-
-    max-width:70%;
-    margin-left:auto;
-}
-
-/* BOTÃO IA */
-.btn-analisar {
-width: 100%;
-background: #f59e0b;
-border: none;
-padding: 8px;
-border-radius: 6px;
-font-weight: bold;
-cursor: pointer;
-transition: .2s;
-}
-
-.btn-analisar:hover {
-background: #d97706;
-}
-
-/* =========================
-  MENU SECTION TITLE
-========================= */
-.menu-section-title {
-color: #6b7280;
-font-size: 10px;
-text-transform: uppercase;
-font-weight: 700;
-margin: 8px 0 2px 12px;
-letter-spacing: .05em;
-}
-.menu a.active {
-background: #2563eb;
-color: #ffffff;
-font-weight: 600;
-box-shadow: 0 0 0 1px rgba(37,99,235,.4);
-}
 
 .logo{
-width:150px;
-height:150px;
-object-fit:contain;
+    width:150px;
+    height:150px;
+    object-fit:contain;
 }
 
 .logo-area{
-display:flex;
-align-items:center;
-gap:90px;
-color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:15px;
 }
 
-    .icone-topo{
-    position:relative;
-    font-size:26px;
-    text-decoration:none;
+/* =========================
+   MENU
+========================= */
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+
+    overflow-y:auto;
+    max-height:calc(100vh - 180px);
+
+    padding-right:5px;
 }
+
+.menu::-webkit-scrollbar{
+    width:6px;
+}
+
+.menu::-webkit-scrollbar-thumb{
+    background:#d1d5db;
+    border-radius:20px;
+}
+
+/* =========================
+   TITULOS MENU
+========================= */
+
+.menu-section-title{
+    color:#9ca3af;
+    font-size:11px;
+    text-transform:uppercase;
+    font-weight:700;
+    margin:12px 0 4px 12px;
+    letter-spacing:.08em;
+}
+
+/* =========================
+   LINKS MENU
+========================= */
+
+.menu a{
+    text-decoration:none;
+
+    color:#374151;
+
+    padding:11px 14px;
+
+    border-radius:12px;
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    font-size:14px;
+    font-weight:500;
+
+    transition:.2s;
+}
+
+.menu a:hover{
+    background:#eff6ff;
+    color:#2563eb;
+    transform:translateX(3px);
+}
+
+.menu a.active{
+    background:#2563eb;
+    color:white;
+    font-weight:600;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+    margin-left:260px;
+    min-height:100vh;
+    padding:35px;
+    background:#f4f6f9;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.topbar h1{
+    color:#111827;
+    font-weight:700;
+}
+
+/* =========================
+   USER CONTROLS
+========================= */
+
+.user-controls{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    position:relative;
+}
+
+/* =========================
+   BADGE
+========================= */
 
 .badge{
-    position:absolute;
-    top:-8px;
-    right:-10px;
+    position:absolute;
+    top:-8px;
+    right:-10px;
 
-    background:#ef4444;
-    color:white;
+    background:#ef4444;
+    color:white;
 
-    min-width:20px;
-    height:20px;
+    min-width:20px;
+    height:20px;
 
-    border-radius:50%;
+    border-radius:50%;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 
-    font-size:11px;
-    font-weight:bold;
+    font-size:11px;
+    font-weight:700;
 }
 
-   .msg{
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:12px;
+/* =========================
+   DROPDOWN
+========================= */
 
-    max-width:70%;
+.dropdown{
+    position:relative;
+}
 
-    word-wrap:break-word;
-    overflow-wrap:anywhere;
-    word-break:break-word;
+.dropbtn{
+    background:#ffffff;
 
-    white-space:pre-wrap;
-}  
+    color:#111827;
+
+    border:1px solid #e5e7eb;
+
+    padding:10px 15px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:14px;
+    font-weight:500;
+
+    transition:.2s;
+}
+
+.dropbtn:hover{
+    background:#f9fafb;
+}
+
+.dropdown-content{
+    display:none;
+
+    position:absolute;
+
+    right:0;
+
+    background:#ffffff;
+
+    min-width:180px;
+
+    border-radius:12px;
+
+    border:1px solid #e5e7eb;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    overflow:hidden;
+
+    z-index:1000;
+}
+
+.dropdown-content a{
+    color:#374151;
+    text-decoration:none;
+    display:block;
+    padding:12px 16px;
+}
+
+.dropdown-content a:hover{
+    background:#f3f4f6;
+}
+
+.dropdown:hover .dropdown-content{
+    display:block;
+}
+
+/* =========================
+   NOTIFICAÇÕES
+========================= */
+
+.notif-box{
+    display:none;
+
+    position:absolute;
+
+    right:40px;
+    top:50px;
+
+    width:300px;
+
+    background:#ffffff;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:16px;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+
+    padding:12px;
+
+    z-index:2000;
+}
+
+.notif-item{
+    display:block;
+
+    text-decoration:none;
+
+    color:#111827;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    margin-bottom:5px;
+
+    transition:.2s;
+}
+
+.notif-item:hover{
+    background:#f3f4f6;
+}
+
+/* =========================
+   CHAT BOTÃO
+========================= */
+
+.chat-float-btn{
+    position:fixed;
+
+    bottom:25px;
+    right:25px;
+
+    width:60px;
+    height:60px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:28px;
+
+    cursor:pointer;
+
+    box-shadow:0 10px 30px rgba(37,99,235,.25);
+
+    z-index:9999;
+}
+
+/* =========================
+   CHAT
+========================= */
+
+.chat-widget{
+    position:fixed;
+
+    bottom:100px;
+    right:25px;
+
+    width:340px;
+    height:450px;
+
+    background:white;
+
+    border-radius:20px;
+
+    border:1px solid #e5e7eb;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.12);
+
+    overflow:hidden;
+
+    display:none;
+    flex-direction:column;
+
+    z-index:9998;
+}
+
+.chat-body{
+    flex:1;
+    overflow-y:auto;
+    padding:15px;
+}
+
+.chat-footer{
+    padding:15px;
+    border-top:1px solid #e5e7eb;
+    background:#ffffff;
+}
+
+#texto_cliente{
+    width:100%;
+
+    border:1px solid #d1d5db;
+
+    background:white;
+
+    color:#111827;
+
+    border-radius:10px;
+
+    padding:10px;
+
+    margin-bottom:10px;
+}
+
+.btn-analisar{
+    width:100%;
+
+    border:none;
+
+    background:#2563eb;
+
+    color:white;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+    cursor:pointer;
+}
+
+.btn-analisar:hover{
+    background:#1d4ed8;
+}
+
+/* =========================
+   MENSAGENS
+========================= */
+
+.msg{
+    padding:12px;
+    border-radius:12px;
+    margin-bottom:12px;
+    max-width:70%;
+    white-space:pre-wrap;
+}
+
+.cliente{
+    background:#f3f4f6;
+    color:#111827;
+}
+
+.corretor{
+    background:#2563eb;
+    color:white;
+    margin-left:auto;
+}
+
+/* =========================
+   ÍCONES TOPO
+========================= */
+
+.icone-topo{
+    position:relative;
+    font-size:26px;
+    text-decoration:none;
+}
 </style>
 </head>
 <body>
