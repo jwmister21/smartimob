@@ -644,26 +644,44 @@ chat.style.display = 'flex';
 }
 
 async function analisarIA() {
-const texto = document.getElementById('texto_cliente').value;
-const chatBody = document.getElementById('chat-body');
+    const texto = document.getElementById('texto_cliente').value;
+    const chatBody = document.getElementById('chat-body');
 
-if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
+    if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
 
-// Feedback visual
-chatBody.innerHTML = "<p>Processando com IA...</p>";
+    // Adiciona a mensagem do usuário e limpa o input
+    chatBody.innerHTML += `<div class="msg corretor" style="background:#e2e8f0; margin-left:auto;">${texto}</div>`;
+    document.getElementById('texto_cliente').value = "";
+    
+    // Feedback de carregamento
+    const loadingId = "loading-msg";
+    chatBody.innerHTML += `<div class="msg cliente" id="${loadingId}">Processando...</div>`;
+    chatBody.scrollTop = chatBody.scrollHeight;
 
-const response = await fetch('/analisar_cliente', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ mensagem: texto })
-});
+    try {
+        const response = await fetch('/analisar_cliente', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensagem: texto })
+        });
 
-const data = await response.json();
+        const data = await response.json();
+        
+        // Remove o "Processando..."
+        document.getElementById(loadingId).remove();
 
-// Exibe o resultado da análise no chat
-chatBody.innerHTML = `<strong>IA encontrou:</strong><br>${data.resultado}`;
+        // Adiciona a resposta da IA
+        if (data.resultado) {
+            chatBody.innerHTML += `<div class="msg cliente">${data.resultado}</div>`;
+        } else {
+            chatBody.innerHTML += `<div class="msg cliente">Nenhum imóvel encontrado.</div>`;
+        }
+    } catch (error) {
+        document.getElementById(loadingId).remove();
+        chatBody.innerHTML += `<div class="msg cliente" style="color:red;">Erro ao conectar com servidor.</div>`;
+    }
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
-
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
