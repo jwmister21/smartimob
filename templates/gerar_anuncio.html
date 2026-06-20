@@ -4,64 +4,36 @@
 {% block pagina %}Gerar Anúncio IA{% endblock %}
 
 {% block content %}
-
 <style>
-.container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
+    .container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+    .box { background: #ffffff; padding: 25px; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    h2 { color: #1e293b; margin-top: 0; }
+    
+    select, button { width: 100%; padding: 14px; border-radius: 12px; margin-top: 10px; border: 1px solid #e2e8f0; font-size: 14px; }
+    
+    button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    button:hover { background: #1d4ed8; }
+    
+    textarea { 
+        width: 100%; height: 320px; margin-top: 10px; padding: 15px; 
+        border-radius: 12px; background: #f8fafc; color: #334155; 
+        border: 1px solid #e2e8f0; font-family: inherit; resize: none;
+    }
 
-.box {
-    background: #111827;
-    padding: 20px;
-    border-radius: 15px;
-}
-
-select, button {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
-button {
-    background: #0ea5e9;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s ease;
-}
-
-button:hover { background: #0284c7; }
-
-textarea {
-    width: 100%;
-    height: 300px; /* Ajustei a altura para caber melhor */
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 10px;
-    background: #1f2937;
-    color: white;
-    border: 1px solid #374151;
-    font-family: inherit;
-    resize: none;
-}
-
-.actions { display: flex; gap: 10px; margin-top: 10px; }
-.actions button { flex: 1; }
-
-.btn-copy { background: #4b5563; }
-.btn-wa { background: #25d366; }
-.btn-ig { background: #e1306c; }
-.btn-fb { background: #1877f2; }
-
-@keyframes piscar { from { opacity: 1; } to { opacity: 0.3; } }
+    .actions { display: flex; gap: 8px; margin-top: 15px; }
+    .actions button { flex: 1; padding: 10px; font-size: 13px; }
+    
+    .btn-copy { background: #64748b; }
+    .btn-wa { background: #22c55e; }
+    .btn-ig { background: #d946ef; }
+    .btn-fb { background: #3b82f6; }
+    
+    @keyframes piscar { from { opacity: 1; } to { opacity: 0.3; } }
+    .loading { display: none; margin-top: 20px; text-align: center; color: #2563eb; font-weight: bold; animation: piscar 0.8s infinite alternate; }
 </style>
 
 <div class="container">
-
     <div class="box">
         <h2>🏠 Selecionar Imóvel</h2>
         <form method="POST" id="formGerar" onsubmit="activarCarregamento(event)">
@@ -73,31 +45,28 @@ textarea {
             <button type="submit" id="btnSubmit">⚡ Gerar Anúncio com IA</button>
         </form>
 
-        <div id="mensagemCarregando" style="display: none; margin-top: 20px; text-align: center; color: #0ea5e9; font-weight: bold; animation: piscar 0.8s infinite alternate;">
-            ✨ GERANDO TEXTO IA...
-        </div>
+        <div id="mensagemCarregando" class="loading">✨ GERANDO TEXTO IA...</div>
 
-        <hr style="border: 1px solid #374151; margin: 30px 0;">
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;">
 
         <h2>🎬 Gerar Vídeo</h2>
-        <label style="color: #9ca3af; font-size: 0.9rem;">Escolha o estilo do anúncio:</label>
-        <select id="estiloVideo" style="background: #1f2937; color: white; border: 1px solid #374151;">
+        <label style="color: #64748b; font-size: 0.9rem;">Escolha o estilo:</label>
+        <select id="estiloVideo">
             <option value="dinamico">🚀 Dinâmico & Vendas</option>
             <option value="luxo">💎 Elegante & Premium</option>
             <option value="familiar">🏡 Família & Conforto</option>
         </select>
         <button onclick="iniciarGeracaoVideo()" style="background: #e11d48; margin-top: 15px;">
-            <i class="bi bi-camera-reels"></i> Renderizar Vídeo Automático
+            Renderizar Vídeo Automático
         </button>
-        <!-- Adicione isso logo abaixo do botão "Renderizar Vídeo Automático" -->
-<div id="containerPreview" class="mt-4" style="display: none;">
-    <h4 style="color: #0ea5e9;">✅ Vídeo Pronto!</h4>
-    <video id="videoPlayer" width="100%" controls style="border-radius: 10px; border: 2px solid #0ea5e9;">
-        <source src="" type="video/mp4">
-        Seu navegador não suporta vídeos.
-    </video>
-    <a id="btnDownload" href="#" class="btn btn-success mt-2">📥 Baixar Vídeo</a>
-</div>
+
+        <div id="containerPreview" style="display: none; margin-top: 20px;">
+            <h4 style="color: #2563eb;">✅ Vídeo Pronto!</h4>
+            <video id="videoPlayer" width="100%" controls style="border-radius: 12px; border: 2px solid #e2e8f0;">
+                <source src="" type="video/mp4">
+            </video>
+            <a id="btnDownload" href="#" style="display:block; text-align:center; padding:10px; background:#f1f5f9; border-radius:10px; margin-top:10px; text-decoration:none; color:#1e293b;">📥 Baixar Vídeo</a>
+        </div>
     </div>
 
     <div class="box">
@@ -106,71 +75,55 @@ textarea {
             <textarea id="texto">{{ anuncio }}</textarea>
             <div class="actions">
                 <button class="btn-copy" onclick="copiar()">📋 Copiar</button>
-                <button class="btn-wa" onclick="whatsapp()">💬 WhatsApp</button>
-                <button class="btn-ig" onclick="instagram()">📸 Instagram</button>
-                <button class="btn-fb" onclick="facebook()">📘 Facebook</button>
+                <button class="btn-wa" onclick="whatsapp()">💬 Zap</button>
+                <button class="btn-ig" onclick="instagram()">📸 IG</button>
+                <button class="btn-fb" onclick="facebook()">📘 FB</button>
             </div>
         {% else %}
-            <p style="color: #9ca3af; margin-top: 20px;">Selecione um imóvel ao lado e clique em gerar para ver a mágica da IA acontecer.</p>
+            <div style="color: #94a3b8; margin-top: 20px; text-align: center; padding: 40px; border: 2px dashed #e2e8f0; border-radius: 15px;">
+                Selecione um imóvel ao lado e gere o anúncio para ver a mágica da IA.
+            </div>
         {% endif %}
     </div>
 </div>
 
-
-
 <script>
-function activarCarregamento(event) {
-    event.preventDefault();
-    document.getElementById("btnSubmit").disabled = true;
-    document.getElementById("mensagemCarregando").style.display = "block";
-    document.getElementById("formGerar").submit();
-}
-
-async function iniciarGeracaoVideo() {
-    const btn = document.querySelector('button[onclick="iniciarGeracaoVideo()"]');
-    const container = document.getElementById("containerPreview");
-    const videoPlayer = document.getElementById("videoPlayer");
-    const btnDownload = document.getElementById("btnDownload");
-    const imovelId = document.querySelector('select[name="imovel_id"]').value;
-    const estilo = document.getElementById("estiloVideo").value;
-
-    // 1. Estados de Carregamento
-    btn.disabled = true;
-    btn.innerHTML = "⏳ Renderizando... Aguarde...";
-    container.style.display = "none"; // Esconde preview antigo
-
-    try {
-        const response = await fetch('/renderizar-video', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imovel_id: imovelId, estilo: estilo })
-        });
-
-        const data = await response.json();
-
-        if(data.status === "sucesso") {
-            // 2. Sucesso: Exibe o novo vídeo
-            videoPlayer.querySelector('source').src = data.url_video + "?t=" + new Date().getTime(); // Cache buster
-            videoPlayer.load(); 
-            btnDownload.href = data.url_video;
-            container.style.display = "block";
-        } else {
-            alert("Erro: " + data.mensagem);
-        }
-    } catch (error) {
-        alert("Ocorreu um erro ao conectar com o servidor.");
-    } finally {
-        // 3. Reseta o botão
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-camera-reels"></i> Renderizar Vídeo Automático';
+    function activarCarregamento(event) {
+        document.getElementById("btnSubmit").disabled = true;
+        document.getElementById("mensagemCarregando").style.display = "block";
     }
-}
 
-// Funções de copiar e redes sociais permanecem as mesmas...
-function copiar() { document.getElementById("texto").select(); document.execCommand("copy"); alert("Copiado!"); }
-function whatsapp() { window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(document.getElementById("texto").value), "_blank"); }
-function instagram() { alert("Cole o texto copiado no seu post!"); window.open("https://www.instagram.com", "_blank"); }
-function facebook() { alert("Cole o texto copiado no seu post!"); window.open("https://www.facebook.com", "_blank"); }
+    async function iniciarGeracaoVideo() {
+        const btn = document.querySelector('button[onclick="iniciarGeracaoVideo()"]');
+        const container = document.getElementById("containerPreview");
+        const imovelId = document.querySelector('select[name="imovel_id"]').value;
+        const estilo = document.getElementById("estiloVideo").value;
+
+        btn.disabled = true;
+        btn.innerText = "⏳ Renderizando...";
+        
+        try {
+            const response = await fetch('/renderizar-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imovel_id: imovelId, estilo: estilo })
+            });
+            const data = await response.json();
+            if(data.status === "sucesso") {
+                document.getElementById("videoPlayer").querySelector('source').src = data.url_video + "?t=" + new Date().getTime();
+                document.getElementById("videoPlayer").load(); 
+                document.getElementById("btnDownload").href = data.url_video;
+                container.style.display = "block";
+            } else { alert("Erro: " + data.mensagem); }
+        } catch (error) { alert("Erro de conexão."); } finally {
+            btn.disabled = false;
+            btn.innerText = "Renderizar Vídeo Automático";
+        }
+    }
+
+    function copiar() { document.getElementById("texto").select(); document.execCommand("copy"); alert("Copiado!"); }
+    function whatsapp() { window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(document.getElementById("texto").value), "_blank"); }
+    function instagram() { alert("Cole no seu post!"); window.open("https://www.instagram.com", "_blank"); }
+    function facebook() { alert("Cole no seu post!"); window.open("https://www.facebook.com", "_blank"); }
 </script>
-
 {% endblock %}
