@@ -1,43 +1,46 @@
 {% extends 'base.html' %}
 
 {% block title %}Clientes{% endblock %}
-
 {% block pagina %}Clientes{% endblock %}
 
 {% block content %}
 <style>
-.acoes { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-.pesquisa { width:300px; padding: 10px; border-radius: 8px; border: 1px solid #374151; background: #1f2937; color: white; }
-table { width:100%; border-collapse:collapse; background:#111827; border-radius:20px; overflow:hidden; }
-th { background:#1e293b; padding:15px; text-align:left; }
-td { padding:15px; border-bottom:1px solid rgba(255,255,255,.05); }
-tr:hover { background:#1a2332; }
-.btn-whats { background:#22c55e; color:white; padding:8px 12px; border-radius:8px; text-decoration:none; font-size: 0.85rem; }
-.btn-dados { background:#374151; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; margin-right:5px; font-size: 0.85rem; }
-.nome-link { color: #0ea5e9; font-weight: bold; text-decoration: none; transition: 0.3s; }
-.nome-link:hover { color: #fff; text-decoration: underline; }
+    .acoes { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    
+    .pesquisa { 
+        width: 300px; padding: 12px; border-radius: 10px; 
+        border: 1px solid #e2e8f0; background: #ffffff; color: #1e293b;
+    }
+    
+    table { 
+        width: 100%; border-collapse: collapse; background: #ffffff; 
+        border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0;
+    }
+    
+    th { background: #f8fafc; padding: 16px; text-align: left; color: #64748b; font-size: 13px; font-weight: 600; }
+    td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+    tr:hover { background: #f8fafc; }
+    
+    .nome-link { color: #2563eb; font-weight: 600; text-decoration: none; }
+    .nome-link:hover { text-decoration: underline; }
 
-.btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px; /* Espaço entre o ícone e o texto */
-    background: linear-gradient(135deg, #0ea5e9, #0284c7); /* Gradiente azul */
-    color: white;
-    padding: 12px 24px;
-    border-radius: 12px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
-}
+    .btn-whats { background: #dcfce7; color: #166534; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+    .btn-dados { background: #f1f5f9; color: #475569; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-right: 5px; font-size: 0.8rem; }
+    .btn-dados:hover { background: #e2e8f0; }
 
-.btn-primary:hover {
-    transform: translateY(-2px); /* Efeito de elevação */
-    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
-    background: linear-gradient(135deg, #0284c7, #0369a1);
-}
+    .btn-primary {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #2563eb; color: white; padding: 12px 24px;
+        border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px;
+        transition: 0.3s;
+    }
+    .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    /* Modal estilo Clean */
+    .modal-content {
+        background: #ffffff; padding: 30px; border-radius: 16px; 
+        width: 400px; border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
 </style>
 
 <div class="acoes">
@@ -60,45 +63,28 @@ tr:hover { background:#1a2332; }
         {% for cliente in clientes %}
         <tr>
             <td>{{ cliente[0] }}</td>
-            <td>
-                <a href="/cliente/{{ cliente[0] }}" class="nome-link">{{ cliente[1] }}</a>
-            </td>
+            <td><a href="/cliente/{{ cliente[0] }}" class="nome-link">{{ cliente[1] }}</a></td>
             <td>{{ cliente[2] }}</td>
             <td>{{ cliente[5] }}</td>
             <td>{{ cliente[7] }}</td>
             <td>
-                <button
-    class="btn-dados"
-    onclick="window.location.href='/cliente/{{ cliente[0] }}'">
-    👤 Perfil
-</button>
-                <a class="btn-whats" target="_blank" href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">
-                    WhatsApp
-                </a>
+                <button class="btn-dados" onclick="window.location.href='/cliente/{{ cliente[0] }}'">👤 Perfil</button>
+                <a class="btn-whats" target="_blank" href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">WhatsApp</a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<div id="modalDetalhes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
-    <div style="background:#1f2937; padding:30px; border-radius:20px; width:400px; color:white; border: 1px solid #374151;">
-        <h3 id="modalNome" style="margin-top:0; color: #0ea5e9;">Detalhes do Cliente</h3>
-        <p><strong>E-mail:</strong> <span id="modalEmail"></span></p>
-        <p><strong>CPF:</strong> <span id="modalCpf"></span></p>
-        <p><strong>Endereço:</strong> <span id="modalEndereco"></span></p>
-        <button onclick="document.getElementById('modalDetalhes').style.display='none'" style="background:#ef4444; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; width:100%; margin-top:15px;">Fechar</button>
+<!-- Modal -->
+<div id="modalDetalhes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:1000; justify-content:center; align-items:center;">
+    <div class="modal-content">
+        <h3 id="modalNome" style="margin-top:0; color: #1e293b;">Detalhes do Cliente</h3>
+        <p style="color: #64748b; margin-top:10px;"><strong>E-mail:</strong> <span id="modalEmail"></span></p>
+        <p style="color: #64748b;"><strong>CPF:</strong> <span id="modalCpf"></span></p>
+        <p style="color: #64748b;"><strong>Endereço:</strong> <span id="modalEndereco"></span></p>
+        <button onclick="document.getElementById('modalDetalhes').style.display='none'" style="background:#f1f5f9; color:#475569; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; width:100%; margin-top:20px; font-weight:600;">Fechar</button>
     </div>
 </div>
-
-<script>
-function abrirDetalhes(nome, email, cpf, endereco) {
-    document.getElementById('modalNome').innerText = nome;
-    document.getElementById('modalEmail').innerText = email || 'Não informado';
-    document.getElementById('modalCpf').innerText = cpf || 'Não informado';
-    document.getElementById('modalEndereco').innerText = endereco || 'Não informado';
-    document.getElementById('modalDetalhes').style.display = 'flex';
-}
-</script>
 
 {% endblock %}
