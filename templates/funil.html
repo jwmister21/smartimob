@@ -3,26 +3,27 @@
 {% block content %}
 <div class="funil-header">
     <h1>Pipeline de Vendas</h1>
-    <p>Gerencie o status dos seus clientes de forma estratégica.</p>
+    <p style="color: #64748b;">Acompanhe a jornada de cada cliente.</p>
 </div>
 
 <div class="funil-container">
     {% for etapa in etapas %}
-    <div class="coluna-funil">
-        <h3>{{ etapa }} ({{ funil_dados[etapa]|length }})</h3>
+    <!-- Definimos a classe da cor baseada no nome da etapa -->
+    <div class="coluna-funil etapa-{{ loop.index }}">
+        <h3>{{ etapa }} <span class="count">{{ funil_dados[etapa]|length }}</span></h3>
         
         <div class="cards-area">
             {% for cliente in funil_dados[etapa] %}
             <div class="card-cliente">
                 <p><strong>{{ cliente.nome }}</strong></p>
-                <p>☎️: {{ cliente.telefone }}</p>
+                <p style="font-size: 0.85rem; color: #64748b;">☎️ {{ cliente.telefone }}</p>
                 <div class="card-actions">
                     <a href="/cliente/{{ cliente.id }}" class="btn-detalhes">Ver Perfil</a>
                 </div>
             </div>
             {% else %}
             <div class="card-vazio">
-                <small>Sem clientes aqui.</small>
+                <small>Nenhum lead</small>
             </div>
             {% endfor %}
         </div>
@@ -31,57 +32,43 @@
 </div>
 
 <style>
-    /* Estilos específicos do Funil */
-    .funil-header { margin-bottom: 25px; }
-    
+    /* Cores das etapas - Você pode ajustar os códigos hex conforme preferir */
+    .etapa-1 { --etapa-cor: #3b82f6; } /* Azul */
+    .etapa-2 { --etapa-cor: #8b5cf6; } /* Roxo */
+    .etapa-3 { --etapa-cor: #10b981; } /* Verde */
+    .etapa-4 { --etapa-cor: #f59e0b; } /* Laranja */
+    .etapa-5 { --etapa-cor: #ef4444; } /* Vermelho */
+
     .funil-container { 
-        display: flex; 
-        gap: 15px; 
-        overflow-x: auto; 
-        align-items: flex-start;
-        padding-bottom: 20px;
+        display: flex; gap: 20px; overflow-x: auto; 
+        align-items: flex-start; padding-bottom: 20px;
     }
 
     .coluna-funil {
-    flex: 1; /* Faz as colunas dividirem o espaço igualmente */
-    min-width: 180px; /* Colunas ficam mais estreitas */
-    max-width: 250px;
+        flex: 1; min-width: 220px; background: #f8fafc;
+        padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0;
     }
 
     .coluna-funil h3 { 
-        color: #e5e7eb; 
-        font-size: 14px;
-        text-transform: uppercase;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #3b82f6; 
-        padding-bottom: 10px;
+        color: #1e293b; font-size: 0.9rem; margin-bottom: 15px;
+        border-bottom: 3px solid var(--etapa-cor); padding-bottom: 10px;
+        display: flex; justify-content: space-between;
     }
+    
+    .count { background: #e2e8f0; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
 
     .card-cliente { 
-        background: #1f2937; 
-        padding: 15px; 
-        margin-bottom: 12px; 
-        border-radius: 8px;
-        color: #ffffff;
-        border-left: 4px solid #3b82f6; /* Detalhe lateral no card */
+        background: white; padding: 15px; margin-bottom: 12px; 
+        border-radius: 10px; color: #1e293b;
+        border-left: 4px solid var(--etapa-cor);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-
-    .card-cliente strong { display: block; margin-bottom: 5px; }
     
     .btn-detalhes { 
-        display: inline-block;
-        margin-top: 10px;
-        color: #3b82f6; 
-        text-decoration: none; 
-        font-size: 12px;
-        font-weight: bold;
+        display: inline-block; margin-top: 10px; color: var(--etapa-cor); 
+        text-decoration: none; font-size: 0.8rem; font-weight: 600;
     }
 
-    .card-vazio { 
-        padding: 10px; 
-        text-align: center; 
-        color: #4b5563; 
-        font-style: italic; 
-    }
+    .card-vazio { padding: 20px; text-align: center; color: #94a3b8; font-size: 0.85rem; border: 2px dashed #e2e8f0; border-radius: 10px; }
 </style>
 {% endblock %}
