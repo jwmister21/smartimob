@@ -75,7 +75,10 @@
         <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">✏️ Editar</a>
         <a href="/excluir_imovel/{{ imovel.id }}" class="btn-base btn-excluir" onclick="return confirm('Excluir?')">🗑 Deletar</a>
         <button class="btn-base btn-drive" onclick="copiarLink('{{ imovel.link }}')">🔗 Copiar</button>
-        <button class="btn-base btn-whatsapp" onclick="abrirModalEnviar('{{ imovel.id }}')">📲 Whatsapp</button>
+        <button class="btn-base btn-whatsapp" 
+        onclick="montarMensagemWhatsApp('{{ imovel.titulo }}', '{{ imovel.valor }}', '{{ imovel.bairro }}', '{{ imovel.link }}')">
+    📲 WhatsApp
+</button>
     </div>
 </div>
 {% endfor %}
@@ -108,6 +111,31 @@
     function copiarLink(link) {
         navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
     }
+    function montarMensagemWhatsApp(titulo, valor, bairro, link) {
+    // Monta a mensagem formal
+    const mensagem = `*Olá! Gostaria de apresentar uma excelente oportunidade de imóvel:*
+
+🏠 *${titulo}*
+💰 *Valor:* ${valor}
+📍 *Localização:* ${bairro}
+
+Caso tenha interesse em visualizar mais detalhes e o álbum completo de fotos, acesse o link abaixo:
+${link}
+
+Fico à disposição para agendarmos uma visita ou para sanar quaisquer dúvidas.
+
+Atenciosamente,
+Equipe de Vendas`;
+
+    // Codifica a mensagem para URL
+    const mensagemCodificada = encodeURIComponent(mensagem);
+    
+    // Abre o WhatsApp (pode ser Web ou App)
+    // O número 55... pode ser inserido pelo usuário no seu modal, 
+    // ou fixado aqui se for um número padrão de atendimento.
+    const url = `https://wa.me/?text=${mensagemCodificada}`;
+    window.open(url, '_blank');
+}
 </script>
 
 {% endblock %}
