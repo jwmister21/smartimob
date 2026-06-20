@@ -5,167 +5,143 @@
 {% block content %}
 
 <style>
-.simulador-container{
-    max-width: 900px;
-    margin: auto;
-    background: #0f172a;
-    padding: 25px;
-    border-radius: 12px;
-    color: white;
-    margin-top: 20px;
-}
+    .simulador-container {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
 
-.simulador-grid{
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
+    .simulador-container h2 { color: #1e293b; margin-bottom: 25px; }
 
-.simulador-container input,
-.simulador-container select{
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    width: 100%;
-}
+    .simulador-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
 
-.simulador-btn{
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
+    .simulador-container input,
+    .simulador-container select {
+        padding: 14px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        width: 100%;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
 
-.simulador-btn:hover{
-    background: #1d4ed8;
-}
+    .simulador-btn {
+        margin-top: 25px;
+        width: 100%;
+        padding: 16px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
 
-.resultado{
-    margin-top: 20px;
-    font-size: 22px;
-    font-weight: bold;
-    color: #22c55e;
-}
+    .simulador-btn:hover { background: #1d4ed8; }
+
+    .resultado {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #059669;
+        text-align: center;
+    }
 </style>
 
 <div class="simulador-container">
-
     <h2>🏠 Simulador de Financiamento</h2>
 
     <div class="simulador-grid">
-
-        <input type="text" id="valor" placeholder="Valor do imóvel">
-
-        <input type="text" id="entrada" placeholder="Entrada">
-
+        <input type="text" id="valor" placeholder="Valor do imóvel (R$)">
+        <input type="text" id="entrada" placeholder="Valor da entrada (R$)">
+        
         <select id="banco" onchange="setTaxa()">
-            <option value="caixa">Caixa</option>
-            <option value="itau">Itaú</option>
-            <option value="bradesco">Bradesco</option>
-            <option value="santander">Santander</option>
+            <option value="caixa">Caixa (0.85%)</option>
+            <option value="itau">Itaú (0.95%)</option>
+            <option value="bradesco">Bradesco (1.05%)</option>
+            <option value="santander">Santander (1.10%)</option>
         </select>
 
         <input type="number" id="taxa" placeholder="Taxa (%)" readonly>
 
-        <select id="prazo">
+        <select id="prazo" style="grid-column: span 2;">
             <option value="12">12 meses</option>
-            <option value="24">24 meses</option>
-            <option value="36">36 meses</option>
             <option value="60">60 meses</option>
             <option value="120">120 meses</option>
             <option value="240">240 meses</option>
             <option value="360">360 meses</option>
-            <option value="420">420 meses</option>
         </select>
-
     </div>
 
     <button class="simulador-btn" onclick="simular()">
         Simular financiamento
     </button>
 
-    <div id="resultado" class="resultado"></div>
-
+    <div id="resultado" class="resultado" style="display: none;"></div>
 </div>
 
 <script>
+    // Inicializar taxa ao carregar
+    window.onload = setTaxa;
 
-// taxas por banco
-function setTaxa() {
-
-    let banco = document.getElementById("banco").value;
-
-    let taxas = {
-        caixa: 0.85,
-        itau: 0.95,
-        bradesco: 1.05,
-        santander: 1.10
-    };
-
-    document.getElementById("taxa").value = taxas[banco];
-}
-
-
-// formatar R$ enquanto digita
-function formatBRL(value){
-    value = value.replace(/\D/g, "");
-    value = (value/100).toFixed(2) + "";
-    value = value.replace(".", ",");
-    value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-    return "R$ " + value;
-}
-
-
-// converter R$ para número
-function parseBRL(value){
-    return parseFloat(
-        value.replace("R$","")
-             .replace(/\./g,"")
-             .replace(",",".")
-             .trim()
-    );
-}
-
-
-// máscara inputs
-document.getElementById("valor").addEventListener("input", function(e){
-    e.target.value = formatBRL(e.target.value);
-});
-
-document.getElementById("entrada").addEventListener("input", function(e){
-    e.target.value = formatBRL(e.target.value);
-});
-
-
-// simulação
-function simular() {
-
-    let valor = parseBRL(document.getElementById("valor").value);
-    let entrada = parseBRL(document.getElementById("entrada").value);
-    let taxa = parseFloat(document.getElementById("taxa").value) / 100;
-    let prazo = parseInt(document.getElementById("prazo").value);
-
-    if (!valor || !entrada || !taxa || !prazo) {
-        document.getElementById("resultado").innerHTML =
-            "⚠️ Preencha todos os campos corretamente";
-        return;
+    function setTaxa() {
+        let banco = document.getElementById("banco").value;
+        let taxas = { caixa: 0.85, itau: 0.95, bradesco: 1.05, santander: 1.10 };
+        document.getElementById("taxa").value = taxas[banco];
     }
 
-    let pv = valor - entrada;
-    let i = taxa;
+    function formatBRL(value){
+        value = value.replace(/\D/g, "");
+        value = (value/100).toFixed(2) + "";
+        value = value.replace(".", ",");
+        value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        return "R$ " + value;
+    }
 
-    let parcela = (pv * i) / (1 - Math.pow(1 + i, -prazo));
+    function parseBRL(value){
+        return parseFloat(value.replace("R$","").replace(/\./g,"").replace(",",".").trim()) || 0;
+    }
 
-    document.getElementById("resultado").innerHTML =
-        "💰 Parcela estimada: R$ " + parcela.toFixed(2);
-}
+    document.getElementById("valor").addEventListener("input", (e) => e.target.value = formatBRL(e.target.value));
+    document.getElementById("entrada").addEventListener("input", (e) => e.target.value = formatBRL(e.target.value));
 
+    function simular() {
+        let valor = parseBRL(document.getElementById("valor").value);
+        let entrada = parseBRL(document.getElementById("entrada").value);
+        let taxa = parseFloat(document.getElementById("taxa").value) / 100;
+        let prazo = parseInt(document.getElementById("prazo").value);
+        let resDiv = document.getElementById("resultado");
+
+        if (valor <= entrada || !valor || !prazo) {
+            resDiv.style.display = "block";
+            resDiv.style.color = "#dc2626";
+            resDiv.style.background = "#fef2f2";
+            resDiv.innerHTML = "⚠️ Verifique os valores informados";
+            return;
+        }
+
+        let pv = valor - entrada;
+        let parcela = (pv * taxa) / (1 - Math.pow(1 + taxa, -prazo));
+
+        resDiv.style.display = "block";
+        resDiv.style.color = "#059669";
+        resDiv.style.background = "#f0fdf4";
+        resDiv.innerHTML = "💰 Parcela: " + parcela.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    }
 </script>
 
 {% endblock %}
