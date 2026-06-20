@@ -582,44 +582,38 @@ def tela_gestao():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Totais Gerais
+    # Totais básicos
     cursor.execute("SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?", (empresa_id,))
     total_usuarios = cursor.fetchone()[0]
-
     cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id = ?", (empresa_id,))
     total_imoveis = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id = ?", (empresa_id,))
+    total_clientes = cursor.fetchone()[0]
 
-    try:
-        cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id = ?", (empresa_id,))
-        total_clientes = cursor.fetchone()[0]
-    except:
-        total_clientes = 0
+    # Busca de Corretores e suas métricas
+    cursor.execute("SELECT id, nome FROM usuarios WHERE empresa_id = ? AND nome IS NOT NULL", (empresa_id,))
+    usuarios = cursor.fetchall()
+    
+    corretores = []
+    for u in usuarios:
+        u_id, u_nome = u
+        # Busca todas as contagens de uma vez para este usuário
+        cursor.execute("SELECT status_funil, COUNT(*) FROM clientes WHERE usuario_id = ? GROUP BY status_funil", (u_id,))
+        contagem = dict(cursor.fetchall())
+        
+        corretores.append({
+            'nome': u_nome,
+            'total': sum(contagem.values()),
+            'novo': contagem.get('Lead Novo', 0) + contagem.get('Novo Contato', 0), # Soma ambas variações
+            'negoc': contagem.get('Negociação', 0),
+            'visita': contagem.get('Visita Agendada', 0),
+            'venda': contagem.get('Concluido', 0),
+            'desist': contagem.get('Desistencia', 0)
+        })
 
-    # Ranking de corretores com detalhamento de Funil (Status)
-    cursor.execute("""
-        SELECT 
-            u.nome,
-            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id) as total,
-            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Lead Novo') as novo,
-            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Negociação') as negociacao,
-            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Visita Agendada') as visita,
-            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Concluido') as concluido,
-            (SELECT COUNT(*) FROM clientes c WHERE c.usuario_id = u.id AND c.status_funil = 'Desistencia') as desistencias
-        FROM usuarios u
-        WHERE u.empresa_id = ?
-        ORDER BY total DESC
-    """, (empresa_id,))
-
-    corretores = cursor.fetchall()
     conn.close()
-
-    return render_template(
-        "gestao.html",
-        total_usuarios=total_usuarios,
-        total_imoveis=total_imoveis,
-        total_clientes=total_clientes,
-        corretores=corretores
-    )
+    return render_template("gestao.html", total_usuarios=total_usuarios, total_imoveis=total_imoveis, 
+                           total_clientes=total_clientes, corretores=corretores)
 
 # Decorator para o Super Admin
 def super_admin_required(f):
