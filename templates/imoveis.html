@@ -1,146 +1,88 @@
 {% extends 'base.html' %}
-
-{% block title %}Imóveis{% endblock %}
-{% block pagina %}Imóveis{% endblock %}
-
 {% block content %}
 
 <style>
-/* =========================
-   ESTILO CLEAN & WHITE
-========================= */
-.topo-imoveis { display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
-.topo-imoveis h2 { color:#1e293b; }
+    /* Estilos do Grid e Card */
+    .grid-imoveis { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:25px; }
+    .card-imovel { background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; overflow:hidden; transition:.3s; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
+    .link-detalhes { text-decoration:none; color:inherit; display:flex; flex-direction:column; flex-grow:1; }
 
-.filtro-box { display:flex; flex-wrap:wrap; gap:10px; background:#ffffff; padding:20px; border-radius:16px; border:1px solid #e2e8f0; }
-.campo input { width:100%; padding:12px; border-radius:10px; border:1px solid #e2e8f0; background:#f8fafc; color:#1e293b; }
-.campo button { width:100%; padding:12px; border:none; border-radius:10px; background:#2563eb; color:white; font-weight:600; cursor:pointer; }
+    /* Carrossel */
+    .carousel-container { position:relative; width:100%; height:230px; overflow:hidden; }
+    .carousel-images { display:flex; transition:transform .5s ease; height:100%; }
+    .carousel-images img { min-width:100%; height:230px; object-fit:cover; }
+    .btn-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.9); border:none; color:#1e293b; width:35px; height:35px; border-radius:50%; cursor:pointer; z-index:10; }
 
-.grid-imoveis { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:25px; }
+    /* Info */
+    .info { padding:20px; flex-grow:1; }
+    .valor { color:#1e293b; font-size:24px; font-weight:800; margin-bottom:5px; }
+    .titulo { font-size:16px; font-weight:600; color:#475569; margin-bottom:12px; }
+    .detalhes { color:#64748b; font-size:13px; line-height:1.5; }
 
-.card-imovel { 
-    background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; 
-    overflow:hidden; transition:.3s; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);
-}
-.card-imovel:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    /* Ações */
+    .acoes { padding:0 20px 20px; display:flex; gap:8px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
+    .btn-base { border:none; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; text-decoration:none; display:flex; align-items:center; justify-content:center; }
+    .btn-editar { background:#e0f2fe; color:#0369a1; }
+    .btn-excluir { background:#fee2e2; color:#b91c1c; }
+    .btn-drive { background:#f1f5f9; color:#475569; }
+    .btn-whatsapp { background:#dcfce7; color:#166534; }
 
-/* CARROSSEL */
-.carousel-container { position:relative; width:100%; height:230px; overflow:hidden; }
-.carousel-images { display:flex; transition:transform .5s ease; height:100%; }
-.carousel-images img { min-width:100%; height:230px; object-fit:cover; }
-.btn-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.8); border:none; color:#1e293b; width:35px; height:35px; border-radius:50%; cursor:pointer; z-index:5; }
-.sem-foto { height:230px; display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:50px; }
-
-.info { padding:20px; }
-.titulo { font-size:18px; font-weight:700; color:#1e293b; margin-bottom:8px; }
-.valor { color:#059669; font-size:20px; font-weight:bold; margin-bottom:12px; }
-.detalhes { color:#64748b; line-height:1.6; font-size:13px; }
-
-.acoes { padding:0 20px 20px; display:flex; flex-wrap:wrap; gap:8px; }
-.btn-base { border:none; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:5px; transition:.2s; }
-.btn-editar { background:#e0f2fe; color:#0369a1; }
-.btn-excluir { background:#fee2e2; color:#b91c1c; }
-.btn-drive { background:#dcfce7; color:#166534; }
-.btn-whatsapp { background:#dcfce7; color:#166534; }
-
-/* MODAL E LOADING (Mantendo originais) */
-.modal-whatsapp { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); justify-content:center; align-items:center; z-index:99999; }
-.modal-conteudo { width:420px; background:#fff; border-radius:16px; padding:25px; box-shadow:0 20px 40px rgba(0,0,0,.2); }
-.loading-whatsapp { display:none; position:fixed; inset:0; background:rgba(255,255,255,.9); z-index:999999; justify-content:center; align-items:center; }
-.loading-box { background:#fff; padding:30px; border-radius:15px; text-align:center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-.spinner { width:40px; height:40px; border:4px solid #f3f3f3; border-top:4px solid #22c55e; border-radius:50%; animation:girar 1s linear infinite; margin:0 auto 20px; }
-@keyframes girar { to { transform:rotate(360deg); } }
+    /* Modal Moderno */
+    .modal-whatsapp { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:9999; justify-content:center; align-items:center; }
+    .modal-conteudo { background:#fff; width:90%; max-width:400px; padding:30px; border-radius:20px; animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>
 
-<!-- FILTRO -->
-<div class="filtro-container">
-    <form method="GET" action="/imoveis" class="filtro-box">
-        <div class="campo"><input type="text" name="cidade" placeholder="Cidade"></div>
-        <div class="campo"><input type="text" name="bairro" placeholder="Bairro"></div>
-        <div class="campo"><input type="text" name="tipo" placeholder="Tipo"></div>
-        <div class="campo"><input type="number" name="quartos" placeholder="Quartos"></div>
-        <div class="campo"><input type="text" name="valor_max" placeholder="Valor máx"></div>
-        <div class="campo"><button type="submit">🔍 Filtrar</button></div>
-    </form>
-</div>
-
-<div class="topo-imoveis">
-    <h2>Lista de Imóveis</h2>
-    <a href="/cadastrar_imovel" class="btn-base btn-editar">+ Novo Imóvel</a>
-</div>
-
-<!-- GRID -->
 <div class="grid-imoveis">
 {% for imovel in imoveis %}
 <div class="card-imovel">
-    {% if imovel.fotos %}
-    <div class="carousel-container" id="carousel-{{ imovel.id }}">
-        <div class="carousel-images">
-            {% for foto in imovel.fotos %}<img src="/uploads/imoveis/{{ foto }}" alt="Foto">{% endfor %}
+    <a href="/detalhes_imovel/{{ imovel.id }}" class="link-detalhes">
+        {% if imovel.fotos %}
+        <div class="carousel-container" id="carousel-{{ imovel.id }}">
+            <div class="carousel-images">
+                {% for foto in imovel.fotos %}<img src="/uploads/imoveis/{{ foto }}" alt="Foto">{% endfor %}
+            </div>
+            {% if imovel.fotos|length > 1 %}
+                <button class="btn-nav" style="left:10px" onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', -1)">❮</button>
+                <button class="btn-nav" style="right:10px" onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', 1)">❯</button>
+            {% endif %}
         </div>
-        {% if imovel.fotos|length > 1 %}
-            <button class="btn-nav" style="left:10px" onclick="mudarFoto('carousel-{{ imovel.id }}', -1)">❮</button>
-            <button class="btn-nav" style="right:10px" onclick="mudarFoto('carousel-{{ imovel.id }}', 1)">❯</button>
+        {% else %}
+            <div class="sem-foto" style="height:230px; display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:50px;">🏠</div>
         {% endif %}
-    </div>
-    {% else %}
-        <div class="sem-foto">🏠</div>
-    {% endif %}
 
-    <div class="info">
-        <div class="titulo">{{ imovel.titulo }}</div>
-        <div class="valor">{{ imovel.valor }}</div>
-        <div class="detalhes">
-            📍 {{ imovel.bairro }} | 🛏 {{ imovel.quartos }} Qts | 📐 {{ imovel.area }} m²
-            📍 {{ imovel.iptu }} | 🛏 {{ imovel.suite }} Qts | 📐 {{ imovel.area }} m² 
+        <div class="info">
+            <div class="valor">{{ imovel.valor }}</div>
+            <div class="titulo">{{ imovel.titulo }}</div>
+            <div class="detalhes">
+                📍 {{ imovel.bairro }} | 🛏 {{ imovel.quartos }} Qts | 🛁 {{ imovel.banheiros }} Ban | 🚗 {{ imovel.vagas }} Vagas
+            </div>
         </div>
-    </div>
+    </a>
 
     <div class="acoes">
-        <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">✏️ Editar</a>
-        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-base btn-excluir" onclick="return confirm('Excluir?')">🗑 Excluir</a>
-        <button class="btn-base btn-drive" onclick="copiarLink('{{ imovel.link }}')">🔗 Drive</button>
-        <button class="btn-base btn-whatsapp" onclick="abrirModalEnviar('{{ imovel.id }}')">📲 WhatsApp</button>
+        <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">✏️</a>
+        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-base btn-excluir" onclick="return confirm('Excluir?')">🗑</a>
+        <button class="btn-base btn-drive" onclick="copiarLink('{{ imovel.link }}')">🔗</button>
+        <button class="btn-base btn-whatsapp" onclick="abrirModalEnviar('{{ imovel.id }}')">📲</button>
     </div>
 </div>
 {% endfor %}
 </div>
 
-<!-- MODALS E SCRIPTS -->
 <div id="modalWhatsapp" class="modal-whatsapp">
     <div class="modal-conteudo">
-        <h3>📲 Enviar Imóvel</h3>
-        <input type="text" id="telefoneDestino" placeholder="5511999999999">
+        <h3 style="margin-top:0;">📲 Enviar Imóvel</h3>
+        <input type="text" id="telefoneDestino" placeholder="WhatsApp (5511...)" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:10px; margin:15px 0; box-sizing:border-box;">
         <input type="hidden" id="imovelSelecionado">
-        <div class="acoes-modal">
-            <button onclick="enviarImovelWhatsapp()" style="background:#22c55e; color:#fff;">Enviar</button>
-            <button onclick="fecharModalWhatsapp()" style="background:#e2e8f0; color:#475569;">Cancelar</button>
+        <div style="display:flex; gap:10px;">
+            <button onclick="enviarImovelWhatsapp()" style="flex:1; padding:12px; border:none; border-radius:10px; background:#22c55e; color:#fff; font-weight:600; cursor:pointer;">Enviar</button>
+            <button onclick="fecharModalWhatsapp()" style="flex:1; padding:12px; border:none; border-radius:10px; background:#f1f5f9; color:#475569; font-weight:600; cursor:pointer;">Cancelar</button>
         </div>
     </div>
 </div>
 
-<div id="loadingWhatsapp" class="loading-whatsapp">
-    <div class="loading-box"><div class="spinner"></div><h3>Enviando...</h3></div>
-</div>
-
 <script>
-    function abrirModalEnviar(id) { document.getElementById("imovelSelecionado").value = id; document.getElementById("modalWhatsapp").style.display = "flex"; }
-    function fecharModalWhatsapp() { document.getElementById("modalWhatsapp").style.display = "none"; }
-    
-    async function enviarImovelWhatsapp() {
-        const tel = document.getElementById("telefoneDestino").value;
-        const id = document.getElementById("imovelSelecionado").value;
-        if(!tel) return alert("Digite o telefone");
-        document.getElementById("loadingWhatsapp").style.display = "flex";
-        try {
-            const resp = await fetch(`/enviar_imovel_link/${id}/${tel}`);
-            const dados = await resp.json();
-            document.getElementById("loadingWhatsapp").style.display = "none";
-            if(dados.sucesso) { fecharModalWhatsapp(); alert("✅ Enviado!"); }
-            else alert("❌ Erro: " + (dados.erro || "falha"));
-        } catch(e) { document.getElementById("loadingWhatsapp").style.display = "none"; alert("Erro"); }
-    }
-
     function mudarFoto(id, dir) {
         const c = document.getElementById(id).querySelector('.carousel-images');
         let idx = parseInt(c.dataset.index || 0);
@@ -148,10 +90,13 @@
         c.dataset.index = idx;
         c.style.transform = `translateX(-${idx * 100}%)`;
     }
-
+    
+    function abrirModalEnviar(id) { document.getElementById("imovelSelecionado").value = id; document.getElementById("modalWhatsapp").style.display = "flex"; }
+    function fecharModalWhatsapp() { document.getElementById("modalWhatsapp").style.display = "none"; }
+    
     function copiarLink(link) {
-        if(!link || link == "None") return alert("Sem link.");
         navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
     }
 </script>
+
 {% endblock %}
