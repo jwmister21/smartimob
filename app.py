@@ -3284,7 +3284,7 @@ def perfil_cliente(id):
 
     # 1. Busca dados do cliente filtrando pela empresa_id
     cursor.execute("""
-        SELECT id, nome, telefone, email, interesse, faixa_preco, bairro, status_funil, cpf, endereco, entrada, sobre, 
+        SELECT id, nome, telefone, email, interesse, faixa_preco, bairro, status_funil, cpf, endereco, entrada, sobre
         FROM clientes WHERE id = ? AND empresa_id = ?
     """, (id, empresa_id))
     cliente = cursor.fetchone()
