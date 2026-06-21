@@ -2430,7 +2430,7 @@ def salvar_logo_imobiliaria():
     if not arquivo or arquivo.filename == "":
         return redirect("/configuracoes")
 
-    pasta = "static/uploads/logos"
+    pasta = "data/uploads/logos"
 
     if not os.path.exists(pasta):
         os.makedirs(pasta)
@@ -2452,7 +2452,7 @@ def salvar_logo_imobiliaria():
         SET logo = ?
         WHERE empresa_id = ?
     """, (
-        f"/static/uploads/logos/{nome_arquivo}",
+        f"/data/uploads/logos/{nome_arquivo}",
         session["empresa_id"]
     ))
 
