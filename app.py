@@ -2262,7 +2262,67 @@ def logo_empresa(arquivo):
         "/data/uploads/logos",
         arquivo
     )
- 
+
+
+@app.route("/importar_imoveis_pdf", methods=["POST"])
+@verificar_sessao
+def importar_imoveis_pdf():
+
+    import json
+
+    dados = json.loads(
+        request.form["dados"]
+    )
+
+    selecionados = request.form.getlist(
+        "selecionados"
+    )
+
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    for x in selecionados:
+
+        i = dados[int(x)]
+
+
+        cursor.execute("""
+        INSERT INTO imoveis
+        (
+        titulo,
+        empresa_id,
+        tipo,
+        valor,
+        cidade,
+        bairro,
+        quartos,
+        area,
+        status,
+        usuario_id
+        )
+        VALUES (?,?,?,?,?,?,?,?,?,?)
+        """,
+        (
+        i["titulo"],
+        session["empresa_id"],
+        "Apartamento",
+        i["valor"],
+        "Praia Grande",
+        "",
+        i["quartos"],
+        i["area"],
+        "Disponível",
+        session["usuario_id"]
+        ))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return redirect("/imoveis")
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
     if not session.get('is_admin'):
