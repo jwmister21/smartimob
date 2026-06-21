@@ -1,222 +1,120 @@
 {% extends 'base.html' %}
 
-{% block title %}
-Novo Cliente
-{% endblock %}
-
-{% block pagina %}
-Novo Cliente
-{% endblock %}
+{% block title %}Novo Cliente{% endblock %}
+{% block pagina %}Novo Cliente{% endblock %}
 
 {% block content %}
 
 <style>
-
-.form-card{
-    max-width:1000px;
-}
-
-.form-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-}
-
-.campo{
-    display:flex;
-    flex-direction:column;
-}
-
-.campo label{
-    margin-bottom:8px;
-    color:#cbd5e1;
-}
-
-.botoes{
-    margin-top:30px;
-    display:flex;
-    gap:15px;
-}
-
-.btn-voltar{
-    background:#374151;
-    color:white;
-    text-decoration:none;
-    padding:12px 20px;
-    border-radius:12px;
-}
-
-@media(max-width:768px){
-
-    .form-grid{
-        grid-template-columns:1fr;
+    /* Container principal */
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #111827;
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid #1e293b;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
     }
 
-}
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
 
-/* Container que centraliza e limita a largura */
-.form-container {
-    max-width: 800px;
-    margin: 0 auto; /* Centraliza na página */
-    background: #111827;
-    padding: 30px;
-    border-radius: 20px;
-    border: 1px solid #1e293b;
-}
+    .campo { display: flex; flex-direction: column; }
+    
+    /* Campo de texto que ocupa a linha toda */
+    .campo-full { grid-column: 1 / -1; }
 
-/* Deixa os labels mais visíveis */
-label {
-    display: block;
-    margin-bottom: 8px;
-    color: #94a3b8;
-    font-size: 14px;
-}
+    label { margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
 
-/* Ajuste fino nos inputs */
-input, select, textarea {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 20px;
-    background: #0b1120; /* Fundo levemente diferente para dar profundidade */
-    border: 1px solid #334155;
-    color: white;
-    border-radius: 10px;
-}
+    input, select, textarea {
+        width: 100%;
+        padding: 14px;
+        background: #0b1120;
+        border: 1px solid #334155;
+        color: white;
+        border-radius: 12px;
+        box-sizing: border-box;
+        transition: border 0.3s;
+    }
 
-.actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-}
+    input:focus, textarea:focus { border-color: #3b82f6; outline: none; }
 
+    .botoes { margin-top: 30px; display: flex; gap: 15px; }
+
+    .btn-voltar { background: #374151; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; }
+    
+    .btn-salvar { 
+        background: #2563eb; color: white; border: none; padding: 12px 24px; 
+        border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s;
+    }
+    .btn-salvar:hover { background: #1d4ed8; }
+
+    @media(max-width:768px) { .form-grid { grid-template-columns: 1fr; } }
 </style>
 
-<div class="card form-card">
+<div class="form-container">
+    <form method="POST">
+        <div class="form-grid">
+            <div class="campo"><label>Nome</label><input type="text" name="nome" required></div>
+            <div class="campo"><label>Telefone</label><input type="text" id="telefone" name="telefone" required></div>
+            
+            <div class="campo"><label>Entrada / À vista</label><input type="text" name="entrada"></div>
+            <div class="campo">
+                <label>Forma Pagamento</label>
+                <select name="pagamento">
+                    <option value="financiamento">Financiamento</option>
+                    <option value="Avista">À vista</option>   
+                </select>
+            </div>
+            
+            <div class="campo">
+                <label>Interesse</label>
+                <select name="interesse">
+                    <option value="Casa">Casa</option>
+                    <option value="Apartamento">Apartamento</option>
+                    <option value="Terreno">Terreno</option>
+                    <option value="Comercial">Comercial</option>
+                </select>
+            </div>
+            <div class="campo"><label>Bairro Desejado</label><input type="text" name="bairro"></div>
+            
+            <div class="campo"><label>Faixa de Preço</label><input type="text" id="faixa_preco" name="faixa_preco" placeholder="R$ 0,00"></div>
+            
+            <div class="campo campo-full">
+                <label>Sobre o Cliente</label>
+                <textarea name="sobre" rows="4" placeholder="Adicione observações sobre o cliente aqui..."></textarea>
+            </div>
+        </div>
 
-<form method="POST">
-
-<div class="form-grid">
-
-    <div class="campo">
-        <label>Nome</label>
-        <input type="text" name="nome" required>
-    </div>
-
-    <div class="campo">
-        <label>Telefone</label>
-        <input type="text" id="telefone" name="telefone" required>
-    </div>
-
-    <div class="campo">
-        <label>Email</label>
-        <input type="email" name="email">
-    </div>
-    
-    <div class="campo">
-        <label>Sobre cliente</label>
-        <input type="sobre" name="sobre">
-    </div>
-    
-    <div class="campo">
-        <label>Entrada/avista</label>
-        <input type="entrada" name="entrada">
-    </div>
-    
-    <div class="campo">
-        <label>Forma Pagamento</label>
-        <select name="pagamento">
-     <option value="financiamento">Financiamento</option>
-     <option value="Avista">Avista</option>   
-        </select>
-    </div>
-    
-    <div class="campo">
-        <label>Interesse</label>
-        <select name="interesse">
-    <option value="Casa">Casa</option>
-    <option value="Apartamento">Apartamento</option>
-    <option value="Terreno">Terreno</option>
-    <option value="Comercial">Comercial</option>
-</select>
-    </div>
-    
-    <div class="campo">
-        <label>Faixa de Preço</label>
-        <input
-            type="text"
-            id="faixa_preco"
-            name="faixa_preco"
-            placeholder="R$ 0,00">
-    </div>
-    <div class="campo">
-        <label>Bairro Desejado</label>
-        <input type="text" name="bairro">
-    </div>
-
-</div>
-
-<div class="botoes">
-
-    <a href="/clientes" class="btn-voltar">
-        ← Voltar
-    </a>
-
-    <button class="btn" type="submit">
-        Salvar Cliente
-    </button>
-
-</div>
-
-</form>
-
+        <div class="botoes">
+            <a href="/clientes" class="btn-voltar">← Voltar</a>
+            <button class="btn-salvar" type="submit">💾 Salvar Cliente</button>
+        </div>
+    </form>
 </div>
 
 <script>
+    // Lógica de Telefone
+    const telefone = document.getElementById("telefone");
+    telefone.addEventListener("input", function(e){
+        let v = e.target.value.replace(/\D/g,'');
+        if(v.length > 11) v = v.slice(0,11);
+        v = v.length > 10 ? v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3') : v.replace(/^(\d{2})(\d{4})(\d{4}).*/, '($1) $2-$3');
+        e.target.value = v;
+    });
 
-const telefone = document.getElementById("telefone");
-
-telefone.addEventListener("input", function(e){
-
-    let v = e.target.value.replace(/\D/g,'');
-
-    if(v.length > 11){
-        v = v.slice(0,11);
-    }
-
-    if(v.length > 10){
-        v = v.replace(
-            /^(\d{2})(\d{5})(\d{4}).*/,
-            '($1) $2-$3'
-        );
-    }else{
-        v = v.replace(
-            /^(\d{2})(\d{4})(\d{4}).*/,
-            '($1) $2-$3'
-        );
-    }
-
-    e.target.value = v;
-
-});
-
-const preco = document.getElementById("faixa_preco");
-
-preco.addEventListener("input", function(e){
-
-    let valor = e.target.value.replace(/\D/g,'');
-
-    valor = (Number(valor)/100).toLocaleString(
-        'pt-BR',
-        {
-            style:'currency',
-            currency:'BRL'
-        }
-    );
-
-    e.target.value = valor;
-
-});
-
+    // Lógica de Preço
+    const preco = document.getElementById("faixa_preco");
+    preco.addEventListener("input", function(e){
+        let valor = e.target.value.replace(/\D/g,'');
+        if(valor === '') { e.target.value = ''; return; }
+        valor = (Number(valor)/100).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        e.target.value = valor;
+    });
 </script>
 
 {% endblock %}
