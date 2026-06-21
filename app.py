@@ -94,7 +94,6 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
 
-import re
 
 def extrair_imoveis(texto):
 
@@ -102,7 +101,9 @@ def extrair_imoveis(texto):
 
     blocos = texto.split("ED.")
 
-    for bloco in blocos:
+ 
+    for bloco in blocos[1:]:
+
 
         bloco = bloco.strip()
 
@@ -117,10 +118,30 @@ def extrair_imoveis(texto):
 
         valor = ""
 
-        m = re.search(
+        valores = re.findall(
             r'R\$\s*([\d\.\,]+)',
             bloco
         )
+
+        valor = ""
+
+        if valores:
+
+            for v in valores:
+
+                numero = (
+                    v.replace(".", "")
+                    .replace(",", ".")
+                )
+
+                try:
+
+                    if float(numero) > 10000:
+                       valor = v
+                       break
+
+               except:
+                   pass
 
         if m:
             valor = m.group(1)
@@ -1290,7 +1311,8 @@ def analisar_pdf():
                 texto += conteudo + "\n"
 
     imoveis = extrair_imoveis(texto)
-
+    
+    print(imoveis)
     return render_template(
         "preview_importacao.html",
         imoveis=imoveis
