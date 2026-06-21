@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="page-header">
+    <h2>Importar Imóveis via PDF</h2>
+</div>
+
+<div class="config-box">
+
+    <form
+        action="/analisar_pdf"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <label>Selecione o PDF</label>
+
+        <input
+            type="file"
+            name="pdf"
+            accept=".pdf"
+            required
+            class="form-control"
+        >
+
+        <button
+            type="submit"
+            class="btn-salvar"
+        >
+            Analisar PDF
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
