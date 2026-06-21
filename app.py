@@ -2781,7 +2781,9 @@ def excluir_imovel(id):
 
 
 # --- ROTA DE DETALHES UNIFICADA (Substitua as antigas por esta) ---
+
 @app.route("/imovel/<int:imovel_id>")
+@app.route("/Detalhes_imovel/<int:imovel_id>")
 @verificar_sessao # Usando o decorador de segurança unificado
 def ver_imovel(imovel_id):
     empresa_id = session.get("empresa_id")
