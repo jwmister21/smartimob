@@ -16,6 +16,8 @@ from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione a
 from moviepy import concatenate_videoclips
 import google.generativeai as genai
 import json
+import pdfplumber
+import re
 from openai import OpenAI
 from flask import send_from_directory
 from flask_socketio import SocketIO
