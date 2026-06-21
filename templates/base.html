@@ -644,68 +644,91 @@ chat.style.display = 'flex';
 }
 
 async function analisarIA() {
-    const texto = document.getElementById('texto_cliente').value;
+
+    const input = document.getElementById('texto_cliente');
     const chatBody = document.getElementById('chat-body');
 
-    if (!texto.trim()) return alert("Cole a mensagem do cliente primeiro!");
+    const texto = input.value.trim();
 
-    // Adiciona a mensagem do usuário e limpa o input
-    chatBody.innerHTML += `<div class="msg corretor" style="background:#e2e8f0; margin-left:auto;">${texto}</div>`;
-    document.getElementById('texto_cliente').value = "";
-    
-    // Feedback de carregamento
-    const loadingId = "loading-msg";
-    chatBody.innerHTML += `<div class="msg cliente" id="${loadingId}">Processando...</div>`;
+    if (!texto) {
+        alert("Cole a mensagem do cliente primeiro!");
+        return;
+    }
+
+    // Mensagem do corretor
+
+    chatBody.innerHTML += `
+        <div class="msg corretor" style="background:#e2e8f0;margin-left:auto;">
+            ${texto}
+        </div>
+    `;
+
+    input.value = "";
+
+    // Loading
+
+    const loadingId = "loading_" + Date.now();
+
+    chatBody.innerHTML += `
+        <div class="msg cliente" id="${loadingId}">
+            🤖 Analisando cliente...
+        </div>
+    `;
+
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
+
         const response = await fetch('/analisar_cliente', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensagem: texto })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mensagem: texto
+            })
         });
 
         const data = await response.json();
-        
-        // Remove o "Processando..."
-        document.getElementById(loadingId).remove();
 
-        // Adiciona a resposta da IA
-        if (data.resultado) {
-            chatBody.innerHTML += `<div class="msg cliente">${data.resultado}</div>`;
-        } else {
-            chatBody.innerHTML += `<div class="msg cliente">Nenhum imóvel encontrado.</div>`;
+        const loading = document.getElementById(loadingId);
+
+        if (loading) {
+            loading.remove();
         }
+
+        chatBody.innerHTML += `
+            <div class="msg cliente">
+                ${data.resultado || "Nenhum imóvel encontrado."}
+            </div>
+        `;
+
     } catch (error) {
-        document.getElementById(loadingId).remove();
-        chatBody.innerHTML += `<div class="msg cliente" style="color:red;">Erro ao conectar com servidor.</div>`;
+
+        console.error(error);
+
+        const loading = document.getElementById(loadingId);
+
+        if (loading) {
+            loading.remove();
+        }
+
+        chatBody.innerHTML += `
+            <div class="msg cliente">
+                <div style="
+                    background:#7f1d1d;
+                    color:white;
+                    padding:10px;
+                    border-radius:10px;
+                ">
+                    ❌ Erro ao conectar com o servidor.
+                </div>
+            </div>
+        `;
     }
+
     chatBody.scrollTop = chatBody.scrollHeight;
 }
-
-document.addEventListener("DOMContentLoaded", function() {
-
-const valorInput = document.getElementById("valor");
-
-valorInput.addEventListener("input", function(e) {
-
-let valor = e.target.value.replace(/\D/g, "");
-
-if (valor === "") {
-e.target.value = "";
-return;
-}
-
-valor = (parseInt(valor) / 100).toFixed(2);
-
-valor = valor.replace(".", ",");
-
-valor = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-
-e.target.value = "R$ " + valor;
-});
-
-});
 </script>
 </body>
 </html>
