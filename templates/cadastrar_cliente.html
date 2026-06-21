@@ -6,50 +6,60 @@
 {% block content %}
 
 <style>
-    /* Container principal */
+    /* Estilo White Clean */
     .form-container {
         max-width: 900px;
         margin: 0 auto;
-        background: #111827;
+        background: #ffffff;
         padding: 40px;
-        border-radius: 20px;
-        border: 1px solid #1e293b;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
-
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .campo { display: flex; flex-direction: column; }
-    
-    /* Campo de texto que ocupa a linha toda */
     .campo-full { grid-column: 1 / -1; }
 
-    label { margin-bottom: 8px; color: #94a3b8; font-size: 14px; }
+    label { 
+        margin-bottom: 8px; 
+        color: #374151; 
+        font-size: 13px; 
+        font-weight: 600; 
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
     input, select, textarea {
         width: 100%;
         padding: 14px;
-        background: #0b1120;
-        border: 1px solid #334155;
-        color: white;
-        border-radius: 12px;
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        color: #111827;
+        font-size: 15px;
         box-sizing: border-box;
-        transition: border 0.3s;
+        transition: 0.2s;
     }
 
-    input:focus, textarea:focus { border-color: #3b82f6; outline: none; }
+    input:focus, textarea:focus { 
+        border-color: #2563eb; 
+        outline: none; 
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
 
-    .botoes { margin-top: 30px; display: flex; gap: 15px; }
+    .botoes { margin-top: 35px; display: flex; gap: 15px; }
 
-    .btn-voltar { background: #374151; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; }
+    .btn-voltar { 
+        background: #f3f4f6; color: #4b5563; text-decoration: none; 
+        padding: 14px 28px; border-radius: 10px; font-weight: 600; 
+    }
+    .btn-voltar:hover { background: #e5e7eb; }
     
     .btn-salvar { 
-        background: #2563eb; color: white; border: none; padding: 12px 24px; 
-        border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        background: #2563eb; color: white; border: none; padding: 14px 28px; 
+        border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s;
     }
     .btn-salvar:hover { background: #1d4ed8; }
 
@@ -86,7 +96,7 @@
             
             <div class="campo campo-full">
                 <label>Sobre o Cliente</label>
-                <textarea name="sobre" rows="4" placeholder="Adicione observações sobre o cliente aqui..."></textarea>
+                <textarea name="sobre" rows="4" placeholder="Adicione observações importantes sobre o cliente..."></textarea>
             </div>
         </div>
 
@@ -98,7 +108,6 @@
 </div>
 
 <script>
-    // Lógica de Telefone
     const telefone = document.getElementById("telefone");
     telefone.addEventListener("input", function(e){
         let v = e.target.value.replace(/\D/g,'');
@@ -107,7 +116,6 @@
         e.target.value = v;
     });
 
-    // Lógica de Preço
     const preco = document.getElementById("faixa_preco");
     preco.addEventListener("input", function(e){
         let valor = e.target.value.replace(/\D/g,'');
