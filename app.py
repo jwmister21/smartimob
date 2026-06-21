@@ -94,7 +94,66 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
 
+import re
 
+def extrair_imoveis(texto):
+
+    imoveis = []
+
+    blocos = texto.split("ED.")
+
+    for bloco in blocos:
+
+        bloco = bloco.strip()
+
+        if not bloco:
+            continue
+
+        titulo = ""
+
+        primeira_linha = bloco.split("\n")[0]
+
+        titulo = "ED. " + primeira_linha
+
+        valor = ""
+
+        m = re.search(
+            r'R\$\s*([\d\.\,]+)',
+            bloco
+        )
+
+        if m:
+            valor = m.group(1)
+
+        quartos = ""
+
+        m = re.search(
+            r'(\d+)\s*DORMIT',
+            bloco,
+            re.IGNORECASE
+        )
+
+        if m:
+            quartos = m.group(1)
+
+        area = ""
+
+        m = re.search(
+            r'(\d+)m²',
+            bloco
+        )
+
+        if m:
+            area = m.group(1)
+
+        imoveis.append({
+            "titulo": titulo,
+            "valor": valor,
+            "quartos": quartos,
+            "area": area
+        })
+
+    return imoveis
 
 def verificar_sessao(f):
     @wraps(f)
@@ -1230,7 +1289,12 @@ def analisar_pdf():
             if conteudo:
                 texto += conteudo + "\n"
 
-    return f"<pre>{texto}</pre>"
+    imoveis = extrair_imoveis(texto)
+
+    return render_template(
+        "preview_importacao.html",
+        imoveis=imoveis
+    )
 
 
 @app.route("/status_whatsapp")
