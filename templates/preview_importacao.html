@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Imóveis Encontrados</h2>
+
+<table style="width:100%;background:white;border-radius:10px;padding:20px;">
+
+    <tr>
+        <th>Título</th>
+        <th>Valor</th>
+        <th>Quartos</th>
+        <th>Área</th>
+    </tr>
+
+    {% for i in imoveis %}
+
+    <tr>
+        <td>{{ i.titulo }}</td>
+        <td>R$ {{ i.valor }}</td>
+        <td>{{ i.quartos }}</td>
+        <td>{{ i.area }} m²</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}
