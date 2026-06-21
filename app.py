@@ -896,12 +896,8 @@ Exemplo:
         query += " AND quartos >= ?"
         parametros.append(quartos)
 
-    if suites > 0:
-        query += " AND suites >= ?"
-        parametros.append(suites)
-
     if vagas > 0:
-        query += " AND vagas >= ?"
+        query += " AND vagas_garagem >= ?"
         parametros.append(vagas)
 
     if valor_maximo < 999999999:
@@ -958,8 +954,7 @@ Exemplo:
         if quartos > 0:
             score += 5
 
-        if suites > 0:
-            score += 5
+        
 
         if vagas > 0:
             score += 5
@@ -985,7 +980,7 @@ Exemplo:
         cidade_imovel = imovel["cidade"] if imovel["cidade"] else ""
         tipo_imovel = imovel["tipo"] if imovel["tipo"] else ""
         quartos_imovel = imovel["quartos"] if imovel["quartos"] else 0
-        vagas_imovel = imovel["vagas"] if imovel["vagas"] else 0
+        vagas_imovel = imovel["vagas_garagem"] if imovel["vagas_garagem"] else 0
 
         resultado += f"""
         <div class="card-msg-imovel">
