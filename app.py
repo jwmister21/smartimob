@@ -2340,47 +2340,126 @@ def suspenso():
 
 # ==@app.route("/configuracoes", methods=["GET", "POST"])
 @app.route("/configuracoes", methods=["GET", "POST"])
-@verificar_sessao # Substituímos a verificação manual
+@verificar_sessao
 def configuracoes():
-    UPLOAD_FOLDER = app.config['UPLOAD_FOLDER_PERFIL'] # Usando a config global do app
+
+    UPLOAD_FOLDER = app.config['UPLOAD_FOLDER_PERFIL']
 
     if request.method == "POST":
+
         file = request.files.get('foto')
+
         if file and file.filename != '':
-            # Mantemos o nome fixo para evitar acúmulo de arquivos
+
             filename = f"usuario_{session['usuario_id']}.jpg"
-            save_path = os.path.join(UPLOAD_FOLDER, filename)
+
+            save_path = os.path.join(
+                UPLOAD_FOLDER,
+                filename
+            )
 
             if not os.path.exists(UPLOAD_FOLDER):
                 os.makedirs(UPLOAD_FOLDER)
 
             file.save(save_path)
 
-            # Atualiza no banco
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            # Adicionamos a empresa_id aqui apenas por boa prática, embora 
-            # o usuario_id já seja único no seu sistema
+
             cursor.execute("""
-                UPDATE usuarios SET foto_url = ? 
-                WHERE id = ? AND empresa_id = ?
-            """, (f"uploads/perfil/{filename}", session["usuario_id"], session["empresa_id"]))
+                UPDATE usuarios
+                SET foto_url = ?
+                WHERE id = ?
+                AND empresa_id = ?
+            """, (
+                f"uploads/perfil/{filename}",
+                session["usuario_id"],
+                session["empresa_id"]
+            ))
+
             conn.commit()
             conn.close()
+
             return redirect("/configuracoes")
 
-    # Busca os dados atuais
     conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
+
+    # usuário
     cursor.execute("""
-        SELECT nome, foto_url FROM usuarios 
-        WHERE id = ? AND empresa_id = ?
-    """, (session["usuario_id"], session["empresa_id"]))
+        SELECT nome, foto_url
+        FROM usuarios
+        WHERE id = ?
+        AND empresa_id = ?
+    """, (
+        session["usuario_id"],
+        session["empresa_id"]
+    ))
+
     usuario = cursor.fetchone()
+
+    # empresa / site
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+    """, (
+        session["empresa_id"],
+    ))
+
+    empresa = cursor.fetchone()
+
     conn.close()
 
-    return render_template("configuracoes.html", usuario=usuario)
+    return render_template(
+        "configuracoes.html",
+        usuario=usuario,
+        empresa=empresa
+    )
 
+
+
+ @app.route("/salvar_logo_imobiliaria", methods=["POST"])
+@verificar_sessao
+def salvar_logo_imobiliaria():
+
+    arquivo = request.files.get("logo")
+
+    if not arquivo or arquivo.filename == "":
+        return redirect("/configuracoes")
+
+    pasta = "static/uploads/logos"
+
+    if not os.path.exists(pasta):
+        os.makedirs(pasta)
+
+    nome_arquivo = f"logo_empresa_{session['empresa_id']}.png"
+
+    caminho = os.path.join(
+        pasta,
+        nome_arquivo
+    )
+
+    arquivo.save(caminho)
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE configuracoes_site
+        SET logo = ?
+        WHERE empresa_id = ?
+    """, (
+        f"/static/uploads/logos/{nome_arquivo}",
+        session["empresa_id"]
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/configuracoes")
 # 3. PAINEL ADMINISTRATIVO (CONTROLE DO DONO)
 # =========================================
 
