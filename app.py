@@ -736,6 +736,11 @@ def atualizar_cliente(id):
     
     return "Cliente atualizado com sucesso! <a href='/'>Voltar</a>"
 
+@app.route("/importar_pdf")
+@verificar_sessao
+def importar_pdf():
+    return render_template("importar_pdf.html")
+
 
 @app.route('/analisar_cliente', methods=['POST'])
 def analisar_cliente():
