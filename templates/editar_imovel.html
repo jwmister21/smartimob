@@ -81,6 +81,7 @@
             <div class="campo-box"><label>Área (m²)</label><input type="number" name="area" value="{{ imovel['area'] or 0 }}"></div>
             <div class="campo-box"><label>Quartos</label><input type="number" name="quartos" value="{{ imovel['quartos'] or 0 }}"></div>
             <div class="campo-box"><label>Suítes</label><input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}"></div>
+            <div class="campo-box"><label>Banheiros</label><input type="number" name="banheiros21" value="{{ imovel['banheiros21'] or 0 }}"></div>
             <div class="campo-box"><label>Vagas</label><input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}"></div>
             <div class="campo-box"><label>Lavabo</label>
                 <select name="lavabo"><option value="0" {% if not imovel['lavabo'] %}selected{% endif %}>Não</option><option value="1" {% if imovel['lavabo'] %}selected{% endif %}>Sim</option></select>
