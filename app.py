@@ -1022,7 +1022,7 @@ Exemplo:
                 🚗 {vagas_imovel} vagas
             </div>
 
-            <a href="/informa_imovel/{imovel['id']}"
+            <a href="/imovel/{imovel['id']}"
                style="
                     display:inline-block;
                     margin-top:12px;
