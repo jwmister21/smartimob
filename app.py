@@ -2421,7 +2421,7 @@ def configuracoes():
 
 
 
- @app.route("/salvar_logo_imobiliaria", methods=["POST"])
+@app.route("/salvar_logo_imobiliaria", methods=["POST"])
 @verificar_sessao
 def salvar_logo_imobiliaria():
 
