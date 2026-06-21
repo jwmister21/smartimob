@@ -2119,7 +2119,12 @@ def site_publico(slug):
         imoveis=imoveis
    )
 
-
+@app.route("/uploads/logos/<path:arquivo>")
+def logo_empresa(arquivo):
+    return send_from_directory(
+        "/data/uploads/logos",
+        arquivo
+    )
  
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
