@@ -897,7 +897,7 @@ Exemplo:
         parametros.append(quartos)
 
     if vagas > 0:
-        query += " AND vagas_garagem >= ?"
+        query += " AND vaga_garagem >= ?"
         parametros.append(vagas)
 
     if valor_maximo < 999999999:
