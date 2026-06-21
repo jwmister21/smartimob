@@ -36,6 +36,8 @@
     <a href="/cadastrar_imovel" style="background:#2563eb; color:#ffffff; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:600; display:inline-block;">
         ➕ Cadastrar Novo Imóvel
     </a>
+    <input type="text" id="filtroImoveis" onkeyup="filtrarImoveis()" placeholder="🔍 Pesquisar por bairro, tipo ou valor..." 
+           style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none;">
 </div>
 <div class="grid-imoveis">
 {% for imovel in imoveis %}
@@ -139,6 +141,23 @@ Equipe de Vendas`;
     // ou fixado aqui se for um número padrão de atendimento.
     const url = `https://wa.me/?text=${mensagemCodificada}`;
     window.open(url, '_blank');
+}
+    function filtrarImoveis() {
+    let input = document.getElementById("filtroImoveis");
+    let filtro = input.value.toLowerCase();
+    let grid = document.querySelector(".grid-imoveis");
+    let cards = grid.getElementsByClassName("card-imovel");
+
+    for (let i = 0; i < cards.length; i++) {
+        // O texto que será filtrado (pega todo o conteúdo de texto do card)
+        let textoCard = cards[i].textContent || cards[i].innerText;
+        
+        if (textoCard.toLowerCase().indexOf(filtro) > -1) {
+            cards[i].style.display = ""; // Mostra o card
+        } else {
+            cards[i].style.display = "none"; // Esconde o card
+        }
+    }
 }
 </script>
 
