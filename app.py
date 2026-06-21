@@ -2394,7 +2394,7 @@ def configuracoes():
 
     # usuário
     cursor.execute("""
-        SELECT nome, foto_url
+        SELECT nome, foto_url, is_admin
         FROM usuarios
         WHERE id = ?
         AND empresa_id = ?
