@@ -1,170 +1,801 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>{{ empresa.nome }}</title>
+
 <style>
-    :root {
-        --primary: #22c55e;
-        --bg: #f8fafc;
-        --card-bg: #ffffff;
-        --text: #1e293b;
-        --text-light: #64748b;
+
+:root{
+    --cor:#22c55e;
+    --bg:#f3f4f6;
+    --texto:#111827;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--texto);
+}
+
+/* HEADER */
+
+header{
+    background:white;
+    padding:30px;
+    text-align:center;
+    border-bottom:4px solid var(--cor);
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+}
+
+header h1{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+header p{
+    color:#6b7280;
+}
+
+/* FILTRO */
+
+.busca{
+    max-width:1200px;
+    margin:25px auto;
+    padding:0 15px;
+}
+
+.busca input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    font-size:15px;
+}
+
+/* GRID */
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:15px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:25px;
+}
+
+/* CARD */
+
+.card{
+    background:white;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 12px 30px rgba(0,0,0,.15);
+}
+
+.badge{
+    position:absolute;
+    top:10px;
+    left:10px;
+    z-index:20;
+    background:var(--cor);
+    color:white;
+    padding:6px 12px;
+    border-radius:30px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+/* CARROSSEL */
+
+.carousel-container{
+    position:relative;
+    width:100%;
+    height:250px;
+    overflow:hidden;
+}
+
+.carousel-images{
+    display:flex;
+    height:100%;
+    transition:.4s;
+}
+
+.carousel-images img{
+    min-width:100%;
+    width:100%;
+    object-fit:cover;
+}
+
+.carousel-btn{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:50%;
+    background:rgba(0,0,0,.5);
+    color:white;
+    cursor:pointer;
+    z-index:30;
+}
+
+.prev{
+    left:10px;
+}
+
+.next{
+    right:10px;
+}
+
+.carousel-btn:hover{
+    background:black;
+}
+
+/* CORPO */
+
+.card-body{
+    padding:18px;
+}
+
+.titulo{
+    font-size:20px;
+    font-weight:700;
+    margin-bottom:12px;
+    min-height:48px;
+}
+
+.info{
+    margin-bottom:6px;
+    color:#4b5563;
+}
+
+.valor{
+    color:var(--cor);
+    font-size:28px;
+    font-weight:800;
+    margin-top:15px;
+}
+
+.btn{
+    display:block;
+    text-align:center;
+    margin-top:15px;
+    background:var(--cor);
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    border-radius:10px;
+    font-weight:600;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+/* FOOTER */
+
+footer{
+    margin-top:50px;
+    background:#111827;
+    color:white;
+    text-align:center;
+    padding:30px;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+    header h1{
+        font-size:24px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
-
-    /* HEADER */
-    .topo-site {
-        background: white;
-        padding: 20px 40px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .marca { display: flex; align-items: center; gap: 15px; }
-    .logo { height: 50px; width: auto; }
-    .marca h1 { font-size: 20px; letter-spacing: -0.5px; }
-    .marca span { color: var(--text-light); font-size: 13px; }
-    .acoes a { background: var(--primary); color: white; padding: 10px 24px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; }
-
-    /* BUSCA */
-    .busca { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-    .busca input {
-        width: 100%; padding: 18px 24px; border-radius: 16px; border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); font-size: 16px; outline: none;
+    .grid{
+        grid-template-columns:1fr;
     }
 
-    /* GRID E CARDS */
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
+}
 
-    .card {
-        background: var(--card-bg); border-radius: 20px; overflow: hidden;
-        border: 1px solid #e2e8f0; transition: 0.3s;
-    }
-    .card:hover { transform: translateY(-8px); border-color: var(--primary); }
+    .topo-site{
 
-    .badge {
-        position: absolute; top: 15px; left: 15px; z-index: 10;
-        background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
-        padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase;
-    }
 
-    /* CARROSSEL */
-    .carousel-container { position: relative; width: 100%; height: 260px; overflow: hidden; }
-    .carousel-images { display: flex; height: 100%; transition: .4s; }
-    .carousel-images img { min-width: 100%; object-fit: cover; }
-    .carousel-btn {
-        position: absolute; top: 50%; transform: translateY(-50%);
-        width: 40px; height: 40px; border: none; border-radius: 50%;
-        background: rgba(255,255,255,0.8); cursor: pointer; z-index: 20;
-    }
+height:90px;
 
-    /* CORPO DO CARD */
-    .card-body { padding: 24px; }
-    .titulo { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-    .detalhes-imovel { display: flex; gap: 12px; font-size: 13px; color: var(--text-light); margin: 15px 0; }
-    .valor { color: var(--primary); font-size: 22px; font-weight: 800; margin: 15px 0; }
-    .btn {
-        display: block; text-align: center; background: #f8fafc; color: var(--text);
-        text-decoration: none; padding: 14px; border-radius: 12px; font-weight: 600; border: 1px solid #e2e8f0;
-    }
-    .btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+background:white;
 
-    /* FOOTER */
-    .footer { background: #0f172a; color: white; margin-top: 80px; padding: 60px 40px; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; }
-    .footer-bottom { grid-column: 1/-1; border-top: 1px solid #1e293b; padding-top: 20px; text-align: center; color: #64748b; font-size: 13px; }
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+padding:0 40px;
+
+border-bottom:3px solid #22c55e;
+
+box-shadow:0 5px 20px #0001;
+
+}
+
+
+
+.marca{
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+}
+
+
+
+.logo{
+
+height:60px;
+
+width:auto;
+
+}
+
+
+
+.marca h1{
+
+margin:0;
+
+font-size:26px;
+
+color:#0f172a;
+
+}
+
+
+
+.marca span{
+
+color:#64748b;
+
+font-size:14px;
+
+}
+
+
+
+.acoes a{
+
+background:#22c55e;
+
+color:white;
+
+padding:12px 25px;
+
+border-radius:25px;
+
+text-decoration:none;
+
+font-weight:bold;
+
+}
+
+
+
+
+/* busca */
+
+
+.busca{
+
+max-width:1050px;
+
+margin:25px auto;
+
+}
+
+
+
+.busca input{
+
+width:100%;
+
+padding:18px;
+
+border-radius:15px;
+
+border:0;
+
+box-shadow:0 5px 20px #0002;
+
+font-size:16px;
+
+}
+
+
+
+
+
+@media(max-width:600px){
+
+
+.topo-site{
+
+padding:15px;
+
+height:auto;
+
+}
+
+
+
+.logo{
+
+height:45px;
+
+}
+
+
+
+.marca h1{
+
+font-size:18px;
+
+}
+
+
+
+.marca span{
+
+display:none;
+
+}
+
+
+
+.acoes{
+
+display:none;
+
+}
+
+
+
+}
+
+    .footer{
+
+
+background:#0f172a;
+
+color:white;
+
+margin-top:60px;
+
+padding:45px 40px 20px;
+
+display:grid;
+
+grid-template-columns:2fr 1fr 1fr;
+
+gap:30px;
+
+}
+
+
+
+.footer-logo{
+
+height:50px;
+
+}
+
+
+
+.footer h3{
+
+margin:5px 0;
+
+}
+
+
+
+.footer h4{
+
+color:#22c55e;
+
+}
+
+
+
+.footer p{
+
+color:#94a3b8;
+
+}
+
+
+
+.footer a{
+
+display:block;
+
+color:#cbd5e1;
+
+text-decoration:none;
+
+margin:10px 0;
+
+}
+
+
+
+.footer a:hover{
+
+color:#22c55e;
+
+}
+
+
+
+.footer-bottom{
+
+grid-column:1/-1;
+
+border-top:1px solid #334155;
+
+padding-top:20px;
+
+text-align:center;
+
+color:#94a3b8;
+
+}
+
+
+
+
+@media(max-width:700px){
+
+
+.footer{
+
+grid-template-columns:1fr;
+
+text-align:center;
+
+}
+
+
+.footer-logo{
+
+height:45px;
+
+}
+
+
+}
+
 </style>
 </head>
 <body>
 
 <header class="topo-site">
+
+
     <div class="marca">
+
         <img src="/static/logo_smartzen.png" class="logo">
+
         <div>
+
             <h1>SMARTZEN IMOB</h1>
-            <span>Encontre o seu lugar</span>
+
+            <span>
+            Encontre o imóvel ideal para você
+            </span>
+
         </div>
+
+
     </div>
-    <div class="acoes"><a href="#">Entrar</a></div>
+
+
+
+    <div class="acoes">
+
+        <a href="#">
+            Entrar
+        </a>
+
+    </div>
+
+
+
 </header>
 
 <div class="busca">
-    <input type="text" id="busca" placeholder="O que você procura? (bairro, cidade, título...)">
+
+    <input
+        type="text"
+        id="busca"
+        placeholder="Buscar por título, bairro ou cidade...">
+
 </div>
 
 <div class="container">
+
     <div class="grid" id="grid-imoveis">
+
         {% for i in imoveis %}
+
         <div class="card imovel">
+
             <div style="position:relative;">
-                <span class="badge">📍 {{ i.cidade or "Imóvel" }}</span>
+
+                <span class="badge">
+                    {{ i.cidade or "Imóvel" }}
+                </span>
+
                 {% if i.fotos and i.fotos|length > 0 %}
+
                 <div class="carousel-container" id="carousel-{{ i.id }}">
+
                     <div class="carousel-images">
-                        {% for foto in i.fotos %}<img src="/uploads/imoveis/{{ foto }}" alt="{{ i.titulo }}">{% endfor %}
+
+                        {% for foto in i.fotos %}
+
+                        <img
+                            src="/uploads/imoveis/{{ foto }}"
+                            alt="{{ i.titulo }}">
+
+                        {% endfor %}
+
                     </div>
+
                     {% if i.fotos|length > 1 %}
-                    <button class="carousel-btn prev" onclick="moverSlide({{ i.id }},-1)">❮</button>
-                    <button class="carousel-btn next" onclick="moverSlide({{ i.id }},1)">❯</button>
+
+                    <button
+                        type="button"
+                        class="carousel-btn prev"
+                        onclick="moverSlide({{ i.id }},-1)">
+                        ❮
+                    </button>
+
+                    <button
+                        type="button"
+                        class="carousel-btn next"
+                        onclick="moverSlide({{ i.id }},1)">
+                        ❯
+                    </button>
+
                     {% endif %}
+
                 </div>
+
                 {% else %}
-                <div style="height:260px; background:#e2e8f0; display:flex; align-items:center; justify-content:center;">🏠</div>
+
+                <img
+                    src="https://via.placeholder.com/800x500?text=Sem+Foto"
+                    alt="Sem Foto"
+                    style="
+                        width:100%;
+                        height:250px;
+                        object-fit:cover;
+                    ">
+
                 {% endif %}
+
             </div>
 
             <div class="card-body">
-                <div class="titulo">{{ i.titulo }}</div>
-                <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">{{ i.bairro }} • {{ i.rua }}</div>
-                
-                <div class="detalhes-imovel">
-                    <span>🛏️ {{ i.quartos or 0 }}</span>
-                    <span>🛁 {{ i.banheiros or 0 }}</span>
-                    <span>🚗 {{ i.vaga_garagem or 0 }}</span>
-                    {% if i.area %}<span>📐 {{ i.area }} m²</span>{% endif %}
-                </div>
+    <div class="titulo">{{ i.titulo }}</div>
 
-                <div class="valor">
-                    {% if i.valor is number %} R$ {{ "{:,.2f}".format(i.valor).replace(",", "X").replace(".", ",").replace("X", ".") }}
-                    {% else %} {{ i.valor }} {% endif %}
-                </div>
-
-                <a class="btn" href="/informa-imovel/{{ i.id }}">Ver detalhes</a>
-            </div>
-        </div>
-        {% endfor %}
+    <div style="font-weight: bold; margin-bottom: 5px;">
+        📍 {{ i.cidade or 'Cidade' }} - {{ i.bairro or 'Bairro' }}
     </div>
+
+    <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">
+        🏠 {{ i.rua or 'Endereço não informado' }}
+    </div>
+
+    <div class="detalhes-imovel" style="display: flex; gap: 15px; font-size: 14px; color: #374151; margin-bottom: 10px; font-weight: 500;">
+        <span>🛏️ {{ i.quartos or 0 }}</span>
+        <span>🛁 {{ i.banheiros or 0 }}</span>
+        <span>🚽 {{ i.banheiros21 or 0 }}</span>
+        <span>🚗 {{ i.vaga_garagem or 0 }}</span>
+        {% if i.area %}
+        <span>📐 {{ i.area }} m²</span>
+        {% endif %}
+    </div>
+
+    <div class="valor" style="color: var(--texto); font-size: 24px; font-weight: 800;">
+   
+    {% set valor_str = i.valor|string %}
+    
+    {# Verifica se o valor é puramente numérico (float ou int) #}
+    {% if valor_str.replace('.', '', 1).replace(',', '', 1).replace('-', '', 1).isdigit() or (valor_str.replace('.', '', 1).isdigit()) %}
+        
+        {# É um número bruto, aplica a formatação #}
+        R$ {{ "{:,.2f}".format(valor_str|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        
+    {% else %}
+        
+        {# Já está formatado ou é uma string, exibe como está #}
+        {{ i.valor }}
+        
+    {% endif %}
+
+</div>
+    
+    <div style="font-size: 12px; color: #6b7280; margin-top: 5px;">
+        {% if i.condominio %} 🏢 Cond. R$ {{ i.condominio }} {% endif %}
+        {% if i.iptu %} | 💰 IPTU R$ {{ i.iptu }} {% endif %}
+    </div>
+
+    <a class="btn" href="/informa-imovel/{{ i.id }}">Ver detalhes</a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
 </div>
 
 <footer class="footer">
-    <div><img src="/static/logo_smartzen.png" style="height:40px;"><h3>SMARTZEN IMOB</h3></div>
-    <div><h4>Navegação</h4><a href="#">Imóveis</a><a href="#">Contato</a></div>
-    <div><h4>Atendimento</h4><a href="#">WhatsApp</a><a href="#">Suporte</a></div>
-    <div class="footer-bottom">© 2026 SMARTZEN IMOB - Todos os direitos reservados</div>
+
+
+<div class="footer-col">
+
+<img src="/static/logo_smartzen.png" class="footer-logo">
+
+<h3>SMARTZEN IMOB</h3>
+
+<p>
+Encontre o imóvel ideal para você.
+</p>
+
+</div>
+
+
+
+<div class="footer-col">
+
+<h4>Navegação</h4>
+
+<a href="#">
+Imóveis
+</a>
+
+<a href="#">
+Buscar
+</a>
+
+<a href="#">
+Contato
+</a>
+
+
+</div>
+
+
+
+
+<div class="footer-col">
+
+
+<h4>Atendimento</h4>
+
+
+<a href="#">
+WhatsApp
+</a>
+
+
+<a href="#">
+Suporte
+</a>
+
+
+<a href="#">
+Área do corretor
+</a>
+
+
+</div>
+
+
+
+<div class="footer-bottom">
+
+© 2026 SMARTZEN IMOB - Todos os direitos reservados
+
+</div>
+
+
 </footer>
 
 <script>
-    const slides = {};
-    function moverSlide(id, direcao){
-        const carousel = document.querySelector("#carousel-"+id+" .carousel-images");
-        if(!carousel) return;
-        const total = carousel.children.length;
-        if(slides[id] === undefined) slides[id] = 0;
-        slides[id] = (slides[id] + direcao + total) % total;
-        carousel.style.transform = `translateX(-${slides[id]*100}%)`;
-    }
 
-    document.getElementById("busca").addEventListener("keyup", function(){
-        let texto = this.value.toLowerCase();
-        document.querySelectorAll(".imovel").forEach(card => {
-            card.style.display = card.innerText.toLowerCase().includes(texto) ? "block" : "none";
-        });
+const slides = {};
+
+function moverSlide(id,direcao){
+
+    const carousel =
+        document.querySelector(
+            "#carousel-"+id+" .carousel-images"
+        );
+
+    if(!carousel) return;
+
+    const total =
+        carousel.children.length;
+
+    if(slides[id] === undefined)
+        slides[id] = 0;
+
+    slides[id] += direcao;
+
+    if(slides[id] < 0)
+        slides[id] = total - 1;
+
+    if(slides[id] >= total)
+        slides[id] = 0;
+
+    carousel.style.transform =
+        `translateX(-${slides[id]*100}%)`;
+}
+
+/* BUSCA */
+
+document
+.getElementById("busca")
+.addEventListener("keyup",function(){
+
+    let texto =
+        this.value.toLowerCase();
+
+    document
+    .querySelectorAll(".imovel")
+    .forEach(card=>{
+
+        let conteudo =
+            card.innerText.toLowerCase();
+
+        card.style.display =
+            conteudo.includes(texto)
+            ? "block"
+            : "none";
+
     });
+
+});
+
 </script>
+
 </body>
 </html>
+```
