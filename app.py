@@ -737,7 +737,9 @@ def atualizar_cliente(id):
 
 @app.route('/analisar_cliente', methods=['POST'])
 def analisar_cliente():
+
     import json
+    import re
 
     dados = request.get_json()
     msg = dados.get('mensagem', '').strip()
@@ -745,7 +747,7 @@ def analisar_cliente():
     if not msg:
         return jsonify({
             "resultado": """
-            <div style='color:#94a3b8;padding:10px;'>
+            <div class="card-msg-imovel">
                 Digite o que o cliente procura.
             </div>
             """
@@ -756,27 +758,28 @@ def analisar_cliente():
     if not empresa_id:
         return jsonify({
             "resultado": """
-            <div style='color:#ef4444;padding:10px;'>
+            <div class="card-msg-imovel">
                 Usuário não autenticado.
             </div>
             """
         })
 
     # ==================================================
-    # IA ANALISA O PEDIDO
+    # IA ANALISA PEDIDO
     # ==================================================
 
     try:
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
+            temperature=0.1,
             messages=[
                 {
                     "role": "system",
                     "content": """
 Você é um especialista imobiliário.
 
-Analise a mensagem do cliente e extraia:
+Extraia da mensagem:
 
 bairro
 cidade
@@ -793,18 +796,18 @@ sobrado
 terreno
 comercial
 
-Retorne APENAS JSON.
+Retorne SOMENTE JSON válido.
 
 Exemplo:
 
 {
-  "bairro":"Tatuapé",
-  "cidade":"São Paulo",
-  "valor_maximo":500000,
-  "quartos":3,
-  "suites":1,
-  "vagas":2,
-  "tipo":"apartamento"
+    "bairro":"Tatuapé",
+    "cidade":"São Paulo",
+    "valor_maximo":500000,
+    "quartos":3,
+    "suites":1,
+    "vagas":2,
+    "tipo":"apartamento"
 }
 """
                 },
@@ -825,18 +828,21 @@ Exemplo:
 
         print("RESPOSTA IA:", texto)
 
-        try:
-            filtros = json.loads(texto)
-        except:
+        match = re.search(r'\{.*\}', texto, re.DOTALL)
+
+        if match:
+            filtros = json.loads(match.group())
+        else:
             filtros = {}
 
     except Exception as erro:
+
         print("ERRO IA:", erro)
 
         return jsonify({
-            "resultado": """
-            <div style='color:#ef4444;padding:10px;'>
-                Erro ao analisar o pedido do cliente.
+            "resultado": f"""
+            <div class="card-msg-imovel">
+                Erro ao analisar cliente.
             </div>
             """
         })
@@ -858,10 +864,12 @@ Exemplo:
     )
 
     # ==================================================
-    # QUERY
+    # BUSCA IMÓVEIS
     # ==================================================
 
     conn = get_db()
+    conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
 
     query = """
@@ -919,50 +927,41 @@ Exemplo:
 
         return jsonify({
             "resultado": """
-            <div style="
-                background:#111827;
-                border:1px solid #374151;
-                border-radius:12px;
-                padding:15px;
-                color:#cbd5e1;
-            ">
+            <div class="card-msg-imovel">
                 Nenhum imóvel encontrado com esses critérios.
             </div>
             """
         })
 
     # ==================================================
-    # MONTA RESULTADO
+    # RESULTADO
     # ==================================================
 
     resultado = ""
 
     for imovel in imoveis:
 
-        score = 0
+        score = 50
 
         if bairro and imovel["bairro"]:
             if bairro.lower() in imovel["bairro"].lower():
-                score += 30
+                score += 15
 
         if cidade and imovel["cidade"]:
             if cidade.lower() in imovel["cidade"].lower():
-                score += 20
+                score += 10
 
         if tipo and imovel["tipo"]:
             if tipo.lower() == imovel["tipo"].lower():
-                score += 20
+                score += 10
 
         if quartos > 0:
-            score += 15
+            score += 5
 
         if suites > 0:
             score += 5
 
         if vagas > 0:
-            score += 5
-
-        if valor_maximo < 999999999:
             score += 5
 
         score = min(score, 100)
@@ -975,6 +974,12 @@ Exemplo:
             .replace(".", ",")
             .replace("X", ".")
         )
+
+        bairro_imovel = imovel["bairro"] if imovel["bairro"] else ""
+        cidade_imovel = imovel["cidade"] if imovel["cidade"] else ""
+        tipo_imovel = imovel["tipo"] if imovel["tipo"] else ""
+        quartos_imovel = imovel["quartos"] if imovel["quartos"] else 0
+        vagas_imovel = imovel["vagas"] if imovel["vagas"] else 0
 
         resultado += f"""
         <div class="card-msg-imovel">
@@ -1008,21 +1013,21 @@ Exemplo:
                 font-size:14px;
                 line-height:1.6;
             ">
-                📍 {imovel.get('bairro','')} - {imovel.get('cidade','')}<br>
-                🏠 {imovel.get('tipo','')}<br>
-                🛏 {imovel.get('quartos',0)} quartos<br>
-                🚗 {imovel.get('vagas',0)} vagas
+                📍 {bairro_imovel} - {cidade_imovel}<br>
+                🏠 {tipo_imovel}<br>
+                🛏 {quartos_imovel} quartos<br>
+                🚗 {vagas_imovel} vagas
             </div>
 
             <a href="/informa_imovel/{imovel['id']}"
                style="
-                   display:inline-block;
-                   margin-top:12px;
-                   color:#10b981;
-                   font-weight:700;
-                   text-decoration:none;
+                    display:inline-block;
+                    margin-top:12px;
+                    color:#10b981;
+                    font-weight:700;
+                    text-decoration:none;
                ">
-               Ver imóvel →
+                Ver imóvel →
             </a>
 
         </div>
