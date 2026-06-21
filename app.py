@@ -2461,10 +2461,9 @@ def salvar_logo_imobiliaria():
         SET logo = ?
         WHERE empresa_id = ?
     """, (
-        f"/data/uploads/logos/{nome_arquivo}",
+        f"/uploads/logos/{nome_arquivo}",
         session["empresa_id"]
     ))
-
     conn.commit()
     conn.close()
 
