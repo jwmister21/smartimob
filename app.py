@@ -186,7 +186,7 @@ def extrair_imoveis(texto):
     return imoveis
 
 def verificar_sessao(f):
-     @wraps(f)
+    @wraps(f)
     def decorated_function(*args, **kwargs):
         if "usuario_id" not in session:
             return redirect("/login")
