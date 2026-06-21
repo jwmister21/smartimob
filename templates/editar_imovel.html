@@ -5,23 +5,54 @@
 
 {% block content %}
 <style>
-    .card { background: #111827; padding: 25px; border-radius: 20px; border: 1px solid #1f2937; color: white; }
-    .section-title { color: #0ea5e9; margin: 25px 0 15px 0; border-bottom: 1px solid #1f2937; padding-bottom: 5px; font-size: 1.1em; }
-    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-    .campo-box { display: flex; flex-direction: column; gap: 5px; }
-    .campo-box label { color: #9ca3af; font-size: 13px; margin-left: 5px; }
-    .form-grid input, .form-grid select, textarea { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #374151; border-radius: 10px; color: white; box-sizing: border-box; }
-    .img-preview { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #374151; }
-    .btn-voltar { color: #9ca3af; text-decoration: none; margin-right: 15px; }
-    .btn { background: #0ea5e9; color: white; padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
+    /* Design Premium Moderno */
+    .card-edit { 
+        background: #ffffff; 
+        padding: 40px; 
+        border-radius: 20px; 
+        border: 1px solid #e2e8f0; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        color: #1e293b;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .section-title { 
+        color: #2563eb; 
+        margin: 30px 0 20px 0; 
+        font-size: 1.1em;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
+
+    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .campo-box { display: flex; flex-direction: column; gap: 8px; }
+    .campo-box label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+    
+    input, select, textarea { 
+        width: 100%; padding: 12px; background: #f8fafc; 
+        border: 1px solid #e2e8f0; border-radius: 10px; 
+        font-size: 14px; transition: 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #2563eb; outline: none; background: #fff; }
+
+    .img-preview { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 2px solid #edf2f7; }
+    
+    .btn-container { margin-top: 30px; display: flex; align-items: center; gap: 20px; }
+    .btn { background: #2563eb; color: white; padding: 12px 30px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
+    .btn:hover { background: #1d4ed8; }
+    .btn-voltar { color: #64748b; text-decoration: none; font-weight: 500; }
 </style>
 
-<div class="card">
+<div class="card-edit">
     <form method="POST" enctype="multipart/form-data">
         
         <h3 class="section-title">Informações Principais</h3>
         <div class="form-grid">
-            <div class="campo-box"><label>Título</label><input type="text" name="titulo" value="{{ imovel['titulo'] }}" required></div>
+            <div class="campo-box" style="grid-column: span 1;"><label>Título</label><input type="text" name="titulo" value="{{ imovel['titulo'] }}" required></div>
             <div class="campo-box"><label>Tipo</label>
                 <select name="tipo">
                     {% for t in ['Casa', 'Apartamento', 'Terreno', 'Comercial', 'Duplex', 'Triplex', 'Kitnet', 'Bangalo'] %}
@@ -29,7 +60,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="campo-box"><label>Status (Comercialização)</label>
+            <div class="campo-box"><label>Status</label>
                 <select name="status">
                     <option value="Venda" {% if imovel['status'] == 'Venda' %}selected{% endif %}>Venda</option>
                     <option value="Aluguel" {% if imovel['status'] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
@@ -50,7 +81,7 @@
             <div class="campo-box"><label>Área (m²)</label><input type="number" name="area" value="{{ imovel['area'] or 0 }}"></div>
             <div class="campo-box"><label>Quartos</label><input type="number" name="quartos" value="{{ imovel['quartos'] or 0 }}"></div>
             <div class="campo-box"><label>Suítes</label><input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}"></div>
-            <div class="campo-box"><label>Vagas Garagem</label><input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}"></div>
+            <div class="campo-box"><label>Vagas</label><input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}"></div>
             <div class="campo-box"><label>Lavabo</label>
                 <select name="lavabo"><option value="0" {% if not imovel['lavabo'] %}selected{% endif %}>Não</option><option value="1" {% if imovel['lavabo'] %}selected{% endif %}>Sim</option></select>
             </div>
@@ -72,19 +103,23 @@
             <div class="campo-box" style="grid-column: span 3;"><label>Link Drive</label><input type="text" name="link" value="{{ imovel['link'] }}"></div>
         </div>
 
-        <h3 class="section-title">Fotos e Descrição</h3>
+        <h3 class="section-title">Fotos</h3>
         <div class="campo-box">
-            <label>Fotos Atuais</label>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                 {% for foto in fotos %}
-                    <div style="position: relative;"><img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview"><br><a href="/excluir-foto/{{ foto['id'] }}" style="color: #ff4d4d; font-size: 12px;">Excluir</a></div>
+                    <div style="text-align: center;">
+                        <img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview">
+                        <br><a href="/excluir-foto/{{ foto['id'] }}" style="color: #ef4444; font-size: 11px;">Excluir</a>
+                    </div>
                 {% endfor %}
             </div>
+            <input type="file" name="fotos[]" multiple accept="image/*" id="input-fotos" style="margin-top:15px">
+            <div id="preview-fotos" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
         </div>
-        <div class="campo-box" style="margin-top: 15px;"><label>Adicionar Novas Fotos</label><input type="file" name="fotos[]" multiple accept="image/*" id="input-fotos"><div id="preview-fotos" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div></div>
-        <div class="campo-box" style="margin-top: 15px;"><label>Descrição</label><textarea name="descricao" rows="5">{{ imovel['descricao'] }}</textarea></div>
 
-        <div style="margin-top: 30px;">
+        <div class="campo-box" style="margin-top: 20px;"><label>Descrição</label><textarea name="descricao" rows="5">{{ imovel['descricao'] }}</textarea></div>
+
+        <div class="btn-container">
             <a href="/imoveis" class="btn-voltar">← Voltar</a>
             <button type="submit" class="btn">Salvar Alterações</button>
         </div>
@@ -108,15 +143,15 @@ document.getElementById("input-fotos").addEventListener("change", function() {
     });
 });
 
-// Formatação de Moeda
-function formatarMoeda(e) {
-    let v = e.target.value.replace(/\D/g, '');
-    e.target.value = (Number(v) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// Formatação Moeda (Evita erro se o valor for nulo no banco)
+function formatarMoeda(v) {
+    v = v.replace(/\D/g, '');
+    return (Number(v) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 document.querySelectorAll('.moeda').forEach(input => {
-    input.addEventListener('input', formatarMoeda);
-    if(input.value) input.value = (Number(input.value.replace(/\D/g, '')) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    input.addEventListener('input', (e) => e.target.value = formatarMoeda(e.target.value));
+    if(input.value) input.value = formatarMoeda(input.value);
 });
 </script>
 {% endblock %}
