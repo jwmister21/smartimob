@@ -96,19 +96,26 @@ def injetar_lembretes():
 
 
 def extrair_imoveis(texto):
+
     imoveis = []
+
     blocos = texto.split("ED.")
 
     for bloco in blocos[1:]:
+
         bloco = bloco.strip()
+
         if not bloco:
             continue
 
-        titulo = ""
-        primeira_linha = bloco.split("\n")[0]
-        titulo = "ED. " + primeira_linha
 
-        valor = ""
+        linhas = bloco.split("\n")
+
+
+        titulo = "ED. " + linhas[0].strip()
+
+
+        # pega valores acima de 10 mil (ignora condomínio/iptu)
         valores = re.findall(
             r'R\$\s*([\d\.\,]+)',
             bloco
@@ -116,53 +123,70 @@ def extrair_imoveis(texto):
 
         valor = ""
 
-        if valores:
-            for v in valores:
-                numero = (
+        for v in valores:
+
+            try:
+
+                numero = float(
                     v.replace(".", "")
-                    .replace(",", ".")
+                     .replace(",", ".")
                 )
 
-                try:
-                    if float(numero) > 10000:
-                        valor = v
-                        break
-                except:
-                    pass
+                if numero > 10000:
+                    valor = v
+                    break
 
-        if m:
-            valor = m.group(1)
+            except:
+                pass
 
+
+
+        # quartos
         quartos = ""
-        m = re.search(
+
+        dorm = re.search(
             r'(\d+)\s*DORMIT',
             bloco,
             re.IGNORECASE
         )
 
-        if m:
-            quartos = m.group(1)
+        if dorm:
+            quartos = dorm.group(1)
 
+
+
+        # área
         area = ""
-        m = re.search(
+
+        metragem = re.search(
             r'(\d+)m²',
             bloco
         )
 
-        if m:
-            area = m.group(1)
+        if metragem:
+            area = metragem.group(1)
+
+
+
+        # ignora coisas que não são imóvel
+        if "Tabela de imóveis" in titulo:
+            continue
+
 
         imoveis.append({
+
             "titulo": titulo,
             "valor": valor,
             "quartos": quartos,
             "area": area
+
         })
+
 
     return imoveis
 
 def verificar_sessao(f):
-    @wraps(f)
+     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "usuario_id" not in session:
             return redirect("/login")
