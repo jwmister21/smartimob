@@ -119,40 +119,43 @@ label{
     </div>
 
     <!-- LOGO IMOBILIÁRIA -->
-    <div class="config-box">
+    {% if usuario[2] == 1 %}
 
-        <h3>Logo da Imobiliária</h3>
+<div class="config-box">
 
-        <form
-            action="/salvar_logo_imobiliaria"
-            method="POST"
-            enctype="multipart/form-data"
+    <h3>Logo da Imobiliária</h3>
+
+    <form
+        action="/salvar_logo_imobiliaria"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        {% if empresa and empresa["logo"] %}
+            <img
+                src="{{ empresa['logo'] }}"
+                class="logo-imobiliaria"
+            >
+        {% endif %}
+
+        <label>Enviar logo:</label>
+
+        <input
+            type="file"
+            name="logo"
+            class="form-control"
+            accept="image/*"
         >
 
-            {% if empresa and empresa["logo"] %}
-                <img
-                    src="{{ empresa['logo'] }}"
-                    class="logo-imobiliaria"
-                >
-            {% endif %}
+        <button type="submit" class="btn-salvar">
+            Salvar Logo
+        </button>
 
-            <label>Enviar logo:</label>
+    </form>
 
-            <input
-                type="file"
-                name="logo"
-                class="form-control"
-                accept="image/*"
-            >
+</div>
 
-            <button type="submit" class="btn-salvar">
-                Salvar Logo
-            </button>
-
-        </form>
-
-    </div>
-
+{% endif %}
 </div>
 
 <!-- SEGURANÇA -->
