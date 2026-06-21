@@ -375,9 +375,10 @@ def excluir_cliente(cliente_id):
 @verificar_sessao
 def leads_site():
 
+    empresa_id = session.get("empresa_id")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -385,10 +386,11 @@ def leads_site():
             l.*,
             i.titulo
         FROM lead_site l
-        LEFT JOIN imoveis i
+        INNER JOIN imoveis i
             ON i.id = l.id_imovel
+        WHERE i.empresa_id = ?
         ORDER BY l.id DESC
-    """)
+    """, (empresa_id,))
 
     leads = cursor.fetchall()
 
