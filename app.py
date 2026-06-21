@@ -980,7 +980,7 @@ Exemplo:
         cidade_imovel = imovel["cidade"] if imovel["cidade"] else ""
         tipo_imovel = imovel["tipo"] if imovel["tipo"] else ""
         quartos_imovel = imovel["quartos"] if imovel["quartos"] else 0
-        vagas_imovel = imovel["vagas_garagem"] if imovel["vagas_garagem"] else 0
+        vagas_imovel = imovel["vaga_garagem"] if imovel["vaga_garagem"] else 0
 
         resultado += f"""
         <div class="card-msg-imovel">
