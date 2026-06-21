@@ -961,6 +961,8 @@ Exemplo:
 
         score = min(score, 100)
 
+        valor_formatado = imovel["valor"] or "R$ 0,00"
+
         valor_str = str(imovel["valor"] or "0")
 
         valor_str = (
