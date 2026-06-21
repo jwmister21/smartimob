@@ -96,28 +96,19 @@ def injetar_lembretes():
 
 
 def extrair_imoveis(texto):
-
     imoveis = []
-
     blocos = texto.split("ED.")
 
- 
     for bloco in blocos[1:]:
-
-
         bloco = bloco.strip()
-
         if not bloco:
             continue
 
         titulo = ""
-
         primeira_linha = bloco.split("\n")[0]
-
         titulo = "ED. " + primeira_linha
 
         valor = ""
-
         valores = re.findall(
             r'R\$\s*([\d\.\,]+)',
             bloco
@@ -126,28 +117,23 @@ def extrair_imoveis(texto):
         valor = ""
 
         if valores:
-
             for v in valores:
-
                 numero = (
                     v.replace(".", "")
                     .replace(",", ".")
                 )
 
                 try:
-
                     if float(numero) > 10000:
-                       valor = v
-                       break
-
-               except:
-                   pass
+                        valor = v
+                        break
+                except:
+                    pass
 
         if m:
             valor = m.group(1)
 
         quartos = ""
-
         m = re.search(
             r'(\d+)\s*DORMIT',
             bloco,
@@ -158,7 +144,6 @@ def extrair_imoveis(texto):
             quartos = m.group(1)
 
         area = ""
-
         m = re.search(
             r'(\d+)m²',
             bloco
