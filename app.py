@@ -21,6 +21,8 @@ from flask import send_from_directory
 from flask_socketio import SocketIO
 import pandas as pd
 import base64
+import pdfplumber
+import re
 
 # Configuração do Banco
 
@@ -1194,6 +1196,40 @@ def alterar_senha_usuario(id):
     conn.close()
 
     return redirect("/admin/usuarios")
+
+
+@app.route("/analisar_pdf", methods=["POST"])
+@verificar_sessao
+def analisar_pdf():
+
+    arquivo = request.files.get("pdf")
+
+    if not arquivo:
+        return "PDF não enviado"
+
+    pasta = "data/uploads/pdf"
+
+    os.makedirs(pasta, exist_ok=True)
+
+    caminho = os.path.join(
+        pasta,
+        arquivo.filename
+    )
+
+    arquivo.save(caminho)
+
+    texto = ""
+
+    with pdfplumber.open(caminho) as pdf:
+
+        for pagina in pdf.pages:
+
+            conteudo = pagina.extract_text()
+
+            if conteudo:
+                texto += conteudo + "\n"
+
+    return f"<pre>{texto}</pre>"
 
 
 @app.route("/status_whatsapp")
