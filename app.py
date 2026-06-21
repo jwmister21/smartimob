@@ -2719,12 +2719,11 @@ def listar_clientes():
     return render_template("clientes.html", clientes=clientes)
 
 @app.route("/cadastrar_cliente", methods=["GET", "POST"])
-@verificar_sessao  # Agora usamos o decorador de segurança que criamos
+@verificar_sessao
 def cadastrar_cliente():
     if request.method == "POST":
         nome = request.form["nome"]
         telefone = request.form["telefone"]
-        email = request.form["email"]
         interesse = request.form["interesse"]
         faixa_preco = request.form["faixa_preco"]
         bairro = request.form.get("bairro", "")
@@ -2732,25 +2731,23 @@ def cadastrar_cliente():
         entrada = request.form.get("entrada", "")
         pagamento = request.form.get("pagamento", "")
 
-        # Recuperamos os IDs da sessão garantida pelo @verificar_sessao
         user_id = session["usuario_id"]
         empresa_id = session["empresa_id"]
 
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Inserimos os dados incluindo o campo empresa_id
+        # Removido o campo 'email' do INSERT e do VALUES
         cursor.execute("""
-            INSERT INTO clientes (nome, telefone, email, interesse, faixa_preco, bairro, sobre, entrada, pagamento, usuario_id, empresa_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (nome, telefone, email, interesse, faixa_preco, bairro, sobre, entrada, pagamento, user_id, empresa_id))
+            INSERT INTO clientes (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, usuario_id, empresa_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, user_id, empresa_id))
 
         conn.commit()
         conn.close()
         return redirect("/clientes")
 
     return render_template("cadastrar_cliente.html")
-
 # ==========================================
 # 5. ROTAS DE IMÓVEIS
 # ==========================================
