@@ -966,14 +966,20 @@ Exemplo:
 
         score = min(score, 100)
 
-        valor = float(imovel["valor"] or 0)
+        valor_str = str(imovel["valor"] or "0")
 
-        valor_formatado = (
-            f"R$ {valor:,.2f}"
-            .replace(",", "X")
-            .replace(".", ",")
-            .replace("X", ".")
+        valor_str = (
+            valor_str
+             .replace("R$", "")
+             .replace("\xa0", "")
+             .replace(".", "")
+             .replace(",", ".")
+             .strip()
         )
+        try:
+            valor = float(valor_str)
+        except:
+            valor = 0
 
         bairro_imovel = imovel["bairro"] if imovel["bairro"] else ""
         cidade_imovel = imovel["cidade"] if imovel["cidade"] else ""
