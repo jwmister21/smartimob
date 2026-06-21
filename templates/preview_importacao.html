@@ -4,26 +4,95 @@
 
 <h2>Imóveis Encontrados</h2>
 
-<table style="width:100%;background:white;border-radius:10px;padding:20px;">
 
-    <tr>
-        <th>Título</th>
-        <th>Valor</th>
-        <th>Quartos</th>
-        <th>Área</th>
-    </tr>
+<form action="/importar_imoveis_pdf" method="POST">
 
-    {% for i in imoveis %}
 
-    <tr>
-        <td>{{ i.titulo }}</td>
-        <td>R$ {{ i.valor }}</td>
-        <td>{{ i.quartos }}</td>
-        <td>{{ i.area }} m²</td>
-    </tr>
+<table class="table">
 
-    {% endfor %}
+<tr>
+<th>
+<input type="checkbox" id="todos">
+</th>
+
+<th>Título</th>
+<th>Valor</th>
+<th>Quartos</th>
+<th>Área</th>
+
+</tr>
+
+
+{% for i in imoveis %}
+
+<tr>
+
+<td>
+<input 
+type="checkbox"
+name="selecionados"
+value="{{ loop.index0 }}"
+checked
+>
+</td>
+
+
+<td>{{ i.titulo }}</td>
+
+<td>
+R$ {{ i.valor }}
+</td>
+
+<td>
+{{ i.quartos }}
+</td>
+
+<td>
+{{ i.area }} m²
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
 
 </table>
+
+
+<input 
+type="hidden"
+name="dados"
+value='{{ imoveis | tojson }}'
+>
+
+
+<button class="btn-salvar">
+Importar selecionados
+</button>
+
+
+</form>
+
+
+<script>
+
+document
+.getElementById("todos")
+.onclick=function(){
+
+document
+.querySelectorAll(
+'input[name="selecionados"]'
+)
+.forEach(x=>{
+x.checked=this.checked
+})
+
+}
+
+</script>
+
 
 {% endblock %}
