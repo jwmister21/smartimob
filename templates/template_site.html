@@ -505,11 +505,17 @@ height:45px;
 
     <div class="marca">
 
-        <img src="/static/logo_smartzen.png" class="logo">
+        {% if empresa.logo %}
+    <img src="{{ empresa.logo }}" class="logo">
+{% else %}
+    <img src="/static/logo_smartzen.png" class="logo">
+{% endif %}
 
         <div>
 
-            <h1>SMARTZEN IMOB</h1>
+            <h1>
+    {{ empresa.nome_empresa or empresa.nome or "SMARTZEN IMOB" }}
+</h1>
 
             <span>
             Encontre o imóvel ideal para você
@@ -670,9 +676,15 @@ height:45px;
 
 <div class="footer-col">
 
-<img src="/static/logo_smartzen.png" class="footer-logo">
+{% if empresa.logo %}
+    <img src="{{ empresa.logo }}" class="footer-logo">
+{% else %}
+    <img src="/static/logo_smartzen.png" class="footer-logo">
+{% endif %}
 
-<h3>SMARTZEN IMOB</h3>
+<h3>
+    {{ empresa.nome_empresa or empresa.nome or "SMARTZEN IMOB" }}
+</h3>
 
 <p>
 Encontre o imóvel ideal para você.
