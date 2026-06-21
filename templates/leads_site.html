@@ -59,9 +59,11 @@
         </div>
 
         <div class="acoes">
-            <a href="https://wa.me/55{{ lead.telefone }}" target="_blank" class="btn-base btn-whatsapp">
-                💬 Conversar no WhatsApp
-            </a>
+            <a href="https://wa.me/55{{ lead.telefone|replace('(','')|replace(')','')|replace('-','')|replace(' ','') }}"
+   target="_blank"
+   class="btn-base btn-whatsapp">
+    💬 Conversar no WhatsApp
+</a>
             <a href="/converter_lead/{{ lead.id }}" class="btn-base btn-sistema">
                 ➕ Adicionar ao Sistema
             </a>
