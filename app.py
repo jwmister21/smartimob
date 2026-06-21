@@ -2430,12 +2430,16 @@ def salvar_logo_imobiliaria():
     if not arquivo or arquivo.filename == "":
         return redirect("/configuracoes")
 
-    pasta = "data/uploads/logos"
+    pasta = "/data/uploads/logos"
 
     if not os.path.exists(pasta):
         os.makedirs(pasta)
 
-    nome_arquivo = f"logo_empresa_{session['empresa_id']}.png"
+    ext = arquivo.filename.rsplit(".", 1)[1].lower()
+
+    nome_arquivo = (
+        f"logo_empresa_{session['empresa_id']}.{ext}"
+    )
 
     caminho = os.path.join(
         pasta,
