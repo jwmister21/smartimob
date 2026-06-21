@@ -5,77 +5,46 @@
 
 {% block content %}
 <style>
-    .whatsapp-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 30px;
-        max-width: 600px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
+    .container-layout { display: flex; gap: 40px; align-items: flex-start; }
+    .whatsapp-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 30px; max-width: 500px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .instrucoes { background: #f1f5f9; padding: 25px; border-radius: 20px; max-width: 400px; }
+    .instrucoes ol { padding-left: 20px; }
+    .instrucoes li { margin-bottom: 10px; color: #475569; }
 
-    .whatsapp-status {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 20px;
-        margin: 20px 0;
-    }
-
-    .whatsapp-btn {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
-    }
+    .whatsapp-status { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .whatsapp-btn { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
     .whatsapp-btn:hover { background: #1d4ed8; }
+    .whatsapp-btn:disabled { background: #94a3b8; cursor: not-allowed; }
 
-    #qr {
-        width: 250px;
-        height: 250px;
-        object-fit: contain;
-        margin-top: 20px;
-        border-radius: 12px;
-        background: #ffffff;
-        padding: 10px;
-        border: 2px solid #e2e8f0;
-    }
-
-    .btn-desconectar {
-        display: inline-block;
-        margin-top: 15px;
-        background: #fef2f2;
-        color: #dc2626;
-        text-decoration: none;
-        padding: 12px 18px;
-        border-radius: 10px;
-        font-weight: 600;
-        border: 1px solid #fee2e2;
-    }
-    .btn-desconectar:hover { background: #fee2e2; }
+    #qr { width: 250px; height: 250px; object-fit: contain; margin-top: 20px; border-radius: 12px; border: 2px solid #e2e8f0; padding: 10px; }
+    .btn-desconectar { display: inline-block; margin-top: 15px; background: #fef2f2; color: #dc2626; padding: 12px 18px; border-radius: 10px; font-weight: 600; border: 1px solid #fee2e2; }
 </style>
 
-<div class="whatsapp-card">
-    <h2>📱 WhatsApp do Corretor</h2>
+<div class="container-layout">
+    <div class="whatsapp-card">
+        <h2>📱 WhatsApp do Corretor</h2>
+        <div class="whatsapp-status">
+            <p><strong>Sessão:</strong> {{ sessao }}</p>
+            <p><strong>Status:</strong> <span id="status">{{ status }}</span></p>
+            <p><strong>Número:</strong> <span id="numero">{{ numero or "Não conectado" }}</span></p>
+        </div>
 
-    <div class="whatsapp-status">
-        <p><strong>Sessão:</strong> {{ sessao }}</p>
-        <p><strong>Status:</strong> <span id="status">{{ status }}</span></p>
-        <p><strong>Número:</strong> <span id="numero">{{ numero or "Não conectado" }}</span></p>
+        <button id="btnVerificar" class="whatsapp-btn" onclick="verificarConexao()">🔄 Verificar conexão</button>
+        <button id="btnConectar" class="whatsapp-btn" onclick="conectarWhatsapp()">Conectar WhatsApp</button>
+        <a href="/desconectar_whatsapp" id="btnDesconectar" class="btn-desconectar" style="display:none;">🔴 Desconectar</a>
+
+        <div id="areaQr"><img id="qr" style="display:none;"></div>
     </div>
 
-    <button class="whatsapp-btn" onclick="verificarConexao()">🔄 Verificar conexão</button>
-    
-    <button id="btnConectar" class="whatsapp-btn" onclick="conectarWhatsapp()">Conectar WhatsApp</button>
-    
-    <a href="/desconectar_whatsapp" id="btnDesconectar" class="btn-desconectar" style="display:none;">🔴 Desconectar</a>
-
-    <div id="areaQr">
-        <img id="qr" style="display:none;">
+    <div class="instrucoes">
+        <h3>Como Configurar</h3>
+        <ol>
+            <li>Clique em <strong>"Conectar WhatsApp"</strong> para gerar o QR Code.</li>
+            <li>Pegue seu celular, vá em "Dispositivos conectados" e escaneie o código.</li>
+            <li>Após escanear e o celular mostrar conectado, clique em <strong>"Verificar conexão"</strong>.</li>
+            <li>Aguarde 20 segundos enquanto o sistema valida a conexão.</li>
+            <li>Se conectado, você estará pronto para seguir para a campanha!</li>
+        </ol>
     </div>
 </div>
 
@@ -85,18 +54,23 @@
     let carregandoQR = false;
     let pararQR = false;
 
-    socket.on("whatsapp_status", function(data) {
-        if (data.sessao !== "{{ sessao }}") return;
-        atualizarStatus(data.status);
-    });
-
     async function verificarConexao() {
-        document.getElementById("status").innerText = "🔄 Verificando...";
+        const btn = document.getElementById("btnVerificar");
+        const statusEl = document.getElementById("status");
+        
+        btn.disabled = true;
+        statusEl.innerText = "⏳ Verificando... aguarde 20s";
+        
+        // Aguarda 20 segundos
+        await new Promise(resolve => setTimeout(resolve, 20000));
+        
         try {
             const resp = await fetch("/verificar_conexao_whatsapp");
             const dados = await resp.json();
             if (dados.status) atualizarStatus(dados.status);
         } catch (err) { console.error(err); }
+        
+        btn.disabled = false;
     }
 
     function atualizarStatus(status) {
@@ -113,7 +87,6 @@
             btnDesconectar.style.display = "inline-block";
             pararQR = true;
             if (qr) qr.style.display = "none";
-            mostrarToast("✅ WhatsApp conectado!");
         } else {
             statusEl.innerText = "🔴 Desconectado";
             numeroEl.innerText = "Não conectado";
@@ -143,22 +116,7 @@
             }
         } catch (err) { console.error(err); }
         carregandoQR = false;
-        setTimeout(carregarQR, 3000);
+        if (!pararQR) setTimeout(carregarQR, 3000);
     }
-
-    function mostrarToast(msg) {
-        let toast = document.getElementById("toast");
-        if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "toast";
-            toast.style.cssText = "position:fixed; bottom:20px; right:20px; background:#22c55e; color:#fff; padding:12px 20px; border-radius:10px; z-index:9999;";
-            document.body.appendChild(toast);
-        }
-        toast.innerText = msg;
-        toast.style.display = "block";
-        setTimeout(() => toast.style.display = "none", 3000);
-    }
-
-    carregarQR();
 </script>
 {% endblock %}
