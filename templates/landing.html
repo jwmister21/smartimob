@@ -1,113 +1,928 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMARTZEN IMOB - CRM Imobiliário Inteligente</title>
-    <style>
-        /* Base White/Modern Style */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #f8fafc; color: #1e293b; font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; }
 
-        /* Header Clean */
-        .top-header {
-            height: 80px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 5%; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #e2e8f0;
-        }
-        .logo-area { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1e293b; }
-        .logo-area img { width: 45px; height: 45px; object-fit: contain; }
-        .btn-login { background: #2563eb; padding: 10px 24px; border-radius: 12px; color: white !important; text-decoration: none; font-weight: 600; transition: 0.3s; }
-        .btn-login:hover { background: #1d4ed8; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        /* Hero */
-        .hero { min-height: 85vh; display: flex; align-items: center; padding: 5% 5%; gap: 60px; }
-        .hero-text { max-width: 600px; }
-        .hero h1 { font-size: 56px; line-height: 1.1; margin-bottom: 24px; color: #0f172a; }
-        .hero h1 span { color: #2563eb; }
-        .btn { background: #2563eb; padding: 20px 40px; border-radius: 16px; color: white; font-weight: bold; text-decoration: none; display: inline-block; box-shadow: 0 10px 15px -3px rgba(37,99,235,0.3); }
+<title>SMARTZEN IMOB - CRM Imobiliário Inteligente</title>
 
-        /* Dashboard */
-        .dashboard {
-            width: 450px; background: #ffffff; padding: 30px; border-radius: 28px;
-            border: 1px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
-        }
-        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
-        .stat { background: #f8fafc; padding: 16px; border-radius: 16px; text-align: center; border: 1px solid #f1f5f9; }
-        .stat strong { color: #2563eb; display: block; font-size: 20px; }
 
-        /* Seções e Grid */
-        .section { padding: 80px 5%; }
-        .section-title { text-align: center; font-size: 42px; margin-bottom: 60px; color: #0f172a; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .box { background: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #e2e8f0; transition: 0.3s; }
-        .box:hover { border-color: #2563eb; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+<style>
 
-        /* Patrocinador */
-        .sponsor-box { text-align: center; padding: 80px 5%; background: #ffffff; border-top: 1px solid #e2e8f0; }
-        .logo-patrocinadora { width: 220px; margin-bottom: 20px; filter: grayscale(20%); transition: 0.3s; }
-        .logo-patrocinadora:hover { filter: grayscale(0%); transform: scale(1.05); }
 
-        /* WhatsApp */
-        .wa-float {
-            position: fixed; right: 30px; bottom: 30px; background: #25d366; color: white;
-            padding: 16px 28px; border-radius: 50px; text-decoration: none; font-weight: bold; z-index: 9999;
-            box-shadow: 0 10px 15px -3px rgba(37,211,102,0.4);
-        }
-    </style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+
+body{
+
+background:#f8fafc;
+color:#1e293b;
+font-family:'Inter',Arial,sans-serif;
+line-height:1.6;
+
+}
+
+
+/* ANIMAÇÕES */
+
+
+@keyframes aparecer{
+
+from{
+opacity:0;
+transform:translateY(40px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+
+
+@keyframes flutuar{
+
+0%{
+transform:translateY(0);
+}
+
+50%{
+transform:translateY(-12px);
+}
+
+100%{
+transform:translateY(0);
+}
+
+}
+
+
+
+@keyframes pulsar{
+
+0%{
+box-shadow:0 0 0 0 rgba(37,211,102,.7);
+}
+
+70%{
+box-shadow:0 0 0 25px rgba(37,211,102,0);
+}
+
+100%{
+box-shadow:0 0 0 0 rgba(37,211,102,0);
+}
+
+}
+
+
+
+/* HEADER */
+
+
+.top-header{
+
+height:80px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 5%;
+
+background:white;
+position:sticky;
+top:0;
+z-index:1000;
+
+border-bottom:1px solid #e2e8f0;
+
+}
+
+
+
+.logo-area{
+
+display:flex;
+align-items:center;
+gap:12px;
+text-decoration:none;
+color:#1e293b;
+
+}
+
+
+
+.logo-area img{
+
+width:48px;
+height:48px;
+object-fit:contain;
+
+}
+
+
+
+.btn-login{
+
+background:#2563eb;
+color:white!important;
+padding:12px 25px;
+border-radius:14px;
+text-decoration:none;
+font-weight:bold;
+transition:.3s;
+
+}
+
+
+.btn-login:hover{
+
+background:#1d4ed8;
+transform:scale(1.05);
+
+}
+
+
+
+
+
+/* HERO */
+
+
+.hero{
+
+min-height:85vh;
+display:flex;
+align-items:center;
+justify-content:space-between;
+
+padding:5%;
+gap:50px;
+
+}
+
+
+
+.hero-text{
+
+max-width:620px;
+animation:aparecer .8s;
+
+}
+
+
+
+.hero h1{
+
+font-size:58px;
+line-height:1.1;
+color:#0f172a;
+
+}
+
+
+
+.hero h1 span{
+
+color:#2563eb;
+
+}
+
+
+
+.hero p{
+
+font-size:22px;
+color:#64748b;
+margin:25px 0;
+
+}
+
+
+
+.btn{
+
+background:#2563eb;
+color:white;
+padding:20px 40px;
+border-radius:18px;
+text-decoration:none;
+font-weight:bold;
+display:inline-block;
+
+box-shadow:0 15px 30px rgba(37,99,235,.3);
+
+}
+
+
+
+
+
+/* DASHBOARD */
+
+
+.dashboard{
+
+width:460px;
+background:white;
+
+padding:30px;
+border-radius:30px;
+
+border:1px solid #e2e8f0;
+
+box-shadow:0 25px 50px rgba(0,0,0,.08);
+
+animation:flutuar 4s infinite;
+
+}
+
+
+
+.status{
+
+background:#eff6ff;
+color:#2563eb;
+padding:8px 18px;
+border-radius:30px;
+display:inline-block;
+font-weight:bold;
+}
+
+
+
+.item{
+
+background:#f8fafc;
+padding:18px;
+border-radius:18px;
+margin-top:15px;
+border:1px solid #e2e8f0;
+
+}
+
+
+
+.stats{
+
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+margin-top:20px;
+
+}
+
+
+
+.stat{
+
+background:#f1f5f9;
+padding:15px;
+border-radius:18px;
+text-align:center;
+
+}
+
+
+.stat strong{
+
+display:block;
+color:#2563eb;
+font-size:22px;
+
+}
+
+
+
+
+
+/* SEÇÕES */
+
+
+.section{
+
+padding:80px 5%;
+
+}
+
+
+
+.section-title{
+
+text-align:center;
+font-size:42px;
+margin-bottom:50px;
+
+}
+
+
+
+.grid{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:30px;
+
+}
+
+
+
+.box{
+
+background:white;
+padding:35px;
+border-radius:25px;
+
+border:1px solid #e2e8f0;
+
+transition:.3s;
+
+animation:aparecer .8s;
+
+}
+
+
+.box:hover{
+
+transform:translateY(-10px);
+
+box-shadow:0 20px 40px rgba(0,0,0,.08);
+
+}
+
+
+
+/* WHATSAPP */
+
+.whatsapp-card{
+
+
+background:linear-gradient(135deg,#25d366,#16a34a);
+
+color:white;
+
+padding:55px;
+
+border-radius:35px;
+
+box-shadow:0 30px 60px rgba(37,211,102,.3);
+
+position:relative;
+
+overflow:hidden;
+
+
+}
+
+
+
+.whatsapp-card h2{
+
+font-size:42px;
+
+}
+
+
+
+.whatsapp-card p{
+
+font-size:20px;
+
+margin:15px 0 25px;
+
+}
+
+
+
+.badge{
+
+background:white;
+color:#16a34a;
+
+padding:10px 20px;
+
+border-radius:30px;
+
+font-weight:bold;
+
+display:inline-block;
+
+}
+
+
+
+.lista{
+
+margin-top:20px;
+font-size:18px;
+
+}
+
+
+
+.btn-wa{
+
+display:inline-block;
+
+margin-top:30px;
+
+background:white;
+
+color:#16a34a;
+
+padding:15px 35px;
+
+border-radius:20px;
+
+text-decoration:none;
+
+font-weight:bold;
+
+}
+
+
+
+
+/* PATROCINIO */
+
+
+.sponsor{
+
+background:white;
+padding:80px 5%;
+text-align:center;
+
+border-top:1px solid #ddd;
+
+}
+
+
+
+.logo-patrocinadora{
+
+width:220px;
+
+transition:.3s;
+
+}
+
+
+
+.logo-patrocinadora:hover{
+
+transform:scale(1.08);
+
+}
+
+
+
+
+
+/* FLOAT */
+
+
+.wa-float{
+
+position:fixed;
+
+right:25px;
+
+bottom:25px;
+
+background:#25d366;
+
+color:white;
+
+padding:18px 28px;
+
+border-radius:50px;
+
+text-decoration:none;
+
+font-weight:bold;
+
+z-index:999;
+
+animation:pulsar 2s infinite;
+
+}
+
+
+
+footer{
+
+padding:40px;
+text-align:center;
+color:#94a3b8;
+
+}
+
+
+
+@media(max-width:900px){
+
+
+.hero{
+
+flex-direction:column;
+
+}
+
+
+
+.dashboard{
+
+width:100%;
+
+}
+
+
+.hero h1{
+
+font-size:40px;
+
+}
+
+
+}
+
+
+</style>
+
+
 </head>
+
+
 <body>
 
-    <a href="https://wa.me/5511920900085" target="_blank" class="wa-float">💬 Falar no WhatsApp</a>
 
-    <header class="top-header">
-        <a class="logo-area" href="#">
-            <img src="{{ url_for('static', filename='logo_smartzen.png') }}" alt="Logo">
-            <div><strong>SMARTZEN</strong><br><small style="color:#2563eb">IMOB CRM</small></div>
-        </a>
-        <nav style="display:flex; gap:25px; align-items:center;">
-            <a href="#recursos" style="color:#64748b; text-decoration:none; font-weight:500;">Recursos</a>
-            <a href="/login" class="btn-login">Entrar</a>
-        </nav>
-    </header>
 
-    <section class="hero">
-        <div class="hero-text">
-            <h1>Venda mais imóveis com <span>IA</span>.</h1>
-            <p style="color:#64748b; font-size: 1.25rem; margin-bottom: 35px;">O CRM completo que automatiza o match de imóveis e organiza seus leads com tecnologia de ponta.</p>
-            <a href="/login" class="btn">Começar agora</a>
-        </div>
-        <div class="dashboard">
-            <div style="background:#eff6ff; color:#2563eb; padding:6px 16px; border-radius:20px; display:inline-block; margin-bottom:15px; font-size: 13px; font-weight: 600;">SISTEMA ONLINE</div>
-            <div style="background:#f8fafc; padding:18px; border-radius:16px; margin-bottom:12px; border:1px solid #e2e8f0;">🏠 Match IA: Encontrado 3 opções.</div>
-            <div style="background:#f8fafc; padding:18px; border-radius:16px; border:1px solid #e2e8f0;">💬 Lead: "Procuro casa no Tatuapé".</div>
-            <div class="stat-grid">
-                <div class="stat"><strong>120</strong>Leads</div>
-                <div class="stat"><strong>45</strong>Imóveis</div>
-                <div class="stat"><strong>IA</strong>Ativa</div>
-            </div>
-        </div>
-    </section>
+<a class="wa-float"
+href="https://wa.me/5511920900085"
+target="_blank">
 
-    <section class="section" id="recursos">
-        <h2 class="section-title">O poder do SmartZen</h2>
-        <div class="grid">
-            <div class="box"><h3>🏠 Gestão de Imóveis</h3><p>Cadastro completo, fotos e métricas para facilitar sua venda.</p></div>
-            <div class="box"><h3>🎯 Match Inteligente</h3><p>A IA analisa o desejo do cliente e encontra o imóvel perfeito.</p></div>
-            <div class="box"><h3>🤖 Automação de Anúncios</h3><p>Crie descrições persuasivas em poucos segundos.</p></div>
-        </div>
-    </section>
+💬 WhatsApp
 
-    <section class="sponsor-box">
-        <h2 style="margin-bottom: 30px; color: #64748b; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Patrocinadora Oficial</h2>
-        <img src="{{ url_for('static', filename='Logowj1.png') }}" class="logo-patrocinadora" alt="WJ Imobiliária">
-        <h1 style="font-size: 2rem; color: #0f172a;">WJ IMOBILIÁRIA</h1>
-    </section>
+</a>
 
-    <footer style="padding: 40px; text-align: center; color: #94a3b8; font-size: 0.9rem;">
-        SMARTZEN IMOB © 2026<br>
-        Patrocinadora: <strong>WJ IMOBILIÁRIA</strong>
-    </footer>
+
+
+
+<header class="top-header">
+
+
+<a class="logo-area">
+
+
+<img src="{{ url_for('static', filename='logo_smartzen.png') }}">
+
+
+<div>
+
+<strong>SMARTZEN</strong>
+
+<br>
+
+<small style="color:#2563eb">
+IMOB CRM
+</small>
+
+
+</div>
+
+
+</a>
+
+
+
+<nav style="display:flex;gap:25px;align-items:center">
+
+
+<a href="#recursos">
+Recursos
+</a>
+
+
+<a href="/login" class="btn-login">
+Entrar
+</a>
+
+
+</nav>
+
+
+</header>
+
+
+
+
+
+<section class="hero">
+
+
+<div class="hero-text">
+
+
+<h1>
+
+Venda mais imóveis com
+
+<span>
+IA + WhatsApp
+</span>
+
+</h1>
+
+
+
+<p>
+
+CRM imobiliário inteligente com Match IA,
+automação e vendas no piloto automático.
+
+</p>
+
+
+
+<a href="/login" class="btn">
+
+Começar agora
+
+</a>
+
+
+
+</div>
+
+
+
+
+
+
+<div class="dashboard">
+
+
+<div class="status">
+
+🟢 SISTEMA ONLINE
+
+</div>
+
+
+<div class="item">
+
+🏠 Match IA encontrou imóveis
+
+</div>
+
+
+<div class="item">
+
+💬 Novo lead interessado
+
+</div>
+
+
+<div class="stats">
+
+
+<div class="stat">
+
+<strong>120</strong>
+
+Leads
+
+</div>
+
+
+<div class="stat">
+
+<strong>45</strong>
+
+Imóveis
+
+</div>
+
+
+<div class="stat">
+
+<strong>IA</strong>
+
+Ativa
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+<section class="section" id="recursos">
+
+
+<h2 class="section-title">
+
+O poder do SMARTZEN
+
+</h2>
+
+
+
+<div class="grid">
+
+
+<div class="box">
+
+<h3>
+🏠 Gestão de Imóveis
+</h3>
+
+<p>
+Cadastre imóveis, fotos e informações completas.
+</p>
+
+
+</div>
+
+
+
+
+<div class="box">
+
+
+<h3>
+🎯 Match Inteligente
+</h3>
+
+<p>
+IA encontra o imóvel ideal para cada cliente.
+</p>
+
+
+</div>
+
+
+
+
+<div class="box">
+
+
+<h3>
+🤖 Anúncios com IA
+</h3>
+
+
+<p>
+Crie anúncios profissionais automaticamente.
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+<section class="section">
+
+
+<div class="whatsapp-card">
+
+
+<div class="badge">
+
+📲 WHATSAPP INTELIGENTE
+
+</div>
+
+
+
+<h2>
+
+Disparo em Massa WhatsApp 🚀
+
+</h2>
+
+
+
+<p>
+
+Envie imóveis, campanhas e ofertas para vários clientes ao mesmo tempo.
+
+</p>
+
+
+
+<div class="lista">
+
+
+✅ Lista segmentada de clientes
+
+<br>
+
+✅ Envio automático de fotos
+
+<br>
+
+✅ Mensagens personalizadas
+
+<br>
+
+✅ Mais vendas para corretores
+
+
+</div>
+
+
+
+<a href="/login" class="btn-wa">
+
+Ativar Automação
+
+</a>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+<section class="sponsor">
+
+
+<h3>
+
+PATROCINADORA OFICIAL
+
+</h3>
+
+
+
+<br>
+
+
+<img class="logo-patrocinadora"
+src="{{ url_for('static', filename='Logowj1.png') }}">
+
+
+<h1>
+
+WJ IMOBILIÁRIA
+
+</h1>
+
+
+
+</section>
+
+
+
+
+<footer>
+
+
+SMARTZEN IMOB © 2026
+
+<br>
+
+Patrocinadora:
+<strong>WJ IMOBILIÁRIA</strong>
+
+
+</footer>
+
+
 
 </body>
+
 </html>
