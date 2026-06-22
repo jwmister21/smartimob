@@ -96,7 +96,7 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
 
-def limpar_prefixo_fotos():
+def limpar_prefixo_fotos_func():
 
     import os
 
@@ -113,7 +113,6 @@ def limpar_prefixo_fotos():
     """)
 
     fotos = cursor.fetchall()
-
 
     total = 0
 
@@ -133,10 +132,8 @@ def limpar_prefixo_fotos():
         partes = nome.split("_")
 
 
-        # exemplo:
         # 68_1782103932_33_1781639570_foto.jpg
-
-        if len(partes) >= 4:
+        if len(partes) >= 5:
 
             novo_nome = "_".join(partes[2:])
 
@@ -180,169 +177,15 @@ def limpar_prefixo_fotos():
         total
     )
 
-@app.route("/limpar_prefixo_fotos")
-def limpar_prefixo_fotos():
 
-    limpar_prefixo_fotos()
+
+@app.route("/limpar_prefixo_fotos")
+@verificar_sessao
+def limpar_prefixo_fotos_rota():
+
+    limpar_prefixo_fotos_func()
 
     return "Fotos limpas"
-def renomear_fotos_corrigidas():
-
-    pasta = "/data/uploads/imoveis"
-
-    arquivos = os.listdir(pasta)
-
-    for nome in arquivos:
-
-        # pega:
-        # 68_1782103932_33_1781639570_uuid.jpg
-
-        m = re.match(
-            r'^\d+_\d+_(\d+)_\d+_(.+)$',
-            nome
-        )
-
-        if m:
-
-            novo = f"{m.group(1)}_{m.group(2)}"
-
-            origem = os.path.join(
-                pasta,
-                nome
-            )
-
-            destino = os.path.join(
-                pasta,
-                novo
-            )
-
-            if not os.path.exists(destino):
-
-                os.rename(
-                    origem,
-                    destino
-                )
-
-                print(
-                    "RENOMEADO:",
-                    nome,
-                    "=>",
-                    novo
-                )
-
-def recuperar_fotos():
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT id, nome_arquivo
-        FROM fotos_imoveis
-    """)
-
-    fotos = cursor.fetchall()
-
-
-    for foto_id, nome in fotos:
-
-        partes = nome.split("_")
-
-        if len(partes) >= 4:
-
-            try:
-                possivel_id = partes[2]
-
-                if possivel_id.isdigit():
-
-                    cursor.execute("""
-                    UPDATE fotos_imoveis
-                    SET imovel_id = ?
-                    WHERE id = ?
-                    """,
-                    (
-                    int(possivel_id),
-                    foto_id
-                    ))
-
-            except:
-                pass
-
-
-    conn.commit()
-    conn.close()
-
-
-@app.route("/recuperar_fotos")
-def recuperar_fotos_rota():
-
-    recuperar_fotos()
-
-    return "RECUPERAÇÃO FINALIZADA"
-
-
-def baixar_fotos_drive(link, imovel_id):
-
-    import os
-    import gdown
-
-
-    pasta = app.config['UPLOAD_FOLDER_IMOVEIS']
-
-
-    os.makedirs(
-        pasta,
-        exist_ok=True
-    )
-
-
-    try:
-
-        gdown.download_folder(
-            url=link,
-            output=pasta,
-            quiet=False
-        )
-
-
-        fotos = []
-
-
-        for arquivo in os.listdir(pasta):
-
-            if arquivo.lower().endswith(
-                (
-                ".jpg",
-                ".jpeg",
-                ".png",
-                ".webp"
-                )
-            ):
-
-                fotos.append(arquivo)
-
-
-
-        return fotos
-
-
-
-    except Exception as e:
-
-        print(
-            "ERRO DRIVE:",
-            e
-        )
-
-        return []
-
-    except Exception as e:
-
-        print(
-            "ERRO DRIVE:",
-            e
-        )
-
-        return []
 
 
 def limpar_imovel(imovel):
