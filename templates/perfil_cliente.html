@@ -186,28 +186,54 @@
 </div>
 
 <div class="perfil-card">
-    <h3>📋 Histórico</h3>
+    <h3>📝 Ocorrências</h3>
+
     {% for o in ocorrencias %}
+
         <div class="ocorrencia-item">
+
             <div class="ocorrencia-topo">
-                <strong>{{ o["usuario_nome"] }}</strong>
-                <span>{{ o["data_criacao"] }}</span>
+
+                <strong>
+                    {{ o["usuario_nome"] }}
+                </strong>
+
+                <span>
+                    {{ o["data_criacao"] }}
+                </span>
+
             </div>
-            <div class="ocorrencia-texto" style="color: #334155;">{{ o["ocorrencia"] }}</div>
+
+            <div class="ocorrencia-texto" style="color:#334155;">
+                {{ o["ocorrencia"] }}
+            </div>
+
         </div>
+
     {% else %}
-        <p style="color:#94a3b8;">Nenhuma ocorrência.</p>
-    
-     <div id="modalHistorico" class="modal-historico">
+
+        <p style="color:#94a3b8;">
+            Nenhuma ocorrência.
+        </p>
+
+    {% endfor %}
+
+</div>
+<div id="modalHistorico" class="modal-historico">
 
     <div class="modal-content-historico">
 
         <div class="modal-topo">
+
             <h3>📋 Histórico do Cliente</h3>
 
-            <span onclick="fecharHistorico()" class="fechar-modal">
+            <span
+                class="fechar-modal"
+                onclick="fecharHistorico()"
+            >
                 ✖
             </span>
+
         </div>
 
         <div class="historico-lista">
@@ -249,9 +275,6 @@
     </div>
 
 </div>
-    {% endfor %}
-</div>
-
 <script>
     function verificarData(select){
         let campo = document.getElementById("campoData");
