@@ -96,6 +96,97 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
 
+def limpar_prefixo_fotos():
+
+    import os
+
+    pasta = app.config['UPLOAD_FOLDER_IMOVEIS']
+
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT id, nome_arquivo
+        FROM fotos_imoveis
+    """)
+
+    fotos = cursor.fetchall()
+
+
+    total = 0
+
+
+    for foto_id, nome in fotos:
+
+        antigo = os.path.join(
+            pasta,
+            nome
+        )
+
+
+        if not os.path.exists(antigo):
+            continue
+
+
+        partes = nome.split("_")
+
+
+        # exemplo:
+        # 68_1782103932_33_1781639570_foto.jpg
+
+        if len(partes) >= 4:
+
+            novo_nome = "_".join(partes[2:])
+
+
+            novo = os.path.join(
+                pasta,
+                novo_nome
+            )
+
+
+            if os.path.exists(novo):
+                continue
+
+
+            os.rename(
+                antigo,
+                novo
+            )
+
+
+            cursor.execute("""
+                UPDATE fotos_imoveis
+                SET nome_arquivo = ?
+                WHERE id = ?
+            """,
+            (
+                novo_nome,
+                foto_id
+            ))
+
+
+            total += 1
+
+
+    conn.commit()
+    conn.close()
+
+
+    print(
+        "ARQUIVOS LIMPOS:",
+        total
+    )
+
+@app.route("/limpar_prefixo_fotos")
+def limpar_prefixo_fotos():
+
+    limpar_prefixo_fotos()
+
+    return "Fotos limpas"
+
 
 def recuperar_fotos():
 
