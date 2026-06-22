@@ -11,14 +11,20 @@
 <table class="table">
 
 <tr>
+
 <th>
-<input type="checkbox" id="todos">
+Selecionar
 </th>
 
 <th>Título</th>
 <th>Valor</th>
 <th>Quartos</th>
 <th>Área</th>
+<th>Bairro</th>
+<th>Rua</th>
+<th>Condomínio</th>
+<th>IPTU</th>
+<th>Vaga</th>
 
 </tr>
 
@@ -28,7 +34,7 @@
 <tr>
 
 <td>
-<input 
+<input
 type="checkbox"
 name="selecionados"
 value="{{ loop.index0 }}"
@@ -37,18 +43,48 @@ checked
 </td>
 
 
-<td>{{ i.titulo }}</td>
-
 <td>
-R$ {{ i.valor }}
+{{ i.titulo }}
 </td>
 
-<td>
-{{ i.quartos }}
-</td>
 
 <td>
-{{ i.area }} m²
+💰 R$ {{ i.valor }}
+</td>
+
+
+<td>
+🛏️ {{ i.quartos }}
+</td>
+
+
+<td>
+📐 {{ i.area }} m²
+</td>
+
+
+<td>
+📍 {{ i.bairro }}
+</td>
+
+
+<td>
+🏠 {{ i.rua }}
+</td>
+
+
+<td>
+🏢 R$ {{ i.condominio }}
+</td>
+
+
+<td>
+📄 R$ {{ i.iptu }}
+</td>
+
+
+<td>
+🚗 {{ i.vaga }}
 </td>
 
 
@@ -59,7 +95,6 @@ R$ {{ i.valor }}
 
 
 </table>
-
 
 <input 
 type="hidden"
