@@ -271,6 +271,10 @@
                 <h4 style="color:#1e293b; margin:0;">{{ match.titulo }}</h4>
                 <p style="color:#059669; margin: 5px 0;">{{ match.valor }}</p>
                 <a href="/imovel/{{ match.id }}" style="color:#2563eb; font-weight:600;">Ver imóvel</a>
+                <button class="btn-whatsapp"
+        onclick="enviarImovel({{ cliente.id }}, {{ imovel.id }})">
+    📲 Enviar WhatsApp
+</button>
             </div>
         {% else %}
             <p style="color:#64748b;">Nenhum imóvel encontrado.</p>
