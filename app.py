@@ -96,7 +96,30 @@ def injetar_lembretes():
 
 
 
-import re
+def extrair_links_pdf(caminho):
+
+    links = []
+
+    reader = PdfReader(caminho)
+
+    for pagina in reader.pages:
+
+        if "/Annots" not in pagina:
+            continue
+
+        for anotacao in pagina["/Annots"]:
+
+            obj = anotacao.get_object()
+
+            if obj.get("/A"):
+
+                uri = obj["/A"].get("/URI")
+
+                if uri:
+                    links.append(str(uri))
+
+
+    return links
 
 def limpar_imovel(imovel):
     print(f"DEBUG: Limpando imovel: {imovel.get('titulo')}")
@@ -1326,6 +1349,10 @@ def analisar_pdf():
         # Processa a extração
         imoveis = extrair_imoveis(texto)
         print(f"Foram encontrados {len(imoveis)} imóveis.")
+        links = extrair_links_pdf(caminho)
+
+        print("LINKS ENCONTRADOS:")
+        print(links)
 
     finally:
         # Garante que o arquivo será deletado mesmo que ocorra um erro
