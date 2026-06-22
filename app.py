@@ -23,7 +23,7 @@ from flask import send_from_directory
 from flask_socketio import SocketIO
 import pandas as pd
 import base64
-
+from pypdf import PdfReader
 
 # Configuração do Banco
 
