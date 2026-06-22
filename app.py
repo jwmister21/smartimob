@@ -430,7 +430,10 @@ def init_db():
 def baixar_fotos_drive(link, imovel_id):
 
     import os
+    import shutil
     import gdown
+    from datetime import datetime
+    from werkzeug.utils import secure_filename
 
 
     pasta_final = app.config['UPLOAD_FOLDER_IMOVEIS']
@@ -454,6 +457,9 @@ def baixar_fotos_drive(link, imovel_id):
     )
 
 
+    fotos = []
+
+
     try:
 
         print("BAIXANDO DRIVE:", link)
@@ -462,62 +468,70 @@ def baixar_fotos_drive(link, imovel_id):
         gdown.download_folder(
             url=link,
             output=pasta_temp,
-            quiet=False
+            quiet=False,
+            use_cookies=False
         )
 
 
-        fotos = []
+        for raiz, pastas, arquivos in os.walk(pasta_temp):
 
 
-        for arquivo in os.listdir(pasta_temp):
-
-            if arquivo.lower().endswith(
-                (
-                ".jpg",
-                ".jpeg",
-                ".png",
-                ".webp"
-                )
-            ):
+            for arquivo in arquivos:
 
 
-                origem = os.path.join(
-                    pasta_temp,
-                    arquivo
-                )
+                if arquivo.lower().endswith(
+                    (
+                    ".jpg",
+                    ".jpeg",
+                    ".png",
+                    ".webp"
+                    )
+                ):
 
 
-                nome_foto = (
-                    f"{imovel_id}_"
-                    f"{arquivo}"
-                )
+                    origem = os.path.join(
+                        raiz,
+                        arquivo
+                    )
 
 
-                destino = os.path.join(
-                    pasta_final,
-                    nome_foto
-                )
+                    novo_nome = (
+                        f"{imovel_id}_"
+                        f"{int(datetime.now().timestamp())}_"
+                        f"{secure_filename(arquivo)}"
+                    )
 
 
-                os.rename(
-                    origem,
-                    destino
-                )
+                    destino = os.path.join(
+                        pasta_final,
+                        novo_nome
+                    )
 
 
-                fotos.append(nome_foto)
+                    shutil.move(
+                        origem,
+                        destino
+                    )
 
 
-                print(
-                    "FOTO MOVIDA:",
-                    nome_foto
-                )
+                    fotos.append(
+                        novo_nome
+                    )
 
 
-        try:
-            os.rmdir(pasta_temp)
-        except:
-            pass
+                    print(
+                        "FOTO MOVIDA:",
+                        novo_nome
+                    )
+
+
+
+        # remove pasta temporária
+
+        shutil.rmtree(
+            pasta_temp,
+            ignore_errors=True
+        )
 
 
         return fotos
