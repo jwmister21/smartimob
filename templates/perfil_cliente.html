@@ -6,55 +6,146 @@
 {% block content %}
 
 <style>
-    .perfil-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 15px; }
-    
-    .perfil-card { 
-        background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; 
-        padding: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;
-    }
 
-    .info-label { color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: 700; }
-    .info-val { color: #1e293b; font-size: 1.1rem; margin-bottom: 18px; font-weight: 500; }
+.perfil-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    margin-top:15px;
+}
 
-    .funnel-selector { 
-        background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; 
-        padding: 12px; border-radius: 10px; width: 100%; font-size: 1rem; margin-bottom: 15px;
-    }
+.perfil-card{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
+    margin-bottom:25px;
+}
 
-    .btn-salvar-status { 
-        background: #2563eb; color: white; border: none; padding: 12px; 
-        border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s;
-    }
-    .btn-salvar-status:hover { background: #1d4ed8; }
+.info-label{
+    color:#64748b;
+    font-size:.75rem;
+    text-transform:uppercase;
+    margin-bottom:5px;
+    display:block;
+    font-weight:700;
+}
 
-    .btn-excluir { 
-        background: #fef2f2; color: #dc2626; border: none; padding: 12px; 
-        border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;
-    }
+.info-val{
+    color:#1e293b;
+    font-size:1.1rem;
+    margin-bottom:18px;
+    font-weight:500;
+}
 
-    .ocorrencia-form textarea { 
-        width: 100%; min-height: 120px; background: #f8fafc; border: 1px solid #e2e8f0; 
-        color: #1e293b; padding: 15px; border-radius: 12px; box-sizing: border-box; resize: vertical;
-    }
+.funnel-selector{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    color:#1e293b;
+    padding:12px;
+    border-radius:10px;
+    width:100%;
+    font-size:1rem;
+    margin-bottom:15px;
+}
 
-    .btn-ocorrencia { margin-top: 12px; background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-salvar-status{
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    width:100%;
+    transition:.2s;
+}
 
-    .ocorrencia-item { 
-        background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; 
-        padding: 15px; border-radius: 12px; margin-bottom: 12px; 
-    }
-    
-    .ocorrencia-topo { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.85rem; color: #64748b; }
-    
-    @media(max-width: 900px) { .perfil-grid { grid-template-columns: 1fr; } }
-    <style>
+.btn-salvar-status:hover{
+    background:#1d4ed8;
+}
+
+.btn-excluir{
+    background:#fef2f2;
+    color:#dc2626;
+    border:none;
+    padding:12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+    width:100%;
+    margin-top:15px;
+}
+
+.ocorrencia-form textarea{
+    width:100%;
+    min-height:120px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    color:#1e293b;
+    padding:15px;
+    border-radius:12px;
+    box-sizing:border-box;
+    resize:vertical;
+}
+
+.btn-ocorrencia{
+    margin-top:12px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.ocorrencia-item{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-left:4px solid #2563eb;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:12px;
+}
+
+.ocorrencia-topo{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+    font-size:.85rem;
+    color:#64748b;
+}
+
+/* MATCH IA */
+
+.match-scroll{
+    max-height:700px;
+    overflow-y:auto;
+    padding-right:8px;
+}
+
+.match-scroll::-webkit-scrollbar{
+    width:8px;
+}
+
+.match-scroll::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:20px;
+}
+
+/* MODAL */
 
 .modal-historico{
     display:none;
     position:fixed;
-    inset:0;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
     background:rgba(0,0,0,.65);
-    z-index:9999;
+    z-index:999999;
     justify-content:center;
     align-items:center;
 }
@@ -62,11 +153,12 @@
 .modal-content-historico{
     width:700px;
     max-width:95%;
-    max-height:80vh;
+    max-height:85vh;
     overflow-y:auto;
     background:#fff;
-    border-radius:16px;
-    padding:20px;
+    border-radius:18px;
+    padding:25px;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
 }
 
 .modal-topo{
@@ -78,7 +170,8 @@
 
 .fechar-modal{
     cursor:pointer;
-    font-size:22px;
+    font-size:24px;
+    font-weight:bold;
 }
 
 .historico-item{
@@ -103,7 +196,12 @@
     cursor:pointer;
 }
 
-</style>
+@media(max-width:900px){
+    .perfil-grid{
+        grid-template-columns:1fr;
+    }
+}
+
 </style>
 
 <div class="perfil-grid">
@@ -163,9 +261,12 @@
     </div>
 
     <div class="perfil-card">
-        <span style="color:#059669; font-weight:bold;">🧠 Sugestões Match IA</span>
-        <h2 style="color:#1e293b; margin-top: 5px;">Imóveis Ideais</h2>
-        {% for match in matches %}
+    <span style="color:#059669; font-weight:bold;">🧠 Sugestões Match IA</span>
+    <h2 style="color:#1e293b; margin-top:5px;">Imóveis Ideais</h2>
+
+    <div class="match-scroll">
+
+    {% for match in matches %}
             <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e2e8f0;">
                 <h4 style="color:#1e293b; margin:0;">{{ match.titulo }}</h4>
                 <p style="color:#059669; margin: 5px 0;">{{ match.valor }}</p>
@@ -276,24 +377,32 @@
 
 </div>
 <script>
-    function verificarData(select){
-        let campo = document.getElementById("campoData");
-        campo.style.display = (select.value == "Visita Agendada") ? "block" : "none";
-    }
-  
+
+function verificarData(select){
+    let campo = document.getElementById("campoData");
+    campo.style.display =
+        select.value === "Visita Agendada"
+        ? "block"
+        : "none";
+}
 
 function abrirHistorico(){
-    document.getElementById(
-        "modalHistorico"
-    ).style.display = "flex";
+    document.getElementById("modalHistorico").style.display = "flex";
 }
 
 function fecharHistorico(){
-    document.getElementById(
-        "modalHistorico"
-    ).style.display = "none";
+    document.getElementById("modalHistorico").style.display = "none";
 }
 
+window.onclick = function(event){
+
+    const modal =
+        document.getElementById("modalHistorico");
+
+    if(event.target === modal){
+        fecharHistorico();
+    }
+}
 
 </script>
 {% endblock %}
