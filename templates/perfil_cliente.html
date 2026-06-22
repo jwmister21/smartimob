@@ -271,9 +271,12 @@
                 <h4 style="color:#1e293b; margin:0;">{{ match.titulo }}</h4>
                 <p style="color:#059669; margin: 5px 0;">{{ match.valor }}</p>
                 <a href="/imovel/{{ match.id }}" style="color:#2563eb; font-weight:600;">Ver imóvel</a>
-                <button class="btn-whatsapp"
-        onclick="enviarImovel({{ cliente.id }}, {{ imovel.id }})">
+                <button
+    class="btn-whatsapp"
+    onclick="enviarImovel({{ cliente[0] }}, {{ match.id }})">
+
     📲 Enviar WhatsApp
+
 </button>
             </div>
         {% else %}
@@ -381,6 +384,53 @@
 
 </div>
 <script>
+    function enviarImovel(clienteId, imovelId){
+
+    if(!confirm("Enviar este imóvel para o cliente?")){
+        return;
+    }
+
+    fetch("/enviar_imovel_match",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+            cliente_id:clienteId,
+            imovel_id:imovelId
+
+        })
+
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if(data.status === "error"){
+
+            alert("❌ " + data.erro);
+            return;
+
+        }
+
+        alert("✅ Imóvel enviado com sucesso!");
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert("Erro ao enviar imóvel");
+
+    });
+
+}
 
 function verificarData(select){
     let campo = document.getElementById("campoData");
