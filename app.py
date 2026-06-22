@@ -95,6 +95,44 @@ def injetar_lembretes():
     return dict(lembretes=lembretes)
 
 
+
+def limpar_imovel(imovel):
+
+    # corrige rua
+    rua = imovel.get("rua","")
+
+    if "✓" in rua or "CHAVES" in rua:
+        imovel["rua"] = ""
+
+    if "metros" in rua.lower():
+        imovel["rua"] = ""
+
+
+    # corrige bairro
+
+    bairro = imovel.get("bairro","")
+
+    if bairro == "Forte":
+        imovel["bairro"] = "Canto do Forte"
+
+
+    # remove zero a esquerda da vaga
+
+    vaga = imovel.get("vaga","")
+
+    if vaga:
+        imovel["vaga"] = vaga.replace("0","",1)
+
+
+    # valor vazio
+
+    if not imovel.get("valor"):
+        imovel["valor"] = "Consultar"
+
+
+    return imovel
+
+
 def extrair_imoveis(texto):
     imoveis = []
     blocos = texto.split("ED.")
@@ -214,41 +252,6 @@ def extrair_imoveis(texto):
     ]
     return imoveis
 
-def limpar_imovel(imovel):
-
-    # corrige rua
-    rua = imovel.get("rua","")
-
-    if "✓" in rua or "CHAVES" in rua:
-        imovel["rua"] = ""
-
-    if "metros" in rua.lower():
-        imovel["rua"] = ""
-
-
-    # corrige bairro
-
-    bairro = imovel.get("bairro","")
-
-    if bairro == "Forte":
-        imovel["bairro"] = "Canto do Forte"
-
-
-    # remove zero a esquerda da vaga
-
-    vaga = imovel.get("vaga","")
-
-    if vaga:
-        imovel["vaga"] = vaga.replace("0","",1)
-
-
-    # valor vazio
-
-    if not imovel.get("valor"):
-        imovel["valor"] = "Consultar"
-
-
-    return imovel
 
 def verificar_sessao(f):
     @wraps(f)
