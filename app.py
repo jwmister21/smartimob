@@ -438,7 +438,6 @@ def baixar_fotos_drive(link, imovel_id):
 
     pasta_final = app.config['UPLOAD_FOLDER_IMOVEIS']
 
-
     os.makedirs(
         pasta_final,
         exist_ok=True
@@ -465,12 +464,22 @@ def baixar_fotos_drive(link, imovel_id):
         print("BAIXANDO DRIVE:", link)
 
 
-        gdown.download_folder(
-            url=link,
-            output=pasta_temp,
-            quiet=False,
-            use_cookies=False
-        )
+        try:
+
+            gdown.download_folder(
+                url=link,
+                output=pasta_temp,
+                quiet=False,
+                use_cookies=False
+            )
+
+        except Exception as e:
+
+            print(
+                "ERRO NO DOWNLOAD, CONTINUANDO:",
+                e
+            )
+
 
 
         for raiz, pastas, arquivos in os.walk(pasta_temp):
@@ -479,7 +488,7 @@ def baixar_fotos_drive(link, imovel_id):
             for arquivo in arquivos:
 
 
-                if arquivo.lower().endswith(
+                if not arquivo.lower().endswith(
                     (
                     ".jpg",
                     ".jpeg",
@@ -487,46 +496,50 @@ def baixar_fotos_drive(link, imovel_id):
                     ".webp"
                     )
                 ):
-
-
-                    origem = os.path.join(
-                        raiz,
-                        arquivo
-                    )
-
-
-                    novo_nome = (
-                        f"{imovel_id}_"
-                        f"{int(datetime.now().timestamp())}_"
-                        f"{secure_filename(arquivo)}"
-                    )
-
-
-                    destino = os.path.join(
-                        pasta_final,
-                        novo_nome
-                    )
-
-
-                    shutil.move(
-                        origem,
-                        destino
-                    )
-
-
-                    fotos.append(
-                        novo_nome
-                    )
-
-
-                    print(
-                        "FOTO MOVIDA:",
-                        novo_nome
-                    )
+                    continue
 
 
 
-        # remove pasta temporária
+                origem = os.path.join(
+                    raiz,
+                    arquivo
+                )
+
+
+
+                novo_nome = (
+                    f"{imovel_id}_"
+                    f"{int(datetime.now().timestamp())}_"
+                    f"{secure_filename(arquivo)}"
+                )
+
+
+
+                destino = os.path.join(
+                    pasta_final,
+                    novo_nome
+                )
+
+
+
+                shutil.move(
+                    origem,
+                    destino
+                )
+
+
+                fotos.append(
+                    novo_nome
+                )
+
+
+                print(
+                    "FOTO SALVA:",
+                    novo_nome
+                )
+
+
+
 
         shutil.rmtree(
             pasta_temp,
@@ -541,13 +554,12 @@ def baixar_fotos_drive(link, imovel_id):
     except Exception as e:
 
         print(
-            "ERRO DRIVE:",
+            "ERRO GERAL DRIVE:",
             e
         )
 
-        return []
-
-
+        return fotos
+     
 def atualizar_banco():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
