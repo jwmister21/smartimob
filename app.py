@@ -186,7 +186,49 @@ def limpar_prefixo_fotos():
     limpar_prefixo_fotos()
 
     return "Fotos limpas"
+def renomear_fotos_corrigidas():
 
+    pasta = "/data/uploads/imoveis"
+
+    arquivos = os.listdir(pasta)
+
+    for nome in arquivos:
+
+        # pega:
+        # 68_1782103932_33_1781639570_uuid.jpg
+
+        m = re.match(
+            r'^\d+_\d+_(\d+)_\d+_(.+)$',
+            nome
+        )
+
+        if m:
+
+            novo = f"{m.group(1)}_{m.group(2)}"
+
+            origem = os.path.join(
+                pasta,
+                nome
+            )
+
+            destino = os.path.join(
+                pasta,
+                novo
+            )
+
+            if not os.path.exists(destino):
+
+                os.rename(
+                    origem,
+                    destino
+                )
+
+                print(
+                    "RENOMEADO:",
+                    nome,
+                    "=>",
+                    novo
+                )
 
 def recuperar_fotos():
 
