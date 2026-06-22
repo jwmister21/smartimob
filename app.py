@@ -2146,6 +2146,143 @@ def enviar_mensagem():
 
         })
 
+@app.route("/enviar_imovel_match", methods=["POST"])
+@verificar_sessao
+def enviar_imovel_match():
+
+    try:
+
+        data = request.get_json()
+
+        cliente_id = data.get("cliente_id")
+        imovel_id = data.get("imovel_id")
+
+        empresa_id = session["empresa_id"]
+        usuario_id = session["usuario_id"]
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+        cursor = conn.cursor()
+
+        # CLIENTE
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE id = ?
+            AND empresa_id = ?
+        """, (cliente_id, empresa_id))
+
+        cliente = cursor.fetchone()
+
+        if not cliente:
+
+            conn.close()
+
+            return jsonify({
+                "status":"error",
+                "erro":"Cliente não encontrado"
+            })
+
+        # IMÓVEL
+
+        cursor.execute("""
+            SELECT *
+            FROM imoveis
+            WHERE id = ?
+            AND empresa_id = ?
+        """, (imovel_id, empresa_id))
+
+        imovel = cursor.fetchone()
+
+        if not imovel:
+
+            conn.close()
+
+            return jsonify({
+                "status":"error",
+                "erro":"Imóvel não encontrado"
+            })
+
+        # SESSÃO WPP
+
+        cursor.execute("""
+            SELECT whatsapp_sessao
+            FROM usuarios
+            WHERE id = ?
+        """, (usuario_id,))
+
+        usuario = cursor.fetchone()
+
+        conn.close()
+
+        # TELEFONE
+
+        telefone = str(cliente["telefone"])
+
+        telefone = ''.join(
+            filter(str.isdigit, telefone)
+        )
+
+        if not telefone.startswith("55"):
+            telefone = "55" + telefone
+
+        # MENSAGEM
+
+        mensagem = f"""
+🏠 *{imovel['titulo']}*
+
+💰 Valor: {imovel['valor']}
+
+📍 {imovel['bairro']} - {imovel['cidade']}
+
+Olá {cliente['nome']}!
+
+Encontrei um imóvel que combina com seu perfil.
+
+Posso agendar uma visita para você?
+"""
+
+        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+
+        resp = requests.post(
+
+            f"{WPP_URL}/enviar",
+
+            json={
+
+                "sessao":
+                    usuario["whatsapp_sessao"],
+
+                "numero":
+                    telefone,
+
+                "mensagem":
+                    mensagem
+
+            },
+
+            timeout=120
+
+        )
+
+        return jsonify(
+            resp.json()
+        )
+
+    except Exception as e:
+
+        print("ERRO MATCH:", e)
+
+        return jsonify({
+
+            "status":"error",
+
+            "erro":str(e)
+
+        })
+
 
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
