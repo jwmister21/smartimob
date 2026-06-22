@@ -3839,19 +3839,30 @@ Gere o anúncio agora:"""
         imovel=imovel_selecionado,
     )
 @app.route("/cliente/<int:id>")
-@verificar_sessao # Substituímos a verificação manual pelo nosso decorador
+@verificar_sessao
 def perfil_cliente(id):
+
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # 1. Busca dados do cliente filtrando pela empresa_id
+    # ==========================
+    # CLIENTE
+    # ==========================
+
     cursor.execute("""
-        SELECT id, nome, telefone, email, interesse, faixa_preco, bairro, status_funil, cpf, endereco, entrada, sobre
-        FROM clientes WHERE id = ? AND empresa_id = ?
+        SELECT
+            c.*,
+            u.nome AS nome_corretor
+        FROM clientes c
+        LEFT JOIN usuarios u
+            ON u.id = c.atendido_por
+        WHERE c.id = ?
+        AND c.empresa_id = ?
     """, (id, empresa_id))
+
     cliente = cursor.fetchone()
 
     if not cliente:
@@ -3859,50 +3870,163 @@ def perfil_cliente(id):
         return "Cliente não encontrado ou não pertence a esta empresa.", 404
 
 
+    # ==========================
+    # OCORRÊNCIAS
+    # ==========================
+
     cursor.execute("""
         SELECT
-        o.*,
-        u.nome as usuario_nome
+            o.*,
+            u.nome as usuario_nome
         FROM ocorrencias_clientes o
         LEFT JOIN usuarios u
-        ON u.id = o.usuario_id
+            ON u.id = o.usuario_id
         WHERE o.cliente_id = ?
         ORDER BY o.id DESC
     """, (id,))
 
     ocorrencias = cursor.fetchall()
 
-    # 2. Busca apenas os imóveis da MESMA empresa para o cálculo de match
+
+    # ==========================
+    # HISTÓRICO
+    # ==========================
+
     cursor.execute("""
-        SELECT id, titulo, tipo, valor, cidade, bairro, foto 
-        FROM imoveis WHERE empresa_id = ?
+        SELECT
+            h.*,
+            u.nome AS nome_usuario
+        FROM cliente_historico h
+        LEFT JOIN usuarios u
+            ON u.id = h.usuario_id
+        WHERE h.cliente_id = ?
+        ORDER BY h.id DESC
+    """, (id,))
+
+    historico = cursor.fetchall()
+
+
+    # ==========================
+    # IMÓVEIS DA EMPRESA
+    # ==========================
+
+    cursor.execute("""
+        SELECT
+            id,
+            titulo,
+            tipo,
+            valor,
+            cidade,
+            bairro,
+            foto
+        FROM imoveis
+        WHERE empresa_id = ?
     """, (empresa_id,))
+
     imoveis = cursor.fetchall()
+
     conn.close()
 
-    # Lógica de Match (mantida igual, mas agora usando dados isolados)
+
+    # ==========================
+    # MATCH IA
+    # ==========================
+
     matches_cliente = []
-    c_interesse, c_faixa, c_bairro = cliente[4], cliente[5], cliente[6]
-    c_bairro_txt = str(c_bairro).lower().strip() if c_bairro else ""
-    interesse_txt = str(c_interesse).lower().strip() if c_interesse else ""
+
+    c_interesse = cliente["interesse"]
+    c_faixa = cliente["faixa_preco"]
+    c_bairro = cliente["bairro"]
+
+    c_bairro_txt = (
+        str(c_bairro).lower().strip()
+        if c_bairro else ""
+    )
+
+    interesse_txt = (
+        str(c_interesse).lower().strip()
+        if c_interesse else ""
+    )
+
 
     for i in imoveis:
-        i_id, i_titulo, i_valor, i_bairro, i_cidade, i_foto = i[0], i[1], i[3], i[5], i[4], i[6]
-        i_bairro_txt = str(i_bairro).lower().strip() if i_bairro else ""
+
+        i_id = i["id"]
+        i_titulo = i["titulo"]
+        i_valor = i["valor"]
+        i_bairro = i["bairro"]
+        i_cidade = i["cidade"]
+        i_foto = i["foto"]
+
+        i_bairro_txt = (
+            str(i_bairro).lower().strip()
+            if i_bairro else ""
+        )
 
         porcentagem = 0
-        if i_bairro_txt and (i_bairro_txt == c_bairro_txt or i_bairro_txt in interesse_txt): porcentagem += 50
+
+        if (
+            i_bairro_txt and
+            (
+                i_bairro_txt == c_bairro_txt
+                or i_bairro_txt in interesse_txt
+            )
+        ):
+            porcentagem += 50
+
+
         try:
-            imovel_num = float(''.join(filter(str.isdigit, str(i_valor))))
-            cliente_num = float(''.join(filter(str.isdigit, str(c_faixa))))
-            if imovel_num <= (cliente_num * 1.10): porcentagem += 50
+
+            imovel_num = float(
+                ''.join(
+                    filter(
+                        str.isdigit,
+                        str(i_valor)
+                    )
+                )
+            )
+
+            cliente_num = float(
+                ''.join(
+                    filter(
+                        str.isdigit,
+                        str(c_faixa)
+                    )
+                )
+            )
+
+            if imovel_num <= (cliente_num * 1.10):
+                porcentagem += 50
+
         except:
-            if c_faixa and str(i_valor).strip() in str(c_faixa).strip(): porcentagem += 50
+
+            if (
+                c_faixa and
+                str(i_valor).strip()
+                in str(c_faixa).strip()
+            ):
+                porcentagem += 50
+
 
         if porcentagem >= 50:
-            matches_cliente.append({"id": i_id, "titulo": i_titulo, "valor": i_valor, "local": f"{i_bairro}, {i_cidade}", "foto": i_foto, "porcentagem": porcentagem})
 
-    return render_template("perfil_cliente.html", cliente=cliente, matches=matches_cliente, ocorrencias=ocorrencias)
+            matches_cliente.append({
+                "id": i_id,
+                "titulo": i_titulo,
+                "valor": i_valor,
+                "local": f"{i_bairro}, {i_cidade}",
+                "foto": i_foto,
+                "porcentagem": porcentagem
+            })
+
+
+    return render_template(
+        "perfil_cliente.html",
+        cliente=cliente,
+        matches=matches_cliente,
+        ocorrencias=ocorrencias,
+        historico=historico
+    )
 
 
 
@@ -3943,25 +4067,58 @@ def adicionar_ocorrencia(cliente_id):
 @app.route("/cliente/atualizar_status/<int:id>", methods=["POST"])
 @verificar_sessao
 def atualizar_status_cliente(id):
+
     novo_status = request.form.get("status_funil")
     data_visita = request.form.get("data_visita")
+
     empresa_id = session.get("empresa_id")
+    usuario_id = session.get("usuario_id")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # Corrigido de cliente_id para id (que é o argumento da função)
+    # Atualiza cliente
     cursor.execute("""
-        UPDATE clientes 
-        SET status_funil = ?, data_visita = ?
-        WHERE id = ? AND empresa_id = ?
-    """, (novo_status, data_visita, id, empresa_id)) 
+        UPDATE clientes
+        SET
+            status_funil = ?,
+            data_visita = ?,
+            atendido_por = ?
+        WHERE id = ?
+        AND empresa_id = ?
+    """,
+    (
+        novo_status,
+        data_visita,
+        usuario_id,
+        id,
+        empresa_id
+    ))
+
+
+    # Grava histórico
+    cursor.execute("""
+        INSERT INTO cliente_historico
+        (
+            cliente_id,
+            usuario_id,
+            status,
+            observacao
+        )
+        VALUES (?,?,?,?)
+    """,
+    (
+        id,
+        usuario_id,
+        novo_status,
+        "Status alterado"
+    ))
+
 
     conn.commit()
     conn.close()
 
     return redirect(f"/cliente/{id}")
-
 
 @app.route("/desconectar_whatsapp")
 @verificar_sessao
