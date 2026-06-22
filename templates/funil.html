@@ -18,14 +18,14 @@
                 <p><strong>{{ cliente.nome }}</strong></p>
                 <p style="font-size: 0.85rem; color: #64748b;">☎️ {{ cliente.telefone }}</p>
                 <p style="font-size: 0.85rem; color: #64748b;"> {{ cliente.sobre }}</p>
-                {% if cliente.ultimo_corretor %}
+                {% if cliente.atendido_por %}
 <p style="
     font-size:0.80rem;
     color:#2563eb;
     font-weight:600;
     margin-top:6px;
 ">
-    👤 Último corretor: {{ cliente.ultimo_corretor }}
+    👤 Último corretor: {{ cliente.atendido_por }}
 </p>
 {% endif %}
                 <div class="card-actions">
