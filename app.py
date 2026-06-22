@@ -3471,30 +3471,57 @@ def ver_imovel(imovel_id):
 @app.route("/funil")
 @verificar_sessao
 def funil():
-    # O decorador @verificar_sessao já cuida da autenticação
+
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # A SEGURANÇA: Buscamos clientes filtrando pelo empresa_id
-    cursor.execute("SELECT * FROM clientes WHERE empresa_id = ?", (empresa_id,))
+    cursor.execute("""
+        SELECT
+            c.*,
+            u.nome AS nome_corretor
+
+        FROM clientes c
+
+        LEFT JOIN usuarios u
+            ON u.id = c.atendido_por
+
+        WHERE c.empresa_id = ?
+    """, (empresa_id,))
+
     clientes = cursor.fetchall()
+
     conn.close()
 
-    # Define suas etapas
-    etapas = ["Lead Novo", "Visita Agendada", "Negociação", "Concluido", "Desistencia"]
+    etapas = [
+        "Lead Novo",
+        "Visita Agendada",
+        "Negociação",
+        "Concluido",
+        "Desistencia"
+    ]
 
-    # Organiza os dados em um dicionário
-    funil_dados = {etapa: [] for etapa in etapas}
+    funil_dados = {
+        etapa: []
+        for etapa in etapas
+    }
+
     for c in clientes:
-        status = c['status_funil'] or "Lead Novo"
-        # Garante que o status exista nas etapas definidas
-        if status in funil_dados:
-            funil_dados[status].append(c)
 
-    return render_template("funil.html", funil_dados=funil_dados, etapas=etapas)    
+        status = c["status_funil"] or "Lead Novo"
+
+        if status not in funil_dados:
+            status = "Lead Novo"
+
+        funil_dados[status].append(c)
+
+    return render_template(
+        "funil.html",
+        funil_dados=funil_dados,
+        etapas=etapas
+    )
 
 @app.route("/editar_imovel/<int:id>", methods=["GET", "POST"])
 @verificar_sessao
