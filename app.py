@@ -24,6 +24,8 @@ from flask_socketio import SocketIO
 import pandas as pd
 import base64
 from pypdf import PdfReader
+import gdown
+import uuid
 
 # Configuração do Banco
 
@@ -94,7 +96,53 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
 
+def baixar_fotos_drive(link, imovel_id):
 
+    pasta = f"data/uploads/imoveis/{imovel_id}"
+
+    os.makedirs(
+        pasta,
+        exist_ok=True
+    )
+
+
+    pasta_drive = link.split("/")[-1]
+
+
+    try:
+
+        gdown.download_folder(
+            url=link,
+            output=pasta,
+            quiet=False
+        )
+
+
+        fotos = []
+
+
+        for arquivo in os.listdir(pasta):
+
+            if arquivo.lower().endswith(
+                (".jpg",".jpeg",".png",".webp")
+            ):
+
+                fotos.append(
+                    f"{pasta}/{arquivo}"
+                )
+
+
+        return fotos
+
+
+    except Exception as e:
+
+        print(
+            "ERRO DRIVE:",
+            e
+        )
+
+        return []
 
 def extrair_links_pdf(caminho):
 
@@ -1362,6 +1410,7 @@ def analisar_pdf():
     return render_template(
         "preview_importacao.html",
         imoveis=imoveis
+        links=links
     )
 
 @app.route("/status_whatsapp")
@@ -2310,6 +2359,11 @@ def importar_imoveis_pdf():
         request.form["dados"]
     )
 
+    links = json.loads(
+        request.form["links"]
+    )
+
+
     selecionados = request.form.getlist(
         "selecionados"
     )
@@ -2323,7 +2377,6 @@ def importar_imoveis_pdf():
 
         i = dados[int(x)]
 
-
         cursor.execute("""
         INSERT INTO imoveis
         (
@@ -2336,9 +2389,13 @@ def importar_imoveis_pdf():
         quartos,
         area,
         status,
-        usuario_id
+        usuario_id,
+        rua,
+        iptu,
+        condominio,
+        vaga_garagem
         )
-        VALUES (?,?,?,?,?,?,?,?,?,?)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
         (
         i["titulo"],
@@ -2346,12 +2403,48 @@ def importar_imoveis_pdf():
         "Apartamento",
         i["valor"],
         "Praia Grande",
-        "",
+        i["bairro"],
         i["quartos"],
         i["area"],
         "Disponível",
-        session["usuario_id"]
+        session["usuario_id"],
+        i["rua"],
+        i["iptu"],
+        i["condominio"],
+        i["vaga"]
         ))
+
+
+        # pega ID criado
+        imovel_id = cursor.lastrowid
+
+
+        # pega link correspondente
+        link_drive = links[int(x)]
+
+
+        # baixa fotos
+        fotos = baixar_fotos_drive(
+            link_drive,
+            imovel_id
+        )
+
+
+        for foto in fotos:
+
+            cursor.execute("""
+            INSERT INTO fotos_imoveis
+            (
+            imovel_id,
+            nome_arquivo
+            )
+            VALUES (?,?)
+            """,
+            (
+            imovel_id,
+            foto.split("/")[-1]
+            ))
+
 
 
     conn.commit()
@@ -2359,6 +2452,8 @@ def importar_imoveis_pdf():
 
 
     return redirect("/imoveis")
+
+
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
     if not session.get('is_admin'):
