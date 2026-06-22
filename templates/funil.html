@@ -18,15 +18,19 @@
                 <p><strong>{{ cliente.nome }}</strong></p>
                 <p style="font-size: 0.85rem; color: #64748b;">☎️ {{ cliente.telefone }}</p>
                 <p style="font-size: 0.85rem; color: #64748b;"> {{ cliente.sobre }}</p>
-                {% if cliente.atendido_por %}
-<p style="
-    font-size:0.80rem;
+                {{% if cliente.nome_corretor %}
+<div style="
+    margin-top:8px;
+    padding:6px 10px;
+    background:#eff6ff;
     color:#2563eb;
+    border-radius:8px;
+    font-size:12px;
     font-weight:600;
-    margin-top:6px;
+    display:inline-block;
 ">
-    👤 Último corretor: {{ cliente.atendido_por }}
-</p>
+    👨‍💼 {{ cliente.nome_corretor }}
+</div>
 {% endif %}
                 <div class="card-actions">
                     <a href="/cliente/{{ cliente.id }}" class="btn-detalhes">Ver Perfil</a>
