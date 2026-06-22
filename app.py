@@ -1377,9 +1377,13 @@ def analisar_pdf():
     arquivo.save(caminho)
 
     texto = ""
-
-    with pdfplumber.open(caminho) as pdf:
-
+    print("COMEÇOU PDF")
+    with pdfplumber.open(
+        caminho,
+        laparams={
+            "detect_vertical": False
+        }
+    ) as pdf:
         for pagina in pdf.pages:
 
             conteudo = pagina.extract_text()
