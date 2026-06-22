@@ -72,7 +72,10 @@
             <div class="campo"><label>Nome</label><input type="text" name="nome" required></div>
             <div class="campo"><label>Telefone</label><input type="text" id="telefone" name="telefone" required></div>
             
-            <div class="campo"><label>Entrada / À vista</label><input type="text" name="entrada"></div>
+            <div class="campo">
+    <label for="entrada">Entrada / À vista</label>
+    <input type="text" id="entrada" name="entrada" placeholder="R$ 0,00" oninput="formatarMoeda(this)">
+</div>
             <div class="campo">
                 <label>Forma Pagamento</label>
                 <select name="pagamento">
@@ -108,6 +111,20 @@
 </div>
 
 <script>
+    function formatarMoeda(input) {
+    let valor = input.value;
+    
+    // Remove tudo que não é número
+    valor = valor.replace(/\D/g, "");
+    
+    // Transforma em centavos e formata
+    valor = (valor / 100).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+    
+    input.value = valor;
+}
     const telefone = document.getElementById("telefone");
     telefone.addEventListener("input", function(e){
         let v = e.target.value.replace(/\D/g,'');
