@@ -102,7 +102,7 @@ def baixar_fotos_drive(link, imovel_id):
     import gdown
 
 
-    pasta = f"data/uploads/imoveis/{imovel_id}"
+    pasta = app.config['UPLOAD_FOLDER_IMOVEIS']
 
 
     os.makedirs(
@@ -126,18 +126,20 @@ def baixar_fotos_drive(link, imovel_id):
         for arquivo in os.listdir(pasta):
 
             if arquivo.lower().endswith(
-                (".jpg",".jpeg",".png",".webp")
+                (
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".webp"
+                )
             ):
 
-                fotos.append(
-                    os.path.join(
-                        pasta,
-                        arquivo
-                    )
-                )
+                fotos.append(arquivo)
+
 
 
         return fotos
+
 
 
     except Exception as e:
@@ -149,35 +151,16 @@ def baixar_fotos_drive(link, imovel_id):
 
         return []
 
-def extrair_links_pdf(caminho):
+    except Exception as e:
 
-    links = []
+        print(
+            "ERRO DRIVE:",
+            e
+        )
 
-    reader = PdfReader(caminho)
-
-    for pagina in reader.pages:
-
-        if "/Annots" not in pagina:
-            continue
+        return []
 
 
-        for anotacao in pagina["/Annots"]:
-
-            obj = anotacao.get_object()
-
-
-            if obj.get("/A"):
-
-                uri = obj["/A"].get("/URI")
-
-
-                # COLOCA AQUI 👇
-                if uri and "drive.google.com" in str(uri):
-
-                    links.append(str(uri))
-
-
-    return links
 def limpar_imovel(imovel):
     print(f"DEBUG: Limpando imovel: {imovel.get('titulo')}")
     
@@ -2363,14 +2346,20 @@ def logo_empresa(arquivo):
 def importar_imoveis_pdf():
 
     import json
+    import os
+    from werkzeug.utils import secure_filename
+    from datetime import datetime
+
 
     dados = json.loads(
         request.form["dados"]
     )
 
+
     links = json.loads(
         request.form["links"]
     )
+
 
     selecionados = request.form.getlist(
         "selecionados"
@@ -2385,12 +2374,17 @@ def importar_imoveis_pdf():
     cursor = conn.cursor()
 
 
+
     for x in selecionados:
+
 
         i = dados[int(x)]
 
 
-        # salva imóvel
+
+        # =========================
+        # CADASTRA IMOVEL
+        # =========================
 
         cursor.execute("""
         INSERT INTO imoveis
@@ -2431,22 +2425,23 @@ def importar_imoveis_pdf():
 
 
 
-        # id do imóvel criado
-
         imovel_id = cursor.lastrowid
+
 
 
         print(
             "IMOVEL CRIADO:",
-            imovel_id,
-            i.get("titulo")
+            imovel_id
         )
 
 
 
-        # pega link correspondente
+        # =========================
+        # LINK DRIVE
+        # =========================
 
         link_drive = ""
+
 
         if int(x) < len(links):
 
@@ -2457,15 +2452,15 @@ def importar_imoveis_pdf():
         fotos = []
 
 
-        # só tenta Google Drive
 
         if (
             link_drive
             and "drive.google.com" in link_drive
         ):
 
+
             print(
-                "BAIXANDO FOTOS:",
+                "BAIXANDO:",
                 link_drive
             )
 
@@ -2479,42 +2474,80 @@ def importar_imoveis_pdf():
         else:
 
             print(
-                "LINK IGNORADO:",
+                "SEM DRIVE:",
                 link_drive
             )
 
 
 
-        # grava fotos no banco
+
+        # =========================
+        # RENOMEIA E SALVA FOTOS
+        # =========================
+
 
         for foto in fotos:
 
-            nome = foto.split("/")[-1]
+
+            nome_original = foto
 
 
-            cursor.execute("""
-            INSERT INTO fotos_imoveis
-            (
-            imovel_id,
-            nome_arquivo
+            nome_foto = (
+                f"{imovel_id}_"
+                f"{int(datetime.now().timestamp())}_"
+                f"{secure_filename(nome_original)}"
             )
-            VALUES (?,?)
-            """,
-            (
-            imovel_id,
-            nome
-            ))
 
 
-            print(
-                "FOTO SALVA:",
-                nome
+
+            origem = os.path.join(
+                app.config['UPLOAD_FOLDER_IMOVEIS'],
+                nome_original
             )
+
+
+            destino = os.path.join(
+                app.config['UPLOAD_FOLDER_IMOVEIS'],
+                nome_foto
+            )
+
+
+
+            if os.path.exists(origem):
+
+
+                os.rename(
+                    origem,
+                    destino
+                )
+
+
+
+                cursor.execute("""
+                INSERT INTO fotos_imoveis
+                (
+                imovel_id,
+                nome_arquivo
+                )
+                VALUES (?,?)
+                """,
+                (
+                imovel_id,
+                nome_foto
+                ))
+
+
+                print(
+                    "FOTO SALVA:",
+                    nome_foto
+                )
+
 
 
 
     conn.commit()
     conn.close()
+
 
 
     return redirect("/imoveis")
