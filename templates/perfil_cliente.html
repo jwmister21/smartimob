@@ -197,9 +197,8 @@
         </div>
     {% else %}
         <p style="color:#94a3b8;">Nenhuma ocorrência.</p>
-    {% endfor %}
-</div>
-<div id="modalHistorico" class="modal-historico">
+    
+     <div id="modalHistorico" class="modal-historico">
 
     <div class="modal-content-historico">
 
@@ -250,6 +249,9 @@
     </div>
 
 </div>
+    {% endfor %}
+</div>
+
 <script>
     function verificarData(select){
         let campo = document.getElementById("campoData");
