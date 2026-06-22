@@ -96,97 +96,69 @@ def injetar_lembretes():
 
 
 
+import re
+
 def limpar_imovel(imovel):
-
-    # corrige rua
-    rua = imovel.get("rua","")
-
-    if "✓" in rua or "CHAVES" in rua:
+    print(f"DEBUG: Limpando imovel: {imovel.get('titulo')}")
+    
+    rua = imovel.get("rua", "")
+    if "✓" in rua or "CHAVES" in rua or "metros" in rua.lower():
+        print(f"DEBUG: Rua descartada: {rua}")
         imovel["rua"] = ""
 
-    if "metros" in rua.lower():
-        imovel["rua"] = ""
-
-
-    # corrige bairro
-
-    bairro = imovel.get("bairro","")
-
+    bairro = imovel.get("bairro", "")
     if bairro == "Forte":
+        print("DEBUG: Bairro corrigido para Canto do Forte")
         imovel["bairro"] = "Canto do Forte"
 
-
-    # remove zero a esquerda da vaga
-
-    vaga = imovel.get("vaga","")
-
+    vaga = imovel.get("vaga", "")
     if vaga:
-        imovel["vaga"] = vaga.replace("0","",1)
-
-
-    # valor vazio
+        imovel["vaga"] = vaga.replace("0", "", 1)
 
     if not imovel.get("valor"):
+        print(f"DEBUG: Valor não encontrado para {imovel.get('titulo')}")
         imovel["valor"] = "Consultar"
 
-
     return imovel
-
 
 def extrair_imoveis(texto):
     imoveis = []
     blocos = texto.split("ED.")
+    print(f"DEBUG: Total de blocos encontrados: {len(blocos)-1}")
     
-    for bloco in blocos[1:]:
+    for i, bloco in enumerate(blocos[1:], 1):
         bloco = bloco.strip()
-        
         if not bloco:
             continue
 
         linhas = bloco.split("\n")
         titulo = "ED. " + linhas[0].strip()
 
-        # remove lixo
         if "Tabela de imóveis" in titulo:
+            print(f"DEBUG: Bloco {i} ignorado (Tabela)")
             continue
 
-        # VALOR DO IMÓVEL
-        valores = re.findall(
-            r'R\$\s*([\d\.\,]+)',
-            bloco
-        )
-
+        # VALOR
+        valores = re.findall(r'R\$\s*([\d\.\,]+)', bloco)
         valor = ""
         for v in valores:
             try:
-                numero = float(
-                    v.replace(".", "")
-                    .replace(",", ".")
-                )
+                numero = float(v.replace(".", "").replace(",", "."))
                 if numero > 10000:
                     valor = v
                     break
             except:
                 pass
+        if not valor:
+            print(f"DEBUG: Bloco {i} ({titulo}) - Valor não capturado")
 
         # QUARTOS
-        quartos = ""
-        m = re.search(
-            r'(\d+)\s*DORMIT',
-            bloco,
-            re.IGNORECASE
-        )
-        if m:
-            quartos = m.group(1)
+        m = re.search(r'(\d+)\s*DORMIT', bloco, re.IGNORECASE)
+        quartos = m.group(1) if m else ""
 
         # ÁREA
-        area = ""
-        m = re.search(
-            r'(\d+)m²',
-            bloco
-        )
-        if m:
-            area = m.group(1)
+        m = re.search(r'(\d+)m²', bloco)
+        area = m.group(1) if m else ""
 
         # RUA
         rua = ""
@@ -194,64 +166,33 @@ def extrair_imoveis(texto):
             if "Rua" in linha or "Av." in linha:
                 rua = linha.strip()
                 break
+        if not rua:
+            print(f"DEBUG: Bloco {i} ({titulo}) - Rua não encontrada")
 
         # BAIRRO
-        bairro = ""
-        m = re.search(
-            r',\s*(.*?)\s*-\s*Praia Grande',
-            bloco
-        )
-        if m:
-            bairro = m.group(1)
+        m = re.search(r',\s*(.*?)\s*-\s*Praia Grande', bloco)
+        bairro = m.group(1) if m else ""
 
         # CONDOMINIO
-        condominio = ""
-        m = re.search(
-            r'Condomínio\s*R\$\s*([\d\.\,]+)',
-            bloco,
-            re.IGNORECASE
-        )
-        if m:
-            condominio = m.group(1)
+        m = re.search(r'Condomínio\s*R\$\s*([\d\.\,]+)', bloco, re.IGNORECASE)
+        condominio = m.group(1) if m else ""
 
         # IPTU
-        iptu = ""
-        m = re.search(
-            r'IPTU\s*R\$\s*([\d\.\,]+)',
-            bloco,
-            re.IGNORECASE
-        )
-        if m:
-            iptu = m.group(1)
+        m = re.search(r'IPTU\s*R\$\s*([\d\.\,]+)', bloco, re.IGNORECASE)
+        iptu = m.group(1) if m else ""
 
         # VAGA
-        vaga = ""
-        m = re.search(
-            r'(\d+)\s*vaga',
-            bloco,
-            re.IGNORECASE
-        )
-        if m:
-            vaga = m.group(1)
+        m = re.search(r'(\d+)\s*vaga', bloco, re.IGNORECASE)
+        vaga = m.group(1) if m else ""
 
         imoveis.append({
-            "titulo": titulo,
-            "valor": valor,
-            "quartos": quartos,
-            "area": area,
-            "rua": rua,
-            "bairro": bairro,
-            "condominio": condominio,
-            "iptu": iptu,
-            "vaga": vaga
+            "titulo": titulo, "valor": valor, "quartos": quartos,
+            "area": area, "rua": rua, "bairro": bairro,
+            "condominio": condominio, "iptu": iptu, "vaga": vaga
         })
 
-    imoveis = [
-        limpar_imovel(i)
-        for i in imoveis
-    ]
-    return imoveis
-
+    print(f"DEBUG: Total de imóveis extraídos com sucesso: {len(imoveis)}")
+    return [limpar_imovel(i) for i in imoveis]
 
 def verificar_sessao(f):
     @wraps(f)
