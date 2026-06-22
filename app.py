@@ -180,7 +180,6 @@ def limpar_prefixo_fotos_func():
 
 
 @app.route("/limpar_prefixo_fotos")
-@verificar_sessao
 def limpar_prefixo_fotos_rota():
 
     limpar_prefixo_fotos_func()
