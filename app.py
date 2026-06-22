@@ -1359,46 +1359,42 @@ def alterar_senha_usuario(id):
 @app.route("/analisar_pdf", methods=["POST"])
 @verificar_sessao
 def analisar_pdf():
-
     arquivo = request.files.get("pdf")
 
     if not arquivo:
-        return "PDF não enviado"
+        return "PDF não enviado", 400
 
+    # Configuração de diretório
     pasta = "data/uploads/pdf"
-
     os.makedirs(pasta, exist_ok=True)
+    caminho = os.path.join(pasta, arquivo.filename)
 
-    caminho = os.path.join(
-        pasta,
-        arquivo.filename
-    )
-
+    # Salva o arquivo temporariamente
     arquivo.save(caminho)
 
     texto = ""
-    print("COMEÇOU PDF")
-    with pdfplumber.open(
-        caminho,
-        laparams={
-            "detect_vertical": False
-        }
-    ) as pdf:
-        for pagina in pdf.pages:
-
-            conteudo = pagina.extract_text()
-
-            if conteudo:
-                texto += conteudo + "\n"
-
-    imoveis = extrair_imoveis(texto)
+    print("COMEÇOU EXTRAÇÃO PDF")
     
-    print(imoveis)
+    try:
+        with pdfplumber.open(caminho, laparams={"detect_vertical": False}) as pdf:
+            for pagina in pdf.pages:
+                conteudo = pagina.extract_text()
+                if conteudo:
+                    texto += conteudo + "\n"
+        
+        # Processa a extração
+        imoveis = extrair_imoveis(texto)
+        print(f"Foram encontrados {len(imoveis)} imóveis.")
+
+    finally:
+        # Garante que o arquivo será deletado mesmo que ocorra um erro
+        if os.path.exists(caminho):
+            os.remove(caminho)
+
     return render_template(
         "preview_importacao.html",
         imoveis=imoveis
     )
-
 
 @app.route("/status_whatsapp")
 @verificar_sessao
