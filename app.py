@@ -427,7 +427,111 @@ def init_db():
     print("Banco de dados atualizado com sucesso!")
     print(f"Banco utilizado: {DB_PATH}")
 
+def baixar_fotos_drive(link, imovel_id):
 
+    import os
+    import gdown
+
+
+    pasta_final = app.config['UPLOAD_FOLDER_IMOVEIS']
+
+
+    os.makedirs(
+        pasta_final,
+        exist_ok=True
+    )
+
+
+    pasta_temp = os.path.join(
+        pasta_final,
+        f"temp_{imovel_id}"
+    )
+
+
+    os.makedirs(
+        pasta_temp,
+        exist_ok=True
+    )
+
+
+    try:
+
+        print("BAIXANDO DRIVE:", link)
+
+
+        gdown.download_folder(
+            url=link,
+            output=pasta_temp,
+            quiet=False
+        )
+
+
+        fotos = []
+
+
+        for arquivo in os.listdir(pasta_temp):
+
+            if arquivo.lower().endswith(
+                (
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".webp"
+                )
+            ):
+
+
+                origem = os.path.join(
+                    pasta_temp,
+                    arquivo
+                )
+
+
+                nome_foto = (
+                    f"{imovel_id}_"
+                    f"{arquivo}"
+                )
+
+
+                destino = os.path.join(
+                    pasta_final,
+                    nome_foto
+                )
+
+
+                os.rename(
+                    origem,
+                    destino
+                )
+
+
+                fotos.append(nome_foto)
+
+
+                print(
+                    "FOTO MOVIDA:",
+                    nome_foto
+                )
+
+
+        try:
+            os.rmdir(pasta_temp)
+        except:
+            pass
+
+
+        return fotos
+
+
+
+    except Exception as e:
+
+        print(
+            "ERRO DRIVE:",
+            e
+        )
+
+        return []
 
 
 def atualizar_banco():
@@ -2405,9 +2509,7 @@ def logo_empresa(arquivo):
 def importar_imoveis_pdf():
 
     import json
-    import os
-    from werkzeug.utils import secure_filename
-    from datetime import datetime
+    import sqlite3
 
 
     dados = json.loads(
@@ -2425,12 +2527,12 @@ def importar_imoveis_pdf():
     )
 
 
-    print("TOTAL IMOVEIS:", len(dados))
-    print("TOTAL LINKS:", len(links))
-
-
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+
+
+    print("TOTAL IMOVEIS:", len(dados))
+    print("TOTAL LINKS:", len(links))
 
 
 
@@ -2441,9 +2543,9 @@ def importar_imoveis_pdf():
 
 
 
-        # =========================
+        # ======================
         # CADASTRA IMOVEL
-        # =========================
+        # ======================
 
         cursor.execute("""
         INSERT INTO imoveis
@@ -2495,9 +2597,9 @@ def importar_imoveis_pdf():
 
 
 
-        # =========================
-        # LINK DRIVE
-        # =========================
+        # ======================
+        # PEGA DRIVE
+        # ======================
 
         link_drive = ""
 
@@ -2518,95 +2620,52 @@ def importar_imoveis_pdf():
         ):
 
 
-            print(
-                "BAIXANDO:",
-                link_drive
-            )
-
-
             fotos = baixar_fotos_drive(
                 link_drive,
                 imovel_id
             )
 
 
+
         else:
 
             print(
-                "SEM DRIVE:",
-                link_drive
+                "SEM LINK DRIVE"
             )
 
 
 
-
-        # =========================
-        # RENOMEIA E SALVA FOTOS
-        # =========================
-
+        # ======================
+        # SALVA FOTOS NO BANCO
+        # ======================
 
         for foto in fotos:
 
 
-            nome_original = foto
-
-
-            nome_foto = (
-                f"{imovel_id}_"
-                f"{int(datetime.now().timestamp())}_"
-                f"{secure_filename(nome_original)}"
+            cursor.execute("""
+            INSERT INTO fotos_imoveis
+            (
+            imovel_id,
+            nome_arquivo
             )
+            VALUES (?,?)
+            """,
+            (
+            imovel_id,
+            foto
+            ))
 
 
 
-            origem = os.path.join(
-                app.config['UPLOAD_FOLDER_IMOVEIS'],
-                nome_original
+            print(
+                "FOTO BANCO:",
+                foto
             )
-
-
-            destino = os.path.join(
-                app.config['UPLOAD_FOLDER_IMOVEIS'],
-                nome_foto
-            )
-
-
-
-            if os.path.exists(origem):
-
-
-                os.rename(
-                    origem,
-                    destino
-                )
-
-
-
-                cursor.execute("""
-                INSERT INTO fotos_imoveis
-                (
-                imovel_id,
-                nome_arquivo
-                )
-                VALUES (?,?)
-                """,
-                (
-                imovel_id,
-                nome_foto
-                ))
-
-
-                print(
-                    "FOTO SALVA:",
-                    nome_foto
-                )
-
 
 
 
     conn.commit()
     conn.close()
-
 
 
     return redirect("/imoveis")
