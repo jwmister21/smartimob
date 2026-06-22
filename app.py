@@ -96,6 +96,57 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
 
+
+def recuperar_fotos():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome_arquivo
+        FROM fotos_imoveis
+    """)
+
+    fotos = cursor.fetchall()
+
+
+    for foto_id, nome in fotos:
+
+        partes = nome.split("_")
+
+        if len(partes) >= 4:
+
+            try:
+                possivel_id = partes[2]
+
+                if possivel_id.isdigit():
+
+                    cursor.execute("""
+                    UPDATE fotos_imoveis
+                    SET imovel_id = ?
+                    WHERE id = ?
+                    """,
+                    (
+                    int(possivel_id),
+                    foto_id
+                    ))
+
+            except:
+                pass
+
+
+    conn.commit()
+    conn.close()
+
+
+@app.route("/recuperar_fotos")
+@verificar_sessao
+def recuperar_fotos_rota():
+
+    recuperar_fotos()
+
+    return "Fotos recuperadas com sucesso"
+
 def baixar_fotos_drive(link, imovel_id):
 
     import os
