@@ -438,6 +438,7 @@ def baixar_fotos_drive(link, imovel_id):
 
     pasta_final = app.config['UPLOAD_FOLDER_IMOVEIS']
 
+
     os.makedirs(
         pasta_final,
         exist_ok=True
@@ -456,35 +457,36 @@ def baixar_fotos_drive(link, imovel_id):
     )
 
 
-    fotos = []
-
-
-    print("INICIANDO DRIVE:", link)
+    print(
+        "BAIXANDO DRIVE:",
+        link
+    )
 
 
     try:
 
-
         gdown.download_folder(
             url=link,
             output=pasta_temp,
-            quiet=False,
-            remaining_ok=True
+            quiet=False
         )
 
 
     except Exception as e:
 
         print(
-            "AVISO DRIVE:",
+            "ERRO DRIVE (IGNORADO):",
             e
         )
 
 
 
-    # procura tudo que conseguiu baixar
+    fotos = []
 
-    for raiz, pastas, arquivos in os.walk(pasta_temp):
+
+    # varre o que conseguiu baixar
+
+    for raiz, diretorios, arquivos in os.walk(pasta_temp):
 
 
         for arquivo in arquivos:
@@ -506,7 +508,6 @@ def baixar_fotos_drive(link, imovel_id):
                 raiz,
                 arquivo
             )
-
 
 
             novo_nome = (
@@ -534,13 +535,11 @@ def baixar_fotos_drive(link, imovel_id):
 
 
             print(
-                "FOTO IMPORTADA:",
+                "FOTO SALVA:",
                 novo_nome
             )
 
 
-
-    # apaga temp
 
     shutil.rmtree(
         pasta_temp,
