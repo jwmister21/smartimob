@@ -140,12 +140,12 @@ def recuperar_fotos():
 
 
 @app.route("/recuperar_fotos")
-@verificar_sessao
 def recuperar_fotos_rota():
 
     recuperar_fotos()
 
-    return "Fotos recuperadas com sucesso"
+    return "RECUPERAÇÃO FINALIZADA"
+
 
 def baixar_fotos_drive(link, imovel_id):
 
