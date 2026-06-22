@@ -115,7 +115,12 @@ def extrair_imoveis(texto):
         titulo = "ED. " + linhas[0].strip()
 
 
-        # pega valores acima de 10 mil (ignora condomínio/iptu)
+        # remove lixo
+        if "Tabela de imóveis" in titulo:
+            continue
+
+
+        # VALOR DO IMÓVEL
         valores = re.findall(
             r'R\$\s*([\d\.\,]+)',
             bloco
@@ -129,7 +134,7 @@ def extrair_imoveis(texto):
 
                 numero = float(
                     v.replace(".", "")
-                     .replace(",", ".")
+                    .replace(",", ".")
                 )
 
                 if numero > 10000:
@@ -141,36 +146,106 @@ def extrair_imoveis(texto):
 
 
 
-        # quartos
+        # QUARTOS
+
         quartos = ""
 
-        dorm = re.search(
+        m = re.search(
             r'(\d+)\s*DORMIT',
             bloco,
             re.IGNORECASE
         )
 
-        if dorm:
-            quartos = dorm.group(1)
+        if m:
+            quartos = m.group(1)
 
 
 
-        # área
+        # ÁREA
+
         area = ""
 
-        metragem = re.search(
+        m = re.search(
             r'(\d+)m²',
             bloco
         )
 
-        if metragem:
-            area = metragem.group(1)
+        if m:
+            area = m.group(1)
 
 
 
-        # ignora coisas que não são imóvel
-        if "Tabela de imóveis" in titulo:
-            continue
+        # RUA
+
+        rua = ""
+
+        for linha in linhas:
+
+            if "Rua" in linha or "Av." in linha:
+
+                rua = linha.strip()
+                break
+
+
+
+        # BAIRRO
+
+        bairro = ""
+
+        m = re.search(
+            r',\s*(.*?)\s*-\s*Praia Grande',
+            bloco
+        )
+
+        if m:
+
+            bairro = m.group(1)
+
+
+
+        # CONDOMINIO
+
+        condominio = ""
+
+        m = re.search(
+            r'Condomínio\s*R\$\s*([\d\.\,]+)',
+            bloco,
+            re.IGNORECASE
+        )
+
+        if m:
+            condominio = m.group(1)
+
+
+
+        # IPTU
+
+        iptu = ""
+
+        m = re.search(
+            r'IPTU\s*R\$\s*([\d\.\,]+)',
+            bloco,
+            re.IGNORECASE
+        )
+
+        if m:
+            iptu = m.group(1)
+
+
+
+        # VAGA
+
+        vaga = ""
+
+        m = re.search(
+            r'(\d+)\s*vaga',
+            bloco,
+            re.IGNORECASE
+        )
+
+        if m:
+            vaga = m.group(1)
+
 
 
         imoveis.append({
@@ -178,7 +253,12 @@ def extrair_imoveis(texto):
             "titulo": titulo,
             "valor": valor,
             "quartos": quartos,
-            "area": area
+            "area": area,
+            "rua": rua,
+            "bairro": bairro,
+            "condominio": condominio,
+            "iptu": iptu,
+            "vaga": vaga
 
         })
 
