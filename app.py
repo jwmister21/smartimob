@@ -98,15 +98,17 @@ def injetar_lembretes():
 
 def baixar_fotos_drive(link, imovel_id):
 
+    import os
+    import gdown
+
+
     pasta = f"data/uploads/imoveis/{imovel_id}"
+
 
     os.makedirs(
         pasta,
         exist_ok=True
     )
-
-
-    pasta_drive = link.split("/")[-1]
 
 
     try:
@@ -128,7 +130,10 @@ def baixar_fotos_drive(link, imovel_id):
             ):
 
                 fotos.append(
-                    f"{pasta}/{arquivo}"
+                    os.path.join(
+                        pasta,
+                        arquivo
+                    )
                 )
 
 
@@ -155,20 +160,24 @@ def extrair_links_pdf(caminho):
         if "/Annots" not in pagina:
             continue
 
+
         for anotacao in pagina["/Annots"]:
 
             obj = anotacao.get_object()
+
 
             if obj.get("/A"):
 
                 uri = obj["/A"].get("/URI")
 
-                if uri:
+
+                # COLOCA AQUI 👇
+                if uri and "drive.google.com" in str(uri):
+
                     links.append(str(uri))
 
 
     return links
-
 def limpar_imovel(imovel):
     print(f"DEBUG: Limpando imovel: {imovel.get('titulo')}")
     
@@ -2363,10 +2372,13 @@ def importar_imoveis_pdf():
         request.form["links"]
     )
 
-
     selecionados = request.form.getlist(
         "selecionados"
     )
+
+
+    print("TOTAL IMOVEIS:", len(dados))
+    print("TOTAL LINKS:", len(links))
 
 
     conn = sqlite3.connect(DB_PATH)
@@ -2376,6 +2388,9 @@ def importar_imoveis_pdf():
     for x in selecionados:
 
         i = dados[int(x)]
+
+
+        # salva imóvel
 
         cursor.execute("""
         INSERT INTO imoveis
@@ -2398,39 +2413,84 @@ def importar_imoveis_pdf():
         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
         (
-        i["titulo"],
+        i.get("titulo"),
         session["empresa_id"],
         "Apartamento",
-        i["valor"],
+        i.get("valor"),
         "Praia Grande",
-        i["bairro"],
-        i["quartos"],
-        i["area"],
+        i.get("bairro"),
+        i.get("quartos"),
+        i.get("area"),
         "Disponível",
         session["usuario_id"],
-        i["rua"],
-        i["iptu"],
-        i["condominio"],
-        i["vaga"]
+        i.get("rua"),
+        i.get("iptu"),
+        i.get("condominio"),
+        i.get("vaga")
         ))
 
 
-        # pega ID criado
+
+        # id do imóvel criado
+
         imovel_id = cursor.lastrowid
 
 
-        # pega link correspondente
-        link_drive = links[int(x)]
-
-
-        # baixa fotos
-        fotos = baixar_fotos_drive(
-            link_drive,
-            imovel_id
+        print(
+            "IMOVEL CRIADO:",
+            imovel_id,
+            i.get("titulo")
         )
 
 
+
+        # pega link correspondente
+
+        link_drive = ""
+
+        if int(x) < len(links):
+
+            link_drive = links[int(x)]
+
+
+
+        fotos = []
+
+
+        # só tenta Google Drive
+
+        if (
+            link_drive
+            and "drive.google.com" in link_drive
+        ):
+
+            print(
+                "BAIXANDO FOTOS:",
+                link_drive
+            )
+
+
+            fotos = baixar_fotos_drive(
+                link_drive,
+                imovel_id
+            )
+
+
+        else:
+
+            print(
+                "LINK IGNORADO:",
+                link_drive
+            )
+
+
+
+        # grava fotos no banco
+
         for foto in fotos:
+
+            nome = foto.split("/")[-1]
+
 
             cursor.execute("""
             INSERT INTO fotos_imoveis
@@ -2442,8 +2502,14 @@ def importar_imoveis_pdf():
             """,
             (
             imovel_id,
-            foto.split("/")[-1]
+            nome
             ))
+
+
+            print(
+                "FOTO SALVA:",
+                nome
+            )
 
 
 
@@ -2452,7 +2518,6 @@ def importar_imoveis_pdf():
 
 
     return redirect("/imoveis")
-
 
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
