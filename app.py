@@ -257,6 +257,39 @@ def extrair_imoveis(texto):
     print(f"DEBUG: Total de imóveis extraídos com sucesso: {len(imoveis)}")
     return [limpar_imovel(i) for i in imoveis]
 
+def extrair_links_pdf(caminho):
+
+    from pypdf import PdfReader
+
+    links = []
+
+    reader = PdfReader(caminho)
+
+
+    for pagina in reader.pages:
+
+
+        if "/Annots" not in pagina:
+            continue
+
+
+        for anotacao in pagina["/Annots"]:
+
+            obj = anotacao.get_object()
+
+
+            if obj.get("/A"):
+
+                uri = obj["/A"].get("/URI")
+
+
+                if uri and "drive.google.com" in str(uri):
+
+                    links.append(str(uri))
+
+
+    return links
+
 def verificar_sessao(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
