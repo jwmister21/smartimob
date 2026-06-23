@@ -65,6 +65,27 @@
                     <option value="Venda" {% if imovel['status'] == 'Venda' %}selected{% endif %}>Venda</option>
                     <option value="Aluguel" {% if imovel['status'] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
                 </select>
+                <div class="mb-3">
+    <label class="form-label">
+        Compartilhamento FIFIT
+    </label>
+
+    <select name="compartilhar_fifit" class="form-select">
+        <option value="0"
+            {% if imovel.compartilhar_fifit == 0 %}selected{% endif %}>
+            Não compartilhar
+        </option>
+
+        <option value="1"
+            {% if imovel.compartilhar_fifit == 1 %}selected{% endif %}>
+            Compartilhar na Rede FIFIT
+        </option>
+    </select>
+
+    <small class="text-muted">
+        Outros corretores poderão visualizar este imóvel na Rede FIFIT e solicitar contato.
+    </small>
+</div>
             </div>
         </div>
 
