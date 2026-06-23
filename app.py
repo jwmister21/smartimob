@@ -1001,17 +1001,21 @@ def fifit():
 
     cursor = conn.cursor()
 
-    # Busca imóveis compartilhados no FIFIT
     cursor.execute("""
-        SELECT *
-        FROM imoveis
-        WHERE compartilhar_fifit = 1
-        ORDER BY id DESC
+        SELECT
+            i.*,
+            u.nome AS corretor_nome,
+            u.telefone AS corretor_telefone,
+            u.foto_url AS corretor_foto
+        FROM imoveis i
+        LEFT JOIN usuarios u
+            ON u.id = i.usuario_id
+        WHERE i.compartilhar_fifit = 1
+        ORDER BY i.id DESC
     """)
 
     imoveis = cursor.fetchall()
 
-    # Adiciona as fotos para cada imóvel
     imoveis_com_fotos = []
 
     for imovel in imoveis:
@@ -1039,7 +1043,7 @@ def fifit():
         "fifit.html",
         imoveis=imoveis_com_fotos
     )
-
+ 
 @app.route("/catalogo")
 def catalogo():
 
