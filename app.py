@@ -754,7 +754,7 @@ def leads_site():
 @verificar_sessao
 def enviar_imovel_link(imovel_id, telefone):
 
-    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+    WPP_URL = "https://wppsmart-production.up.railway.app"
 
 
     conn = sqlite3.connect(DB_PATH)
@@ -1443,7 +1443,7 @@ def conectar_whatsapp():
     conn.close()
 
     r = requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/criar-sessao",
+        "https://wppsmart-production.up.railway.app/criar-sessao",
         json={
             "sessao": usuario["whatsapp_sessao"]
         }
@@ -1493,7 +1493,7 @@ def verificar_conexao_whatsapp():
 
     try:
         r = requests.get(
-            f"https://zoom-leggings-viability.ngrok-free.dev/status/{sessao}"
+            f"https://wppsmart-production.up.railway.app/status/{sessao}"
         )
 
         data = r.json()
@@ -2063,7 +2063,7 @@ def campanhas():
 @verificar_sessao
 def enviar_mensagem():
 
-    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+    WPP_URL = "https://wppsmart-production.up.railway.app"
 
 
     data = request.get_json()
@@ -2244,7 +2244,7 @@ Encontrei um imóvel que combina com seu perfil.
 Posso agendar uma visita para você?
 """
 
-        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+        WPP_URL = "https://wppsmart-production.up.railway.app"
 
         resp = requests.post(
 
@@ -2895,7 +2895,7 @@ def login():
 @verificar_sessao
 def buscar_qr():
 
-    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+    WPP_URL = "https://wppsmart-production.up.railway.app"
 
     usuario_id = session["usuario_id"]
 
@@ -4294,7 +4294,7 @@ def desconectar_whatsapp():
     sessao = f"corretor_{session['usuario_id']}"
 
     requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/desconectar",
+        "https://wppsmart-production.up.railway.app/desconectar",
         json={
             "sessao": sessao
         }
