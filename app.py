@@ -2312,13 +2312,14 @@ def enviar_imovel_match():
 
 📍 {imovel['bairro']} - {imovel['cidade']}
 
-📍 {imovel['link']} - 🛏️ {imovel['quartos']}
+🚗 Vagas > {imovel['link']} - 🛏️ Quartos > {imovel['quartos']}
 
 Olá {cliente['nome']}!
 
 Encontrei um imóvel que combina com seu perfil.
 
 Quer ver mais detalhes e fotos > { imovel['link']}?
+Estou aqui para esclarecer duvidas !
 """
 
         WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
