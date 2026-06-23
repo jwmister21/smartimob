@@ -3772,7 +3772,8 @@ def editar_imovel(id):
         prazo = request.form.get("prazo", "")
         anuais = request.form.get("anuais", "")
         entrada = request.form.get("entrada", "")
-        banheiros21 = request.form.get("banheiros21", "") 
+        banheiros21 = request.form.get("banheiros21", "")
+        compartilhar_fifit = int(request.form.get("compartilhar_fifit", 0))
 
         # Atualiza os dados do imóvel
         cursor.execute("""
@@ -3800,7 +3801,8 @@ def editar_imovel(id):
                 prazo=?,
                 anuais=?,
                 entrada=?,
-                banheiros21=?
+                banheiros21=?,
+                compartilhar_fifit=?
             WHERE id=? AND empresa_id=?
         """, (
             titulo,
@@ -3827,6 +3829,7 @@ def editar_imovel(id):
             anuais,
             entrada,
             banheiros21,
+            compartilhar_fifit,
             id,
             empresa_id
         ))
