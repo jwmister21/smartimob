@@ -3176,26 +3176,45 @@ def configuracoes():
 
     UPLOAD_FOLDER = app.config['UPLOAD_FOLDER_PERFIL']
 
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
     if request.method == "POST":
 
-        file = request.files.get('foto')
+        nome = request.form.get("nome", "").strip()
+        telefone = request.form.get("telefone", "").strip()
 
-        if file and file.filename != '':
+        # Atualiza nome e telefone
+        cursor.execute("""
+            UPDATE usuarios
+            SET nome = ?,
+                telefone = ?
+            WHERE id = ?
+            AND empresa_id = ?
+        """, (
+            nome,
+            telefone,
+            session["usuario_id"],
+            session["empresa_id"]
+        ))
+
+        # Foto
+        file = request.files.get("foto")
+
+        if file and file.filename != "":
 
             filename = f"usuario_{session['usuario_id']}.jpg"
+
+            if not os.path.exists(UPLOAD_FOLDER):
+                os.makedirs(UPLOAD_FOLDER)
 
             save_path = os.path.join(
                 UPLOAD_FOLDER,
                 filename
             )
 
-            if not os.path.exists(UPLOAD_FOLDER):
-                os.makedirs(UPLOAD_FOLDER)
-
             file.save(save_path)
-
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
 
             cursor.execute("""
                 UPDATE usuarios
@@ -3208,19 +3227,17 @@ def configuracoes():
                 session["empresa_id"]
             ))
 
-            conn.commit()
-            conn.close()
+        conn.commit()
 
-            return redirect("/configuracoes")
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
+        return redirect("/configuracoes")
 
     # usuário
     cursor.execute("""
-        SELECT nome, foto_url, is_admin
+        SELECT
+            nome,
+            foto_url,
+            is_admin,
+            telefone
         FROM usuarios
         WHERE id = ?
         AND empresa_id = ?
@@ -3249,7 +3266,6 @@ def configuracoes():
         usuario=usuario,
         empresa=empresa
     )
-
 
 
 @app.route("/salvar_logo_imobiliaria", methods=["POST"])
