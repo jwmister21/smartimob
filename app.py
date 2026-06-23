@@ -2062,185 +2062,66 @@ def campanhas():
 @app.route("/enviar_mensagem", methods=["POST"])
 @verificar_sessao
 def enviar_mensagem():
-
     try:
-
         data = request.get_json() or {}
+        telefone = data.get("telefone")
+        mensagem = data.get("mensagem")
 
-
-        contatos = data.get("contatos")
-        mensagem_base = data.get("mensagem")
-
-
-
-        if not contatos or not mensagem_base:
-
+        if not telefone or not mensagem:
             return jsonify({
-
-                "status":"error",
-                "erro":"Contatos e mensagem obrigatórios"
-
+                "status": "error",
+                "erro": "Telefone e mensagem obrigatórios"
             })
-
-
 
         empresa_id = session["empresa_id"]
         usuario_id = session["usuario_id"]
 
-
-
-
+        # Conexão com banco de dados
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-
         cursor = conn.cursor()
 
-
-
+        # Pega whatsapp do usuário
         cursor.execute("""
             SELECT whatsapp_sessao
             FROM usuarios
-            WHERE id = ?
-            AND empresa_id = ?
-        """,
-        (
-            usuario_id,
-            empresa_id
-        ))
-
-
+            WHERE id = ? AND empresa_id = ?
+        """, (usuario_id, empresa_id))
 
         usuario = cursor.fetchone()
-
-
         conn.close()
 
-
-
         if not usuario:
-
             return jsonify({
-
-                "status":"error",
-                "erro":"WhatsApp não configurado"
-
+                "status": "error",
+                "erro": "WhatsApp não configurado"
             })
 
+        # Formatação do telefone
+        telefone = ''.join(filter(str.isdigit, str(telefone)))
+        if not telefone.startswith("55"):
+            telefone = "55" + telefone
 
-
-
-
-
+        # Chamada para o servidor de WhatsApp
         WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+        
+        resp = requests.post(
+            f"{WPP_URL}/enviar",
+            json={
+                "sessao": usuario["whatsapp_sessao"],
+                "numero": telefone,
+                "mensagem": mensagem
+            },
+            timeout=15
+        )
 
-
-
-
-        enviados = []
-
-
-
-
-
-        for linha in contatos.split("\n"):
-
-
-            try:
-
-
-                nome, telefone = linha.split(",")
-
-
-
-                telefone = ''.join(
-                    filter(
-                        str.isdigit,
-                        telefone
-                    )
-                )
-
-
-
-                if not telefone.startswith("55"):
-
-                    telefone="55"+telefone
-
-
-
-
-
-
-                mensagem = mensagem_base.replace(
-                    "{nome}",
-                    nome.strip()
-                )
-
-
-
-
-
-
-                requests.post(
-
-                    f"{WPP_URL}/enviar",
-
-                    json={
-
-                        "sessao":
-                        usuario["whatsapp_sessao"],
-
-                        "numero":
-                        telefone,
-
-                        "mensagem":
-                        mensagem
-
-                    },
-
-                    timeout=15
-
-                )
-
-
-
-                enviados.append(nome)
-
-
-
-            except Exception as erro:
-
-                print(
-                    "erro contato:",
-                    erro
-                )
-
-
-
-
-
-
-        return jsonify({
-
-            "status":"ok",
-
-            "enviados":enviados
-
-        })
-
-
-
-
-
+        return jsonify(resp.json())
 
     except Exception as e:
-
-
+        print("ERRO MENSAGEM:", e)
         return jsonify({
-
-            "status":"error",
-
-            "erro":str(e)
-
+            "status": "error",
+            "erro": str(e)
         })
      
 @app.route("/enviar_imovel_match", methods=["POST"])
