@@ -2066,42 +2066,28 @@ def enviar_mensagem():
     WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
 
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
 
+
+    sessao = data.get("sessao")
     telefone = data.get("telefone")
     mensagem = data.get("mensagem")
 
-    usuario_id = session["usuario_id"]
+
+
+    if not sessao or not telefone or not mensagem:
+
+        return jsonify({
+
+            "status":"error",
+            "erro":"Dados incompletos"
+
+        }),400
+
+
 
 
     try:
-
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-
-        cursor = conn.cursor()
-
-
-        cursor.execute("""
-            SELECT whatsapp_sessao
-            FROM usuarios
-            WHERE id = ?
-        """, (usuario_id,))
-
-
-        usuario = cursor.fetchone()
-
-        conn.close()
-
-
-
-        if not usuario:
-
-            return jsonify({
-                "status": "error",
-                "erro": "Usuário não encontrado"
-            })
-
 
 
         resp = requests.post(
@@ -2110,20 +2096,18 @@ def enviar_mensagem():
 
             json={
 
-                "sessao":
-                    usuario["whatsapp_sessao"],
+                "sessao":sessao,
 
-                "numero":
-                    telefone,
+                "numero":telefone,
 
-                "mensagem":
-                    mensagem
+                "mensagem":mensagem
 
             },
 
-            timeout=120
+            timeout=15
 
         )
+
 
 
         return jsonify(
@@ -2132,19 +2116,23 @@ def enviar_mensagem():
 
 
 
+
     except Exception as e:
 
 
-        print("ERRO ENVIO:", e)
+        print(
+            "ERRO ENVIO:",
+            e
+        )
 
 
         return jsonify({
 
-            "status": "error",
+            "status":"error",
 
-            "erro": str(e)
+            "erro":"Falha no WhatsApp"
 
-        })
+        }),500
 
 @app.route("/enviar_imovel_match", methods=["POST"])
 @verificar_sessao
