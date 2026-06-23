@@ -2312,7 +2312,7 @@ def enviar_imovel_match():
 
 📍 {imovel['bairro']} - {imovel['cidade']}
 
-🚗 Vagas > {imovel['link']} - 🛏️ Quartos > {imovel['quartos']}
+🚗 Vagas > {imovel['vaga_garagem']} - 🛏️ Quartos > {imovel['quartos']}
 
 Olá {cliente['nome']}!
 
