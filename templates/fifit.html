@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}Rede FIFIT{% endblock %}
+{% block pagina %}🤝 Rede FIFIT{% endblock %}
+
+{% block content %}
+
+<style>
+
+.fifit-header{
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:25px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.fifit-header h3{
+    margin:0;
+    font-weight:700;
+}
+
+.fifit-header p{
+    margin-top:8px;
+    color:#666;
+}
+
+.fifit-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:20px;
+}
+
+.imovel-card{
+    background:#fff;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    transition:.2s;
+}
+
+.imovel-card:hover{
+    transform:translateY(-3px);
+}
+
+.imovel-foto{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+    background:#f5f5f5;
+}
+
+.imovel-info{
+    padding:18px;
+}
+
+.imovel-titulo{
+    font-size:18px;
+    font-weight:700;
+    margin-bottom:10px;
+}
+
+.imovel-local{
+    color:#666;
+    margin-bottom:10px;
+}
+
+.imovel-valor{
+    color:#16a34a;
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+.imovel-detalhes{
+    display:flex;
+    gap:15px;
+    margin-bottom:20px;
+    color:#555;
+}
+
+.btn-fifit{
+    width:100%;
+    border:none;
+    border-radius:10px;
+    padding:12px;
+    font-weight:600;
+    background:#0d6efd;
+    color:white;
+    cursor:pointer;
+}
+
+.btn-fifit:hover{
+    opacity:.9;
+}
+
+.sem-imoveis{
+    background:#fff;
+    padding:40px;
+    text-align:center;
+    border-radius:15px;
+}
+
+</style>
+
+<div class="fifit-header">
+    <h3>🤝 Rede FIFIT</h3>
+
+    <p>
+        Encontre imóveis compartilhados por outros corretores da plataforma.
+        Solicite contato e gere novas oportunidades de negócio.
+    </p>
+</div>
+
+{% if imoveis %}
+
+<div class="fifit-grid">
+
+{% for imovel in imoveis %}
+
+<div class="imovel-card">
+
+    {% if imovel.foto_principal %}
+        <img
+            src="{{ url_for('static', filename='uploads/imoveis/' + imovel.foto_principal) }}"
+            class="imovel-foto">
+    {% else %}
+        <img
+            src="https://via.placeholder.com/600x400?text=Imóvel"
+            class="imovel-foto">
+    {% endif %}
+
+    <div class="imovel-info">
+
+        <div class="imovel-titulo">
+            {{ imovel.titulo }}
+        </div>
+
+        <div class="imovel-local">
+            📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+        </div>
+
+        <div class="imovel-valor">
+            R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+        </div>
+
+        <div class="imovel-detalhes">
+            <span>🛏 {{ imovel.quartos }}</span>
+            <span>🚿 {{ imovel.banheiros }}</span>
+            <span>📐 {{ imovel.area }}m²</span>
+        </div>
+
+        <a href="/informa_imovel/{{ imovel.id }}">
+            <button class="btn-fifit">
+                Ver Imóvel
+            </button>
+        </a>
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="sem-imoveis">
+
+    <h4>Nenhum imóvel compartilhado</h4>
+
+    <p>
+        Ainda não existem imóveis disponíveis na Rede FIFIT.
+    </p>
+
+</div>
+
+{% endif %}
+
+{% endblock %}
