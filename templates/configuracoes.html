@@ -103,12 +103,21 @@ label{
             >
 
             <label>Nome:</label>
-            <input
-                type="text"
-                name="nome"
-                class="form-control"
-                value="{{ usuario[0] }}"
-            >
+<input
+    type="text"
+    name="nome"
+    class="form-control"
+    value="{{ usuario['nome'] }}"
+>
+
+<label>Telefone:</label>
+<input
+    type="text"
+    name="telefone"
+    class="form-control"
+    value="{{ usuario['telefone'] or '' }}"
+    placeholder="5511999999999"
+>
 
             <button type="submit" class="btn-salvar">
                 Salvar Perfil
