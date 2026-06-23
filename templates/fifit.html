@@ -92,6 +92,17 @@
     margin-bottom:8px;
 }
 
+.badge-parceria{
+    display:inline-block;
+    background:#dcfce7;
+    color:#166534;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:12px;
+}
+
 .titulo{
     font-size:17px;
     font-weight:700;
@@ -123,184 +134,150 @@
     width:100%;
     text-align:center;
     text-decoration:none;
-    background:#2563eb;
     color:white;
     padding:12px;
     border-radius:10px;
     font-weight:600;
-    transition:.2s;
-}
-
-.btn-fifit:hover{
-    background:#1d4ed8;
-}
-
-.sem-foto{
-    height:230px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#f1f5f9;
-    font-size:60px;
-}
-
-.sem-imoveis{
-    background:white;
-    border-radius:20px;
-    padding:50px;
-    text-align:center;
-    box-shadow:0 4px 10px rgba(0,0,0,.08);
-}
-
-.badge-fifit{
-    display:inline-block;
-    background:#dcfce7;
-    color:#166534;
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:600;
-    margin-top:10px;
 }
 
 </style>
 
 <div class="fifit-header">
-
     <h2>🤝 Rede FIFIT</h2>
 
     <p>
         Imóveis compartilhados por corretores parceiros.
-        Encontre oportunidades e amplie suas possibilidades de negócio.
     </p>
-
-    <span class="badge-fifit">
-        {{ imoveis|length }} imóvel(is) disponível(is)
-    </span>
-
 </div>
-
-{% if imoveis %}
 
 <div class="grid-imoveis">
 
-    {% for imovel in imoveis %}
+{% for imovel in imoveis %}
 
-    <div class="card-imovel">
+<div class="card-imovel">
 
-        {% if imovel.fotos %}
+    {% if imovel.fotos %}
 
-        <div class="carousel-container" id="carousel-{{ imovel.id }}">
+    <div class="carousel-container" id="carousel-{{ imovel.id }}">
 
-            <div class="carousel-images">
+        <div class="carousel-images">
 
-                {% for foto in imovel.fotos %}
-                <img
-                    src="/uploads/imoveis/{{ foto }}"
-                    alt="Foto do imóvel">
-                {% endfor %}
-
-            </div>
-
-            {% if imovel.fotos|length > 1 %}
-
-            <button
-                class="btn-nav"
-                style="left:10px"
-                onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', -1)">
-                ❮
-            </button>
-
-            <button
-                class="btn-nav"
-                style="right:10px"
-                onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', 1)">
-                ❯
-            </button>
-
-            {% endif %}
+            {% for foto in imovel.fotos %}
+            <img src="/uploads/imoveis/{{ foto }}">
+            {% endfor %}
 
         </div>
 
-        {% else %}
+        {% if imovel.fotos|length > 1 %}
 
-        <div class="sem-foto">
-            🏠
-        </div>
+        <button
+            class="btn-nav"
+            style="left:10px"
+            onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', -1)">
+            ❮
+        </button>
+
+        <button
+            class="btn-nav"
+            style="right:10px"
+            onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', 1)">
+            ❯
+        </button>
 
         {% endif %}
 
-        <div class="info">
+    </div>
 
-            <div class="valor">
-                {{ imovel.valor }}
-            </div>
+    {% endif %}
 
-            <div class="titulo">
-                {{ imovel.tipo }}
-            </div>
+    <div class="info">
 
-            <div class="local">
-                📍 {{ imovel.bairro }}, {{ imovel.cidade }}
-            </div>
-
-            <div class="detalhes">
-
-                <div>
-                    🛏 {{ imovel.quartos }} Quartos
-                </div>
-
-                <div>
-                    🛁 {{ imovel.banheiros }} Banheiros
-                </div>
-
-                <div>
-                    📐 {{ imovel.area }} m²
-                </div>
-
-                <div>
-                    🏷 {{ imovel.status }}
-                </div>
-
-            </div>
-
+        <div class="valor">
+            {{ imovel.valor }}
         </div>
 
-        <div class="acoes">
+        <div class="badge-parceria">
+            🤝 Disponível para parceria
+        </div>
 
-            <a
-                href="/detalhes_imovel/{{ imovel.id }}"
-                class="btn-fifit">
+        <div class="titulo">
+            {{ imovel.tipo }}
+        </div>
 
-                🤝 Solicitar Parceria
+        <div class="local">
+            📍 {{ imovel.bairro }}, {{ imovel.cidade }}
+        </div>
 
-            </a>
-
+        <div class="detalhes">
+            <div>🛏 {{ imovel.quartos }}</div>
+            <div>🛁 {{ imovel.banheiros }}</div>
+            <div>📐 {{ imovel.area }}m²</div>
+            <div>🏷 {{ imovel.status }}</div>
         </div>
 
     </div>
 
-    {% endfor %}
+    <div class="acoes">
+
+        <div style="
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:10px;
+            padding:12px;
+            margin-bottom:12px;
+        ">
+
+            <div style="font-size:12px;color:#64748b;">
+                Corretor Responsável
+            </div>
+
+            <div style="font-weight:700;margin-top:5px;">
+                👤 {{ imovel.corretor_nome }}
+            </div>
+
+            {% if imovel.corretor_telefone %}
+            <div style="margin-top:5px;color:#16a34a;">
+                📞 {{ imovel.corretor_telefone }}
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% if imovel.corretor_telefone %}
+
+        <a
+            href="https://wa.me/{{ imovel.corretor_telefone }}?text=Olá,%20vi%20seu%20imóvel%20na%20Rede%20FIFIT%20e%20tenho%20interesse%20em%20uma%20parceria."
+            target="_blank"
+            class="btn-fifit"
+            style="background:#16a34a;">
+
+            💬 Falar com Corretor
+
+        </a>
+
+        {% else %}
+
+        <button
+            class="btn-fifit"
+            style="background:#94a3b8;"
+            disabled>
+
+            Telefone não informado
+
+        </button>
+
+        {% endif %}
+
+    </div>
 
 </div>
 
-{% else %}
-
-<div class="sem-imoveis">
-
-    <h3>Nenhum imóvel disponível</h3>
-
-    <p>
-        Ainda não existem imóveis compartilhados na Rede FIFIT.
-    </p>
+{% endfor %}
 
 </div>
-
-{% endif %}
 
 <script>
-
-function mudarFoto(id, dir) {
+function mudarFoto(id, dir){
 
     const carousel = document
         .getElementById(id)
@@ -319,7 +296,6 @@ function mudarFoto(id, dir) {
     carousel.style.transform =
         `translateX(-${idx * 100}%)`;
 }
-
 </script>
 
 {% endblock %}
