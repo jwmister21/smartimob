@@ -2063,56 +2063,143 @@ def campanhas():
 @verificar_sessao
 def enviar_mensagem():
 
-    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-
-
-    data = request.get_json(silent=True) or {}
-
-
-    sessao = data.get("sessao")
-    telefone = data.get("telefone")
-    mensagem = data.get("mensagem")
-
-
-
-    if not sessao or not telefone or not mensagem:
-
-        return jsonify({
-
-            "status":"error",
-            "erro":"Dados incompletos"
-
-        }),400
-
-
-
-
     try:
+
+        data = request.get_json() or {}
+
+
+        telefone = data.get("telefone")
+        mensagem = data.get("mensagem")
+
+
+        if not telefone or not mensagem:
+
+            return jsonify({
+
+                "status":"error",
+                "erro":"Telefone e mensagem obrigatórios"
+
+            })
+
+
+
+        empresa_id = session["empresa_id"]
+        usuario_id = session["usuario_id"]
+
+
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+        cursor = conn.cursor()
+
+
+
+        # pega whatsapp do usuário
+
+        cursor.execute("""
+            SELECT whatsapp_sessao
+            FROM usuarios
+            WHERE id = ?
+            AND empresa_id = ?
+        """,
+        (
+            usuario_id,
+            empresa_id
+        ))
+
+
+
+        usuario = cursor.fetchone()
+
+
+        conn.close()
+
+
+
+
+        if not usuario:
+
+
+            return jsonify({
+
+                "status":"error",
+                "erro":"WhatsApp não configurado"
+
+            })
+
+
+
+
+
+
+        telefone = ''.join(
+
+            filter(
+                str.isdigit,
+                str(telefone)
+            )
+
+        )
+
+
+
+        if not telefone.startswith("55"):
+
+            telefone = "55"+telefone
+
+
+
+
+
+
+
+        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+
+
+
 
 
         resp = requests.post(
 
+
             f"{WPP_URL}/enviar",
+
 
             json={
 
-                "sessao":sessao,
 
-                "numero":telefone,
+                "sessao":
+                usuario["whatsapp_sessao"],
 
-                "mensagem":mensagem
+
+                "numero":
+                telefone,
+
+
+                "mensagem":
+                mensagem
+
 
             },
 
+
             timeout=15
 
+
         )
+
+
+
 
 
 
         return jsonify(
+
             resp.json()
+
         )
+
 
 
 
@@ -2121,7 +2208,7 @@ def enviar_mensagem():
 
 
         print(
-            "ERRO ENVIO:",
+            "ERRO MENSAGEM:",
             e
         )
 
@@ -2130,10 +2217,10 @@ def enviar_mensagem():
 
             "status":"error",
 
-            "erro":"Falha no WhatsApp"
+            "erro":str(e)
 
-        }),500
-
+        })
+     
 @app.route("/enviar_imovel_match", methods=["POST"])
 @verificar_sessao
 def enviar_imovel_match():
