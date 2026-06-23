@@ -3377,6 +3377,7 @@ def criar_login():
     email = request.form.get('email')
     senha_raw = request.form.get('senha')
     nome = request.form.get('nome')
+    telefone = request.form.get('telefone')
     empresa_id = session.get('empresa_id')
 
     senha_hash = generate_password_hash(senha_raw)
@@ -3392,14 +3393,16 @@ def criar_login():
             (
                 email,
                 senha,
+                telefone,
                 empresa_id,
                 nome
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
         """,
         (
             email,
             senha_hash,
+            telefone,
             empresa_id,
             nome
         ))
