@@ -8,159 +8,279 @@
 <style>
 
 .fifit-header{
-    background:#fff;
-    border-radius:15px;
+    background:#ffffff;
+    border-radius:20px;
     padding:25px;
     margin-bottom:25px;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
+    box-shadow:0 4px 10px rgba(0,0,0,.08);
 }
 
-.fifit-header h3{
+.fifit-header h2{
     margin:0;
-    font-weight:700;
+    color:#1e293b;
 }
 
 .fifit-header p{
     margin-top:8px;
-    color:#666;
+    color:#64748b;
 }
 
-.fifit-grid{
+.grid-imoveis{
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-    gap:20px;
+    grid-template-columns:repeat(auto-fill,minmax(350px,1fr));
+    gap:25px;
 }
 
-.imovel-card{
-    background:#fff;
-    border-radius:15px;
+.card-imovel{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:20px;
     overflow:hidden;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
-    transition:.2s;
+    transition:.3s;
+    box-shadow:0 4px 6px -1px rgba(0,0,0,.1);
+    display:flex;
+    flex-direction:column;
 }
 
-.imovel-card:hover{
-    transform:translateY(-3px);
+.card-imovel:hover{
+    transform:translateY(-4px);
 }
 
-.imovel-foto{
+.carousel-container{
+    position:relative;
     width:100%;
-    height:220px;
+    height:230px;
+    overflow:hidden;
+}
+
+.carousel-images{
+    display:flex;
+    transition:transform .5s ease;
+    height:100%;
+}
+
+.carousel-images img{
+    min-width:100%;
+    height:230px;
     object-fit:cover;
-    background:#f5f5f5;
 }
 
-.imovel-info{
-    padding:18px;
+.btn-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(255,255,255,.9);
+    border:none;
+    color:#1e293b;
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    cursor:pointer;
+    z-index:10;
+    font-weight:bold;
 }
 
-.imovel-titulo{
-    font-size:18px;
-    font-weight:700;
-    margin-bottom:10px;
+.info{
+    padding:20px;
+    flex-grow:1;
 }
 
-.imovel-local{
-    color:#666;
-    margin-bottom:10px;
-}
-
-.imovel-valor{
+.valor{
     color:#16a34a;
-    font-size:22px;
+    font-size:24px;
+    font-weight:800;
+    margin-bottom:8px;
+}
+
+.titulo{
+    font-size:17px;
     font-weight:700;
+    color:#1e293b;
+    margin-bottom:8px;
+}
+
+.local{
+    color:#64748b;
+    font-size:13px;
     margin-bottom:15px;
 }
 
-.imovel-detalhes{
-    display:flex;
-    gap:15px;
-    margin-bottom:20px;
-    color:#555;
+.detalhes{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    color:#475569;
+    font-size:13px;
+}
+
+.acoes{
+    padding:15px 20px 20px;
+    border-top:1px solid #f1f5f9;
 }
 
 .btn-fifit{
+    display:block;
     width:100%;
-    border:none;
-    border-radius:10px;
-    padding:12px;
-    font-weight:600;
-    background:#0d6efd;
+    text-align:center;
+    text-decoration:none;
+    background:#2563eb;
     color:white;
-    cursor:pointer;
+    padding:12px;
+    border-radius:10px;
+    font-weight:600;
+    transition:.2s;
 }
 
 .btn-fifit:hover{
-    opacity:.9;
+    background:#1d4ed8;
+}
+
+.sem-foto{
+    height:230px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f1f5f9;
+    font-size:60px;
 }
 
 .sem-imoveis{
-    background:#fff;
-    padding:40px;
+    background:white;
+    border-radius:20px;
+    padding:50px;
     text-align:center;
-    border-radius:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+.badge-fifit{
+    display:inline-block;
+    background:#dcfce7;
+    color:#166534;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+    margin-top:10px;
 }
 
 </style>
 
 <div class="fifit-header">
-    <h3>🤝 Rede FIFIT</h3>
+
+    <h2>🤝 Rede FIFIT</h2>
 
     <p>
-        Encontre imóveis compartilhados por outros corretores da plataforma.
-        Solicite contato e gere novas oportunidades de negócio.
+        Imóveis compartilhados por corretores parceiros.
+        Encontre oportunidades e amplie suas possibilidades de negócio.
     </p>
+
+    <span class="badge-fifit">
+        {{ imoveis|length }} imóvel(is) disponível(is)
+    </span>
+
 </div>
 
 {% if imoveis %}
 
-<div class="fifit-grid">
+<div class="grid-imoveis">
 
-{% for imovel in imoveis %}
+    {% for imovel in imoveis %}
 
-<div class="imovel-card">
+    <div class="card-imovel">
 
-    {% if imovel.foto_principal %}
-        <img
-            src="{{ url_for('static', filename='uploads/imoveis/' + imovel.foto_principal) }}"
-            class="imovel-foto">
-    {% else %}
-        <img
-            src="https://via.placeholder.com/600x400?text=Imóvel"
-            class="imovel-foto">
-    {% endif %}
+        {% if imovel.fotos %}
 
-    <div class="imovel-info">
+        <div class="carousel-container" id="carousel-{{ imovel.id }}">
 
-        <div class="imovel-titulo">
-            {{ imovel.titulo }}
-        </div>
+            <div class="carousel-images">
 
-        <div class="imovel-local">
-            📍 {{ imovel.bairro }} - {{ imovel.cidade }}
-        </div>
+                {% for foto in imovel.fotos %}
+                <img
+                    src="/uploads/imoveis/{{ foto }}"
+                    alt="Foto do imóvel">
+                {% endfor %}
 
-        <div class="imovel-valor">
-            R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
-        </div>
+            </div>
 
-        <div class="imovel-detalhes">
-            <span>🛏 {{ imovel.quartos }}</span>
-            <span>🚿 {{ imovel.banheiros }}</span>
-            <span>📐 {{ imovel.area }}m²</span>
-        </div>
+            {% if imovel.fotos|length > 1 %}
 
-        <a href="/informa_imovel/{{ imovel.id }}">
-            <button class="btn-fifit">
-                Ver Imóvel
+            <button
+                class="btn-nav"
+                style="left:10px"
+                onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', -1)">
+                ❮
             </button>
-        </a>
+
+            <button
+                class="btn-nav"
+                style="right:10px"
+                onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', 1)">
+                ❯
+            </button>
+
+            {% endif %}
+
+        </div>
+
+        {% else %}
+
+        <div class="sem-foto">
+            🏠
+        </div>
+
+        {% endif %}
+
+        <div class="info">
+
+            <div class="valor">
+                R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X", ".") }}
+            </div>
+
+            <div class="titulo">
+                {{ imovel.tipo }}
+            </div>
+
+            <div class="local">
+                📍 {{ imovel.bairro }}, {{ imovel.cidade }}
+            </div>
+
+            <div class="detalhes">
+
+                <div>
+                    🛏 {{ imovel.quartos }} Quartos
+                </div>
+
+                <div>
+                    🛁 {{ imovel.banheiros }} Banheiros
+                </div>
+
+                <div>
+                    📐 {{ imovel.area }} m²
+                </div>
+
+                <div>
+                    🏷 {{ imovel.status }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="acoes">
+
+            <a
+                href="/detalhes_imovel/{{ imovel.id }}"
+                class="btn-fifit">
+
+                🤝 Solicitar Parceria
+
+            </a>
+
+        </div>
 
     </div>
 
-</div>
-
-{% endfor %}
+    {% endfor %}
 
 </div>
 
@@ -168,14 +288,38 @@
 
 <div class="sem-imoveis">
 
-    <h4>Nenhum imóvel compartilhado</h4>
+    <h3>Nenhum imóvel disponível</h3>
 
     <p>
-        Ainda não existem imóveis disponíveis na Rede FIFIT.
+        Ainda não existem imóveis compartilhados na Rede FIFIT.
     </p>
 
 </div>
 
 {% endif %}
+
+<script>
+
+function mudarFoto(id, dir) {
+
+    const carousel = document
+        .getElementById(id)
+        .querySelector('.carousel-images');
+
+    let idx = parseInt(
+        carousel.dataset.index || 0
+    );
+
+    idx = (
+        idx + dir + carousel.children.length
+    ) % carousel.children.length;
+
+    carousel.dataset.index = idx;
+
+    carousel.style.transform =
+        `translateX(-${idx * 100}%)`;
+}
+
+</script>
 
 {% endblock %}
