@@ -2068,16 +2068,17 @@ def enviar_mensagem():
         data = request.get_json() or {}
 
 
-        telefone = data.get("telefone")
-        mensagem = data.get("mensagem")
+        contatos = data.get("contatos")
+        mensagem_base = data.get("mensagem")
 
 
-        if not telefone or not mensagem:
+
+        if not contatos or not mensagem_base:
 
             return jsonify({
 
                 "status":"error",
-                "erro":"Telefone e mensagem obrigatórios"
+                "erro":"Contatos e mensagem obrigatórios"
 
             })
 
@@ -2088,14 +2089,13 @@ def enviar_mensagem():
 
 
 
+
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
 
         cursor = conn.cursor()
 
 
-
-        # pega whatsapp do usuário
 
         cursor.execute("""
             SELECT whatsapp_sessao
@@ -2117,9 +2117,7 @@ def enviar_mensagem():
 
 
 
-
         if not usuario:
-
 
             return jsonify({
 
@@ -2133,84 +2131,108 @@ def enviar_mensagem():
 
 
 
-        telefone = ''.join(
-
-            filter(
-                str.isdigit,
-                str(telefone)
-            )
-
-        )
-
-
-
-        if not telefone.startswith("55"):
-
-            telefone = "55"+telefone
-
-
-
-
-
-
-
         WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
 
 
 
-
-        resp = requests.post(
-
-
-            f"{WPP_URL}/enviar",
-
-
-            json={
-
-
-                "sessao":
-                usuario["whatsapp_sessao"],
-
-
-                "numero":
-                telefone,
-
-
-                "mensagem":
-                mensagem
-
-
-            },
-
-
-            timeout=15
-
-
-        )
+        enviados = []
 
 
 
 
 
+        for linha in contatos.split("\n"):
 
-        return jsonify(
 
-            resp.json()
+            try:
 
-        )
+
+                nome, telefone = linha.split(",")
+
+
+
+                telefone = ''.join(
+                    filter(
+                        str.isdigit,
+                        telefone
+                    )
+                )
+
+
+
+                if not telefone.startswith("55"):
+
+                    telefone="55"+telefone
+
+
+
+
+
+
+                mensagem = mensagem_base.replace(
+                    "{nome}",
+                    nome.strip()
+                )
+
+
+
+
+
+
+                requests.post(
+
+                    f"{WPP_URL}/enviar",
+
+                    json={
+
+                        "sessao":
+                        usuario["whatsapp_sessao"],
+
+                        "numero":
+                        telefone,
+
+                        "mensagem":
+                        mensagem
+
+                    },
+
+                    timeout=15
+
+                )
+
+
+
+                enviados.append(nome)
+
+
+
+            except Exception as erro:
+
+                print(
+                    "erro contato:",
+                    erro
+                )
+
+
+
+
+
+
+        return jsonify({
+
+            "status":"ok",
+
+            "enviados":enviados
+
+        })
+
 
 
 
 
 
     except Exception as e:
-
-
-        print(
-            "ERRO MENSAGEM:",
-            e
-        )
 
 
         return jsonify({
