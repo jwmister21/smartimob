@@ -992,7 +992,30 @@ def super_dashboard():
 
 
 
+@app.route("/fifit")
+@verificar_sessao
+def fifit():
 
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY id DESC
+    """)
+
+    imoveis = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "fifit.html",
+        imoveis=imoveis
+    )
 
 @app.route("/catalogo")
 def catalogo():
