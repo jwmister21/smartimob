@@ -1001,6 +1001,7 @@ def fifit():
 
     cursor = conn.cursor()
 
+    # Busca imóveis compartilhados no FIFIT
     cursor.execute("""
         SELECT *
         FROM imoveis
@@ -1010,11 +1011,33 @@ def fifit():
 
     imoveis = cursor.fetchall()
 
+    # Adiciona as fotos para cada imóvel
+    imoveis_com_fotos = []
+
+    for imovel in imoveis:
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id
+        """, (imovel["id"],))
+
+        fotos = [
+            foto["nome_arquivo"]
+            for foto in cursor.fetchall()
+        ]
+
+        imovel_dict = dict(imovel)
+        imovel_dict["fotos"] = fotos
+
+        imoveis_com_fotos.append(imovel_dict)
+
     conn.close()
 
     return render_template(
         "fifit.html",
-        imoveis=imoveis
+        imoveis=imoveis_com_fotos
     )
 
 @app.route("/catalogo")
