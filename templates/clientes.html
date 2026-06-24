@@ -56,8 +56,8 @@
             <th>Telefone</th>
             <th>Interesse</th>
             <th>Bairro</th>
-            <th>Ações</th>
             <th>captação</th>
+            <th>Ações</th>
         </tr>
     </thead>
     <tbody>
@@ -67,8 +67,8 @@
             <td><a href="/cliente/{{ cliente[0] }}" class="nome-link">{{ cliente[1] }}</a></td>
             <td>{{ cliente[2] }}</td>
             <td>{{ cliente[5] }}</td>
-            <td>{{ cliente[7] }}</td>
             <td>{{ cliente[8] }}</td>
+            <td>{{ cliente[7] }}</td>
             <td>
                 <button class="btn-dados" onclick="window.location.href='/cliente/{{ cliente[0] }}'">👤 Perfil</button>
                 <a class="btn-whats" target="_blank" href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">WhatsApp</a>
