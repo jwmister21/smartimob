@@ -3,62 +3,86 @@
 {% block title %}Gerenciar Usuários - SMARTZEN{% endblock %}
 
 {% block content %}
+
 <style>
-    .admin-card {
-        background: #ffffff;
-        padding: 40px;
-        border-radius: 24px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-        margin-top: 30px;
-        max-width: 900px;
-        margin-left: auto;
-        margin-right: auto;
-    }
+.admin-card{
+    background:#ffffff;
+    padding:40px;
+    border-radius:24px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 10px 25px -5px rgba(0,0,0,.05);
+    margin-top:30px;
+    max-width:900px;
+    margin-left:auto;
+    margin-right:auto;
+}
 
-    .form-group {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-    }
+.form-group{
+    display:flex;
+    gap:12px;
+    margin-bottom:30px;
+    flex-wrap:wrap;
+}
 
-    input {
-        padding: 12px 16px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        background: #f8fafc;
-        color: #1e293b;
-        flex: 1;
-        transition: 0.3s;
-    }
+input{
+    padding:12px 16px;
+    border-radius:12px;
+    border:1px solid #e2e8f0;
+    background:#f8fafc;
+    color:#1e293b;
+    flex:1;
+}
 
-    input:focus {
-        border-color: #2563eb;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
+input:focus{
+    border-color:#2563eb;
+    outline:none;
+    box-shadow:0 0 0 3px rgba(37,99,235,.1);
+}
 
-    button {
-        padding: 12px 24px;
-        border-radius: 12px;
-        border: none;
-        background: #2563eb;
-        color: white;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.3s;
-    }
+button{
+    padding:12px 24px;
+    border-radius:12px;
+    border:none;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    font-weight:600;
+}
 
-    button:hover { background: #1d4ed8; transform: translateY(-2px); }
+button:hover{
+    background:#1d4ed8;
+}
 
-    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; }
-    th { color: #64748b; font-size: 0.85rem; text-transform: uppercase; padding: 15px; border-bottom: 2px solid #f1f5f9; }
-    td { padding: 20px 15px; border-bottom: 1px solid #f1f5f9; font-weight: 500; }
+table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    margin-top:20px;
+}
 
-    .btn-remover { background: #fee2e2; color: #dc2626; }
-    .btn-remover:hover { background: #fecaca; transform: none; }
-    .status-ativo{
+th{
+    color:#64748b;
+    font-size:.85rem;
+    text-transform:uppercase;
+    padding:15px;
+    border-bottom:2px solid #f1f5f9;
+}
+
+td{
+    padding:20px 15px;
+    border-bottom:1px solid #f1f5f9;
+}
+
+.btn-remover{
+    background:#fee2e2;
+    color:#dc2626;
+}
+
+.btn-remover:hover{
+    background:#fecaca;
+}
+
+.status-ativo{
     background:#dcfce7;
     color:#166534;
     padding:6px 12px;
@@ -79,162 +103,196 @@
 }
 
 .btn-ativar{
-    background:#dcfce7;
-    color:#166534;
+    background:#16a34a;
+    color:white;
     margin-right:8px;
 }
 
 .btn-ativar:hover{
-    background:#bbf7d0;
+    background:#15803d;
 }
 
 .btn-desativar{
-    background:#fef3c7;
-    color:#92400e;
+    background:#f59e0b;
+    color:white;
     margin-right:8px;
 }
 
 .btn-desativar:hover{
-    background:#fde68a;
+    background:#d97706;
 }
 </style>
 
 <div class="admin-card">
-    <h2 style="margin-bottom: 20px; color: #0f172a;">Gerenciar Colaboradores</h2>
-    <p style="color: #64748b; margin-bottom: 30px;">Adicione novos membros à sua equipe ou remova acessos.</p>
+
+    <h2 style="margin-bottom:20px;color:#0f172a;">
+        Gerenciar Colaboradores
+    </h2>
+
+    <p style="color:#64748b;margin-bottom:30px;">
+        Adicione novos membros à sua equipe ou remova acessos.
+    </p>
 
     <form action="/admin/criar-login" method="POST" class="form-group">
-        <input type="nome" name="nome" placeholder="Nome do colaborador" required>
-        <input type="email" name="email" placeholder="E-mail" required>
-        <input type="password" name="senha" placeholder="Senha inicial" required>
-        <label>Telefone</label>
-<input
-    type="text"
-    name="telefone"
-    class="form-control"
-    placeholder="5511999999999">
-        <button type="submit">Cadastrar</button>
+
+        <input
+            type="text"
+            name="nome"
+            placeholder="Nome do colaborador"
+            required>
+
+        <input
+            type="email"
+            name="email"
+            placeholder="E-mail"
+            required>
+
+        <input
+            type="password"
+            name="senha"
+            placeholder="Senha inicial"
+            required>
+
+        <input
+            type="text"
+            name="telefone"
+            placeholder="5511999999999">
+
+        <button type="submit">
+            Cadastrar
+        </button>
+
     </form>
 
-    <h3 style="margin-top: 40px; margin-bottom: 10px; color: #0f172a;">Usuários Ativos</h3>
+    <h3 style="margin-top:40px;margin-bottom:10px;color:#0f172a;">
+        Usuários
+    </h3>
+
     <table>
+
         <thead>
             <tr>
                 <th>Nome / E-mail</th>
                 <th>Status</th>
-<th style="text-align: right;">Ações</th>
+                <th style="text-align:right;">Ações</th>
             </tr>
         </thead>
+
         <tbody>
-            {% for user in usuarios %}
-           <tr>
 
-    <tbody>
+        {% for user in usuarios %}
 
-{% for user in usuarios %}
+        <tr>
 
-<tr>
+            <td>
 
-    <td>
-        <div style="font-weight:700;">
-            {{ user.nome if user.nome else 'Sem nome' }}
-        </div>
+                <div style="font-weight:700;">
+                    {{ user.nome if user.nome else 'Sem nome' }}
+                </div>
 
-        <div style="font-size:.85rem;color:#64748b;">
-            {{ user.email }}
-        </div>
-    </td>
+                <div style="font-size:.85rem;color:#64748b;">
+                    {{ user.email }}
+                </div>
 
-    <td>
+            </td>
 
-        {% if user.ativo|int == 1 %}
-            <span class="status-ativo">
-                Ativo
-            </span>
-        {% else %}
-            <span class="status-inativo">
-                Bloqueado
-            </span>
-        {% endif %}
+            <td>
 
-    </td>
+                {% if user.ativo|int == 1 %}
 
-    <td style="text-align:right;">
+                    <span class="status-ativo">
+                        Ativo
+                    </span>
 
-        {% if user.ativo|int == 1 %}
+                {% else %}
 
-        <form
-            action="/admin/desativar-usuario"
-            method="POST"
-            style="display:inline;">
+                    <span class="status-inativo">
+                        Bloqueado
+                    </span>
 
-            <input
-                type="hidden"
-                name="user_id"
-                value="{{ user.id }}">
+                {% endif %}
 
-            <button
-                type="submit"
-                class="btn-desativar">
+            </td>
 
-                Desativar
+            <td style="text-align:right;">
 
-            </button>
+                {% if user.ativo|int == 1 %}
 
-        </form>
+                <form
+                    action="/admin/desativar-usuario"
+                    method="POST"
+                    style="display:inline;">
 
-        {% else %}
+                    <input
+                        type="hidden"
+                        name="user_id"
+                        value="{{ user.id }}">
 
-        <form
-            action="/admin/ativar-usuario"
-            method="POST"
-            style="display:inline;">
+                    <button
+                        type="submit"
+                        class="btn-desativar">
 
-            <input
-                type="hidden"
-                name="user_id"
-                value="{{ user.id }}">
+                        Desativar
 
-            <button
-                type="submit"
-                class="btn-ativar">
+                    </button>
 
-                Ativar
+                </form>
 
-            </button>
+                {% else %}
 
-        </form>
+                <form
+                    action="/admin/ativar-usuario"
+                    method="POST"
+                    style="display:inline;">
 
-        {% endif %}
+                    <input
+                        type="hidden"
+                        name="user_id"
+                        value="{{ user.id }}">
 
-        <form
-            action="/admin/deletar-usuario"
-            method="POST"
-            style="display:inline;">
+                    <button
+                        type="submit"
+                        class="btn-ativar">
 
-            <input
-                type="hidden"
-                name="user_id"
-                value="{{ user.id }}">
+                        Ativar
 
-            <button
-                type="submit"
-                class="btn-remover"
-                onclick="return confirm('Deseja realmente remover este usuário?')">
+                    </button>
 
-                Remover
+                </form>
 
-            </button>
+                {% endif %}
 
-        </form>
+                <form
+                    action="/admin/deletar-usuario"
+                    method="POST"
+                    style="display:inline;">
 
-    </td>
+                    <input
+                        type="hidden"
+                        name="user_id"
+                        value="{{ user.id }}">
 
-</tr>
+                    <button
+                        type="submit"
+                        class="btn-remover"
+                        onclick="return confirm('Deseja realmente remover este usuário?')">
 
-{% endfor %}
+                        Remover
 
-</tbody>
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
     </table>
+
 </div>
+
 {% endblock %}
