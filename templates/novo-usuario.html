@@ -141,8 +141,19 @@
 
     <td>
 
-        {% if user.ativo == 1 %}
-            <span class="status-ativo">
+<td>
+
+    {% if user.ativo|int == 1 %}
+        <span class="status-ativo">
+            Ativo
+        </span>
+    {% else %}
+        <span class="status-inativo">
+            Bloqueado
+        </span>
+    {% endif %}
+
+</td>            <span class="status-ativo">
                 Ativo
             </span>
         {% else %}
