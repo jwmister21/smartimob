@@ -121,6 +121,30 @@
             }
         }
     }
+    function filtrarTabela() {
+
+    let input = document.getElementById("filtroClientes");
+    let filtro = input.value.toLowerCase();
+
+    let tabela = document.querySelector("table tbody");
+    let linhas = tabela.getElementsByTagName("tr");
+
+    let totalVisiveis = 0;
+
+    for (let i = 0; i < linhas.length; i++) {
+
+        let textoLinha = linhas[i].textContent || linhas[i].innerText;
+
+        if (textoLinha.toLowerCase().includes(filtro)) {
+            linhas[i].style.display = "";
+            totalVisiveis++;
+        } else {
+            linhas[i].style.display = "none";
+        }
+    }
+
+    document.getElementById("clientesVisiveis").innerText = totalVisiveis;
+}
 </script>
 
 {% endblock %}
