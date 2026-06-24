@@ -3623,6 +3623,7 @@ def cadastrar_cliente():
         sobre = request.form.get("sobre", "")
         entrada = request.form.get("entrada", "")
         pagamento = request.form.get("pagamento", "")
+        origem = request.form.get("origem", "")
 
         user_id = session["usuario_id"]
         empresa_id = session["empresa_id"]
@@ -3632,9 +3633,9 @@ def cadastrar_cliente():
 
         # Removido o campo 'email' do INSERT e do VALUES
         cursor.execute("""
-            INSERT INTO clientes (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, usuario_id, empresa_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, user_id, empresa_id))
+            INSERT INTO clientes (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, usuario_id, empresa_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, user_id, empresa_id))
 
         conn.commit()
         conn.close()
