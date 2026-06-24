@@ -649,7 +649,9 @@ body{
 
 <button class="chat-float-btn" onclick="toggleChat()">🧠</button>
 
- <footer class="smart-footer">
+{% block content %}
+{% endblock %}
+    <footer class="smart-footer">
 
     <div>
         © 2026 SMARTZEN IMOB - Todos os direitos reservados.
@@ -672,10 +674,6 @@ body{
 
 </footer>
 </div>   
-
-{% block content %}
-{% endblock %}
-    
 
 <script>
 function toggleNotificacoes() {
