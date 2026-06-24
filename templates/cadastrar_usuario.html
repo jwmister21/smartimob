@@ -4,134 +4,280 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Conta - SMARTZEN IMOB</title>
+
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-            background-color: #0b0f19; /* Fundo escuro idêntico ao sistema */
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Inter,Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
         }
-        .login-container {
-            width: 100%;
-            max-width: 450px;
-            padding: 20px;
+
+        body{
+            background:#f5f7fb;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:25px;
+            color:#111827;
         }
-        .logo-topo {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: bold;
-            color: #0ea5e9;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
+
+        .login-container{
+            width:100%;
+            max-width:480px;
         }
-        .logo-topo span {
-            color: white;
+
+        .logo-topo{
+            text-align:center;
+            font-size:2.3rem;
+            font-weight:800;
+            margin-bottom:25px;
+            color:#0ea5e9;
+            letter-spacing:1px;
         }
-        .login-box {
-            background: #111827;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+
+        .logo-topo span{
+            color:#111827;
         }
-        .form-group {
-            margin-bottom: 18px;
+
+        .login-box{
+            background:#ffffff;
+            padding:40px;
+            border-radius:22px;
+
+            box-shadow:
+                0 10px 40px rgba(15,23,42,.08),
+                0 2px 8px rgba(15,23,42,.04);
+
+            border:1px solid #edf2f7;
         }
-        label {
-            display: block;
-            color: #9ca3af;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+
+        .titulo{
+            text-align:center;
+            margin-bottom:30px;
         }
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            background: #1f2937;
-            border: 1px solid #374151;
-            color: white;
-            font-size: 1rem;
-            box-sizing: border-box;
+
+        .titulo h3{
+            font-size:1.6rem;
+            color:#111827;
+            margin-bottom:8px;
         }
-        input:focus {
-            border-color: #0ea5e9;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+
+        .titulo p{
+            color:#6b7280;
+            font-size:.95rem;
         }
-        .btn-registro {
-            width: 100%;
-            padding: 12px;
-            background: #0ea5e9;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 1rem;
-            transition: background 0.3s;
+
+        .form-group{
+            margin-bottom:18px;
         }
-        .btn-registro:hover {
-            background: #0284c7;
+
+        label{
+            display:block;
+            margin-bottom:8px;
+            font-size:.92rem;
+            font-weight:600;
+            color:#374151;
         }
-        .link-login {
-            text-align: center;
-            margin-top: 25px;
-            color: #9ca3af;
-            font-size: 0.9rem;
+
+        input{
+            width:100%;
+            padding:14px;
+            border-radius:12px;
+            border:1px solid #dbe3ee;
+            background:#fff;
+            color:#111827;
+            font-size:15px;
+            transition:.25s;
         }
-        .link-login a {
-            color: #0ea5e9;
-            text-decoration: none;
-            font-weight: bold;
+
+        input::placeholder{
+            color:#9ca3af;
         }
-        .link-login a:hover {
-            text-decoration: underline;
+
+        input:focus{
+            outline:none;
+            border-color:#0ea5e9;
+            box-shadow:0 0 0 4px rgba(14,165,233,.15);
         }
+
+        .termos-box{
+            display:flex;
+            align-items:flex-start;
+            gap:10px;
+            margin-top:5px;
+            margin-bottom:22px;
+        }
+
+        .termos-box input{
+            width:auto;
+            margin-top:4px;
+            cursor:pointer;
+        }
+
+        .termos-box label{
+            margin:0;
+            font-size:.85rem;
+            line-height:1.5;
+            color:#6b7280;
+            font-weight:500;
+        }
+
+        .termos-box a{
+            color:#0ea5e9;
+            text-decoration:none;
+            font-weight:700;
+        }
+
+        .termos-box a:hover{
+            text-decoration:underline;
+        }
+
+        .btn-registro{
+            width:100%;
+            border:none;
+            padding:15px;
+            border-radius:12px;
+            cursor:pointer;
+            font-size:15px;
+            font-weight:700;
+            color:white;
+            background:#0ea5e9;
+            transition:.3s;
+        }
+
+        .btn-registro:hover{
+            background:#0284c7;
+            transform:translateY(-1px);
+        }
+
+        .link-login{
+            margin-top:25px;
+            text-align:center;
+            color:#6b7280;
+            font-size:.92rem;
+        }
+
+        .link-login a{
+            color:#0ea5e9;
+            text-decoration:none;
+            font-weight:700;
+        }
+
+        .link-login a:hover{
+            text-decoration:underline;
+        }
+
+        @media(max-width:520px){
+
+            body{
+                padding:15px;
+            }
+
+            .login-box{
+                padding:28px;
+            }
+
+            .logo-topo{
+                font-size:2rem;
+            }
+
+        }
+
     </style>
 </head>
 <body>
 
-<div class="login-container">
-    
-    <div class="logo-topo">SMART<span>ZEN</span></div>
+    <div class="login-container">
 
-    <div class="login-box">
-        <h3 style="margin-top: 0; margin-bottom: 25px; text-align: center; font-size: 1.3rem;">🚀 Crie sua Conta</h3>
-        
-        <form method="POST">
-            <div class="form-group">
-                <label>Nome Completo</label>
-                <input type="text" name="nome" placeholder="Ex: João Corretor" required>
-            </div>
-
-            <div class="form-group">
-                <label>E-mail Corporativo</label>
-                <input type="email" name="email" placeholder="seu@email.com" required>
-            </div>
-
-            <div class="form-group">
-                <label>Sua Senha</label>
-                <input type="password" name="senha" placeholder="••••••••" required>
-            </div>
-
-            <div class="form-group">
-                <label>Nome da Imobiliária / Empresa (Opcional)</label>
-                <input type="text" name="nome_empresa" placeholder="Ex: Smart Imóveis">
-            </div>
-
-            <button type="submit" class="btn-registro">Cadastrar e Começar</button>
-        </form>
-
-        <div class="link-login">
-            Já tem uma conta? <a href="/login">Fazer Login</a>
+        <div class="logo-topo">
+            SMART<span>ZEN</span>
         </div>
+
+        <div class="login-box">
+
+            <div class="titulo">
+                <h3>🚀 Crie sua Conta</h3>
+                <p>
+                    Comece a gerenciar imóveis, clientes e leads em um só lugar.
+                </p>
+            </div>
+
+            <form method="POST">
+
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input
+                        type="text"
+                        name="nome"
+                        placeholder="Ex: João Corretor"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>E-mail Corporativo</label>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="seu@email.com"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>Sua Senha</label>
+                    <input
+                        type="password"
+                        name="senha"
+                        placeholder="••••••••"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nome da Imobiliária / Empresa (Opcional)</label>
+                    <input
+                        type="text"
+                        name="nome_empresa"
+                        placeholder="Ex: Smart Imóveis">
+                </div>
+
+                <div class="termos-box">
+
+                    <input
+                        type="checkbox"
+                        id="aceite_termos"
+                        required>
+
+                    <label for="aceite_termos">
+                        Li e concordo com os
+                        <a href="/termos" target="_blank">
+                            Termos de Uso
+                        </a>
+                        e a
+                        <a href="/privacidade" target="_blank">
+                            Política de Privacidade
+                        </a>.
+                    </label>
+
+                </div>
+
+                <button type="submit" class="btn-registro">
+                    Cadastrar e Começar
+                </button>
+
+            </form>
+
+            <div class="link-login">
+                Já tem uma conta?
+                <a href="/login">
+                    Fazer Login
+                </a>
+            </div>
+
+        </div>
+
     </div>
-</div>
 
 </body>
 </html>
