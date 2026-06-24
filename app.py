@@ -1639,6 +1639,47 @@ def analisar_pdf():
         links=links
     )
 
+@app.route("/admin/ativar-usuario", methods=["POST"])
+@verificar_sessao
+def ativar_usuario():
+
+    user_id = request.form["user_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.execute(
+        "UPDATE usuarios SET ativo = 1 WHERE id = ?",
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    flash("Usuário ativado com sucesso.")
+
+    return redirect("/admin/novo-usuario")
+
+
+@app.route("/admin/desativar-usuario", methods=["POST"])
+@verificar_sessao
+def desativar_usuario():
+
+    user_id = request.form["user_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.execute(
+        "UPDATE usuarios SET ativo = 0 WHERE id = ?",
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    flash("Usuário desativado com sucesso.")
+
+    return redirect("/admin/novo-usuario")
+
 @app.route("/status_whatsapp")
 @verificar_sessao
 def status_whatsapp():
