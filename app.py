@@ -2491,10 +2491,10 @@ def cadastrar_imovel():
                 titulo, tipo, valor, cidade, bairro,
                 quartos, banheiros, area, status, descricao,
                 rua, iptu, condominio, link, cep,
-                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada,banheiros21,
+                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada, banheiros21, proprietario1, telefone2, mobilia,
                 usuario_id, empresa_id
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
@@ -2520,6 +2520,10 @@ def cadastrar_imovel():
             request.form.get("anuais"),
             request.form.get("entrada"),
             request.form.get("banheiros21"),
+            request.form.get("proprietario1"),
+            request.form.get("telefone2"),
+            request.form.get("mobilia"),
+
             user_id,
             empresa_id
         ))
@@ -3887,6 +3891,9 @@ def editar_imovel(id):
         anuais = request.form.get("anuais", "")
         entrada = request.form.get("entrada", "")
         banheiros21 = request.form.get("banheiros21", "")
+        proprietario1 = request.form.get("proprietario1", "")
+        telefone2 = request.form.get("telefone2", "")
+        mobilia = request.form.get("mobilia", "")
         compartilhar_fifit = int(request.form.get("compartilhar_fifit", 0))
 
         # Atualiza os dados do imóvel
@@ -3916,6 +3923,9 @@ def editar_imovel(id):
                 anuais=?,
                 entrada=?,
                 banheiros21=?,
+                proprietario1=?,
+                telefone2=?,
+                mobilia=?,
                 compartilhar_fifit=?
             WHERE id=? AND empresa_id=?
         """, (
@@ -3943,6 +3953,9 @@ def editar_imovel(id):
             anuais,
             entrada,
             banheiros21,
+            proprietario1,
+            telefone2,
+            mobilia,
             compartilhar_fifit,
             id,
             empresa_id
