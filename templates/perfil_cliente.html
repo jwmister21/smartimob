@@ -279,10 +279,13 @@
         <div class="info-val">📞 {{ cliente[2] }}</div>
 
         <span class="info-label">Orçamento</span>
-        <div class="info-val" style="color:#059669;">💰 {{ cliente[5] }}</div>
+        <div class="info-val" style="color:#059669;">💰 {{ cliente.faixa_preco}}</div>
 
          <span class="info-label">Entrada/avista</span>
-        <div class="info-val" style="color:#059669;">💰 {{ cliente[10] }}</div>
+        <div class="info-val" style="color:#059669;">💰 {{ cliente.entrada }}</div>
+
+        <span class="info-label">Meio de captação</span>
+        <div class="info-val" style="color:#059669;">🚀 {{ cliente.origem }}</div>
 
         <span class="info-label">Sobre o cliente</span>
         <div class="info-val" style="color:#059669;">📝 {{ cliente[11] }}</div>
