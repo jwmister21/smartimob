@@ -2270,6 +2270,10 @@ def enviar_mensagem():
             "erro":str(e)
 
         })
+
+@app.route('/termos')
+def termos():
+    return render_template('termos.html')
      
 @app.route("/enviar_imovel_match", methods=["POST"])
 @verificar_sessao
