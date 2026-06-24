@@ -129,6 +129,12 @@
             {% for user in usuarios %}
            <tr>
 
+    <tbody>
+
+{% for user in usuarios %}
+
+<tr>
+
     <td>
         <div style="font-weight:700;">
             {{ user.nome if user.nome else 'Sem nome' }}
@@ -141,19 +147,8 @@
 
     <td>
 
-<td>
-
-    {% if user.ativo|int == 1 %}
-        <span class="status-ativo">
-            Ativo
-        </span>
-    {% else %}
-        <span class="status-inativo">
-            Bloqueado
-        </span>
-    {% endif %}
-
-</td>            <span class="status-ativo">
+        {% if user.ativo|int == 1 %}
+            <span class="status-ativo">
                 Ativo
             </span>
         {% else %}
@@ -166,7 +161,8 @@
 
     <td style="text-align:right;">
 
-{% if user.ativo|int == 1 %}
+        {% if user.ativo|int == 1 %}
+
         <form
             action="/admin/desativar-usuario"
             method="POST"
@@ -182,6 +178,7 @@
                 class="btn-desativar">
 
                 Desativar
+
             </button>
 
         </form>
@@ -203,6 +200,7 @@
                 class="btn-ativar">
 
                 Ativar
+
             </button>
 
         </form>
@@ -233,8 +231,10 @@
     </td>
 
 </tr>
-            {% endfor %}
-        </tbody>
+
+{% endfor %}
+
+</tbody>
     </table>
 </div>
 {% endblock %}
