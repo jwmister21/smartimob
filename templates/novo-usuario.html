@@ -166,8 +166,7 @@
 
     <td style="text-align:right;">
 
-        {% if user.ativo == 1 %}
-
+{% if user.ativo|int == 1 %}
         <form
             action="/admin/desativar-usuario"
             method="POST"
