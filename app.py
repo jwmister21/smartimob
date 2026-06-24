@@ -1880,6 +1880,10 @@ def gerenciar_usuarios_empresa(empresa_id):
 
     return render_template("gerenciar_usuarios.html", usuarios=usuarios, empresa_id=empresa_id)
 
+@app.route("/privacidade")
+def privacidade():
+    return render_template("privacidade.html")
+
 @app.route("/superadmin/usuario/promover/<int:usuario_id>", methods=["POST"])
 @super_admin_required
 def tornar_admin(usuario_id):
