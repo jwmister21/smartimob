@@ -3522,38 +3522,33 @@ def exibir_novo_usuario():
     if not empresa_id:
         return "Acesso negado: você não está logado como empresa.", 403
 
-
     conn = sqlite3.connect('/data/imobiliaria.db')
     cursor = conn.cursor()
 
-
     cursor.execute("""
-        SELECT id, nome, email 
-        FROM usuarios 
+        SELECT id, nome, email, ativo
+        FROM usuarios
         WHERE empresa_id = ?
     """, (empresa_id,))
-
 
     usuarios_db = cursor.fetchall()
 
     conn.close()
 
-
     lista_usuarios = [
         {
             "id": u[0],
             "nome": u[1],
-            "email": u[2]
+            "email": u[2],
+            "ativo": u[3]
         }
         for u in usuarios_db
     ]
-
 
     return render_template(
         'novo-usuario.html',
         usuarios=lista_usuarios
     )
-
 @app.route("/admin/liberar/<int:id>", methods=["POST"])
 def admin_liberar(id):
     if session.get("is_admin") != 1:
