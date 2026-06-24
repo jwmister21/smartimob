@@ -139,6 +139,27 @@
     border-radius:10px;
     font-weight:600;
 }
+    .descricao-box{
+    margin-top:15px;
+    padding:15px;
+    background:#f8fafc;
+    border-radius:12px;
+    border:1px solid #e2e8f0;
+}
+
+.descricao-box strong{
+    display:block;
+    margin-bottom:10px;
+    color:#0f172a;
+}
+
+.descricao-box p{
+    margin:0;
+    line-height:1.8;
+    color:#475569;
+    white-space:pre-line;
+    word-break:break-word;
+}
 
 </style>
 
@@ -216,9 +237,13 @@
             <div>🛁 Banheiros:  {{ imovel.banheiros }}</div>
             <div>📐 Metragem: {{ imovel.area }}m²</div>
             <div>📌 Tipo: {{ imovel.status }}</div>
-            <div>📝 Des: {{ imovel.descricao }}</div>
         </div>
 
+        <div class="descricao-box">
+    <strong>📝 Descrição do Imóvel</strong>
+    <p>{{ imovel.descricao }}</p>
+</div>
+        
     </div>
 
     <div class="acoes">
