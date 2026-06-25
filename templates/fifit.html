@@ -239,6 +239,14 @@
             <div>📌 Tipo: {{ imovel.status }}</div>
             <div>📌 iptu: {{ imovel.iptu }}</div>
             <div>📌 condominio: {{ imovel.condominio }}</div>
+
+             {% if imovel.link %}
+    <div style="margin-top:10px;">
+        <button class="btn-copiar" onclick="copiarLink('{{ imovel.link }}')">
+            📋 Copiar Link das Imagens
+        </button>
+    </div>
+    {% endif %}
         </div>
 
         <div class="descricao-box">
