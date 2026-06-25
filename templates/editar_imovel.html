@@ -104,12 +104,9 @@
             <div class="campo-box"><label>Suítes</label><input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}"></div>
             <div class="campo-box"><label>Banheiros</label><input type="number" name="banheiros21" value="{{ imovel['banheiros21'] or 0 }}"></div>
             <div class="campo-box"><label>Vagas</label><input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}"></div>
-            <div class="campo-box"><label>Lavabo</label>
-                <select name="lavabo"><option value="0" {% if not imovel['lavabo'] %}selected{% endif %}>Não</option><option value="1" {% if imovel['lavabo'] %}selected{% endif %}>Sim</option></select>
-            </div>
-            <div class="campo-box"><label>Sacada</label>
-                <select name="sacada"><option value="0" {% if not imovel['sacada'] %}selected{% endif %}>Não</option><option value="1" {% if imovel['sacada'] %}selected{% endif %}>Sim</option></select>
-            </div>
+            <div class="campo-box"><label>Lavabo</label><input type="number" name="lavabo" value="{{ imovel['lavabo'] or 0 }}"></div>
+            <div class="campo-box"><label>Sacada</label><input type="number" name="sacada" value="{{ imovel['sacada'] or 0 }}"></div>
+                
             <div class="campo-box" style="grid-column: span 3;"><label>Área de Lazer</label><input type="text" name="lazer" value="{{ imovel['lazer'] or '' }}"></div>
         </div>
 
