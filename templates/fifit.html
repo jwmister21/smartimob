@@ -257,10 +257,11 @@
             <div>📌 condominio: {{ imovel.condominio }}</div>
 
              {% if imovel.link %}
-    <div style="margin-top:10px;">
-        <button class="btn-copiar" onclick="copiarLink('{{ imovel.link }}')">
-            📋 Copiar Link das Imagens
-        </button>
+    <button class="btn-copiar"
+        data-link="{{ imovel.link }}"
+        onclick="copiarLink(this)">
+    📋 Copiar Link das Imagens
+</button>
     </div>
     {% endif %}
         </div>
@@ -351,13 +352,26 @@ function mudarFoto(id, dir){
     carousel.style.transform =
         `translateX(-${idx * 100}%)`;
 }
-    function copiarLink(link) {
+   function copiarLink(botao) {
+    const link = botao.dataset.link;
+
     navigator.clipboard.writeText(link)
         .then(() => {
-            alert("✅ Link copiado com sucesso!");
+            alert("✅ Link copiado!");
         })
-        .catch(() => {
-            alert("❌ Erro ao copiar o link.");
+        .catch(err => {
+            console.error(err);
+
+            const input = document.createElement("input");
+            input.value = link;
+            document.body.appendChild(input);
+
+            input.select();
+            document.execCommand("copy");
+
+            document.body.removeChild(input);
+
+            alert("✅ Link copiado!");
         });
 }
 </script>
