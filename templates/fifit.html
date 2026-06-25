@@ -160,6 +160,22 @@
     white-space:pre-line;
     word-break:break-word;
 }
+.btn-copiar{
+    background:#198754;
+    color:white;
+    border:none;
+    padding:10px 15px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-copiar:hover{
+    transform:translateY(-2px);
+    opacity:.9;
+}
+
 
 </style>
 
@@ -334,6 +350,15 @@ function mudarFoto(id, dir){
 
     carousel.style.transform =
         `translateX(-${idx * 100}%)`;
+}
+    function copiarLink(link) {
+    navigator.clipboard.writeText(link)
+        .then(() => {
+            alert("✅ Link copiado com sucesso!");
+        })
+        .catch(() => {
+            alert("❌ Erro ao copiar o link.");
+        });
 }
 </script>
 
