@@ -342,46 +342,54 @@ function mudarFoto(id, dir){
         .getElementById(id)
         .querySelector('.carousel-images');
 
-    let idx = parseInt(
-        carousel.dataset.index || 0
-    );
+    let idx = parseInt(carousel.dataset.index || 0);
 
-    idx = (
-        idx + dir + carousel.children.length
-    ) % carousel.children.length;
+    idx = (idx + dir + carousel.children.length) % carousel.children.length;
 
     carousel.dataset.index = idx;
 
-    carousel.style.transform =
-        `translateX(-${idx * 100}%)`;
+    carousel.style.transform = `translateX(-${idx * 100}%)`;
 }
- <script>
+
 function copiarLink(botao){
 
-    const link = botao.getAttribute("data-link");
+    const link = botao.dataset.link;
 
     if(!link){
         alert("Nenhum link encontrado.");
         return;
     }
 
-    const textarea = document.createElement("textarea");
-    textarea.value = link;
+    if(navigator.clipboard && window.isSecureContext){
 
-    document.body.appendChild(textarea);
+        navigator.clipboard.writeText(link)
+        .then(() => {
+            alert("✅ Link copiado!");
+        })
+        .catch(() => {
+            copiarFallback(link);
+        });
 
-    textarea.focus();
-    textarea.select();
-
-    try{
-        document.execCommand("copy");
-        alert("✅ Link copiado!");
-    }catch(e){
-        console.log(e);
-        alert("❌ Erro ao copiar.");
+    }else{
+        copiarFallback(link);
     }
+}
 
-    document.body.removeChild(textarea);
+function copiarFallback(texto){
+
+    const input = document.createElement("textarea");
+    input.value = texto;
+
+    document.body.appendChild(input);
+
+    input.select();
+    input.setSelectionRange(0, 99999);
+
+    document.execCommand("copy");
+
+    document.body.removeChild(input);
+
+    alert("✅ Link copiado!");
 }
 </script>
 {% endblock %}
