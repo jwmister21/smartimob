@@ -249,22 +249,25 @@
         </div>
 
         <div class="detalhes">
-            <div>🛏 Quartos : {{ imovel.quartos }}</div>
-            <div>🛁 Banheiros:  {{ imovel.banheiros }}</div>
-            <div>📐 Metragem: {{ imovel.area }}m²</div>
-            <div>📌 Tipo: {{ imovel.status }}</div>
-            <div>📌 iptu: {{ imovel.iptu }}</div>
-            <div>📌 condominio: {{ imovel.condominio }}</div>
+    <div>🛏 Quartos : {{ imovel.quartos }}</div>
+    <div>🛁 Banheiros: {{ imovel.banheiros }}</div>
+    <div>📐 Metragem: {{ imovel.area }}m²</div>
+    <div>📌 Tipo: {{ imovel.status }}</div>
+    <div>📌 IPTU: {{ imovel.iptu }}</div>
+    <div>📌 Condomínio: {{ imovel.condominio }}</div>
+</div>
 
-             {% if imovel.link %}
-    <button class="btn-copiar"
+{% if imovel.link %}
+<div style="margin-top:15px;">
+    <button
+        type="button"
+        class="btn-copiar"
         data-link="{{ imovel.link }}"
         onclick="copiarLink(this)">
-    📋 Copiar Link das Imagens
-</button>
-    </div>
-    {% endif %}
-        </div>
+        📋 Copiar Link das Imagens
+    </button>
+</div>
+{% endif %}
 
         <div class="descricao-box">
     <strong>📝 Descrição do Imóvel</strong>
@@ -352,28 +355,33 @@ function mudarFoto(id, dir){
     carousel.style.transform =
         `translateX(-${idx * 100}%)`;
 }
-   function copiarLink(botao) {
-    const link = botao.dataset.link;
+ <script>
+function copiarLink(botao){
 
-    navigator.clipboard.writeText(link)
-        .then(() => {
-            alert("✅ Link copiado!");
-        })
-        .catch(err => {
-            console.error(err);
+    const link = botao.getAttribute("data-link");
 
-            const input = document.createElement("input");
-            input.value = link;
-            document.body.appendChild(input);
+    if(!link){
+        alert("Nenhum link encontrado.");
+        return;
+    }
 
-            input.select();
-            document.execCommand("copy");
+    const textarea = document.createElement("textarea");
+    textarea.value = link;
 
-            document.body.removeChild(input);
+    document.body.appendChild(textarea);
 
-            alert("✅ Link copiado!");
-        });
+    textarea.focus();
+    textarea.select();
+
+    try{
+        document.execCommand("copy");
+        alert("✅ Link copiado!");
+    }catch(e){
+        console.log(e);
+        alert("❌ Erro ao copiar.");
+    }
+
+    document.body.removeChild(textarea);
 }
 </script>
-
 {% endblock %}
