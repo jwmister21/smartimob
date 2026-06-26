@@ -796,6 +796,42 @@ window.onclick = function(event){
         fecharHistorico();
     }
 }
+/*=========================================
+MODAL EDITAR CLIENTE
+=========================================*/
 
+function abrirEditarCliente(){
+
+    document.getElementById("modalEditarCliente").style.display="flex";
+
+}
+
+function fecharEditarCliente(){
+
+    document.getElementById("modalEditarCliente").style.display="none";
+
+}
+
+window.addEventListener("click",function(e){
+
+    const modal=document.getElementById("modalEditarCliente");
+
+    if(e.target===modal){
+
+        fecharEditarCliente();
+
+    }
+
+});
+
+document.addEventListener("keydown",function(e){
+
+    if(e.key==="Escape"){
+
+        fecharEditarCliente();
+
+    }
+
+});
 </script>
 {% endblock %}
