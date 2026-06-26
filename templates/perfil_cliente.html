@@ -269,12 +269,17 @@
             <button class="btn-salvar-status">💾 Atualizar Status</button>
         </form>
        
-        <hr style="border:0; border-top:1px solid #e2e8f0; margin:25px 0;">
-        
-         <button class="btn-historico" onclick="abrirHistorico()">
-    📋 Ver Histórico
-        </button>
+        <div style="display:flex; gap:10px; margin-top:15px;">
 
+    <button class="btn-historico" onclick="abrirHistorico()">
+        📋 Ver Histórico
+    </button>
+
+    <button class="btn-historico" onclick="abrirEditarCliente()">
+        ✏️ Editar Cliente
+    </button>
+
+</div>
         <span class="info-label">Telefone</span>
         <div class="info-val">📞 {{ cliente[2] }}</div>
 
