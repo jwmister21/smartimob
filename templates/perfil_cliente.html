@@ -574,6 +574,154 @@ MODAL EDITAR CLIENTE
     </div>
 
 </div>
+    <!--=========================================
+MODAL EDITAR CLIENTE
+==========================================-->
+
+<div id="modalEditarCliente" class="modal-editar">
+
+    <div class="modal-editar-content">
+
+        <div class="modal-topo">
+
+            <h2>✏️ Editar Cliente</h2>
+
+            <span class="fechar-modal"
+                  onclick="fecharEditarCliente()">
+                ✖
+            </span>
+
+        </div>
+
+        <form action="/cliente/atualizar_dados/{{ cliente[0] }}"
+              method="POST">
+
+            <div class="grid-editar">
+
+                <div class="campo">
+                    <label>Nome</label>
+                    <input
+                        type="text"
+                        name="nome"
+                        value="{{ cliente[1] or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Telefone</label>
+                    <input
+                        type="text"
+                        name="telefone"
+                        value="{{ cliente[2] or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        value="{{ cliente.email or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>CPF</label>
+                    <input
+                        type="text"
+                        name="cpf"
+                        value="{{ cliente.cpf or '' }}">
+                </div>
+
+                <div class="campo full">
+                    <label>Endereço</label>
+                    <input
+                        type="text"
+                        name="endereco"
+                        value="{{ cliente.endereco or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Bairro</label>
+                    <input
+                        type="text"
+                        name="bairro"
+                        value="{{ cliente.bairro or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Interesse</label>
+                    <input
+                        type="text"
+                        name="interesse"
+                        value="{{ cliente.interesse or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Faixa de Preço</label>
+                    <input
+                        type="text"
+                        name="faixa_preco"
+                        value="{{ cliente.faixa_preco or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Entrada</label>
+                    <input
+                        type="text"
+                        name="entrada"
+                        value="{{ cliente.entrada or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Forma de Pagamento</label>
+                    <input
+                        type="text"
+                        name="pagamento"
+                        value="{{ cliente.pagamento or '' }}">
+                </div>
+
+                <div class="campo">
+                    <label>Origem</label>
+                    <input
+                        type="text"
+                        name="origem"
+                        value="{{ cliente.origem or '' }}">
+                </div>
+
+                <div class="campo full">
+                    <label>Sobre o Cliente</label>
+
+                    <textarea
+                        name="sobre">{{ cliente.sobre or '' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <div class="modal-acoes">
+
+                <button
+                    type="button"
+                    class="btn-cancelar"
+                    onclick="fecharEditarCliente()">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-salvar">
+
+                    💾 Salvar Alterações
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 <script>
     function enviarImovel(clienteId, imovelId){
 
