@@ -6,6 +6,150 @@
 {% block content %}
 
 <style>
+    /*=========================================
+MODAL EDITAR CLIENTE
+=========================================*/
+
+.modal-editar{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    backdrop-filter:blur(6px);
+    justify-content:center;
+    align-items:center;
+    z-index:999999;
+}
+
+.modal-editar-content{
+
+    width:900px;
+    max-width:95%;
+    max-height:90vh;
+
+    overflow-y:auto;
+
+    background:#fff;
+
+    border-radius:20px;
+
+    padding:30px;
+
+    box-shadow:0 25px 70px rgba(0,0,0,.25);
+
+}
+
+.modal-editar h2{
+
+    color:#1e293b;
+
+    margin-bottom:25px;
+
+}
+
+.grid-editar{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:18px;
+
+}
+
+.campo{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.campo label{
+
+    margin-bottom:6px;
+
+    font-weight:600;
+
+    color:#64748b;
+
+}
+
+.campo input,
+.campo select,
+.campo textarea{
+
+    background:#f8fafc;
+
+    border:1px solid #e2e8f0;
+
+    border-radius:10px;
+
+    padding:12px;
+
+    font-size:15px;
+
+}
+
+.campo textarea{
+
+    min-height:120px;
+
+    resize:vertical;
+
+}
+
+.full{
+
+    grid-column:1/-1;
+
+}
+
+.modal-acoes{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+
+    margin-top:25px;
+
+}
+
+.btn-cancelar{
+
+    background:#e2e8f0;
+
+    color:#334155;
+
+    border:none;
+
+    padding:12px 20px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+}
+
+.btn-salvar{
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 25px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+
+}
 
 .perfil-grid{
     display:grid;
