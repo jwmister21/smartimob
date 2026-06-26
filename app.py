@@ -4527,21 +4527,58 @@ def desconectar_whatsapp():
 @app.route("/cliente/atualizar_dados/<int:id>", methods=["POST"])
 @verificar_sessao
 def atualizar_dados_cliente(id):
-    email = request.form.get("email")
-    cpf = request.form.get("cpf") 
-    endereco = request.form.get("endereco")
+
+    nome = request.form.get("nome")
     telefone = request.form.get("telefone")
+    email = request.form.get("email")
+    cpf = request.form.get("cpf")
+    endereco = request.form.get("endereco")
+    bairro = request.form.get("bairro")
+    interesse = request.form.get("interesse")
+    faixa_preco = request.form.get("faixa_preco")
+    entrada = request.form.get("entrada")
+    pagamento = request.form.get("pagamento")
+    origem = request.form.get("origem")
+    sobre = request.form.get("sobre")
+
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # CORREÇÃO: Removida a vírgula após endereco = ?
     cursor.execute("""
-        UPDATE clientes 
-        SET email = ?, cpf = ?, endereco = ?, telefone=?
-        WHERE id = ? AND empresa_id = ?
-    """, (email, cpf, endereco, telefone, id, empresa_id))
+        UPDATE clientes
+        SET
+            nome = ?,
+            telefone = ?,
+            email = ?,
+            cpf = ?,
+            endereco = ?,
+            bairro = ?,
+            interesse = ?,
+            faixa_preco = ?,
+            entrada = ?,
+            pagamento = ?,
+            origem = ?,
+            sobre = ?
+        WHERE id = ?
+        AND empresa_id = ?
+    """, (
+        nome,
+        telefone,
+        email,
+        cpf,
+        endereco,
+        bairro,
+        interesse,
+        faixa_preco,
+        entrada,
+        pagamento,
+        origem,
+        sobre,
+        id,
+        empresa_id
+    ))
 
     conn.commit()
     conn.close()
