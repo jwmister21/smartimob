@@ -437,7 +437,7 @@ MODAL EDITAR CLIENTE
         <div class="info-val" style="color:#059669;">🚀 {{ cliente.origem }}</div>
 
         <span class="info-label">Sobre o cliente</span>
-        <div class="info-val" style="color:#059669;">📝 {{ cliente[11] }}</div>
+        <div class="info-val" style="color:#059669;">📝 {{ cliente[13] }}</div>
 
         <form action="/cliente/atualizar_dados/{{ cliente[0] }}" method="POST" style="background:#f8fafc; padding:15px; border-radius:12px;">
             <span style="color:#2563eb; font-weight:bold;">📋 Informações adicionais</span>
@@ -619,7 +619,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="email"
                         name="email"
-                        value="{{ cliente.email or '' }}">
+                        value="{{ cliente[12] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -627,7 +627,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="cpf"
-                        value="{{ cliente.cpf or '' }}">
+                        value="{{ cliente[9] or '' }}">
                 </div>
 
                 <div class="campo full">
@@ -635,7 +635,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="endereco"
-                        value="{{ cliente.endereco or '' }}">
+                        value="{{ cliente[10] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -643,7 +643,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="bairro"
-                        value="{{ cliente.bairro or '' }}">
+                        value="{{ cliente[7] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -651,7 +651,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="interesse"
-                        value="{{ cliente.interesse or '' }}">
+                        value="{{ cliente[5] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -659,7 +659,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="faixa_preco"
-                        value="{{ cliente.faixa_preco or '' }}">
+                        value="{{ cliente[6] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -667,7 +667,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="entrada"
-                        value="{{ cliente.entrada or '' }}">
+                        value="{{ cliente[15] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -675,7 +675,7 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="pagamento"
-                        value="{{ cliente.pagamento or '' }}">
+                        value="{{ cliente[14] or '' }}">
                 </div>
 
                 <div class="campo">
@@ -683,14 +683,13 @@ MODAL EDITAR CLIENTE
                     <input
                         type="text"
                         name="origem"
-                        value="{{ cliente.origem or '' }}">
+                        value="{{ cliente[16] or '' }}">
                 </div>
 
                 <div class="campo full">
                     <label>Sobre o Cliente</label>
 
-                    <textarea
-                        name="sobre">{{ cliente.sobre or '' }}</textarea>
+                    <textarea name="sobre">{{ cliente[13] or '' }}</textarea>
 
                 </div>
 
