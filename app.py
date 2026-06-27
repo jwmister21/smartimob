@@ -2526,7 +2526,7 @@ def cadastrar_imovel():
             request.form.get("mobilia"),
 
             user_id,
-            empresa_id
+            empresa_id,
             data_criacao
         ))
 
