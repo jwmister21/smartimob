@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block pagina %}Dashboard{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_v2.css') }}">
+
+<div class="dashboard">
+
+    <!-- HEADER -->
+
+    <div class="dashboard-header">
+
+        <div>
+
+            <span class="welcome">
+                👋 Bem-vindo de volta
+            </span>
+
+            <h1>
+                Olá, {{ session['usuario_nome'] }}
+            </h1>
+
+            <p>
+                Aqui está um resumo da sua imobiliária hoje.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <div class="search-box">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24">
+
+                    <circle cx="11" cy="11" r="8"/>
+
+                    <path d="m21 21-4.3-4.3"/>
+
+                </svg>
+
+                <input
+                type="text"
+                placeholder="Pesquisar...">
+
+            </div>
+
+            <button class="icon-btn">
+
+                🔔
+
+            </button>
+
+            <div class="profile">
+
+                <div class="avatar">
+
+                    {{ session['usuario_nome'][0] }}
+
+                </div>
+
+                <div>
+
+                    <strong>
+
+                        {{ session['usuario_nome'] }}
+
+                    </strong>
+
+                    <small>
+
+                        Corretor
+
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CARDS -->
+
+    <div class="cards-grid">
+
+        <div class="card">
+
+            <div>
+
+                <span>Total de Clientes</span>
+
+                <h2>
+
+                    {{ total_clientes }}
+
+                </h2>
+
+            </div>
+
+            <div class="card-icon blue">
+
+                👥
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div>
+
+                <span>Imóveis</span>
+
+                <h2>
+
+                    {{ total_imoveis }}
+
+                </h2>
+
+            </div>
+
+            <div class="card-icon green">
+
+                🏠
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div>
+
+                <span>Leads</span>
+
+                <h2>
+
+                    18
+
+                </h2>
+
+            </div>
+
+            <div class="card-icon orange">
+
+                📈
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div>
+
+                <span>Match IA</span>
+
+                <h2>
+
+                    12
+
+                </h2>
+
+            </div>
+
+            <div class="card-icon purple">
+
+                🤖
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- PRIMEIRA LINHA -->
+
+    <div class="grid-two">
+
+        <div class="box large">
+
+            <div class="box-header">
+
+                <h3>
+                    Clientes por mês
+                </h3>
+
+            </div>
+
+            <canvas id="clientesChart"></canvas>
+
+        </div>
+
+        <div class="box">
+
+            <div class="box-header">
+
+                <h3>
+                    Imóveis por Tipo
+                </h3>
+
+            </div>
+
+            <canvas id="tipoChart"></canvas>
+
+        </div>
+
+    </div>
+
+    <!-- SEGUNDA LINHA -->
+
+    <div class="grid-two">
+
+        <div class="box">
+
+            <div class="box-header">
+
+                <h3>
+
+                    Últimos Clientes
+
+                </h3>
+
+            </div>
+
+            <div id="ultimosClientes">
+
+            </div>
+
+        </div>
+
+        <div class="box">
+
+            <div class="box-header">
+
+                <h3>
+
+                    IA SMARTZEN
+
+                </h3>
+
+            </div>
+
+            <div class="ia-box">
+
+                <div>
+
+                    ✅ 12 novos matches encontrados
+
+                </div>
+
+                <div>
+
+                    🔥 5 clientes precisam de contato
+
+                </div>
+
+                <div>
+
+                    📢 8 imóveis sem anúncio
+
+                </div>
+
+                <div>
+
+                    💰 3 propostas em andamento
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="{{ url_for('static', filename='js/dashboard_v2.js') }}"></script>
+
+{% endblock %}
