@@ -2626,7 +2626,7 @@ def atualizar_senha():
     return redirect("/configuracoes")
 
 
-@app.route("/sistema")
+@app.route("/dashboard_v2")
 @verificar_sessao
 def index():
 
@@ -3213,7 +3213,7 @@ def login():
             session["is_admin"] = usuario['is_admin']
             session["user_email"] = usuario['email']
             conn.close()
-            return redirect('/sistema')
+            return redirect('/dashboard_v2')
 
         conn.close()
         return render_template("login.html", erro="E-mail ou senha incorretos.")
