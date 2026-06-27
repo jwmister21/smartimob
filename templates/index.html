@@ -108,25 +108,267 @@ e aqui faria oque {% extends 'base.html' %}
     .btn-site:hover { background: #f8fafc; transform: translateY(-2px); }
     .gerar-site { color: #16a34a; }
     .meu-site { color: #2563eb; }
+
+    .hero-dashboard{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+gap:40px;
+
+background:white;
+
+border-radius:24px;
+
+padding:35px;
+
+margin-bottom:30px;
+
+border:1px solid #edf2f7;
+
+box-shadow:0 10px 35px rgba(15,23,42,.06);
+
+}
+
+.hero-left{
+
+flex:1;
+
+}
+
+.hero-badge{
+
+display:inline-block;
+
+padding:6px 14px;
+
+background:#e0f2fe;
+
+color:#2563eb;
+
+border-radius:30px;
+
+font-size:13px;
+
+font-weight:600;
+
+margin-bottom:15px;
+
+}
+
+.hero-left h1{
+
+font-size:34px;
+
+margin:0;
+
+color:#0f172a;
+
+}
+
+.hero-left p{
+
+margin-top:10px;
+
+font-size:16px;
+
+color:#64748b;
+
+max-width:600px;
+
+}
+
+.hero-buttons{
+
+display:flex;
+
+gap:15px;
+
+margin-top:30px;
+
+flex-wrap:wrap;
+
+}
+
+.btn-primary{
+
+background:#2563eb;
+
+color:white;
+
+padding:13px 24px;
+
+border-radius:12px;
+
+text-decoration:none;
+
+font-weight:600;
+
+border:none;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.btn-primary:hover{
+
+transform:translateY(-2px);
+
+background:#1d4ed8;
+
+}
+
+.btn-secondary{
+
+background:#f8fafc;
+
+color:#334155;
+
+padding:13px 24px;
+
+border-radius:12px;
+
+text-decoration:none;
+
+font-weight:600;
+
+border:1px solid #e2e8f0;
+
+transition:.25s;
+
+}
+
+.btn-secondary:hover{
+
+background:#eff6ff;
+
+}
+
+.hero-card{
+
+width:270px;
+
+background:#f8fafc;
+
+border-radius:18px;
+
+padding:25px;
+
+border:1px solid #e2e8f0;
+
+}
+
+.hero-card h3{
+
+margin-top:0;
+
+margin-bottom:20px;
+
+}
+
+.hero-item{
+
+display:flex;
+
+justify-content:space-between;
+
+margin-bottom:18px;
+
+font-size:15px;
+
+}
+
+.hero-item strong{
+
+font-size:18px;
+
+color:#2563eb;
+
+}
 </style>
 
-<div class="card-site">
-    {% if site %}
-    <a href="/site/{{ site['subdominio'] }}" class="btn-site meu-site">
-        <span>🌐</span> <div><strong>Meu Site</strong><small>Acessar site público</small></div>
-    </a>
-    {% else %}
-    <form method="POST" action="/gerar_site/salvar">
-        <button class="btn-site gerar-site" type="submit">
-            <span>🚀</span> <div><strong>Gerar Site</strong><small>Criar página da imobiliária</small></div>
-        </button>
-    </form>
-    {% endif %}
+<div class="hero-dashboard">
+
+    <div class="hero-left">
+
+        <span class="hero-badge">
+            SMARTZEN IMOB
+        </span>
+
+        <h1>
+            Olá, {{ session['usuario_nome'] }} 👋
+        </h1>
+
+        <p>
+            Bem-vindo ao seu painel de controle.
+            Gerencie clientes, imóveis e acompanhe seus resultados em tempo real.
+        </p>
+
+        <div class="hero-buttons">
+
+            {% if site %}
+
+            <a href="/site/{{ site['subdominio'] }}" class="btn-primary">
+                🌐 Meu Site
+            </a>
+
+            {% else %}
+
+            <form action="/gerar_site/salvar" method="POST">
+
+                <button class="btn-primary">
+                    🚀 Gerar Site
+                </button>
+
+            </form>
+
+            {% endif %}
+
+            <a href="/cadastrar_cliente" class="btn-secondary">
+                👤 Novo Cliente
+            </a>
+
+            <a href="/cadastrar_imovel" class="btn-secondary">
+                🏠 Novo Imóvel
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="hero-right">
+
+        <div class="hero-card">
+
+            <h3>Resumo</h3>
+
+            <div class="hero-item">
+                <span>Clientes</span>
+                <strong>{{ total_clientes }}</strong>
+            </div>
+
+            <div class="hero-item">
+                <span>Imóveis</span>
+                <strong>{{ total_imoveis }}</strong>
+            </div>
+
+            <div class="hero-item">
+                <span>IA</span>
+                <strong>Online</strong>
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
-<div class="welcome-banner">
-    <h2 style="margin: 0; color: #0f172a; font-size: 1.5rem;">🚀 Olá, {{ session['usuario_nome'] }}!</h2>
-</div>
+
 
 <div class="dashboard-grid">
     <div class="metric-card">
