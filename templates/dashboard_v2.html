@@ -1116,83 +1116,27 @@ Total imóveis
 
 <div class="bottom-grid">
 
-
-
 <div class="clients-card">
-
-
-
-<div class="clients-header">
-
-
-<h3>
-Últimos clientes
-</h3>
-
-
-<a href="/clientes">
-Ver todos
-</a>
-
-
-</div>
-
-
-
-
-
-<div class="clients-card">
-
     <div class="clients-header">
-
-        <h3>Últimos Clientes</h3>
-
+        <h3>Últimos clientes</h3>
         <a href="/clientes">Ver todos</a>
-
     </div>
 
     {% for cliente in ultimos_clientes %}
-
     <div class="client">
-
         <div class="client-left">
-
-            <div class="client-avatar blue">
-
+            <div class="client-avatar blue" style="display: flex; justify-content: center; align-items: center;">
                 {{ cliente["nome"][0]|upper }}
-
             </div>
-
             <div>
-
-                <div class="client-name">
-
-                    {{ cliente["nome"] }}
-
-                </div>
-
-                <div class="client-type">
-
-                    {{ cliente["interesse"] }}
-
-                </div>
-
+                <div class="client-name">{{ cliente["nome"] }}</div>
+                <div class="client-type">{{ cliente["interesse"] }}</div>
             </div>
-
         </div>
-
-        <div class="status status-success">
-
-            Novo
-
-        </div>
-
+        <div class="status status-success">Novo</div>
     </div>
-
     {% endfor %}
-
 </div>
-
 <!-- IA -->
 
 
