@@ -1141,139 +1141,57 @@ Ver todos
 
 
 
-<div class="client">
+<div class="clients-card">
 
+    <div class="clients-header">
 
-<div class="client-left">
+        <h3>Últimos Clientes</h3>
 
+        <a href="/clientes">Ver todos</a>
 
-<div class="client-avatar blue">
+    </div>
 
-J
+    {% for cliente in ultimos_clientes %}
 
-</div>
+    <div class="client">
 
+        <div class="client-left">
 
-<div>
+            <div class="client-avatar blue">
 
-<div class="client-name">
-João Silva
-</div>
+                {{ cliente["nome"][0]|upper }}
 
-<div class="client-type">
-Comprador
-</div>
+            </div>
 
+            <div>
 
-</div>
+                <div class="client-name">
 
+                    {{ cliente["nome"] }}
 
-</div>
+                </div>
 
+                <div class="client-type">
 
-<div class="status status-success">
-Ativo
-</div>
+                    {{ cliente["interesse"] }}
 
+                </div>
 
-</div>
+            </div>
 
+        </div>
 
+        <div class="status status-success">
 
+            Novo
 
+        </div>
 
+    </div>
 
-
-<div class="client">
-
-
-<div class="client-left">
-
-
-<div class="client-avatar green">
-
-M
+    {% endfor %}
 
 </div>
-
-
-<div>
-
-<div class="client-name">
-Maria
-</div>
-
-<div class="client-type">
-Investidora
-</div>
-
-
-</div>
-
-
-</div>
-
-
-<div class="status status-warning">
-Pendente
-</div>
-
-
-</div>
-
-
-
-
-
-
-
-<div class="client">
-
-
-<div class="client-left">
-
-
-<div class="client-avatar orange">
-
-C
-
-</div>
-
-
-<div>
-
-<div class="client-name">
-Carlos
-</div>
-
-<div class="client-type">
-Locação
-</div>
-
-
-</div>
-
-
-</div>
-
-
-<div class="status status-danger">
-Parado
-</div>
-
-
-</div>
-
-
-
-
-</div>
-
-
-
-
-
-
 
 <!-- IA -->
 
