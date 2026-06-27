@@ -1698,37 +1698,7 @@ def listar_clientes():
 
     return render_template("clientes.html", clientes=clientes)
  
-@app.route("/cadastrar_cliente", methods=["GET", "POST"])
-@verificar_sessao
-def cadastrar_cliente():
-    if request.method == "POST":
-        nome = request.form["nome"]
-        telefone = request.form["telefone"]
-        interesse = request.form["interesse"]
-        faixa_preco = request.form["faixa_preco"]
-        bairro = request.form.get("bairro", "")
-        sobre = request.form.get("sobre", "")
-        entrada = request.form.get("entrada", "")
-        pagamento = request.form.get("pagamento", "")
-        origem = request.form.get("origem", "")
 
-        user_id = session["usuario_id"]
-        empresa_id = session["empresa_id"]
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-
-        # Removido o campo 'email' do INSERT e do VALUES
-        cursor.execute("""
-            INSERT INTO clientes (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, usuario_id, empresa_id)            INSERT INTO clientes (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, usuario_id, empresa_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, user_id, empresa_id))
-
-        conn.commit()
-        conn.close()
-        return redirect("/clientes")       
-
-    return render_template("cadastrar_cliente.html")   
 
 @app.route("/status_whatsapp")
 @verificar_sessao
