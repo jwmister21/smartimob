@@ -2468,6 +2468,7 @@ def cadastrar_imovel():
 
         empresa_id = session.get("empresa_id")
         user_id = session.get("usuario_id")
+        data_criacao = datetime.now().strftime("%Y-%m-%d")
 
         valor = request.form.get("valor", "")
 
@@ -2492,9 +2493,9 @@ def cadastrar_imovel():
                 quartos, banheiros, area, status, descricao,
                 rua, iptu, condominio, link, cep,
                 vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada, banheiros21, proprietario1, telefone2, mobilia,
-                usuario_id, empresa_id
+                usuario_id, empresa_id, data_criacao
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             request.form.get("titulo"),
             request.form.get("tipo"),
@@ -2526,6 +2527,7 @@ def cadastrar_imovel():
 
             user_id,
             empresa_id
+            data_criacao
         ))
 
         imovel_id = cursor.lastrowid
@@ -2841,6 +2843,8 @@ def logo_empresa(arquivo):
         "/data/uploads/logos",
         arquivo
     )
+from collections import defaultdict
+
 @app.route("/dashboard_v2")
 @verificar_sessao
 def dashboard_v2():
@@ -2851,39 +2855,139 @@ def dashboard_v2():
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Total de clientes
+    # ==========================================
+    # TOTAL CLIENTES
+    # ==========================================
+
     cursor.execute("""
         SELECT COUNT(*)
         FROM clientes
-        WHERE empresa_id = ?
-    """, (empresa_id,))
+        WHERE empresa_id=?
+    """,(empresa_id,))
+
     total_clientes = cursor.fetchone()[0]
 
-    # Total de imóveis
+    # ==========================================
+    # TOTAL IMOVEIS
+    # ==========================================
+
     cursor.execute("""
         SELECT COUNT(*)
         FROM imoveis
-        WHERE empresa_id = ?
-    """, (empresa_id,))
+        WHERE empresa_id=?
+    """,(empresa_id,))
+
     total_imoveis = cursor.fetchone()[0]
 
-    # Site da imobiliária
+    # ==========================================
+    # SITE
+    # ==========================================
+
     cursor.execute("""
         SELECT *
         FROM configuracoes_site
-        WHERE empresa_id = ?
-    """, (empresa_id,))
+        WHERE empresa_id=?
+    """,(empresa_id,))
+
     site = cursor.fetchone()
+
+    # ==========================================
+    # CLIENTES POR MES
+    # ==========================================
+
+    cursor.execute("""
+
+        SELECT
+
+            strftime('%m',data_criacao) mes,
+
+            COUNT(*) total
+
+        FROM clientes
+
+        WHERE empresa_id=?
+
+        GROUP BY mes
+
+        ORDER BY mes
+
+    """,(empresa_id,))
+
+    meses = {
+        "01":0,
+        "02":0,
+        "03":0,
+        "04":0,
+        "05":0,
+        "06":0,
+        "07":0,
+        "08":0,
+        "09":0,
+        "10":0,
+        "11":0,
+        "12":0
+    }
+
+    for row in cursor.fetchall():
+        meses[row["mes"]] = row["total"]
+
+    labels_clientes = [
+        "Jan","Fev","Mar","Abr","Mai","Jun",
+        "Jul","Ago","Set","Out","Nov","Dez"
+    ]
+
+    dados_clientes = list(meses.values())
+
+    # ==========================================
+    # IMOVEIS POR TIPO
+    # ==========================================
+
+    cursor.execute("""
+
+        SELECT
+
+            tipo,
+
+            COUNT(*) total
+
+        FROM imoveis
+
+        WHERE empresa_id=?
+
+        GROUP BY tipo
+
+    """,(empresa_id,))
+
+    labels_tipo = []
+    dados_tipo = []
+
+    for row in cursor.fetchall():
+
+        labels_tipo.append(row["tipo"])
+
+        dados_tipo.append(row["total"])
 
     conn.close()
 
     return render_template(
-        "dashboard_v2.html",
-        total_clientes=total_clientes,
-        total_imoveis=total_imoveis,
-        site=site
-    )
 
+        "dashboard_v2.html",
+
+        total_clientes=total_clientes,
+
+        total_imoveis=total_imoveis,
+
+        site=site,
+
+        labels_clientes=labels_clientes,
+
+        dados_clientes=dados_clientes,
+
+        labels_tipo=labels_tipo,
+
+        dados_tipo=dados_tipo
+
+    )
 @app.route("/importar_imoveis_pdf", methods=["POST"])
 @verificar_sessao
 def importar_imoveis_pdf():
@@ -3639,27 +3743,15 @@ def admin_resetar_senha(id):
 
 
 # ==========================================
-# 4. ROTAS DE CLIENTES
-# ==========================================
-@app.route("/clientes")
-@verificar_sessao
-def listar_clientes():
-    empresa_id = session.get('empresa_id')
+# 4. ROTAS DE CLIENTE
 
-    conn = sqlite3.connect(DB_PATH) # Usei sua variável global DB_NAME
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM clientes WHERE empresa_id = ?", (empresa_id,))
-    clientes = cursor.fetchall() # CORRIGIDO: Era conn.fetchall()
-    conn.close()
-
-    return render_template("clientes.html", clientes=clientes)
 
 @app.route("/cadastrar_cliente", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_cliente():
+
     if request.method == "POST":
+
         nome = request.form["nome"]
         telefone = request.form["telefone"]
         interesse = request.form["interesse"]
@@ -3673,17 +3765,46 @@ def cadastrar_cliente():
         user_id = session["usuario_id"]
         empresa_id = session["empresa_id"]
 
+        # NOVO
+        data_criacao = datetime.now().strftime("%Y-%m-%d")
+
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        # Removido o campo 'email' do INSERT e do VALUES
         cursor.execute("""
-            INSERT INTO clientes (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, usuario_id, empresa_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (nome, telefone, interesse, faixa_preco, bairro, sobre, entrada, pagamento, origem, user_id, empresa_id))
+            INSERT INTO clientes (
+                nome,
+                telefone,
+                interesse,
+                faixa_preco,
+                bairro,
+                sobre,
+                entrada,
+                pagamento,
+                origem,
+                usuario_id,
+                empresa_id,
+                data_criacao
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            nome,
+            telefone,
+            interesse,
+            faixa_preco,
+            bairro,
+            sobre,
+            entrada,
+            pagamento,
+            origem,
+            user_id,
+            empresa_id,
+            data_criacao
+        ))
 
         conn.commit()
         conn.close()
+
         return redirect("/clientes")
 
     return render_template("cadastrar_cliente.html")
