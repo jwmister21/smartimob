@@ -2848,7 +2848,6 @@ from collections import defaultdict
 @app.route("/dashboard_v2")
 @verificar_sessao
 def dashboard_v2():
-
     empresa_id = session.get("empresa_id")
 
     conn = sqlite3.connect(DB_PATH)
@@ -2856,45 +2855,38 @@ def dashboard_v2():
     cursor = conn.cursor()
 
     # ==========================================
-    # TOTAL DE CLIENTES
+    # 1. TOTAL DE CLIENTES
     # ==========================================
-
     cursor.execute("""
         SELECT COUNT(*)
         FROM clientes
         WHERE empresa_id = ?
     """, (empresa_id,))
-
     total_clientes = cursor.fetchone()[0]
 
     # ==========================================
-    # TOTAL DE IMÓVEIS
+    # 2. TOTAL DE IMÓVEIS
     # ==========================================
-
     cursor.execute("""
         SELECT COUNT(*)
         FROM imoveis
         WHERE empresa_id = ?
     """, (empresa_id,))
-
     total_imoveis = cursor.fetchone()[0]
 
     # ==========================================
-    # SITE
+    # 3. CONFIGURAÇÕES DO SITE
     # ==========================================
-
     cursor.execute("""
         SELECT *
         FROM configuracoes_site
         WHERE empresa_id = ?
     """, (empresa_id,))
-
     site = cursor.fetchone()
 
     # ==========================================
-    # CLIENTES POR MÊS
+    # 4. CLIENTES CADASTRADOS POR MÊS
     # ==========================================
-
     cursor.execute("""
         SELECT
             strftime('%m', data_criacao) AS mes,
@@ -2905,55 +2897,68 @@ def dashboard_v2():
         ORDER BY mes
     """, (empresa_id,))
 
-    meses = {
-        "01":0,
-        "02":0,
-        "03":0,
-        "04":0,
-        "05":0,
-        "06":0,
-        "07":0,
-        "08":0,
-        "09":0,
-        "10":0,
-        "11":0,
-        "12":0
-    }
+    meses = {f"{i:02}": 0 for i in range(1, 13)}
 
     for row in cursor.fetchall():
         meses[row["mes"]] = row["total"]
 
     labels_clientes = [
-        "Jan","Fev","Mar","Abr","Mai","Jun",
-        "Jul","Ago","Set","Out","Nov","Dez"
+        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+        "Jul", "Ago", "Set", "Out", "Nov", "Dez"
     ]
 
     dados_clientes = list(meses.values())
 
     # ==========================================
-    # IMÓVEIS POR TIPO
+    # 5. IMÓVEIS POR TIPO
     # ==========================================
-
     cursor.execute("""
         SELECT
-            tipo,
+            LOWER(tipo) AS tipo,
             COUNT(*) AS total
         FROM imoveis
         WHERE empresa_id = ?
-        GROUP BY tipo
+        GROUP BY LOWER(tipo)
+        ORDER BY total DESC
     """, (empresa_id,))
+
+    rows = cursor.fetchall()
 
     labels_tipo = []
     dados_tipo = []
+    imoveis_por_tipo = []
 
-    for row in cursor.fetchall():
-        labels_tipo.append(row["tipo"])
-        dados_tipo.append(row["total"])
+    # Compatibilidade com HTML antigo
+    casas = 0
+    apartamentos = 0
+    terrenos = 0
+
+    for row in rows:
+
+        tipo = row["tipo"] or "Não informado"
+        total = row["total"]
+
+        labels_tipo.append(tipo.capitalize())
+        dados_tipo.append(total)
+
+        percentual = round((total / total_imoveis) * 100, 1) if total_imoveis else 0
+
+        imoveis_por_tipo.append({
+            "tipo": tipo.capitalize(),
+            "total": total,
+            "percentual": percentual
+        })
+
+        if tipo == "casa":
+            casas = total
+        elif tipo == "apartamento":
+            apartamentos = total
+        elif tipo == "terreno":
+            terrenos = total
 
     # ==========================================
-    # ÚLTIMOS 3 CLIENTES
+    # 6. ÚLTIMOS 3 CLIENTES
     # ==========================================
-
     cursor.execute("""
         SELECT
             nome,
@@ -2982,9 +2987,14 @@ def dashboard_v2():
         labels_tipo=labels_tipo,
         dados_tipo=dados_tipo,
 
+        casas=casas,
+        apartamentos=apartamentos,
+        terrenos=terrenos,
+
+        imoveis_por_tipo=imoveis_por_tipo,
+
         ultimos_clientes=ultimos_clientes
     )
- 
 @app.route("/importar_imoveis_pdf", methods=["POST"])
 @verificar_sessao
 def importar_imoveis_pdf():
