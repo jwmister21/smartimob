@@ -1401,23 +1401,7 @@ type:"line",
 data:{
 
 
-labels:[
-
-"Jan",
-"Fev",
-"Mar",
-"Abr",
-"Mai",
-"Jun",
-"Jul",
-"Ago",
-"Set",
-"Out",
-"Nov",
-"Dez"
-
-],
-
+labels: {{ labels_clientes|tojson }},
 
 datasets:[{
 
@@ -1425,22 +1409,7 @@ datasets:[{
 label:"Clientes",
 
 
-data:[
-
-10,
-18,
-25,
-30,
-42,
-48,
-55,
-63,
-70,
-78,
-90,
-105
-
-],
+data: {{ dados_clientes|tojson }},
 
 
 borderColor:"#2563eb",
@@ -1566,28 +1535,14 @@ type:"doughnut",
 data:{
 
 
-labels:[
-
-"Casa",
-"Apartamento",
-"Terreno",
-"Comercial"
-
-],
+labels: {{ labels_tipo|tojson }},
 
 
 
 datasets:[{
 
 
-data:[
-
-45,
-31,
-15,
-9
-
-],
+data: {{ dados_tipo|tojson }},
 
 
 backgroundColor:[
