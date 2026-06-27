@@ -1698,9 +1698,9 @@ def listar_clientes():
 
     return render_template("clientes.html", clientes=clientes)
  
-@app.route("/cadastrar_cliente", methods=["GET", "POST"])@app.route("/cadastrar_cliente", methods=["GET", "POST"])
+@app.route("/cadastrar_cliente", methods=["GET", "POST"])
 @verificar_sessao
-def cadastrar_cliente():def cadastrar_cliente():
+def cadastrar_cliente():
     if request.method == "POST":
         nome = request.form["nome"]
         telefone = request.form["telefone"]
