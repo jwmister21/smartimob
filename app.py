@@ -1682,19 +1682,22 @@ def desativar_usuario():
 
 @app.route("/clientes")
 @verificar_sessao
-def listar_clientes():def listar_clientes():
+def listar_clientes():
     empresa_id = session.get('empresa_id')
 
-    conn = sqlite3.connect(DB_PATH) # Usei sua variável global DB_NAME
+    # Estabelece a conexão com o banco
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM clientes WHERE empresa_id = ?", (empresa_id,))    cursor.execute("SELECT * FROM clientes WHERE empresa_id = ?", (empresa_id,))
-    clientes = cursor.fetchall() # CORRIGIDO: Era conn.fetchall()    clientes = cursor.fetchall() # CORRIGIDO: Era conn.fetchall()
+    # Busca os clientes da empresa logada
+    cursor.execute("SELECT * FROM clientes WHERE empresa_id = ?", (empresa_id,))
+    clientes = cursor.fetchall()
+    
     conn.close()
 
-    return render_template("clientes.html", clientes=clientes)    
-
+    return render_template("clientes.html", clientes=clientes)
+ 
 @app.route("/cadastrar_cliente", methods=["GET", "POST"])@app.route("/cadastrar_cliente", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_cliente():def cadastrar_cliente():
