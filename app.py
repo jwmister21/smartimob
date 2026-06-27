@@ -1693,7 +1693,7 @@ def listar_clientes():def listar_clientes():
     clientes = cursor.fetchall() # CORRIGIDO: Era conn.fetchall()    clientes = cursor.fetchall() # CORRIGIDO: Era conn.fetchall()
     conn.close()
 
-    return render_template("clientes.html", clientes=clientes)    return render_template("clientes.html", clientes=clientes)
+    return render_template("clientes.html", clientes=clientes)    
 
 @app.route("/cadastrar_cliente", methods=["GET", "POST"])@app.route("/cadastrar_cliente", methods=["GET", "POST"])
 @verificar_sessao
