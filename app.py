@@ -2626,7 +2626,7 @@ def atualizar_senha():
     return redirect("/configuracoes")
 
 
-@app.route("/dashboard_v2")
+@app.route("/sistema")
 @verificar_sessao
 def index():
 
