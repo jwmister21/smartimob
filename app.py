@@ -2841,7 +2841,48 @@ def logo_empresa(arquivo):
         "/data/uploads/logos",
         arquivo
     )
+@app.route("/dashboard_v2")
+@verificar_sessao
+def dashboard_v2():
 
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # Total de clientes
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+    total_clientes = cursor.fetchone()[0]
+
+    # Total de imóveis
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+    total_imoveis = cursor.fetchone()[0]
+
+    # Site da imobiliária
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+    site = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "dashboard_v2.html",
+        total_clientes=total_clientes,
+        total_imoveis=total_imoveis,
+        site=site
+    )
 
 @app.route("/importar_imoveis_pdf", methods=["POST"])
 @verificar_sessao
