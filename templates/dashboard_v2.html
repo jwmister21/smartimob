@@ -974,140 +974,38 @@ Distribuição
 
 <div class="stats-list">
 
-
-
-<div class="stat-item">
-
-<div class="stat-left">
-
-<div class="stat-dot dot-blue"></div>
-
-
-<div>
-
-<strong>
-Casa
-</strong>
-
-<span>
-45%
-</span>
-
-
-</div>
-
-
-</div>
-
-
-<b>
-145
-</b>
-
-
-</div>
-
-
-
+{% for item in imoveis_por_tipo %}
 
 <div class="stat-item">
 
-<div class="stat-left">
+    <div class="stat-left">
 
-<div class="stat-dot dot-green"></div>
+        {% set cores = [
+            'dot-blue',
+            'dot-green',
+            'dot-orange',
+            'dot-red'
+        ] %}
 
+        <div class="stat-dot {{ cores[loop.index0 % 4] }}"></div>
 
-<div>
+        <div>
 
-<strong>
-Apartamento
-</strong>
+            <strong>{{ item.tipo }}</strong>
 
-<span>
-31%
-</span>
+            <span>{{ item.percentual }}%</span>
 
+        </div>
 
-</div>
+    </div>
 
-
-</div>
-
-
-<b>
-98
-</b>
-
+    <b>{{ item.total }}</b>
 
 </div>
 
-
-
-
-
-<div class="stat-item">
-
-<div class="stat-left">
-
-<div class="stat-dot dot-orange"></div>
-
-
-<div>
-
-<strong>
-Terreno
-</strong>
-
-<span>
-15%
-</span>
-
+{% endfor %}
 
 </div>
-
-
-</div>
-
-
-<b>
-42
-</b>
-
-
-</div>
-
-
-
-
-</div>
-
-
-
-<div class="total-card">
-
-
-<small>
-Total imóveis
-</small>
-
-
-<h2>
-{{ total_imoveis }}
-</h2>
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
-
-
-
 
 
 <!-- ================= PARTE INFERIOR ================= -->
@@ -1408,12 +1306,18 @@ data: {{ dados_tipo|tojson }},
 
 
 backgroundColor:[
-
 "#2563eb",
 "#10b981",
 "#f59e0b",
-"#ef4444"
-
+"#ef4444",
+"#8b5cf6",
+"#06b6d4",
+"#84cc16",
+"#ec4899",
+"#f97316",
+"#14b8a6",
+"#6366f1",
+"#eab308"
 ],
 
 
@@ -1428,48 +1332,31 @@ borderWidth:0
 
 
 options:{
+    responsive:true,
+    maintainAspectRatio:false,
 
+    cutout:"78%",
 
-responsive:true,
+    plugins:{
+        legend:{
+            position:"bottom",
+            labels:{
+                usePointStyle:true,
+                pointStyle:"circle",
+                padding:18,
+                font:{
+                    size:13,
+                    weight:"600"
+                }
+            }
+        }
+    },
 
-
-cutout:"72%",
-
-
-plugins:{
-
-
-legend:{
-
-
-position:"bottom",
-
-
-labels:{
-
-
-padding:20,
-
-
-usePointStyle:true
-
-
+    animation:{
+        animateRotate:true,
+        duration:1200
+    }
 }
-
-
-}
-
-
-}
-
-
-
-}
-
-
-
-});
-
 
 
 
