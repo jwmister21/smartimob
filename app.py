@@ -2856,26 +2856,26 @@ def dashboard_v2():
     cursor = conn.cursor()
 
     # ==========================================
-    # TOTAL CLIENTES
+    # TOTAL DE CLIENTES
     # ==========================================
 
     cursor.execute("""
         SELECT COUNT(*)
         FROM clientes
-        WHERE empresa_id=?
-    """,(empresa_id,))
+        WHERE empresa_id = ?
+    """, (empresa_id,))
 
     total_clientes = cursor.fetchone()[0]
 
     # ==========================================
-    # TOTAL IMOVEIS
+    # TOTAL DE IMÓVEIS
     # ==========================================
 
     cursor.execute("""
         SELECT COUNT(*)
         FROM imoveis
-        WHERE empresa_id=?
-    """,(empresa_id,))
+        WHERE empresa_id = ?
+    """, (empresa_id,))
 
     total_imoveis = cursor.fetchone()[0]
 
@@ -2886,32 +2886,24 @@ def dashboard_v2():
     cursor.execute("""
         SELECT *
         FROM configuracoes_site
-        WHERE empresa_id=?
-    """,(empresa_id,))
+        WHERE empresa_id = ?
+    """, (empresa_id,))
 
     site = cursor.fetchone()
 
     # ==========================================
-    # CLIENTES POR MES
+    # CLIENTES POR MÊS
     # ==========================================
 
     cursor.execute("""
-
         SELECT
-
-            strftime('%m',data_criacao) mes,
-
-            COUNT(*) total
-
+            strftime('%m', data_criacao) AS mes,
+            COUNT(*) AS total
         FROM clientes
-
-        WHERE empresa_id=?
-
+        WHERE empresa_id = ?
         GROUP BY mes
-
         ORDER BY mes
-
-    """,(empresa_id,))
+    """, (empresa_id,))
 
     meses = {
         "01":0,
@@ -2939,55 +2931,60 @@ def dashboard_v2():
     dados_clientes = list(meses.values())
 
     # ==========================================
-    # IMOVEIS POR TIPO
+    # IMÓVEIS POR TIPO
     # ==========================================
 
     cursor.execute("""
-
         SELECT
-
             tipo,
-
-            COUNT(*) total
-
+            COUNT(*) AS total
         FROM imoveis
-
-        WHERE empresa_id=?
-
+        WHERE empresa_id = ?
         GROUP BY tipo
-
-    """,(empresa_id,))
+    """, (empresa_id,))
 
     labels_tipo = []
     dados_tipo = []
 
     for row in cursor.fetchall():
-
         labels_tipo.append(row["tipo"])
-
         dados_tipo.append(row["total"])
+
+    # ==========================================
+    # ÚLTIMOS 3 CLIENTES
+    # ==========================================
+
+    cursor.execute("""
+        SELECT
+            nome,
+            interesse
+        FROM clientes
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+        LIMIT 3
+    """, (empresa_id,))
+
+    ultimos_clientes = cursor.fetchall()
 
     conn.close()
 
     return render_template(
-
         "dashboard_v2.html",
 
         total_clientes=total_clientes,
-
         total_imoveis=total_imoveis,
 
         site=site,
 
         labels_clientes=labels_clientes,
-
         dados_clientes=dados_clientes,
 
         labels_tipo=labels_tipo,
+        dados_tipo=dados_tipo,
 
-        dados_tipo=dados_tipo
-
+        ultimos_clientes=ultimos_clientes
     )
+ 
 @app.route("/importar_imoveis_pdf", methods=["POST"])
 @verificar_sessao
 def importar_imoveis_pdf():
