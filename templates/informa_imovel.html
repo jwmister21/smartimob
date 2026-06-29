@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width,initial-scale=1">
+content="width=device-width, initial-scale=1.0">
 
 <title>{{ imovel.titulo }}</title>
 
@@ -14,800 +14,950 @@ content="width=device-width,initial-scale=1">
 content="{{ imovel.titulo }}">
 
 <meta property="og:description"
-content="
-R$ {{ imovel.valor }}
-•
-{{ imovel.quartos }} quartos
-•
-{{ imovel.bairro }}
-">
+content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
 
 {% if foto %}
 <meta property="og:image"
 content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
 {% endif %}
 
-<style>
+<link rel="preconnect"
+href="https://fonts.googleapis.com">
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
 
-:root{
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+rel="stylesheet">
 
---primaria:#7c3aed;
---primaria2:#5b21b6;
-
---verde:#16a34a;
-
---texto:#0f172a;
-
---cinza:#64748b;
-
---borda:#e2e8f0;
-
---fundo:#f8fafc;
-
---card:#ffffff;
-
-}
-
-html{
-
-scroll-behavior:smooth;
-
-}
-
-body{
-
-font-family:
-Inter,
-"Segoe UI",
-Arial,
-sans-serif;
-
-background:
-
-linear-gradient(
-180deg,
-#eef4ff,
-#f8fafc
-);
-
-color:var(--texto);
-
-overflow-x:hidden;
-
-}
-
-/* ======================= */
-
-.container{
-
-max-width:1400px;
-
-margin:auto;
-
-padding:35px;
-
-display:grid;
-
-grid-template-columns:
-
-minmax(0,2fr)
-
-380px;
-
-gap:35px;
-
-align-items:start;
-
-}
-
-/* ======================= */
-
-.card{
-
-background:white;
-
-border-radius:24px;
-
-box-shadow:
-
-0 15px 40px rgba(15,23,42,.08);
-
-border:1px solid var(--borda);
-
-}
-
-/* ======================= */
-
-h1,h2,h3,h4{
-
-font-weight:700;
-
-}
-
-p{
-
-line-height:1.8;
-
-color:#475569;
-
-}
-
-/* ======================= */
-
-img{
-
-display:block;
-
-max-width:100%;
-
-}
-
-/* ======================= */
-
-::-webkit-scrollbar{
-
-height:10px;
-
-width:10px;
-
-}
-
-::-webkit-scrollbar-thumb{
-
-background:#d4d4d8;
-
-border-radius:20px;
-
-}
-
-/* ======================= */
-
-@media(max-width:1100px){
-
-.container{
-
-grid-template-columns:1fr;
-
-}
-
-}
-
-/* ======================= */
-
-@media(max-width:768px){
-.caracteristicas{
-
-grid-template-columns:repeat(2,1fr);
-
-}
-
-.topo-imovel{
-
-display:block;
-
-}
-
-.codigo{
-
-margin-top:20px;
-
-display:inline-block;
-
-}
-.container{
-
-padding:14px;
-
-gap:20px;
-
-}
- .sidebar{
-
-margin-top:25px;
-
-}
-
-.lead-box{
-
-position:relative;
-
-top:auto;
-
-}
-
-}
- /* ================= GALERIA ================= */
-
-.galeria{
-
-overflow:hidden;
-
-padding:18px;
-
-}
- .galeria-principal{
-
-position:relative;
-
-border-radius:20px;
-
-overflow:hidden;
-
-aspect-ratio:16/9;
-
-background:#ddd;
-
-box-shadow:
-
-0 15px 35px rgba(15,23,42,.15);
-
-}
- .galeria-principal img{
-
-width:100%;
-
-height:100%;
-
-object-fit:cover;
-
-cursor:pointer;
-
-transition:.35s;
-
-}
-
-.galeria-principal:hover img{
-
-transform:scale(1.03);
-
-}
- .miniaturas{
-
-display:flex;
-
-gap:12px;
-
-margin-top:18px;
-
-overflow-x:auto;
-
-padding-bottom:8px;
-
-}
-
-.miniaturas img{
-
-width:110px;
-
-height:80px;
-
-border-radius:14px;
-
-object-fit:cover;
-
-cursor:pointer;
-
-border:3px solid transparent;
-
-transition:.25s;
-
-flex-shrink:0;
-
-}
-
-.miniaturas img:hover{
-
-transform:translateY(-4px);
-
-}
-
-.thumb.ativa{
-
-border-color:#7c3aed;
-
-box-shadow:
-
-0 8px 20px rgba(124,58,237,.25);
-
-}
- .sidebar{
-
-display:flex;
-
-flex-direction:column;
-
-gap:25px;
-
-}
- .lead-box{
-
-padding:0;
-
-overflow:hidden;
-
-position:sticky;
-
-top:20px;
-
-}
- .lead-topo{
-
-background:
-
-linear-gradient(135deg,#7c3aed,#4f46e5);
-
-padding:30px;
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-color:white;
-
-}
- .lead-avatar{
-
-width:65px;
-
-height:65px;
-
-border-radius:20px;
-
-background:rgba(255,255,255,.18);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:30px;
-
-backdrop-filter:blur(8px);
-
-}
- .lead-topo h2{
-
-margin:0;
-
-font-size:24px;
-
-}
-
-.lead-topo p{
-
-margin-top:6px;
-
-opacity:.9;
-
-color:white;
-
-}
- .lead-box form{
-
-padding:28px;
-
-}
- .lead-box label{
-
-display:block;
-
-font-weight:700;
-
-margin-bottom:8px;
-
-color:#334155;
-
-}
- .lead-box input,
-
-.lead-box textarea{
-
-width:100%;
-
-padding:15px;
-
-margin-bottom:18px;
-
-border-radius:14px;
-
-border:1px solid #dbe4f0;
-
-background:#f8fafc;
-
-transition:.3s;
-
-font-size:15px;
-
-outline:none;
-
-}
- .lead-box input:focus,
-
-.lead-box textarea:focus{
-
-border-color:#7c3aed;
-
-background:white;
-
-box-shadow:
-
-0 0 0 4px rgba(124,58,237,.15);
-
-}
- .lead-box button{
-
-width:100%;
-
-padding:18px;
-
-border:0;
-
-border-radius:16px;
-
-background:
-
-linear-gradient(135deg,#7c3aed,#4f46e5);
-
-color:white;
-
-font-size:17px;
-
-font-weight:700;
-
-cursor:pointer;
-
-transition:.3s;
-
-box-shadow:
-
-0 15px 30px rgba(124,58,237,.25);
-
-}
- .lead-box button:hover{
-
-transform:translateY(-3px);
-
-box-shadow:
-
-0 25px 45px rgba(124,58,237,.35);
-
-}
- .lead-seguro{
-
-padding:20px;
-
-background:#f8fafc;
-
-text-align:center;
-
-color:#64748b;
-
-font-size:14px;
-
-border-top:1px solid #edf2f7;
-
-}
- .contador-fotos{
-
-position:absolute;
-
-left:18px;
-
-bottom:18px;
-
-padding:8px 16px;
-
-border-radius:40px;
-
-background:rgba(0,0,0,.65);
-
-color:white;
-
-font-size:14px;
-
-backdrop-filter:blur(6px);
-
-}
- .nav-foto{
-
-position:absolute;
-
-top:50%;
-
-transform:translateY(-50%);
-
-width:48px;
-
-height:48px;
-
-border:none;
-
-border-radius:50%;
-
-background:rgba(255,255,255,.85);
-
-cursor:pointer;
-
-font-size:22px;
-
-transition:.25s;
-
-box-shadow:
-
-0 10px 25px rgba(0,0,0,.18);
-
-}
-
-.nav-foto:hover{
-
-background:white;
-
-transform:translateY(-50%) scale(1.08);
-
-}
-
-.esquerda{
-
-left:15px;
-
-}
-
-.direita{
-
-right:15px;
-
-}
- .topo-imovel{
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:flex-start;
-
-gap:20px;
-
-margin-bottom:20px;
-
-flex-wrap:wrap;
-
-}
- .endereco{
-
-margin-top:10px;
-
-font-size:18px;
-
-color:#64748b;
-
-}
- .codigo{
-
-background:#eef2ff;
-
-padding:10px 18px;
-
-border-radius:30px;
-
-font-weight:700;
-
-color:#4f46e5;
-
-}
- .badges{
-
-display:flex;
-
-gap:12px;
-
-margin:25px 0;
-
-flex-wrap:wrap;
-
-}
-
-.badge{
-
-padding:10px 18px;
-
-border-radius:30px;
-
-font-weight:700;
-
-font-size:14px;
-
-}
-
-.verde{
-
-background:#dcfce7;
-
-color:#15803d;
-
-}
-
-.azul{
-
-background:#dbeafe;
-
-color:#1d4ed8;
-
-}
-
- .caracteristicas{
-
-display:grid;
-
-grid-template-columns:repeat(3,1fr);
-
-gap:18px;
-
-margin-top:35px;
-
-}
- .item{
-
-background:white;
-
-padding:22px;
-
-border-radius:18px;
-
-border:1px solid #e5e7eb;
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-transition:.3s;
-
-}
-
-.item:hover{
-
-transform:translateY(-6px);
-
-box-shadow:
-
-0 20px 35px rgba(124,58,237,.12);
-
-border-color:#7c3aed;
-
-}
- .icone{
-
-width:60px;
-
-height:60px;
-
-border-radius:18px;
-
-background:linear-gradient(135deg,#7c3aed,#4f46e5);
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-font-size:28px;
-
-color:white;
-
-flex-shrink:0;
-
-}
- .item h4{
-
-margin:0;
-
-font-size:26px;
-
-font-weight:800;
-
-}
-
-.item span{
-
-color:#64748b;
-
-font-size:14px;
-
-}
- .descricao{
-
-margin-top:45px;
-
-padding-top:35px;
-
-border-top:1px solid #e5e7eb;
-
-}
-
-.descricao h2{
-
-font-size:30px;
-
-margin-bottom:20px;
-
-}
-
-.descricao p{
-
-font-size:17px;
-
-line-height:1.9;
-
-color:#475569;
-
-}
-
-</style>
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/informa_imovel.css') }}">
 
 </head>
 
 <body>
 
-<div class="container">
+
+
+<!-- ==============================
+TOAST
+============================== -->
+
+<div
+id="toast"
+class="toast">
+
+<div class="toast-icon">
+
+✔
+
+</div>
+
+<div>
+
+<strong>
+
+Solicitação enviada!
+
+</strong>
+
+<p>
+
+Nossa equipe entrará em contato em breve.
+
+</p>
+
+</div>
+
+</div>
 
 
 
-<!-- ESQUERDA -->
+<!-- ==============================
+LAYOUT
+============================== -->
 
+<div class="container fade">
+
+
+
+<!-- ==============================
+COLUNA ESQUERDA
+============================== -->
+
+<div class="left-column"><!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>{{ imovel.titulo }}</title>
+
+<meta property="og:title"
+content="{{ imovel.titulo }}">
+
+<meta property="og:description"
+content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
+
+{% if foto %}
+<meta property="og:image"
+content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
+{% endif %}
+
+<link rel="preconnect"
+href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/informa_imovel.css') }}">
+
+</head>
+
+<body>
+
+
+
+<!-- ==============================
+TOAST
+============================== -->
+
+<div
+id="toast"
+class="toast">
+
+<div class="toast-icon">
+
+✔
+
+</div>
+
+<div>
+
+<strong>
+
+Solicitação enviada!
+
+</strong>
+
+<p>
+
+Nossa equipe entrará em contato em breve.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- ==============================
+LAYOUT
+============================== -->
+
+<div class="container fade">
+
+
+
+<!-- ==============================
+COLUNA ESQUERDA
+============================== -->
+
+<div class="left-column"><!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>{{ imovel.titulo }}</title>
+
+<meta property="og:title"
+content="{{ imovel.titulo }}">
+
+<meta property="og:description"
+content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
+
+{% if foto %}
+<meta property="og:image"
+content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
+{% endif %}
+
+<link rel="preconnect"
+href="https://fonts.googleapis.com">
+
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/informa_imovel.css') }}">
+
+</head>
+
+<body>
+
+
+
+<!-- ==============================
+TOAST
+============================== -->
+
+<div
+id="toast"
+class="toast">
+
+<div class="toast-icon">
+
+✔
+
+</div>
+
+<div>
+
+<strong>
+
+Solicitação enviada!
+
+</strong>
+
+<p>
+
+Nossa equipe entrará em contato em breve.
+
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- ==============================
+LAYOUT
+============================== -->
+
+<div class="container fade">
+
+
+
+<!-- ==============================
+COLUNA ESQUERDA
+============================== -->
+
+<div class="left-column">
+ <!-- =======================================
+GALERIA
+======================================= -->
+
+<div class="card galeria">
 
 {% if imovel.fotos %}
 
-<div class="galeria card">
+<div class="galeria-principal">
 
-    <div class="galeria-principal">
+<img
 
-        <img
-        id="fotoPrincipal"
-        src="/uploads/imoveis/{{ imovel.fotos[0] }}"
-        onclick="abrirGaleria(this.src)">
+id="fotoPrincipal"
 
-        <div class="contador-fotos">
+src="/uploads/imoveis/{{ imovel.fotos[0] }}"
 
-            📷 {{ imovel.fotos|length }} Fotos
+alt="{{ imovel.titulo }}"
+
+onclick="abrirGaleria()">
+
+<div class="contador-fotos">
+
+📷 {{ imovel.fotos|length }} Fotos
+
+</div>
+
+<button
+
+type="button"
+
+class="galeria-btn btn-prev"
+
+onclick="fotoAnterior()">
+
+❮
+
+</button>
+
+<button
+
+type="button"
+
+class="galeria-btn btn-next"
+
+onclick="proximaFoto()">
+
+❯
+
+</button>
+
+<div
+
+class="zoom"
+
+onclick="abrirGaleria()">
+
+🔍
+
+</div>
+
+</div>
+
+
+
+<div class="miniaturas">
+
+{% for foto in imovel.fotos %}
+
+<img
+
+src="/uploads/imoveis/{{ foto }}"
+
+class="{% if loop.first %}ativa{% endif %}"
+
+onclick="selecionarFoto(this,'/uploads/imoveis/{{ foto }}')"
+
+alt="Foto {{ loop.index }}">
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="galeria-principal">
+
+<img
+
+src="/static/img/sem-foto.jpg"
+
+alt="Sem foto disponível">
+
+</div>
+
+{% endif %}
+
+</div>
+<!-- =======================================
+INFORMAÇÕES DO IMÓVEL
+======================================= -->
+
+<div class="card info">
+
+    <div class="topo-imovel">
+
+        <div>
+
+            <h1 class="titulo-imovel">
+
+                {{ imovel.titulo }}
+
+            </h1>
+
+            <div class="localizacao">
+
+                📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+
+            </div>
 
         </div>
 
-        <button
-        class="nav-foto esquerda"
-        onclick="fotoAnterior(event)">
-            ❮
-        </button>
+        <div class="codigo-imovel">
+
+            Código #{{ imovel.id }}
+
+        </div>
+
+    </div>
+
+
+    <div class="preco">
+
+        {{ imovel.valor }}
+
+    </div>
+
+
+    <div class="badges">
+
+        <div class="badge green">
+
+            ✅ Disponível
+
+        </div>
+
+        <div class="badge blue">
+
+            📑 Documentação OK
+
+        </div>
+
+        <div class="badge orange">
+
+            ⭐ Destaque
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ===============================
+    CARACTERÍSTICAS
+    ================================ -->
+
+    <div class="caracteristicas">
+
+        <div class="caracteristica">
+
+            <div class="icon-box">
+
+                🛏
+
+            </div>
+
+            <div>
+
+                <h4>
+
+                    {{ imovel.quartos }}
+
+                </h4>
+
+                <span>
+
+                    Quartos
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="caracteristica">
+
+            <div class="icon-box">
+
+                🚿
+
+            </div>
+
+            <div>
+
+                <h4>
+
+                    {{ imovel.banheiros }}
+
+                </h4>
+
+                <span>
+
+                    Banheiros
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="caracteristica">
+
+            <div class="icon-box">
+
+                🚗
+
+            </div>
+
+            <div>
+
+                <h4>
+
+                    {{ imovel.vaga_garagem }}
+
+                </h4>
+
+                <span>
+
+                    Garagens
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="caracteristica">
+
+            <div class="icon-box">
+
+                📐
+
+            </div>
+
+            <div>
+
+                <h4>
+
+                    {{ imovel.area }}
+
+                </h4>
+
+                <span>
+
+                    Área (m²)
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="caracteristica">
+
+            <div class="icon-box">
+
+                💰
+
+            </div>
+
+            <div>
+
+                <h4>
+
+                    {{ imovel.iptu }}
+
+                </h4>
+
+                <span>
+
+                    IPTU
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="caracteristica">
+
+            <div class="icon-box">
+
+                🚽
+
+            </div>
+
+            <div>
+
+                <h4>
+
+                    {{ imovel.lavabo }}
+
+                </h4>
+
+                <span>
+
+                    Lavabo
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ===============================
+    BOTÕES
+    ================================ -->
+
+    <div class="acoes">
+
+        <a
+
+        class="btn btn-whatsapp"
+
+        target="_blank"
+
+        href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+        💬 WhatsApp
+
+        </a>
+
 
         <button
-        class="nav-foto direita"
-        onclick="proximaFoto(event)">
-            ❯
+
+        class="btn btn-share"
+
+        onclick="compartilhar()">
+
+        📤 Compartilhar
+
         </button>
 
     </div>
 
-    <div class="miniaturas">
 
-        {% for foto in imovel.fotos %}
 
-        <img
+    <!-- ===============================
+    DESCRIÇÃO
+    ================================ -->
 
-        class="thumb {% if loop.first %}ativa{% endif %}"
+    <div class="descricao">
 
-        src="/uploads/imoveis/{{ foto }}"
+        <h2>
 
-        onclick="trocarFoto(this)">
+            📝 Sobre este imóvel
+
+        </h2>
+
+        <p>
+
+            {{ imovel.descricao }}
+
+        </p>
+
+    </div>
+
+
+
+    <!-- ===============================
+    INFORMAÇÕES EXTRAS
+    ================================ -->
+
+    <div class="info-extra">
+
+        <div class="info-card">
+
+            <strong>
+
+                Bairro
+
+            </strong>
+
+            <span>
+
+                {{ imovel.bairro }}
+
+            </span>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <strong>
+
+                Cidade
+
+            </strong>
+
+            <span>
+
+                {{ imovel.cidade }}
+
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- =======================================
+COLUNA DIREITA
+======================================= -->
+
+<div class="right-column">
+
+    <!-- ===========================
+    FORMULÁRIO
+    ============================ -->
+
+    <div class="card lead-box">
+
+        <div class="lead-header">
+
+            <h2>
+
+                Receba mais informações
+
+            </h2>
+
+            <p>
+
+                Preencha seus dados e um corretor entrará em contato.
+
+            </p>
+
+        </div>
+
+        <form id="formLead">
+
+            <input
+            type="hidden"
+            name="id_imovel"
+            value="{{ imovel.id }}">
+
+            <div class="input-group">
+
+                <label>
+
+                    Nome
+
+                </label>
+
+                <input
+                type="text"
+                name="nome"
+                placeholder="Digite seu nome"
+                required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+
+                    Telefone
+
+                </label>
+
+                <input
+                type="text"
+                name="telefone"
+                placeholder="(99) 99999-9999"
+                required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>
+
+                    Mensagem
+
+                </label>
+
+                <textarea
+                name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de receber mais informações.</textarea>
+
+            </div>
+
+            <button
+            class="btn-lead"
+            type="submit">
+
+                Quero ser atendido
+
+            </button>
+
+        </form>
+
+        <!-- ===========================
+        SELO
+        ============================ -->
+
+        <div class="selo">
+
+            <div class="selo-icon">
+
+                🔒
+
+            </div>
+
+            <div>
+
+                <strong>
+
+                    Seus dados estão seguros
+
+                </strong>
+
+                <span>
+
+                    Nunca compartilhamos suas informações.
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <!-- ===========================
+        CONTATOS
+        ============================ -->
+
+        <div class="contatos">
+
+            <a
+
+            class="contato whats"
+
+            target="_blank"
+
+            href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+                💬 Conversar no WhatsApp
+
+            </a>
+
+            <a
+
+            class="contato ligar"
+
+            href="tel:{{ empresa.telefone if empresa else '' }}">
+
+                📞 Ligar agora
+
+            </a>
+
+        </div>
+
+        <!-- ===========================
+        CORRETOR
+        ============================ -->
+
+        <div class="corretor">
+
+            <img
+
+            src="/static/img/corretor.png"
+
+            alt="Corretor">
+
+            <div>
+
+                <h4>
+
+                    Atendimento Especializado
+
+                </h4>
+
+                <span>
+
+                    Nossa equipe responderá o mais rápido possível.
+
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- =======================================
+IMÓVEIS SEMELHANTES
+======================================= -->
+
+<div class="card semelhantes">
+
+    <h2>
+
+        🏡 Imóveis semelhantes
+
+    </h2>
+
+    <div class="lista-semelhantes">
+
+        {% for item in semelhantes %}
+
+        <a
+
+        href="/informa-imovel/{{ item.id }}"
+
+        class="imovel-card">
+
+            {% if item.foto %}
+
+            <img
+
+            src="/uploads/imoveis/{{ item.foto }}"
+
+            alt="{{ item.titulo }}">
+
+            {% else %}
+
+            <img
+
+            src="/static/img/sem-foto.jpg"
+
+            alt="Sem foto">
+
+            {% endif %}
+
+            <div class="imovel-conteudo">
+
+                <h3>
+
+                    {{ item.titulo }}
+
+                </h3>
+
+                <div class="imovel-preco">
+
+                    {{ item.valor }}
+
+                </div>
+
+                <div class="imovel-local">
+
+                    📍 {{ item.bairro }} - {{ item.cidade }}
+
+                </div>
+
+                <div class="imovel-info">
+
+                    <span>
+
+                        🛏 {{ item.quartos }}
+
+                    </span>
+
+                    <span>
+
+                        🚿 {{ item.banheiros }}
+
+                    </span>
+
+                    <span>
+
+                        🚗 {{ item.vaga_garagem }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </a>
 
         {% endfor %}
 
@@ -815,154 +965,69 @@ color:#475569;
 
 </div>
 
-{% endif %}
+</div>
+<!-- FIM DA RIGHT COLUMN -->
 
 
+</div>
+<!-- FIM DO CONTAINER -->
+ <!-- =======================================
+MODAL DA GALERIA
+======================================= -->
 
+<div
 
-<div class="info card">
+id="modalGaleria"
 
-<div class="topo-imovel">
+class="modal">
 
-<div>
+<button
 
-<h1 class="titulo">
+class="fechar-modal"
 
-{{ imovel.titulo }}
+onclick="fecharGaleria()">
 
-</h1>
+✕
 
-<div class="endereco">
+</button>
 
-📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+<img
+
+id="imagemModal"
+
+src="">
 
 </div>
 
-</div>
 
-<div class="codigo">
 
-ID {{ imovel.id }}
-
-</div>
-
-</div>
-
-<div class="valor">
-
-{{ imovel.valor }}
-
-</div>
-
-<div class="badges">
-
-<span class="badge verde">
-
-✅ Documentação OK
-
-</span>
-
-<span class="badge azul">
-
-🏡 Disponível
-
-</span>
-
-</div>
-
-<div class="caracteristicas">
-
-<div class="item">
-
-<div class="icone">🛏</div>
-
-<div>
-
-<h4>{{ imovel.quartos }}</h4>
-
-<span>Quartos</span>
-
-</div>
-
-</div>
-
-<div class="item">
-
-<div class="icone">🚿</div>
-
-<div>
-
-<h4>{{ imovel.banheiros }}</h4>
-
-<span>Banheiros</span>
-
-</div>
-
-</div>
-
-<div class="item">
-
-<div class="icone">🚗</div>
-
-<div>
-
-<h4>{{ imovel.vaga_garagem }}</h4>
-
-<span>Garagem</span>
-
-</div>
-
-</div>
-
-<div class="item">
-
-<div class="icone">📐</div>
-
-<div>
-
-<h4>{{ imovel.area }}</h4>
-
-<span>Área</span>
-
-</div>
-
-</div>
-
-<div class="item">
-
-<div class="icone">💰</div>
-
-<div>
-
-<h4>{{ imovel.iptu }}</h4>
-
-<span>IPTU</span>
-
-</div>
-
-</div>
-
-<div class="item">
-
-<div class="icone">🚽</div>
-
-<div>
-
-<h4>{{ imovel.lavabo }}</h4>
-
-<span>Lavabo</span>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="botoes">
+<!-- =======================================
+BOTÃO FLUTUANTE WHATSAPP
+======================================= -->
 
 <a
 
-class="btn whatsapp"
+class="float-whatsapp"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+💬
+
+</a>
+
+
+
+<!-- =======================================
+BARRA MOBILE
+======================================= -->
+
+<div class="mobile-bar">
+
+<a
+
+class="whats"
 
 target="_blank"
 
@@ -974,437 +1039,25 @@ href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ requ
 
 <a
 
-class="btn compartilhar"
+class="share"
 
 href="#"
 
 onclick="compartilhar()">
 
-🔗 Compartilhar
+📤 Compartilhar
 
 </a>
 
 </div>
 
-<div class="descricao">
 
-<h2>
 
-📝 Sobre este imóvel
+<!-- =======================================
+SCRIPT
+======================================= -->
 
-</h2>
-
-<p>
-
-{{ imovel.descricao }}
-
-</p>
-
-</div>
-
-</div>
-
-
-
-<!-- DIREITA -->
-
-
-<!-- DIREITA -->
-
-<div class="sidebar">
-
-<div class="lead-box card">
-
-<div class="lead-topo">
-
-<div class="lead-avatar">
-
-💬
-
-</div>
-
-<div>
-
-<h2>
-
-Receba mais informações
-
-</h2>
-
-<p>
-
-Fale agora com um corretor especialista.
-
-</p>
-
-</div>
-
-</div>
-
-<form
-id="formLead"
-action="/capturar_lead"
-method="POST">
-
-<input
-type="hidden"
-name="id_imovel"
-value="{{ imovel.id }}">
-
-<label>
-
-Nome
-
-</label>
-
-<input
-type="text"
-name="nome"
-placeholder="Digite seu nome"
-required>
-
-<label>
-
-Telefone
-
-</label>
-
-<input
-type="text"
-name="telefone"
-placeholder="(99) 99999-9999"
-required>
-
-<label>
-
-Mensagem
-
-</label>
-
-<textarea
-name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.</textarea>
-
-<button
-type="submit">
-
-🚀 Quero ser atendido
-
-</button>
-
-</form>
-
-<div class="lead-seguro">
-
-🔒 Seus dados estão protegidos.
-
-</div>
-
-</div>
-
-<div class="lead-box card">
-
-<h2>
-
-🏡 Imóveis semelhantes
-
-</h2>
-
-{% for item in semelhantes %}
-
-<a
-class="imovel-semelhante"
-href="/informa-imovel/{{ item.id }}">
-
-{% if item.foto %}
-
-<img
-src="/uploads/imoveis/{{ item.foto }}">
-
-{% endif %}
-
-<div class="sim-info">
-
-<div class="sim-titulo">
-
-{{ item.titulo }}
-
-</div>
-
-<div class="sim-valor">
-
-{{ item.valor }}
-
-</div>
-
-<div class="sim-local">
-
-📍 {{ item.bairro }}
-
-</div>
-
-</div>
-
-</a>
-
-{% endfor %}
-
-</div>
-
-</div>
-
-
-
-
-<!-- MODAL -->
-
-
-<div class="modal" id="modal">
-
-
-<span
-
-class="fechar"
-
-onclick="fecharGaleria()">
-
-×
-
-</span>
-
-
-
-<img id="fotoModal">
-
-
-</div>
-
-
-
-
-
-
-
-<a
-
-class="float-whats"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-
-🟢
-
-
-</a>
-
-
-
-
-
-
-<div class="mobile-bar">
-
-
-<a
-
-class="whatsapp"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-
-WhatsApp
-
-
-</a>
-
-
-
-
-<a
-
-class="compartilhar"
-
-onclick="compartilhar()">
-
-
-Compartilhar
-
-
-</a>
-
-
-
-</div>
-
-
-
-
-
-
-
-<script>
-
-
-let indiceAtual=0;
-
-const thumbs=document.querySelectorAll(".thumb");
-
-function trocarFoto(img){
-
-document.getElementById("fotoPrincipal").src=img.src;
-
-thumbs.forEach(t=>t.classList.remove("ativa"));
-
-img.classList.add("ativa");
-
-indiceAtual=[...thumbs].indexOf(img);
-
-}
-
-function proximaFoto(e){
-
-e.stopPropagation();
-
-indiceAtual++;
-
-if(indiceAtual>=thumbs.length){
-
-indiceAtual=0;
-
-}
-
-trocarFoto(thumbs[indiceAtual]);
-
-}
- function fotoAnterior(e){
-
-e.stopPropagation();
-
-indiceAtual--;
-
-if(indiceAtual<0){
-
-indiceAtual=thumbs.length-1;
-
-}
-
-trocarFoto(thumbs[indiceAtual]);
-
-}
-
-function abrirGaleria(src){
-
-document.getElementById("modal").style.display="block";
-
-document.getElementById("fotoModal").src=src;
-
-}
-
-
-
-function fecharGaleria(){
-
-document.getElementById("modal").style.display="none";
-
-}
-
-
-
-function compartilhar(){
-
-
-if(navigator.share){
-
-
-navigator.share({
-
-title:document.title,
-
-url:window.location.href
-
-});
-
-
-}else{
-
-
-navigator.clipboard.writeText(window.location.href);
-
-
-alert("Link copiado!");
-
-
-}
-
-
-}
-
-function mostrarToast(){
-
-const toast=document.getElementById("toast");
-
-toast.classList.add("show");
-
-setTimeout(()=>{
-
-toast.classList.remove("show");
-
-},4000);
-
-}
-
-
- document.getElementById("formLead").addEventListener("submit",async function(e){
-
-e.preventDefault();
-
-const form=this;
-
-const dados=new FormData(form);
-
-const resposta=await fetch("/capturar_lead",{
-
-method:"POST",
-
-body:dados
-
-});
-
-if(resposta.ok){
-
-mostrarToast();
-
-form.reset();
-
-}else{
-
-alert("Erro ao enviar solicitação.");
-
-}
-
-});
-
-</script>
-
-<div id="toast" class="toast">
-
-<div class="icon">
-✔
-</div>
-
-<div>
-
-Solicitação enviada com sucesso!<br>
-
-<small>Nossa equipe entrará em contato.</small>
-
-</div>
-
-</div>
-
+<script src="{{ url_for('static', filename='js/informa_imovel.js') }}"></script>
 
 </body>
 
