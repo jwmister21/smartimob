@@ -29,1030 +29,9 @@ content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
 
 <style>
 
-/* ================================
-   SMARTZEN IMOB - SITE IMÓVEL
-   STYLE PREMIUM
-================================ */
-
-
-:root{
-
---primary:#2563eb;
---primary-dark:#1d4ed8;
-
---green:#22c55e;
-
---dark:#0f172a;
---text:#334155;
---muted:#64748b;
-
---bg:#f8fafc;
---card:#ffffff;
-
---border:#e2e8f0;
-
---shadow:
-0 20px 50px rgba(15,23,42,.10);
-
---radius:22px;
-
-}
-
-
-
-
-*{
-
-box-sizing:border-box;
-
-margin:0;
-
-padding:0;
-
-}
-
-
-
-
-html{
-
-scroll-behavior:smooth;
-
-}
-
-
-
-
-body{
-
-font-family:
-'Inter',
-'Segoe UI',
-Arial,
-sans-serif;
-
-background:
-
-linear-gradient(
-180deg,
-#f8fbff,
-#eef2f7
-);
-
-color:var(--dark);
-
-overflow-x:hidden;
-
-}
-
-
-
-
-a{
-
-text-decoration:none;
-
-color:inherit;
-
-}
-
-
-
-img{
-
-max-width:100%;
-
-display:block;
-
-}
-
-
-
-
-/* ================================
-CONTAINER
-================================ */
-
-
-.container{
-
-
-width:100%;
-
-max-width:1400px;
-
-margin:auto;
-
-padding:30px;
-
-
-display:grid;
-
-grid-template-columns:
-
-minmax(0,2fr)
-380px;
-
-
-gap:35px;
-
-
-}
-
-
-
-
-/* ================================
-GALERIA
-================================ */
-
-
-.galeria-principal{
-
-
-position:relative;
-
-height:620px;
-
-border-radius:28px;
-
-overflow:hidden;
-
-background:#ddd;
-
-box-shadow:var(--shadow);
-
-}
-
-
-
-
-.galeria-principal img{
-
-
-width:100%;
-
-height:100%;
-
-object-fit:cover;
-
-cursor:pointer;
-
-transition:.4s;
-
-}
-
-
-
-
-.galeria-principal img:hover{
-
-
-transform:scale(1.04);
-
-
-}
-
-
-
-
-/* BADGES */
-
-
-.badges{
-
-
-position:absolute;
-
-top:25px;
-
-left:25px;
-
-z-index:10;
-
-display:flex;
-
-gap:10px;
-
-
-}
-
-
-
-
-.badge{
-
-
-padding:10px 18px;
-
-border-radius:30px;
-
-font-size:13px;
-
-font-weight:700;
-
-
-}
-
-
-
-
-.badge-venda{
-
-
-background:#22c55e;
-
-color:white;
-
-
-}
-
-
-
-
-.badge-codigo{
-
-
-background:white;
-
-color:#0f172a;
-
-box-shadow:0 5px 20px #0002;
-
-
-}
-
-
-
-
-
-
-/* MINIATURAS */
-
-
-.miniaturas{
-
-
-display:flex;
-
-gap:12px;
-
-margin-top:15px;
-
-overflow-x:auto;
-
-
-}
-
-
-
-
-.miniaturas img{
-
-
-width:110px;
-
-height:80px;
-
-object-fit:cover;
-
-border-radius:15px;
-
-cursor:pointer;
-
-transition:.2s;
-
-
-}
-
-
-
-
-.miniaturas img:hover{
-
-
-transform:translateY(-5px);
-
-outline:3px solid var(--primary);
-
-
-}
-
-
-
-
-/* ================================
-CARD INFORMAÇÕES
-================================ */
-
-
-.info{
-
-
-background:white;
-
-padding:35px;
-
-border-radius:25px;
-
-margin-top:25px;
-
-box-shadow:var(--shadow);
-
-
-}
-
-
-
-
-.titulo{
-
-
-font-size:38px;
-
-font-weight:900;
-
-line-height:1.1;
-
-margin-bottom:12px;
-
-
-}
-
-
-
-
-.endereco{
-
-
-font-size:17px;
-
-color:var(--muted);
-
-margin-bottom:25px;
-
-
-}
-
-
-
-
-.valor-box{
-
-
-background:
-
-linear-gradient(
-135deg,
-#2563eb,
-#1e40af
-);
-
-
-color:white;
-
-padding:25px;
-
-border-radius:22px;
-
-margin-bottom:30px;
-
-
-}
-
-
-
-.valor-box small{
-
-
-opacity:.8;
-
-font-size:14px;
-
-
-}
-
-
-
-
-.valor{
-
-
-font-size:42px;
-
-font-weight:900;
-
-margin-top:8px;
-
-
-}
- /* ================================
-CARACTERÍSTICAS
-================================ */
-
-
-.caracteristicas{
-
-
-display:grid;
-
-grid-template-columns:repeat(3,1fr);
-
-gap:18px;
-
-margin:30px 0;
-
-
-}
-
-
-
-.item{
-
-
-background:#f8fafc;
-
-border:1px solid #e5e7eb;
-
-padding:20px;
-
-border-radius:18px;
-
-display:flex;
-
-align-items:center;
-
-gap:15px;
-
-transition:.25s;
-
-
-}
-
-
-
-.item:hover{
-
-
-transform:translateY(-5px);
-
-box-shadow:0 15px 30px #0001;
-
-
-}
-
-
-
-
-.icone{
-
-
-width:55px;
-
-height:55px;
-
-border-radius:18px;
-
-background:#eff6ff;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:25px;
-
-
-}
-
-
-
-
-.item strong{
-
-
-display:block;
-
-font-size:22px;
-
-
-}
-
-
-
-.item span{
-
-
-color:#64748b;
-
-font-size:14px;
-
-
-}
-
-
-
-
-
-
-/* ================================
-DESCRIÇÃO
-================================ */
-
-
-.descricao{
-
-
-border-top:1px solid #e5e7eb;
-
-padding-top:30px;
-
-margin-top:30px;
-
-
-}
-
-
-
-.descricao h2{
-
-
-font-size:28px;
-
-margin-bottom:15px;
-
-
-}
-
-
-
-.descricao p{
-
-
-font-size:17px;
-
-line-height:1.8;
-
-color:#475569;
-
-white-space:pre-line;
-
-
-}
-
-
-
-
-
-
-/* ================================
-BOTÕES
-================================ */
-
-
-
-.botoes{
-
-
-display:flex;
-
-gap:15px;
-
-margin-top:30px;
-
-
-}
-
-
-
-
-.btn{
-
-
-flex:1;
-
-padding:17px;
-
-border-radius:16px;
-
-text-align:center;
-
-font-weight:800;
-
-color:white;
-
-transition:.25s;
-
-
-}
-
-
-
-.btn:hover{
-
-
-transform:translateY(-4px);
-
-
-}
-
-
-
-
-
-.whatsapp{
-
-
-background:#22c55e;
-
-
-}
-
-
-
-.compartilhar{
-
-
-background:#2563eb;
-
-
-}
-
-
-
-
-
-
-
-/* ================================
-FORM LEAD
-================================ */
-
-
-
-.lead-box{
-
-
-background:white;
-
-padding:28px;
-
-border-radius:25px;
-
-box-shadow:var(--shadow);
-
-position:sticky;
-
-top:25px;
-
-}
-
-
-
-
-.lead-box h2{
-
-
-font-size:26px;
-
-margin-bottom:10px;
-
-
-}
-
-
-
-.lead-box input,
-.lead-box textarea{
-
-
-width:100%;
-
-padding:15px;
-
-border-radius:14px;
-
-border:1px solid #ddd;
-
-margin-bottom:12px;
-
-font-size:15px;
-
-
-}
-
-
-
-
-.lead-box textarea{
-
-
-height:120px;
-
-resize:none;
-
-
-}
-
-
-
-
-
-.lead-box button{
-
-
-width:100%;
-
-padding:16px;
-
-border:0;
-
-border-radius:15px;
-
-background:#2563eb;
-
-color:white;
-
-font-size:16px;
-
-font-weight:800;
-
-cursor:pointer;
-
-
-}
- /* ================================
-IMÓVEIS SEMELHANTES
-================================ */
-
-
-.semelhantes{
-
-
-background:white;
-
-padding:25px;
-
-border-radius:25px;
-
-box-shadow:var(--shadow);
-
-margin-top:25px;
-
-
-}
-
-
-
-.semelhantes h3{
-
-
-font-size:24px;
-
-margin-bottom:20px;
-
-
-}
-
-
-
-
-.imovel-semelhante{
-
-
-display:flex;
-
-gap:15px;
-
-background:#f8fafc;
-
-border-radius:18px;
-
-overflow:hidden;
-
-margin-bottom:15px;
-
-transition:.25s;
-
-
-}
-
-
-
-
-.imovel-semelhante:hover{
-
-
-transform:translateY(-5px);
-
-box-shadow:0 15px 30px #0001;
-
-
-}
-
-
-
-
-.imovel-semelhante img{
-
-
-width:120px;
-
-height:100px;
-
-object-fit:cover;
-
-
-}
-
-
-
-
-
-.sim-info{
-
-
-padding:12px;
-
-display:flex;
-
-flex-direction:column;
-
-justify-content:center;
-
-
-}
-
-
-
-
-
-.sim-titulo{
-
-
-font-weight:800;
-
-font-size:15px;
-
-
-}
-
-
-
-
-
-.sim-valor{
-
-
-font-size:18px;
-
-font-weight:900;
-
-color:#16a34a;
-
-
-}
-
-
-
-
-
-.sim-local{
-
-
-font-size:13px;
-
-color:#64748b;
-
-
-}
-
-
-
-
-
-
-/* ================================
-MODAL FOTO
-================================ */
-
-
-.modal{
-
-
-display:none;
-
-position:fixed;
-
-inset:0;
-
-background:rgba(0,0,0,.92);
-
-z-index:99999;
-
-align-items:center;
-
-justify-content:center;
-
-
-}
-
-
-
-.modal img{
-
-
-max-width:90%;
-
-max-height:90%;
-
-border-radius:20px;
-
-
-}
-
-
-
-
-.fechar{
-
-
-position:absolute;
-
-top:25px;
-
-right:35px;
-
-font-size:50px;
-
-color:white;
-
-cursor:pointer;
-
-
-}
-
-
-
-
-
-
-/* ================================
-WHATSAPP FLUTUANTE
-================================ */
-
-
-
-.float-whats{
-
-
-position:fixed;
-
-right:25px;
-
-bottom:25px;
-
-width:65px;
-
-height:65px;
-
-border-radius:50%;
-
-background:#22c55e;
-
-color:white;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:28px;
-
-box-shadow:0 15px 40px #22c55e55;
-
-z-index:999;
-
-
-}
-
-
-
-
-
-
-
-
-/* ================================
-TOAST
-================================ */
-
-
+ /* ================= TOAST ================= */
 
 .toast{
-
 
 position:fixed;
 
@@ -1062,106 +41,116 @@ right:30px;
 
 background:#16a34a;
 
-color:white;
+color:#fff;
 
-padding:18px 25px;
+padding:18px 24px;
 
-border-radius:18px;
+border-radius:16px;
+
+box-shadow:0 15px 35px rgba(0,0,0,.25);
 
 display:flex;
 
-gap:15px;
-
 align-items:center;
 
-box-shadow:0 20px 40px #0003;
+gap:14px;
+
+font-size:16px;
+
+font-weight:600;
+
+z-index:99999;
 
 opacity:0;
 
 transform:translateY(-20px);
 
-transition:.3s;
+pointer-events:none;
 
-z-index:999999;
-
+transition:.35s;
 
 }
 
-
-
 .toast.show{
-
 
 opacity:1;
 
 transform:translateY(0);
 
+}
+
+.toast .icon{
+
+width:42px;
+
+height:42px;
+
+border-radius:50%;
+
+background:rgba(255,255,255,.2);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:22px;
+
+}
+
+
+*{
+box-sizing:border-box;
+}
+
+
+
+html,body{
+
+margin:0;
+padding:0;
+width:100%;
+overflow-x:hidden;
+
+}
+
+
+
+body{
+
+    font-family:"Inter","Segoe UI",Arial,sans-serif;
+
+    background:
+    radial-gradient(circle at top,#eef4ff 0%,#f8fafc 35%,#eef2f7 100%);
+
+    color:#0f172a;
+
+    line-height:1.6;
 
 }
 
 
 
 
-
-
-/* ================================
-MOBILE BAR
-================================ */
-
-
-.mobile-bar{
-
-
-display:none;
-
-
-}
-
-
-
-
-
-/* ================================
-RESPONSIVO
-================================ */
-
-
-
-@media(max-width:1100px){
-
+/* LAYOUT */
 
 
 .container{
 
+width:100%;
 
-grid-template-columns:1fr;
+max-width:1200px;
 
+margin:auto;
 
-}
+padding:20px;
 
+display:grid;
 
+grid-template-columns:minmax(0,2fr) 360px;
 
-.lead-box{
-
-
-position:relative;
-
-top:auto;
-
-
-}
-
-
-
-.caracteristicas{
-
-
-grid-template-columns:repeat(2,1fr);
-
-
-}
-
-
+gap:25px;
 
 }
 
@@ -1169,25 +158,85 @@ grid-template-columns:repeat(2,1fr);
 
 
 
-@media(max-width:700px){
-
-
-
-.container{
-
-
-padding:15px;
-
-
-}
-
+/* GALERIA */
 
 
 .galeria-principal{
 
+width:100%;
 
-height:320px;
+aspect-ratio:16/10;
 
+border-radius:18px;
+
+overflow:hidden;
+
+background:#ddd;
+
+}
+
+
+
+.galeria-principal img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
+cursor:pointer;
+
+}
+
+
+
+.miniaturas{
+
+display:flex;
+
+gap:10px;
+
+margin-top:12px;
+
+overflow-x:auto;
+
+}
+
+
+
+.miniaturas img{
+
+width:95px;
+
+height:70px;
+
+flex-shrink:0;
+
+object-fit:cover;
+
+border-radius:10px;
+
+}
+
+
+
+
+
+/* INFO */
+
+
+.info{
+
+background:white;
+
+padding:25px;
+
+margin-top:20px;
+
+border-radius:18px;
+
+box-shadow:0 10px 30px #0001;
 
 }
 
@@ -1195,9 +244,9 @@ height:320px;
 
 .titulo{
 
+font-size:32px;
 
-font-size:28px;
-
+font-weight:800;
 
 }
 
@@ -1205,9 +254,432 @@ font-size:28px;
 
 .valor{
 
+color:#16a34a;
 
-font-size:30px;
+font-size:38px;
 
+font-weight:900;
+
+margin:15px 0;
+
+}
+
+
+
+
+
+.caracteristicas{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:10px;
+
+}
+
+
+
+.item{
+
+background:#f8fafc;
+
+padding:12px;
+
+border-radius:12px;
+
+}
+
+
+
+
+/* BOTÕES */
+
+
+.botoes{
+
+display:flex;
+
+gap:12px;
+
+margin-top:20px;
+
+}
+
+
+
+.btn{
+
+flex:1;
+
+padding:14px;
+
+border-radius:12px;
+
+color:white;
+
+text-decoration:none;
+
+text-align:center;
+
+font-weight:bold;
+
+}
+
+
+
+.whatsapp{
+
+background:#25D366;
+
+}
+
+
+
+.compartilhar{
+
+background:#2563eb;
+
+}
+
+
+
+
+
+/* FORM */
+
+
+.lead-box{
+
+background:white;
+
+padding:22px;
+
+border-radius:18px;
+
+margin-bottom:20px;
+
+box-shadow:0 10px 30px #0001;
+
+position:sticky;
+
+top:20px;
+
+}
+
+
+
+.lead-box input,
+.lead-box textarea{
+
+width:100%;
+
+padding:13px;
+
+margin-bottom:12px;
+
+border-radius:10px;
+
+border:1px solid #ddd;
+
+}
+
+
+
+.lead-box textarea{
+
+height:120px;
+
+resize:none;
+
+}
+
+
+
+.lead-box button{
+
+width:100%;
+
+padding:14px;
+
+border:0;
+
+border-radius:12px;
+
+background:#7c3aed;
+
+color:white;
+
+font-weight:bold;
+
+}
+
+
+
+
+
+/* SEMELHANTES */
+
+
+.imovel-semelhante{
+
+display:flex;
+
+width:100%;
+
+height:95px;
+
+margin-top:12px;
+
+background:#f8fafc;
+
+border-radius:14px;
+
+overflow:hidden;
+
+text-decoration:none;
+
+color:#0f172a;
+
+transition:.2s;
+
+}
+
+
+
+.imovel-semelhante:hover{
+
+transform:translateY(-3px);
+
+box-shadow:0 8px 20px #0002;
+
+}
+
+
+
+.imovel-semelhante img{
+
+width:105px;
+
+min-width:105px;
+
+height:95px;
+
+object-fit:cover;
+
+}
+
+
+
+.sim-info{
+
+flex:1;
+
+min-width:0;
+
+padding:10px;
+
+overflow:hidden;
+
+}
+
+
+
+.sim-titulo{
+
+font-size:14px;
+
+font-weight:700;
+
+white-space:nowrap;
+
+overflow:hidden;
+
+text-overflow:ellipsis;
+
+}
+
+
+
+.sim-valor{
+
+color:#16a34a;
+
+font-weight:800;
+
+font-size:16px;
+
+}
+
+
+
+.sim-local{
+
+font-size:12px;
+
+color:#64748b;
+
+overflow:hidden;
+
+white-space:nowrap;
+
+}
+
+
+
+
+
+/* MODAL */
+
+
+.modal{
+
+display:none;
+
+position:fixed;
+
+inset:0;
+
+background:#000;
+
+z-index:9999;
+
+}
+
+
+
+.modal img{
+
+width:100%;
+
+height:100%;
+
+object-fit:contain;
+
+}
+
+
+
+.fechar{
+
+position:absolute;
+
+top:20px;
+
+right:20px;
+
+color:white;
+
+font-size:40px;
+
+}
+
+
+
+
+
+/* WHATS */
+
+
+.float-whats{
+
+position:fixed;
+
+right:20px;
+
+bottom:20px;
+
+width:60px;
+
+height:60px;
+
+border-radius:50%;
+
+background:#25D366;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:white;
+
+z-index:100;
+
+}
+
+
+
+
+
+.mobile-bar{
+
+display:none;
+
+}
+ id="hmtb3a"
+<style>
+
+
+@media(max-width:900px){
+
+
+.container{
+
+grid-template-columns:1fr;
+
+padding:12px;
+
+}
+
+
+.lead-box{
+
+position:relative;
+
+top:auto;
+
+}
+
+
+}
+
+
+
+@media(max-width:600px){
+
+
+.container{
+
+    width:100%;
+
+    max-width:1350px;
+
+    margin:auto;
+
+    padding:30px;
+
+    display:grid;
+
+    grid-template-columns:minmax(0,2fr) 390px;
+
+    gap:35px;
+
+}
+
+
+.galeria-principal{
+
+aspect-ratio:4/3;
+
+}
+
+
+
+.info{
+
+padding:18px;
 
 }
 
@@ -1215,9 +687,7 @@ font-size:30px;
 
 .caracteristicas{
 
-
 grid-template-columns:1fr;
-
 
 }
 
@@ -1225,16 +695,13 @@ grid-template-columns:1fr;
 
 .botoes{
 
-
-flex-direction:column;
-
+display:none;
 
 }
 
 
 
 .mobile-bar{
-
 
 display:flex;
 
@@ -1248,14 +715,11 @@ right:0;
 
 background:white;
 
-padding:12px;
+padding:10px;
 
 gap:10px;
 
-z-index:9999;
-
-box-shadow:0 -10px 30px #0002;
-
+z-index:1000;
 
 }
 
@@ -1263,39 +727,17 @@ box-shadow:0 -10px 30px #0002;
 
 .mobile-bar a{
 
-
 flex:1;
 
-padding:14px;
+padding:12px;
 
-border-radius:14px;
+border-radius:10px;
 
 text-align:center;
 
 color:white;
 
-font-weight:800;
-
-
-}
-
-
-
-.mobile-bar .whatsapp{
-
-
-background:#22c55e;
-
-
-}
-
-
-
-.mobile-bar .compartilhar{
-
-
-background:#2563eb;
-
+text-decoration:none;
 
 }
 
@@ -1303,133 +745,35 @@ background:#2563eb;
 
 .float-whats{
 
-
 bottom:90px;
 
-
 }
 
 
 
-}
-   /* HEADER DO SITE */
-
-
-.topo-site{
-
-grid-column:1/-1;
+.imovel-semelhante{
 
 height:90px;
 
-background:white;
+}
 
-display:flex;
 
-align-items:center;
 
-justify-content:space-between;
+.imovel-semelhante img{
 
-padding:0 35px;
+width:90px;
 
-border-radius:22px;
+min-width:90px;
 
-box-shadow:var(--shadow);
-
-margin-bottom:25px;
+height:90px;
 
 }
 
 
 
-.marca{
+.valor{
 
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-}
-
-
-
-.logo{
-
-height:60px;
-
-width:auto;
-
-}
-
-
-
-.marca h1{
-
-font-size:26px;
-
-font-weight:900;
-
-margin:0;
-
-}
-
-
-
-.marca span{
-
-color:#64748b;
-
-font-size:14px;
-
-}
-
-
-
-.acoes a{
-
-background:#22c55e;
-
-color:white;
-
-padding:12px 25px;
-
-border-radius:30px;
-
-font-weight:800;
-
-}
-
-
-
-@media(max-width:700px){
-
-
-.topo-site{
-
-height:auto;
-
-padding:20px;
-
-}
-
-
-.logo{
-
-height:45px;
-
-}
-
-
-.marca h1{
-
-font-size:18px;
-
-}
-
-
-.acoes{
-
-display:none;
+font-size:28px;
 
 }
 
@@ -1441,174 +785,27 @@ display:none;
 
 </head>
 
+
+
 <body>
+
 
 
 <div class="container">
 
-<!-- HEADER SITE -->
-
-<header class="topo-site">
 
 
-<div class="marca">
-
-
-{% if empresa.logo %}
-
-<img 
-src="{{ empresa.logo }}"
-class="logo">
-
-{% else %}
-
-<img 
-src="/static/logo_smartzen.png"
-class="logo">
-
-{% endif %}
-
-
+<!-- ESQUERDA -->
 
 
 <div>
 
-
-<h1>
-
-{{ empresa.nome_imobiliaria or "SMARTZEN IMOB" }}
-
-</h1>
-
-
-<span>
-
-Encontre o imóvel ideal para você
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="acoes">
-
-
-<a href="/">
-
-Voltar aos imóveis
-
-</a>
-
-
-</div>
-
-
-</header><!-- HEADER SITE -->
-
-<header class="topo-site">
-
-
-<div class="marca">
-
-
-{% if empresa.logo %}
-
-<img 
-src="{{ empresa.logo }}"
-class="logo">
-
-{% else %}
-
-<img 
-src="/static/logo_smartzen.png"
-class="logo">
-
-{% endif %}
-
-
-
-
-<div>
-
-
-<h1>
-
-{{ empresa.nome_imobiliaria or "SMARTZEN IMOB" }}
-
-</h1>
-
-
-<span>
-
-Encontre o imóvel ideal para você
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="acoes">
-
-
-<a href="/">
-
-Voltar aos imóveis
-
-</a>
-
-
-</div>
-
-
-</header>
-<!-- ==========================
-     LADO ESQUERDO
-========================== -->
-
-
-<div>
 
 
 {% if imovel.fotos %}
 
 
-
 <div class="galeria-principal">
-
-
-<div class="badges">
-
-
-<span class="badge badge-venda">
-
-🏠 À Venda
-
-</span>
-
-
-<span class="badge badge-codigo">
-
-Código #{{ imovel.id }}
-
-</span>
-
-
-</div>
-
-
-
 
 
 <img
@@ -1617,15 +814,10 @@ id="fotoPrincipal"
 
 src="/uploads/imoveis/{{ imovel.fotos[0] }}"
 
-onclick="abrirGaleria(this.src)"
-
->
-
-
+onclick="abrirGaleria(this.src)">
 
 
 </div>
-
 
 
 
@@ -1633,27 +825,21 @@ onclick="abrirGaleria(this.src)"
 <div class="miniaturas">
 
 
-
 {% for foto in imovel.fotos %}
-
 
 
 <img
 
 src="/uploads/imoveis/{{ foto }}"
 
-onclick="trocarFoto(this.src)"
-
->
+onclick="trocarFoto(this.src)">
 
 
 
 {% endfor %}
 
 
-
 </div>
-
 
 
 {% endif %}
@@ -1662,50 +848,14 @@ onclick="trocarFoto(this.src)"
 
 
 
-
-
-
 <div class="info">
 
 
-
-
-
-<h1 class="titulo">
-
+<div class="titulo">
 
 {{ imovel.titulo }}
 
-
-</h1>
-
-
-
-
-
-
-<div class="endereco">
-
-
-📍 {{ imovel.bairro }} - {{ imovel.cidade }}
-
-
 </div>
-
-
-
-
-
-
-
-<div class="valor-box">
-
-
-<small>
-
-Valor do imóvel
-
-</small>
 
 
 
@@ -1718,9 +868,12 @@ Valor do imóvel
 </div>
 
 
-</div>
 
+<h4>
 
+📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+
+</h4>
 
 
 
@@ -1728,263 +881,43 @@ Valor do imóvel
 <div class="caracteristicas">
 
 
-
 <div class="item">
-
-<div class="icone">
-
-🛏
-
+🛏 {{ imovel.quartos }} Quartos
 </div>
-
-
-<div>
-
-
-<strong>
-
-{{ imovel.quartos }}
-
-</strong>
-
-
-<span>
-
-Quartos
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
-
 
 
 <div class="item">
-
-<div class="icone">
-
-🚿
-
+🚿 {{ imovel.banheiros }} Banheiros
 </div>
-
-
-<div>
-
-
-<strong>
-
-{{ imovel.banheiros }}
-
-</strong>
-
-
-<span>
-
-Banheiros
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
-
 
 
 <div class="item">
-
-<div class="icone">
-
-🚗
-
+🚗 {{ imovel.vaga_garagem }} Vagas
 </div>
-
-
-<div>
-
-
-<strong>
-
-{{ imovel.vaga_garagem }}
-
-</strong>
-
-
-<span>
-
-Vagas
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
 
 
 <div class="item">
-
-<div class="icone">
-
-📐
-
+📐 {{ imovel.area }} m²
 </div>
-
-
-<div>
-
-
-<strong>
-
-{{ imovel.area }}
-
-</strong>
-
-
-<span>
-
-m²
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
 
 
 <div class="item">
-
-<div class="icone">
-
-🚽
-
+💲 {{ imovel.iptu }} IPTU
 </div>
-
-
-<div>
-
-
-<strong>
-
-{{ imovel.lavabo }}
-
-</strong>
-
-
-<span>
-
-Lavabo
-
-</span>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
 
 
 <div class="item">
-
-<div class="icone">
-
-💰
-
-</div>
-
-
-<div>
-
-
-<strong>
-
-{{ imovel.iptu }}
-
-</strong>
-
-
-<span>
-
-IPTU
-
-</span>
-
-
-</div>
-
-
+🚽 {{ imovel.lavabo }} Lavabo
 </div>
 
 
 
-
-
 </div>
-
-
-
-
-
-
-
-
-<div class="descricao">
-
-
-
-<h2>
-
-Descrição do imóvel
-
-</h2>
-
-
-
-<p>
-
-{{ imovel.descricao }}
-
-</p>
-
-
-
-</div>
-
-
-
-
 
 
 
 
 <div class="botoes">
-
 
 
 <a
@@ -1996,15 +929,9 @@ target="_blank"
 href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
 
 
-
-💬 Falar no WhatsApp
-
-
+WhatsApp
 
 </a>
-
-
-
 
 
 
@@ -2018,14 +945,39 @@ href="#"
 onclick="compartilhar()">
 
 
-
-🔗 Compartilhar
-
-
+Compartilhar
 
 </a>
 
 
+</div>
+
+
+
+
+<div class="descricao">
+
+
+<h3>
+
+Descrição
+
+</h3>
+
+
+<p>
+
+{{ imovel.descricao }}
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
 
 
 </div>
@@ -2034,22 +986,7 @@ onclick="compartilhar()">
 
 
 
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-<!-- ==========================
-     LADO DIREITO
-========================== -->
-
+<!-- DIREITA -->
 
 
 <div>
@@ -2057,36 +994,18 @@ onclick="compartilhar()">
 
 
 
-
 <div class="lead-box">
-
 
 
 <h2>
 
-📩 Tenho interesse
+Receba mais informações
 
 </h2>
 
 
 
-
-<p>
-
-Preencha seus dados e vamos entrar em contato
-
-</p>
-
-
-
-
-
-
-
 <form id="formLead">
-
-
-
 
 
 <input
@@ -2099,8 +1018,6 @@ value="{{ imovel.id }}">
 
 
 
-
-
 <input
 
 type="text"
@@ -2110,10 +1027,6 @@ name="nome"
 placeholder="Seu nome"
 
 required>
-
-
-
-
 
 
 
@@ -2130,48 +1043,27 @@ required>
 
 
 
-
-
-
-
 <textarea
 
 name="mensagem">
 
 
-
-Olá! Tenho interesse no imóvel:
-
-{{ imovel.titulo }}
-
+Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
 
 
 </textarea>
 
 
 
+<button>
 
-
-
-
-
-<button type="submit">
-
-
-🚀 Enviar solicitação
-
+Quero ser atendido
 
 </button>
 
 
 
-
-
-
 </form>
-
-
-
 
 
 
@@ -2181,21 +1073,14 @@ Olá! Tenho interesse no imóvel:
 
 
 
-
-
-
-
-<div class="semelhantes">
-
+<div class="lead-box">
 
 
 <h3>
 
-🏡 Imóveis semelhantes
+🏡 Imóveis Semelhantes
 
 </h3>
-
-
 
 
 
@@ -2204,33 +1089,20 @@ Olá! Tenho interesse no imóvel:
 
 
 
-
-
 <a
 
 class="imovel-semelhante"
 
-href="/informa-imovel/{{ item.id }}"
-
->
-
+href="/informa-imovel/{{ item.id }}">
 
 
 
 {% if item.foto %}
 
-
-
-<img
-
-src="/uploads/imoveis/{{ item.foto }}">
-
+<img src="/uploads/imoveis/{{ item.foto }}">
 
 
 {% endif %}
-
-
-
 
 
 
@@ -2238,17 +1110,11 @@ src="/uploads/imoveis/{{ item.foto }}">
 
 
 
-
-
 <div class="sim-titulo">
-
 
 {{ item.titulo }}
 
-
 </div>
-
-
 
 
 
@@ -2264,33 +1130,21 @@ src="/uploads/imoveis/{{ item.foto }}">
 
 
 
-
-
 <div class="sim-local">
 
 
 📍 {{ item.bairro }} - {{ item.cidade }}
 
 
-
 </div>
 
 
 
 
-
-
 </div>
-
-
-
-
 
 
 </a>
-
-
-
 
 
 
@@ -2304,6 +1158,7 @@ src="/uploads/imoveis/{{ item.foto }}">
 
 
 
+</div>
 
 
 
@@ -2312,20 +1167,17 @@ src="/uploads/imoveis/{{ item.foto }}">
 
 
 
-</div>
 
 
-
-
-
-
-<!-- MODAL DA GALERIA -->
+<!-- MODAL -->
 
 
 <div class="modal" id="modal">
 
 
-<span class="fechar"
+<span
+
+class="fechar"
 
 onclick="fecharGaleria()">
 
@@ -2335,9 +1187,7 @@ onclick="fecharGaleria()">
 
 
 
-
 <img id="fotoModal">
-
 
 
 </div>
@@ -2345,11 +1195,6 @@ onclick="fecharGaleria()">
 
 
 
-
-
-
-
-<!-- WHATSAPP FLUTUANTE -->
 
 
 
@@ -2362,9 +1207,7 @@ target="_blank"
 href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
 
 
-
-💬
-
+🟢
 
 
 </a>
@@ -2374,15 +1217,7 @@ href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ requ
 
 
 
-
-
-<!-- BARRA MOBILE -->
-
-
 <div class="mobile-bar">
-
-
-
 
 
 <a
@@ -2394,15 +1229,10 @@ target="_blank"
 href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
 
 
-
 WhatsApp
 
 
-
 </a>
-
-
-
 
 
 
@@ -2414,65 +1244,14 @@ class="compartilhar"
 onclick="compartilhar()">
 
 
-
 Compartilhar
-
 
 
 </a>
 
 
 
-
-
 </div>
-
-
-
-
-
-
-
-
-<!-- TOAST -->
-
-
-<div class="toast" id="toast">
-
-
-
-<div>
-
-✔
-
-</div>
-
-
-
-
-<div>
-
-
-Solicitação enviada!
-
-
-<br>
-
-
-<small>
-
-Entraremos em contato.
-
-</small>
-
-
-
-</div>
-
-
-
-</div>
-
 
 
 
@@ -2483,69 +1262,36 @@ Entraremos em contato.
 <script>
 
 
-
-
 function trocarFoto(src){
 
-
-
-document.getElementById("fotoPrincipal").src = src;
-
-
+document.getElementById("fotoPrincipal").src=src;
 
 }
-
-
-
-
 
 
 
 function abrirGaleria(src){
 
+document.getElementById("modal").style.display="block";
 
-
-document.getElementById("modal").style.display="flex";
-
-
-
-document.getElementById("fotoModal").src = src;
-
-
+document.getElementById("fotoModal").src=src;
 
 }
-
-
-
-
 
 
 
 function fecharGaleria(){
 
-
-
 document.getElementById("modal").style.display="none";
 
-
-
 }
-
-
-
-
-
-
-
 
 
 
 function compartilhar(){
 
 
-
 if(navigator.share){
-
 
 
 navigator.share({
@@ -2554,156 +1300,87 @@ title:document.title,
 
 url:window.location.href
 
-
 });
 
 
-
 }else{
-
 
 
 navigator.clipboard.writeText(window.location.href);
 
 
-
-mostrarToast();
-
+alert("Link copiado!");
 
 
 }
 
 
-
 }
-
-
-
-
-
-
-
-
 
 function mostrarToast(){
 
-
-
-let toast=document.getElementById("toast");
-
-
+const toast=document.getElementById("toast");
 
 toast.classList.add("show");
 
-
-
 setTimeout(()=>{
-
-
 
 toast.classList.remove("show");
 
-
-
 },4000);
-
-
 
 }
 
 
-
-
-
-
-
-
-
-
-
-document
-.getElementById("formLead")
-.addEventListener("submit",async function(e){
-
-
+ document.getElementById("formLead").addEventListener("submit",async function(e){
 
 e.preventDefault();
 
+const form=this;
 
+const dados=new FormData(form);
 
-
-
-let dados=new FormData(this);
-
-
-
-
-
-
-let resposta=await fetch("/capturar_lead",{
-
-
+const resposta=await fetch("/capturar_lead",{
 
 method:"POST",
 
-
 body:dados
 
-
-
 });
-
-
-
-
-
-
 
 if(resposta.ok){
 
-
-
 mostrarToast();
 
-
-
-this.reset();
-
-
+form.reset();
 
 }else{
 
-
-
-alert("Erro ao enviar");
-
-
+alert("Erro ao enviar solicitação.");
 
 }
 
-
-
-
-
 });
-
-
-
-
-
-
-
 
 </script>
 
+<div id="toast" class="toast">
 
+<div class="icon">
+✔
+</div>
 
+<div>
 
+Solicitação enviada com sucesso!<br>
 
+<small>Nossa equipe entrará em contato.</small>
 
+</div>
+
+</div>
 
 
 </body>
-
 
 </html>
