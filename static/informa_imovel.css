@@ -1,0 +1,2585 @@
+/*==================================================
+ SMARTZEN IMOB
+ Página Premium do Imóvel
+===================================================*/
+
+
+/*==========================
+RESET
+===========================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    font-family:
+    Inter,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+    background:#f5f7fb;
+
+    color:#0f172a;
+
+    overflow-x:hidden;
+
+    line-height:1.6;
+
+}
+
+
+/*==========================
+VARIÁVEIS
+===========================*/
+
+:root{
+
+    --primary:#7c3aed;
+
+    --primary-dark:#5b21b6;
+
+    --green:#16a34a;
+
+    --blue:#2563eb;
+
+    --orange:#f59e0b;
+
+    --danger:#ef4444;
+
+    --text:#0f172a;
+
+    --muted:#64748b;
+
+    --border:#e5e7eb;
+
+    --card:#ffffff;
+
+    --background:#f8fafc;
+
+    --radius:22px;
+
+}
+
+
+/*==========================
+LINKS
+===========================*/
+
+a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+}
+
+
+/*==========================
+IMAGENS
+===========================*/
+
+img{
+
+    display:block;
+
+    max-width:100%;
+
+}
+
+
+/*==========================
+SCROLLBAR
+===========================*/
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+    height:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#d4d4d8;
+
+    border-radius:30px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#f1f5f9;
+
+}
+
+
+/*==========================
+CONTAINER
+===========================*/
+
+.container{
+
+    width:100%;
+
+    max-width:1400px;
+
+    margin:auto;
+
+    padding:35px;
+
+    display:grid;
+
+    grid-template-columns:
+
+    minmax(0,2fr)
+
+    380px;
+
+    gap:35px;
+
+    align-items:start;
+
+}
+
+
+/*==========================
+COLUNAS
+===========================*/
+
+.left-column{
+
+    width:100%;
+
+    min-width:0;
+
+}
+
+.right-column{
+
+    width:100%;
+
+}
+
+
+/*==========================
+CARDS
+===========================*/
+
+.card{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    border:1px solid var(--border);
+
+    box-shadow:
+
+    0 10px 35px rgba(15,23,42,.08);
+
+}
+
+
+/*==========================
+TÍTULOS
+===========================*/
+
+h1{
+
+    font-size:42px;
+
+    font-weight:800;
+
+    line-height:1.2;
+
+}
+
+h2{
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+h3{
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+h4{
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+
+/*==========================
+TEXTOS
+===========================*/
+
+p{
+
+    color:#475569;
+
+    line-height:1.9;
+
+}
+
+
+/*==========================
+BOTÕES
+===========================*/
+
+.btn{
+
+    height:58px;
+
+    border:none;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    transition:.30s;
+
+}
+
+.btn:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+/*==========================
+BOTÃO WHATSAPP
+===========================*/
+
+.btn-whatsapp{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    #25D366,
+
+    #16a34a
+
+    );
+
+    color:white;
+
+}
+
+
+/*==========================
+BOTÃO COMPARTILHAR
+===========================*/
+
+.btn-share{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    var(--primary),
+
+    var(--primary-dark)
+
+    );
+
+    color:white;
+
+}
+
+
+/*==========================
+BADGES
+===========================*/
+
+.badges{
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+}
+
+.badge{
+
+    padding:10px 18px;
+
+    border-radius:999px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+}
+
+.badge.green{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+}
+
+.badge.blue{
+
+    background:#dbeafe;
+
+    color:#1d4ed8;
+
+}
+
+.badge.orange{
+
+    background:#fef3c7;
+
+    color:#b45309;
+
+}
+
+
+/*==========================
+ANIMAÇÃO
+===========================*/
+
+.fade{
+
+    animation:fade .4s ease;
+
+}
+
+@keyframes fade{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/*==========================
+RESPONSIVO
+===========================*/
+
+@media(max-width:1100px){
+
+.container{
+
+grid-template-columns:1fr;
+
+}
+
+.right-column{
+
+margin-top:30px;
+
+}
+
+}
+
+
+@media(max-width:768px){
+
+.container{
+
+padding:15px;
+
+gap:20px;
+
+}
+
+h1{
+
+font-size:30px;
+
+}
+
+h2{
+
+font-size:24px;
+
+}
+
+}
+/*==================================================
+ SMARTZEN IMOB
+ Página Premium do Imóvel
+===================================================*/
+
+
+/*==========================
+RESET
+===========================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    font-family:
+    Inter,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+    background:#f5f7fb;
+
+    color:#0f172a;
+
+    overflow-x:hidden;
+
+    line-height:1.6;
+
+}
+
+
+/*==========================
+VARIÁVEIS
+===========================*/
+
+:root{
+
+    --primary:#7c3aed;
+
+    --primary-dark:#5b21b6;
+
+    --green:#16a34a;
+
+    --blue:#2563eb;
+
+    --orange:#f59e0b;
+
+    --danger:#ef4444;
+
+    --text:#0f172a;
+
+    --muted:#64748b;
+
+    --border:#e5e7eb;
+
+    --card:#ffffff;
+
+    --background:#f8fafc;
+
+    --radius:22px;
+
+}
+
+
+/*==========================
+LINKS
+===========================*/
+
+a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+}
+
+
+/*==========================
+IMAGENS
+===========================*/
+
+img{
+
+    display:block;
+
+    max-width:100%;
+
+}
+
+
+/*==========================
+SCROLLBAR
+===========================*/
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+    height:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#d4d4d8;
+
+    border-radius:30px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#f1f5f9;
+
+}
+
+
+/*==========================
+CONTAINER
+===========================*/
+
+.container{
+
+    width:100%;
+
+    max-width:1400px;
+
+    margin:auto;
+
+    padding:35px;
+
+    display:grid;
+
+    grid-template-columns:
+
+    minmax(0,2fr)
+
+    380px;
+
+    gap:35px;
+
+    align-items:start;
+
+}
+
+
+/*==========================
+COLUNAS
+===========================*/
+
+.left-column{
+
+    width:100%;
+
+    min-width:0;
+
+}
+
+.right-column{
+
+    width:100%;
+
+}
+
+
+/*==========================
+CARDS
+===========================*/
+
+.card{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    border:1px solid var(--border);
+
+    box-shadow:
+
+    0 10px 35px rgba(15,23,42,.08);
+
+}
+
+
+/*==========================
+TÍTULOS
+===========================*/
+
+h1{
+
+    font-size:42px;
+
+    font-weight:800;
+
+    line-height:1.2;
+
+}
+
+h2{
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+h3{
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+h4{
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+
+/*==========================
+TEXTOS
+===========================*/
+
+p{
+
+    color:#475569;
+
+    line-height:1.9;
+
+}
+
+
+/*==========================
+BOTÕES
+===========================*/
+
+.btn{
+
+    height:58px;
+
+    border:none;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    transition:.30s;
+
+}
+
+.btn:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+/*==========================
+BOTÃO WHATSAPP
+===========================*/
+
+.btn-whatsapp{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    #25D366,
+
+    #16a34a
+
+    );
+
+    color:white;
+
+}
+
+
+/*==========================
+BOTÃO COMPARTILHAR
+===========================*/
+
+.btn-share{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    var(--primary),
+
+    var(--primary-dark)
+
+    );
+
+    color:white;
+
+}
+
+
+/*==========================
+BADGES
+===========================*/
+
+.badges{
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+}
+
+.badge{
+
+    padding:10px 18px;
+
+    border-radius:999px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+}
+
+.badge.green{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+}
+
+.badge.blue{
+
+    background:#dbeafe;
+
+    color:#1d4ed8;
+
+}
+
+.badge.orange{
+
+    background:#fef3c7;
+
+    color:#b45309;
+
+}
+
+
+/*==========================
+ANIMAÇÃO
+===========================*/
+
+.fade{
+
+    animation:fade .4s ease;
+
+}
+
+@keyframes fade{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/*==========================
+RESPONSIVO
+===========================*/
+
+@media(max-width:1100px){
+
+.container{
+
+grid-template-columns:1fr;
+
+}
+
+.right-column{
+
+margin-top:30px;
+
+}
+
+}
+
+
+@media(max-width:768px){
+
+.container{
+
+padding:15px;
+
+gap:20px;
+
+}
+
+h1{
+
+font-size:30px;
+
+}
+
+h2{
+
+font-size:24px;
+
+}
+
+}/*==================================================
+ SMARTZEN IMOB
+ Página Premium do Imóvel
+===================================================*/
+
+
+/*==========================
+RESET
+===========================*/
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+body{
+
+    font-family:
+    Inter,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+    background:#f5f7fb;
+
+    color:#0f172a;
+
+    overflow-x:hidden;
+
+    line-height:1.6;
+
+}
+
+
+/*==========================
+VARIÁVEIS
+===========================*/
+
+:root{
+
+    --primary:#7c3aed;
+
+    --primary-dark:#5b21b6;
+
+    --green:#16a34a;
+
+    --blue:#2563eb;
+
+    --orange:#f59e0b;
+
+    --danger:#ef4444;
+
+    --text:#0f172a;
+
+    --muted:#64748b;
+
+    --border:#e5e7eb;
+
+    --card:#ffffff;
+
+    --background:#f8fafc;
+
+    --radius:22px;
+
+}
+
+
+/*==========================
+LINKS
+===========================*/
+
+a{
+
+    color:inherit;
+
+    text-decoration:none;
+
+}
+
+
+/*==========================
+IMAGENS
+===========================*/
+
+img{
+
+    display:block;
+
+    max-width:100%;
+
+}
+
+
+/*==========================
+SCROLLBAR
+===========================*/
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+    height:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#d4d4d8;
+
+    border-radius:30px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#f1f5f9;
+
+}
+
+
+/*==========================
+CONTAINER
+===========================*/
+
+.container{
+
+    width:100%;
+
+    max-width:1400px;
+
+    margin:auto;
+
+    padding:35px;
+
+    display:grid;
+
+    grid-template-columns:
+
+    minmax(0,2fr)
+
+    380px;
+
+    gap:35px;
+
+    align-items:start;
+
+}
+
+
+/*==========================
+COLUNAS
+===========================*/
+
+.left-column{
+
+    width:100%;
+
+    min-width:0;
+
+}
+
+.right-column{
+
+    width:100%;
+
+}
+
+
+/*==========================
+CARDS
+===========================*/
+
+.card{
+
+    background:var(--card);
+
+    border-radius:var(--radius);
+
+    border:1px solid var(--border);
+
+    box-shadow:
+
+    0 10px 35px rgba(15,23,42,.08);
+
+}
+
+
+/*==========================
+TÍTULOS
+===========================*/
+
+h1{
+
+    font-size:42px;
+
+    font-weight:800;
+
+    line-height:1.2;
+
+}
+
+h2{
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+h3{
+
+    font-size:24px;
+
+    font-weight:700;
+
+}
+
+h4{
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+
+/*==========================
+TEXTOS
+===========================*/
+
+p{
+
+    color:#475569;
+
+    line-height:1.9;
+
+}
+
+
+/*==========================
+BOTÕES
+===========================*/
+
+.btn{
+
+    height:58px;
+
+    border:none;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    transition:.30s;
+
+}
+
+.btn:hover{
+
+    transform:translateY(-3px);
+
+}
+
+
+/*==========================
+BOTÃO WHATSAPP
+===========================*/
+
+.btn-whatsapp{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    #25D366,
+
+    #16a34a
+
+    );
+
+    color:white;
+
+}
+
+
+/*==========================
+BOTÃO COMPARTILHAR
+===========================*/
+
+.btn-share{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    var(--primary),
+
+    var(--primary-dark)
+
+    );
+
+    color:white;
+
+}
+
+
+/*==========================
+BADGES
+===========================*/
+
+.badges{
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+}
+
+.badge{
+
+    padding:10px 18px;
+
+    border-radius:999px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+}
+
+.badge.green{
+
+    background:#dcfce7;
+
+    color:#15803d;
+
+}
+
+.badge.blue{
+
+    background:#dbeafe;
+
+    color:#1d4ed8;
+
+}
+
+.badge.orange{
+
+    background:#fef3c7;
+
+    color:#b45309;
+
+}
+
+
+/*==========================
+ANIMAÇÃO
+===========================*/
+
+.fade{
+
+    animation:fade .4s ease;
+
+}
+
+@keyframes fade{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/*==========================
+RESPONSIVO
+===========================*/
+
+@media(max-width:1100px){
+
+.container{
+
+grid-template-columns:1fr;
+
+}
+
+.right-column{
+
+margin-top:30px;
+
+}
+
+}
+
+
+@media(max-width:768px){
+
+.container{
+
+padding:15px;
+
+gap:20px;
+
+}
+
+h1{
+
+font-size:30px;
+
+}
+
+h2{
+
+font-size:24px;
+
+}
+
+}
+/*==================================================
+INFORMAÇÕES DO IMÓVEL
+==================================================*/
+
+.info{
+
+    margin-top:25px;
+
+    padding:35px;
+
+}
+
+/*==========================
+TOPO
+===========================*/
+
+.topo-imovel{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+}
+
+.titulo-imovel{
+
+    font-size:42px;
+
+    font-weight:800;
+
+    color:#0f172a;
+
+    line-height:1.2;
+
+}
+
+.localizacao{
+
+    margin-top:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    color:#64748b;
+
+    font-size:18px;
+
+}
+
+.codigo-imovel{
+
+    padding:10px 18px;
+
+    border-radius:999px;
+
+    background:#eef2ff;
+
+    color:#4f46e5;
+
+    font-weight:700;
+
+    font-size:14px;
+
+}
+
+
+/*==========================
+PREÇO
+===========================*/
+
+.preco{
+
+    margin:30px 0 20px;
+
+    font-size:52px;
+
+    font-weight:900;
+
+    color:var(--green);
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+}
+
+
+/*==========================
+BADGES
+===========================*/
+
+.badges{
+
+    margin-bottom:35px;
+
+}
+
+
+/*==========================
+CARACTERÍSTICAS
+===========================*/
+
+.caracteristicas{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:18px;
+
+}
+
+.caracteristica{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+
+    padding:22px;
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+    background:white;
+
+    transition:.30s;
+
+}
+
+.caracteristica:hover{
+
+    transform:translateY(-6px);
+
+    border-color:var(--primary);
+
+    box-shadow:
+
+    0 18px 35px rgba(124,58,237,.12);
+
+}
+
+
+/*==========================
+ÍCONE
+===========================*/
+
+.icon-box{
+
+    width:64px;
+
+    height:64px;
+
+    border-radius:18px;
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    var(--primary),
+
+    var(--primary-dark)
+
+    );
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:white;
+
+    font-size:30px;
+
+    flex-shrink:0;
+
+}
+
+.caracteristica h4{
+
+    margin-bottom:4px;
+
+    font-size:28px;
+
+    font-weight:800;
+
+}
+
+.caracteristica span{
+
+    color:var(--muted);
+
+    font-size:14px;
+
+}
+
+
+/*==========================
+BOTÕES
+===========================*/
+
+.acoes{
+
+    margin-top:35px;
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:15px;
+
+}
+
+
+/*==========================
+DESCRIÇÃO
+===========================*/
+
+.descricao{
+
+    margin-top:45px;
+
+    padding-top:35px;
+
+    border-top:1px solid var(--border);
+
+}
+
+.descricao h2{
+
+    margin-bottom:20px;
+
+}
+
+.descricao p{
+
+    font-size:17px;
+
+    color:#475569;
+
+    line-height:2;
+
+}
+
+
+/*==========================
+INFORMAÇÕES EXTRAS
+===========================*/
+
+.info-extra{
+
+    margin-top:35px;
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:18px;
+
+}
+
+.info-card{
+
+    background:#f8fafc;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    border:1px solid #edf2f7;
+
+}
+
+.info-card strong{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:#0f172a;
+
+}
+
+.info-card span{
+
+    color:#64748b;
+
+}
+
+
+/*==========================
+RESPONSIVO
+===========================*/
+
+@media(max-width:900px){
+
+.caracteristicas{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+.info-extra{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+@media(max-width:768px){
+
+.info{
+
+padding:22px;
+
+}
+
+.titulo-imovel{
+
+font-size:30px;
+
+}
+
+.preco{
+
+font-size:36px;
+
+}
+
+.localizacao{
+
+font-size:16px;
+
+}
+
+.caracteristicas{
+
+grid-template-columns:1fr;
+
+}
+
+.acoes{
+
+grid-template-columns:1fr;
+
+}
+
+.caracteristica{
+
+padding:18px;
+
+}
+
+.icon-box{
+
+width:54px;
+
+height:54px;
+
+font-size:24px;
+
+}
+
+.caracteristica h4{
+
+font-size:22px;
+
+}
+
+}
+/*==================================================
+SIDEBAR
+==================================================*/
+
+.sidebar{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:25px;
+
+}
+
+
+/*==================================================
+FORMULÁRIO DE LEADS
+==================================================*/
+
+.lead-box{
+
+    position:sticky;
+
+    top:25px;
+
+    padding:30px;
+
+}
+
+.lead-header{
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+}
+
+.lead-header h2{
+
+    font-size:28px;
+
+    color:#0f172a;
+
+    margin-bottom:8px;
+
+}
+
+.lead-header p{
+
+    color:#64748b;
+
+    font-size:15px;
+
+}
+
+
+/*==========================
+INPUTS
+===========================*/
+
+.input-group{
+
+    margin-bottom:18px;
+
+}
+
+.input-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    color:#334155;
+
+}
+
+.input-group input,
+
+.input-group textarea{
+
+    width:100%;
+
+    border:1px solid #dbe4ef;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    font-size:15px;
+
+    outline:none;
+
+    transition:.25s;
+
+    background:white;
+
+}
+
+.input-group textarea{
+
+    min-height:140px;
+
+    resize:vertical;
+
+}
+
+.input-group input:focus,
+
+.input-group textarea:focus{
+
+    border-color:var(--primary);
+
+    box-shadow:
+
+    0 0 0 4px rgba(124,58,237,.10);
+
+}
+
+
+/*==========================
+BOTÃO
+===========================*/
+
+.btn-lead{
+
+    width:100%;
+
+    height:58px;
+
+    border:none;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    #7c3aed,
+
+    #4f46e5
+
+    );
+
+    transition:.30s;
+
+}
+
+.btn-lead:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+
+    0 15px 30px rgba(124,58,237,.25);
+
+}
+
+
+/*==========================
+SELO
+===========================*/
+
+.selo{
+
+    margin-top:20px;
+
+    background:#f8fafc;
+
+    border:1px solid #e2e8f0;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    display:flex;
+
+    gap:15px;
+
+    align-items:center;
+
+}
+
+.selo-icon{
+
+    width:52px;
+
+    height:52px;
+
+    border-radius:50%;
+
+    background:#dcfce7;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:24px;
+
+}
+
+.selo strong{
+
+    display:block;
+
+    margin-bottom:4px;
+
+}
+
+
+/*==================================================
+BOTÕES DE CONTATO
+==================================================*/
+
+.contatos{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:15px;
+
+    margin-top:20px;
+
+}
+
+.contato{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    height:56px;
+
+    border-radius:16px;
+
+    color:white;
+
+    font-weight:700;
+
+    transition:.30s;
+
+}
+
+.contato:hover{
+
+    transform:translateY(-3px);
+
+}
+
+.contato.whats{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    #25D366,
+
+    #16a34a
+
+    );
+
+}
+
+.contato.ligar{
+
+    background:
+
+    linear-gradient(
+
+    135deg,
+
+    #2563eb,
+
+    #1d4ed8
+
+    );
+
+}
+
+
+/*==================================================
+CORRETOR
+==================================================*/
+
+.corretor{
+
+    margin-top:25px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding-top:20px;
+
+    border-top:1px solid #edf2f7;
+
+}
+
+.corretor img{
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+.corretor h4{
+
+    font-size:18px;
+
+    margin-bottom:5px;
+
+}
+
+.corretor span{
+
+    color:#64748b;
+
+    font-size:14px;
+
+}
+
+
+/*==================================================
+TOAST
+==================================================*/
+
+.toast{
+
+    position:fixed;
+
+    top:30px;
+
+    right:30px;
+
+    background:#16a34a;
+
+    color:white;
+
+    padding:18px 22px;
+
+    border-radius:18px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    box-shadow:
+
+    0 20px 45px rgba(0,0,0,.25);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transform:translateY(-20px);
+
+    transition:.35s;
+
+    z-index:9999;
+
+}
+
+.toast.show{
+
+    opacity:1;
+
+    visibility:visible;
+
+    transform:translateY(0);
+
+}
+
+.toast-icon{
+
+    width:48px;
+
+    height:48px;
+
+    border-radius:50%;
+
+    background:rgba(255,255,255,.2);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:22px;
+
+}
+
+
+/*==================================================
+RESPONSIVO
+==================================================*/
+
+@media(max-width:1100px){
+
+.sidebar{
+
+margin-top:30px;
+
+}
+
+.lead-box{
+
+position:relative;
+
+top:auto;
+
+}
+
+}
+
+@media(max-width:768px){
+
+.lead-box{
+
+padding:22px;
+
+}
+
+.lead-header h2{
+
+font-size:24px;
+
+}
+
+.input-group input,
+
+.input-group textarea{
+
+padding:14px;
+
+}
+
+.btn-lead{
+
+height:54px;
+
+font-size:16px;
+
+}
+
+.toast{
+
+right:15px;
+
+left:15px;
+
+top:15px;
+
+}
+
+.corretor{
+
+flex-direction:column;
+
+text-align:center;
+
+}
+
+}
+/*==================================================
+IMÓVEIS SEMELHANTES
+==================================================*/
+
+.semelhantes{
+
+    margin-top:25px;
+
+    padding:25px;
+
+}
+
+.semelhantes h2{
+
+    margin-bottom:20px;
+
+}
+
+.lista-semelhantes{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.imovel-card{
+
+    display:block;
+
+    background:#fff;
+
+    border:1px solid var(--border);
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    transition:.30s;
+
+    box-shadow:
+
+    0 8px 20px rgba(15,23,42,.05);
+
+}
+
+.imovel-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:
+
+    0 20px 35px rgba(15,23,42,.12);
+
+    border-color:var(--primary);
+
+}
+
+.imovel-card img{
+
+    width:100%;
+
+    height:210px;
+
+    object-fit:cover;
+
+    transition:.4s;
+
+}
+
+.imovel-card:hover img{
+
+    transform:scale(1.05);
+
+}
+
+.imovel-conteudo{
+
+    padding:18px;
+
+}
+
+.imovel-conteudo h3{
+
+    font-size:18px;
+
+    margin-bottom:10px;
+
+}
+
+.imovel-preco{
+
+    color:var(--green);
+
+    font-size:28px;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+
+}
+
+.imovel-local{
+
+    color:#64748b;
+
+    margin-bottom:18px;
+
+}
+
+.imovel-info{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    padding-top:15px;
+
+    border-top:1px solid #edf2f7;
+
+    color:#475569;
+
+    font-size:14px;
+
+}
+
+
+
+/*==================================================
+WHATSAPP FLUTUANTE
+==================================================*/
+
+.float-whatsapp{
+
+    position:fixed;
+
+    right:25px;
+
+    bottom:25px;
+
+    width:68px;
+
+    height:68px;
+
+    border-radius:50%;
+
+    background:#25D366;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:white;
+
+    font-size:30px;
+
+    box-shadow:
+
+    0 15px 35px rgba(37,211,102,.35);
+
+    z-index:999;
+
+    transition:.30s;
+
+}
+
+.float-whatsapp:hover{
+
+    transform:scale(1.08);
+
+}
+
+
+
+/*==================================================
+BARRA MOBILE
+==================================================*/
+
+.mobile-bar{
+
+    display:none;
+
+}
+
+
+
+/*==================================================
+MOBILE
+==================================================*/
+
+@media(max-width:768px){
+
+.mobile-bar{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:10px;
+
+position:fixed;
+
+left:0;
+
+right:0;
+
+bottom:0;
+
+padding:12px;
+
+background:white;
+
+box-shadow:
+
+0 -8px 25px rgba(0,0,0,.08);
+
+z-index:999;
+
+}
+
+.mobile-bar a{
+
+height:52px;
+
+border-radius:14px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-weight:700;
+
+color:white;
+
+}
+
+.mobile-bar .whats{
+
+background:#25D366;
+
+}
+
+.mobile-bar .share{
+
+background:var(--primary);
+
+}
+
+.float-whatsapp{
+
+bottom:90px;
+
+right:18px;
+
+width:60px;
+
+height:60px;
+
+font-size:26px;
+
+}
+
+.imovel-card img{
+
+height:180px;
+
+}
+
+.imovel-preco{
+
+font-size:24px;
+
+}
+
+}
+
+
+
+/*==================================================
+ANIMAÇÕES
+==================================================*/
+
+.animar{
+
+    opacity:0;
+
+    transform:translateY(30px);
+
+    transition:.6s;
+
+}
+
+.animar.show{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}
+
+
+
+/*==================================================
+SELEÇÃO
+==================================================*/
+
+::selection{
+
+    background:var(--primary);
+
+    color:white;
+
+}
+
+
+
+/*==================================================
+FOCUS
+==================================================*/
+
+button:focus,
+
+input:focus,
+
+textarea:focus{
+
+    outline:none;
+
+}
+
+
+
+/*==================================================
+FIM DO CSS
+SMARTZEN IMOB
+==================================================*/
