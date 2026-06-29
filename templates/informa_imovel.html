@@ -4,1134 +4,355 @@
 <head>
 
 <meta charset="UTF-8">
-<meta property="og:title"
-content="{{ imovel.titulo }}">
 
-
-<meta property="og:description"
-content="
-R$ {{ imovel.valor }} |
-{{ imovel.quartos }} quartos |
-{{ imovel.bairro }} - {{ imovel.cidade }}
-">
-
-
-{% if foto %}
-
-<meta property="og:image"
-content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
-{% endif %}
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
 
 <title>{{ imovel.titulo }}</title>
 
+<meta property="og:title"
+content="{{ imovel.titulo }}">
+
+<meta property="og:description"
+content="
+R$ {{ imovel.valor }}
+•
+{{ imovel.quartos }} quartos
+•
+{{ imovel.bairro }}
+">
+
+{% if foto %}
+<meta property="og:image"
+content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
+{% endif %}
 
 <style>
 
- /* ================= TOAST ================= */
-
-.toast{
-
-position:fixed;
-
-top:30px;
-
-right:30px;
-
-background:#16a34a;
-
-color:#fff;
-
-padding:18px 24px;
-
-border-radius:16px;
-
-box-shadow:0 15px 35px rgba(0,0,0,.25);
-
-display:flex;
-
-align-items:center;
-
-gap:14px;
-
-font-size:16px;
-
-font-weight:600;
-
-z-index:99999;
-
-opacity:0;
-
-transform:translateY(-20px);
-
-pointer-events:none;
-
-transition:.35s;
-
-}
-
-.toast.show{
-
-opacity:1;
-
-transform:translateY(0);
-
-}
-
-.toast .icon{
-
-width:42px;
-
-height:42px;
-
-border-radius:50%;
-
-background:rgba(255,255,255,.2);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:22px;
-
-}
-
-
 *{
+margin:0;
+padding:0;
 box-sizing:border-box;
 }
 
+:root{
 
+--primaria:#7c3aed;
+--primaria2:#5b21b6;
 
-html,body{
+--verde:#16a34a;
 
-margin:0;
-padding:0;
-width:100%;
+--texto:#0f172a;
+
+--cinza:#64748b;
+
+--borda:#e2e8f0;
+
+--fundo:#f8fafc;
+
+--card:#ffffff;
+
+}
+
+html{
+
+scroll-behavior:smooth;
+
+}
+
+body{
+
+font-family:
+Inter,
+"Segoe UI",
+Arial,
+sans-serif;
+
+background:
+
+linear-gradient(
+180deg,
+#eef4ff,
+#f8fafc
+);
+
+color:var(--texto);
+
 overflow-x:hidden;
 
 }
 
-
-
-body{
-
-    font-family:"Inter","Segoe UI",Arial,sans-serif;
-
-    background:
-    radial-gradient(circle at top,#eef4ff 0%,#f8fafc 35%,#eef2f7 100%);
-
-    color:#0f172a;
-
-    line-height:1.6;
-
-}
-
-
-
-
-/* LAYOUT */
-
+/* ======================= */
 
 .container{
 
-width:100%;
-
-max-width:1200px;
+max-width:1400px;
 
 margin:auto;
 
-padding:20px;
+padding:35px;
 
 display:grid;
 
-grid-template-columns:minmax(0,2fr) 360px;
+grid-template-columns:
 
-gap:25px;
+minmax(0,2fr)
 
-}
+380px;
 
+gap:35px;
 
-
-
-
-/* GALERIA */
-
-
-.galeria-principal{
-
-    width:100%;
-
-    aspect-ratio:16/9;
-
-    border-radius:22px;
-
-    overflow:hidden;
-
-    background:#ddd;
-
-    box-shadow:
-    0 20px 45px rgba(15,23,42,.15);
-
-    position:relative;
+align-items:start;
 
 }
 
+/* ======================= */
 
-
-.galeria-principal img{
-
-    width:100%;
-
-    height:100%;
-
-    object-fit:cover;
-
-    cursor:pointer;
-
-    transition:.4s;
-
-}
-
-.galeria-principal:hover img{
-
-    transform:scale(1.03);
-
-}
-
-
-
-.miniaturas{
-
-    display:flex;
-
-    gap:12px;
-
-    margin-top:18px;
-
-    overflow-x:auto;
-
-    padding-bottom:5px;
-
-}
-
-.miniaturas::-webkit-scrollbar{
-
-    height:8px;
-
-}
-
-.miniaturas::-webkit-scrollbar-thumb{
-
-    background:#dbe4f0;
-
-    border-radius:20px;
-
-}
-
-.miniaturas img{
-
-    width:105px;
-
-    height:75px;
-
-    border-radius:14px;
-
-    object-fit:cover;
-
-    cursor:pointer;
-
-    transition:.25s;
-
-    border:3px solid transparent;
-
-}
-
-.miniaturas img:hover{
-
-    transform:translateY(-4px);
-
-    border-color:#7c3aed;
-
-}
-
-
-
-/* INFO */
-
-
-.info{
-
-    background:white;
-
-    margin-top:28px;
-
-    padding:35px;
-
-    border-radius:24px;
-
-    box-shadow:
-
-    0 20px 45px rgba(15,23,42,.08);
-
-    border:1px solid #eef2f7;
-
-}
-
-
-.titulo{
-
-    font-size:40px;
-
-    font-weight:800;
-
-    line-height:1.2;
-
-    margin-bottom:10px;
-
-    color:#0f172a;
-
-}
-
-
-
-.valor{
-
-font-size:52px;
-
-font-weight:900;
-
-color:#16a34a;
-
-margin:18px 0;
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-flex-wrap:wrap;
-
-}
-
-
-
-.caracteristicas{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:10px;
-
-}
-
-
-
-.item{
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-background:white;
-
-border-radius:18px;
-
-padding:22px;
-
-border:1px solid #e8eef7;
-
-transition:.25s;
-
-box-shadow:0 8px 18px rgba(15,23,42,.05);
-
-}
-
-.item:hover{
-
-transform:translateY(-5px);
-
-box-shadow:0 15px 35px rgba(124,58,237,.15);
-
-border-color:#7c3aed;
-
-}
-
-
-.icone{
-
-width:60px;
-
-height:60px;
-
-border-radius:16px;
-
-background:linear-gradient(135deg,#7c3aed,#4f46e5);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:28px;
-
-color:white;
-
-flex-shrink:0;
-
-box-shadow:0 12px 20px rgba(124,58,237,.25);
-
-}
-
- .item h4{
-
-margin:0;
-
-font-size:26px;
-
-font-weight:800;
-
-color:#0f172a;
-
-}
-
-
- .item span{
-
-color:#64748b;
-
-font-size:14px;
-
-}
-/* BOTÕES */
-
-
-.botoes{
-
-display:flex;
-
-gap:12px;
-
-margin-top:20px;
-
-}
-
-
-
-.btn{
-
-    flex:1;
-
-    padding:16px;
-
-    border-radius:16px;
-
-    text-align:center;
-
-    color:white;
-
-    font-weight:700;
-
-    text-decoration:none;
-
-    transition:.25s;
-
-    box-shadow:0 12px 30px rgba(0,0,0,.12);
-
-}
-
-.btn:hover{
-
-    transform:translateY(-3px);
-
-}
-
-
-
-.whatsapp{
-
-    background:linear-gradient(135deg,#25D366,#16a34a);
-
-}
-
-
-.compartilhar{
-
-    background:linear-gradient(135deg,#7c3aed,#4f46e5);
-
-}
-
-
-
-
-
-/* FORM */
-
-
-.lead-box{
+.card{
 
 background:white;
 
 border-radius:24px;
 
-overflow:hidden;
-
 box-shadow:
 
-0 20px 45px rgba(15,23,42,.10);
+0 15px 40px rgba(15,23,42,.08);
 
-border:1px solid #edf2f7;
-
-padding:0;
-
-}
- .lead-box button:hover{
-
-transform:translateY(-3px);
-
-box-shadow:
-
-0 20px 35px rgba(124,58,237,.35);
-
-}
- .lead-footer{
-
-padding:18px;
-
-background:#f8fafc;
-
-border-top:1px solid #edf2f7;
-
-text-align:center;
-
-font-size:14px;
-
-color:#64748b;
+border:1px solid var(--borda);
 
 }
 
+/* ======================= */
 
-.lead-box input,
-.lead-box textarea{
-
-width:100%;
-
-padding:16px;
-
-margin-bottom:20px;
-
-border-radius:14px;
-
-border:1px solid #dbe4f0;
-
-background:#f8fafc;
-
-font-size:15px;
-
-transition:.25s;
-
-outline:none;
-
-}
- .lead-box input:focus,
-.lead-box textarea:focus{
-
-border-color:#7c3aed;
-
-background:white;
-
-box-shadow:
-
-0 0 0 4px rgba(124,58,237,.15);
-
-}
-
-
-
-.lead-box textarea{
-
-height:120px;
-
-resize:none;
-
-}
-
-.lead-header{
-
-padding:28px;
-
-background:linear-gradient(135deg,#7c3aed,#4f46e5);
-
-color:white;
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-}
-
-.lead-header h2{
-
-margin:0;
-
-font-size:26px;
-
-}
-
-.lead-header p{
-
-margin-top:6px;
-
-opacity:.9;
-
-}
- .lead-icon{
-
-width:60px;
-
-height:60px;
-
-border-radius:18px;
-
-background:rgba(255,255,255,.15);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:30px;
-
-backdrop-filter:blur(8px);
-
-}
-
-.lead-box button{
-
-width:100%;
-
-padding:18px;
-
-border:0;
-
-border-radius:16px;
-
-background:linear-gradient(135deg,#7c3aed,#4f46e5);
-
-color:white;
-
-font-size:17px;
+h1,h2,h3,h4{
 
 font-weight:700;
 
-cursor:pointer;
-
-transition:.3s;
-
-box-shadow:
-
-0 15px 30px rgba(124,58,237,.25);
-
-}
- .lead-box form{
-
-padding:25px;
-
-}
- .lead-box label{
-
-display:block;
-
-margin-bottom:8px;
-
-font-weight:700;
-
-color:#334155;
-
 }
 
+p{
 
-
-
-
-/* SEMELHANTES */
-
-
-.imovel-semelhante{
-
-display:flex;
-
-width:100%;
-
-height:95px;
-
-margin-top:12px;
-
-background:#f8fafc;
-
-border-radius:14px;
-
-overflow:hidden;
-
-text-decoration:none;
-
-color:#0f172a;
-
-transition:.2s;
-
-}
-
-
-
-.imovel-semelhante:hover{
-
-transform:translateY(-3px);
-
-box-shadow:0 8px 20px #0002;
-
-}
-
-
-
-.imovel-semelhante img{
-
-width:105px;
-
-min-width:105px;
-
-height:95px;
-
-object-fit:cover;
-
-}
-
-
-
-.sim-info{
-
-flex:1;
-
-min-width:0;
-
-padding:10px;
-
-overflow:hidden;
-
-}
-
-
-
-.sim-titulo{
-
-font-size:14px;
-
-font-weight:700;
-
-white-space:nowrap;
-
-overflow:hidden;
-
-text-overflow:ellipsis;
-
-}
-
-
-
-.sim-valor{
-
-color:#16a34a;
-
-font-weight:800;
-
-font-size:16px;
-
-}
-
-
-
-.sim-local{
-
-font-size:12px;
-
-color:#64748b;
-
-overflow:hidden;
-
-white-space:nowrap;
-
-}
-
-
-
-
-
-/* MODAL */
-
-
-.modal{
-
-display:none;
-
-position:fixed;
-
-inset:0;
-
-background:#000;
-
-z-index:9999;
-
-}
-
-
-
-.modal img{
-
-width:100%;
-
-height:100%;
-
-object-fit:contain;
-
-}
-
- .descricao{
-
-margin-top:45px;
-
-padding-top:35px;
-
-border-top:1px solid #edf2f7;
-
-}
-
-.descricao h3{
-
-font-size:28px;
-
-margin-bottom:20px;
-
-}
-
-.descricao p{
-
-font-size:17px;
-
-line-height:1.9;
+line-height:1.8;
 
 color:#475569;
 
 }
 
+/* ======================= */
 
+img{
 
-.fechar{
+display:block;
 
-position:absolute;
-
-top:20px;
-
-right:20px;
-
-color:white;
-
-font-size:40px;
+max-width:100%;
 
 }
 
+/* ======================= */
 
+::-webkit-scrollbar{
 
+height:10px;
 
-
-/* WHATS */
-
-
-.float-whats{
-
-position:fixed;
-
-right:20px;
-
-bottom:20px;
-
-width:60px;
-
-height:60px;
-
-border-radius:50%;
-
-background:#25D366;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-color:white;
-
-z-index:100;
+width:10px;
 
 }
 
+::-webkit-scrollbar-thumb{
 
+background:#d4d4d8;
 
-
-
-.mobile-bar{
-
-display:none;
+border-radius:20px;
 
 }
- id="hmtb3a"
-<style>
 
+/* ======================= */
 
-@media(max-width:900px){
-
+@media(max-width:1100px){
 
 .container{
 
 grid-template-columns:1fr;
 
-padding:12px;
+}
 
 }
 
+/* ======================= */
 
-.lead-box{
-
-position:relative;
-
-top:auto;
-
-}
-
-
-}
-
-
-
-@media(max-width:600px){
-
+@media(max-width:768px){
 
 .container{
 
-    width:100%;
+padding:14px;
 
-    max-width:1350px;
-
-    margin:auto;
-
-    padding:30px;
-
-    display:grid;
-
-    grid-template-columns:minmax(0,2fr) 390px;
-
-    gap:35px;
+gap:20px;
 
 }
 
-
-.galeria-principal{
-
-aspect-ratio:4/3;
-
 }
+ /* ================= GALERIA ================= */
 
+.galeria{
 
-
-.info{
+overflow:hidden;
 
 padding:18px;
 
 }
+ .galeria-principal{
 
+position:relative;
 
+border-radius:20px;
 
-.caracteristicas{
+overflow:hidden;
 
-    display:grid;
+aspect-ratio:16/9;
 
-    grid-template-columns:repeat(3,1fr);
+background:#ddd;
 
-    gap:18px;
+box-shadow:
 
-    margin-top:30px;
+0 15px 35px rgba(15,23,42,.15);
+
+}
+ .galeria-principal img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
+cursor:pointer;
+
+transition:.35s;
 
 }
 
-.botoes{
+.galeria-principal:hover img{
 
-display:none;
+transform:scale(1.03);
 
 }
-
-
-
-.mobile-bar{
+ .miniaturas{
 
 display:flex;
 
-position:fixed;
+gap:12px;
 
-bottom:0;
+margin-top:18px;
 
-left:0;
+overflow-x:auto;
 
-right:0;
-
-background:white;
-
-padding:10px;
-
-gap:10px;
-
-z-index:1000;
+padding-bottom:8px;
 
 }
 
+.miniaturas img{
 
+width:110px;
 
-.mobile-bar a{
+height:80px;
 
-flex:1;
+border-radius:14px;
 
-padding:12px;
+object-fit:cover;
 
-border-radius:10px;
+cursor:pointer;
 
-text-align:center;
+border:3px solid transparent;
+
+transition:.25s;
+
+flex-shrink:0;
+
+}
+
+.miniaturas img:hover{
+
+transform:translateY(-4px);
+
+}
+
+.thumb.ativa{
+
+border-color:#7c3aed;
+
+box-shadow:
+
+0 8px 20px rgba(124,58,237,.25);
+
+}
+ .contador-fotos{
+
+position:absolute;
+
+left:18px;
+
+bottom:18px;
+
+padding:8px 16px;
+
+border-radius:40px;
+
+background:rgba(0,0,0,.65);
 
 color:white;
 
-text-decoration:none;
+font-size:14px;
+
+backdrop-filter:blur(6px);
+
+}
+ .nav-foto{
+
+position:absolute;
+
+top:50%;
+
+transform:translateY(-50%);
+
+width:48px;
+
+height:48px;
+
+border:none;
+
+border-radius:50%;
+
+background:rgba(255,255,255,.85);
+
+cursor:pointer;
+
+font-size:22px;
+
+transition:.25s;
+
+box-shadow:
+
+0 10px 25px rgba(0,0,0,.18);
 
 }
 
+.nav-foto:hover{
 
+background:white;
 
-.float-whats{
-
-bottom:90px;
-
-}
-
-
-
-.imovel-semelhante{
-
-height:90px;
+transform:translateY(-50%) scale(1.08);
 
 }
 
+.esquerda{
 
-
-.imovel-semelhante img{
-
-width:90px;
-
-min-width:90px;
-
-height:90px;
+left:15px;
 
 }
 
+.direita{
 
-
-.valor{
-
-font-size:52px;
-
-font-weight:900;
-
-color:#16a34a;
-
-margin:18px 0;
-
-display:flex;
-
-align-items:center;
-
-gap:18px;
-
-flex-wrap:wrap;
-
-}
-
- h4{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:8px;
-
-    color:#64748b;
-
-    font-size:18px;
-
-    margin-bottom:25px;
-
-}
-.descricao{
-
-    margin-top:35px;
-
-    border-top:1px solid #e5e7eb;
-
-    padding-top:30px;
-
-}
-
-.descricao h3{
-
-    font-size:26px;
-
-    margin-bottom:15px;
-
-}
-
-.descricao p{
-
-    color:#475569;
-
-    line-height:1.9;
-
-    font-size:17px;
-
-}
-
- .badge-negocio{
-
-display:inline-flex;
-
-align-items:center;
-
-gap:8px;
-
-padding:10px 18px;
-
-background:#dcfce7;
-
-color:#15803d;
-
-font-weight:700;
-
-border-radius:30px;
-
-margin-bottom:25px;
+right:15px;
 
 }
 
@@ -1139,11 +360,7 @@ margin-bottom:25px;
 
 </head>
 
-
-
 <body>
-
-
 
 <div class="container">
 
@@ -1152,52 +369,56 @@ margin-bottom:25px;
 <!-- ESQUERDA -->
 
 
-<div>
-
-
-
 {% if imovel.fotos %}
 
+<div class="galeria card">
 
-<div class="galeria-principal">
+    <div class="galeria-principal">
 
+        <img
+        id="fotoPrincipal"
+        src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+        onclick="abrirGaleria(this.src)">
 
-<img
+        <div class="contador-fotos">
 
-id="fotoPrincipal"
+            📷 {{ imovel.fotos|length }} Fotos
 
-src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+        </div>
 
-onclick="abrirGaleria(this.src)">
+        <button
+        class="nav-foto esquerda"
+        onclick="fotoAnterior(event)">
+            ❮
+        </button>
 
+        <button
+        class="nav-foto direita"
+        onclick="proximaFoto(event)">
+            ❯
+        </button>
+
+    </div>
+
+    <div class="miniaturas">
+
+        {% for foto in imovel.fotos %}
+
+        <img
+
+        class="thumb {% if loop.first %}ativa{% endif %}"
+
+        src="/uploads/imoveis/{{ foto }}"
+
+        onclick="trocarFoto(this)">
+
+        {% endfor %}
+
+    </div>
 
 </div>
-
-
-
-
-<div class="miniaturas">
-
-
-{% for foto in imovel.fotos %}
-
-
-<img
-
-src="/uploads/imoveis/{{ foto }}"
-
-onclick="trocarFoto(this.src)">
-
-
-
-{% endfor %}
-
-
-</div>
-
 
 {% endif %}
-
 
 
 
@@ -1657,13 +878,52 @@ Compartilhar
 <script>
 
 
-function trocarFoto(src){
+let indiceAtual=0;
 
-document.getElementById("fotoPrincipal").src=src;
+const thumbs=document.querySelectorAll(".thumb");
+
+function trocarFoto(img){
+
+document.getElementById("fotoPrincipal").src=img.src;
+
+thumbs.forEach(t=>t.classList.remove("ativa"));
+
+img.classList.add("ativa");
+
+indiceAtual=[...thumbs].indexOf(img);
 
 }
 
+function proximaFoto(e){
 
+e.stopPropagation();
+
+indiceAtual++;
+
+if(indiceAtual>=thumbs.length){
+
+indiceAtual=0;
+
+}
+
+trocarFoto(thumbs[indiceAtual]);
+
+}
+ function fotoAnterior(e){
+
+e.stopPropagation();
+
+indiceAtual--;
+
+if(indiceAtual<0){
+
+indiceAtual=thumbs.length-1;
+
+}
+
+trocarFoto(thumbs[indiceAtual]);
+
+}
 
 function abrirGaleria(src){
 
