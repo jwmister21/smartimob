@@ -4793,36 +4793,52 @@ def informa_imovel(imovel_id):
         WHERE id = ?
     """, (imovel_id,))
 
+
     imovel = cursor.fetchone()
 
 
     if not imovel:
+
         conn.close()
-        return "Imóvel não encontrado", 404
+
+        return "Imóvel não encontrado",404
+
 
 
     imovel = dict(imovel)
+
+
+
 
 
     # ==========================
     # FOTOS DO IMÓVEL
     # ==========================
 
+
     cursor.execute("""
         SELECT nome_arquivo
         FROM fotos_imoveis
         WHERE imovel_id = ?
         ORDER BY id ASC
-    """, (imovel_id,))
+    """,(imovel_id,))
 
 
     fotos = cursor.fetchall()
 
 
+
     imovel["fotos"] = [
+
         foto["nome_arquivo"]
+
         for foto in fotos
+
     ]
+
+
+
+
 
 
 
@@ -4831,7 +4847,8 @@ def informa_imovel(imovel_id):
     # ==========================
 
 
-    semelhantes = []
+    semelhantes=[]
+
 
 
     cursor.execute("""
@@ -4848,7 +4865,10 @@ def informa_imovel(imovel_id):
     ))
 
 
+
     semelhantes_db = cursor.fetchall()
+
+
 
 
 
@@ -4858,7 +4878,6 @@ def informa_imovel(imovel_id):
         item = dict(item)
 
 
-        # pega primeira foto
 
         cursor.execute("""
             SELECT nome_arquivo
@@ -4870,14 +4889,19 @@ def informa_imovel(imovel_id):
         (item["id"],))
 
 
+
         foto = cursor.fetchone()
 
 
 
         if foto:
+
             item["foto"] = foto["nome_arquivo"]
+
         else:
+
             item["foto"] = None
+
 
 
 
@@ -4885,17 +4909,78 @@ def informa_imovel(imovel_id):
 
 
 
+
+
+
+
+    # ==========================
+    # EMPRESA / HEADER
+    # ==========================
+
+
+    empresa = None
+
+
+
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+        LIMIT 1
+    """,
+    (
+        imovel.get("empresa_id"),
+    ))
+
+
+
+    empresa_db = cursor.fetchone()
+
+
+
+
+    if empresa_db:
+
+
+        empresa = dict(empresa_db)
+
+
+
+    else:
+
+
+        empresa = {
+
+            "nome_imobiliaria":"SMARTZEN IMOB",
+
+            "logo":None
+
+        }
+
+
+
+
+
+
+
     conn.close()
 
 
-    
-    return render_template(
-        "informa_imovel.html",
-        imovel=imovel,
-        semelhantes=semelhantes,
-        empresa=empresa
-    )
 
+
+
+
+    return render_template(
+
+        "informa_imovel.html",
+
+        imovel=imovel,
+
+        semelhantes=semelhantes,
+
+        empresa=empresa
+
+    )
 
 
 
