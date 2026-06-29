@@ -578,6 +578,87 @@ grid-template-columns:1fr;
 }
 
 }
+   /* ================= SITE PUBLICO ================= */
+
+.site-card{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.site-info{
+    display:flex;
+    align-items:center;
+    gap:16px;
+}
+
+.site-icon{
+    width:60px;
+    height:60px;
+    border-radius:16px;
+    background:linear-gradient(135deg,#2563eb,#22c55e);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    box-shadow:0 8px 20px rgba(37,99,235,.25);
+}
+
+.site-text h3{
+    margin:0;
+    font-size:24px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.site-text p{
+    margin:6px 0 0;
+    color:#64748b;
+    font-size:15px;
+}
+
+.site-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 28px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:600;
+    color:#fff;
+    transition:.25s;
+    box-shadow:0 10px 20px rgba(34,197,94,.25);
+}
+
+.site-btn:hover{
+    transform:translateY(-2px);
+    color:#fff;
+}
+
+.site-btn.green{
+    background:#16a34a;
+}
+
+.site-btn.blue{
+    background:#2563eb;
+}
+
+@media(max-width:768px){
+
+.site-card{
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.site-btn{
+    width:100%;
+    justify-content:center;
+}
+
+}
 
 </style>
 
@@ -878,28 +959,35 @@ IA
 
 <div class="panel">
 
-    <div class="panel-header">
+    <div class="site-card">
 
-        <div class="panel-title">
-            <h3>🌐 Site Público</h3>
-            <p>Publique sua imobiliária na internet</p>
+        <div class="site-info">
+
+            <div class="site-icon">
+                🌐
+            </div>
+
+            <div class="site-text">
+                <h3>Site Público</h3>
+                <p>Publique sua imobiliária na internet</p>
+            </div>
+
         </div>
 
         {% if site %}
 
-            <a href="/site/{{ site['subdominio'] }}"
-               target="_blank"
-               class="btn-primary"
-               style="background:#16a34a;">
-                🌍 Acessar Site
-            </a>
+        <a href="/site/{{ site['subdominio'] }}"
+           target="_blank"
+           class="site-btn green">
+            🌍 Acessar Site
+        </a>
 
         {% else %}
 
-            <a href="/gerar_site"
-               class="btn-primary">
-                🚀 Gerar Site
-            </a>
+        <a href="/gerar_site"
+           class="site-btn blue">
+            🚀 Gerar Site
+        </a>
 
         {% endif %}
 
