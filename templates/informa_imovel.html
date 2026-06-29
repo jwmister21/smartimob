@@ -1312,6 +1312,129 @@ bottom:90px;
 
 
 }
+   /* HEADER DO SITE */
+
+
+.topo-site{
+
+grid-column:1/-1;
+
+height:90px;
+
+background:white;
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+padding:0 35px;
+
+border-radius:22px;
+
+box-shadow:var(--shadow);
+
+margin-bottom:25px;
+
+}
+
+
+
+.marca{
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+}
+
+
+
+.logo{
+
+height:60px;
+
+width:auto;
+
+}
+
+
+
+.marca h1{
+
+font-size:26px;
+
+font-weight:900;
+
+margin:0;
+
+}
+
+
+
+.marca span{
+
+color:#64748b;
+
+font-size:14px;
+
+}
+
+
+
+.acoes a{
+
+background:#22c55e;
+
+color:white;
+
+padding:12px 25px;
+
+border-radius:30px;
+
+font-weight:800;
+
+}
+
+
+
+@media(max-width:700px){
+
+
+.topo-site{
+
+height:auto;
+
+padding:20px;
+
+}
+
+
+.logo{
+
+height:45px;
+
+}
+
+
+.marca h1{
+
+font-size:18px;
+
+}
+
+
+.acoes{
+
+display:none;
+
+}
+
+
+}
 
 
 </style>
@@ -1323,7 +1446,133 @@ bottom:90px;
 
 <div class="container">
 
+<!-- HEADER SITE -->
 
+<header class="topo-site">
+
+
+<div class="marca">
+
+
+{% if empresa.logo %}
+
+<img 
+src="{{ empresa.logo }}"
+class="logo">
+
+{% else %}
+
+<img 
+src="/static/logo_smartzen.png"
+class="logo">
+
+{% endif %}
+
+
+
+
+<div>
+
+
+<h1>
+
+{{ empresa.nome_imobiliaria or "SMARTZEN IMOB" }}
+
+</h1>
+
+
+<span>
+
+Encontre o imóvel ideal para você
+
+</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="acoes">
+
+
+<a href="/">
+
+Voltar aos imóveis
+
+</a>
+
+
+</div>
+
+
+</header><!-- HEADER SITE -->
+
+<header class="topo-site">
+
+
+<div class="marca">
+
+
+{% if empresa.logo %}
+
+<img 
+src="{{ empresa.logo }}"
+class="logo">
+
+{% else %}
+
+<img 
+src="/static/logo_smartzen.png"
+class="logo">
+
+{% endif %}
+
+
+
+
+<div>
+
+
+<h1>
+
+{{ empresa.nome_imobiliaria or "SMARTZEN IMOB" }}
+
+</h1>
+
+
+<span>
+
+Encontre o imóvel ideal para você
+
+</span>
+
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="acoes">
+
+
+<a href="/">
+
+Voltar aos imóveis
+
+</a>
+
+
+</div>
+
+
+</header>
 <!-- ==========================
      LADO ESQUERDO
 ========================== -->
