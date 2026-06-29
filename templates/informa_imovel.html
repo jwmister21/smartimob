@@ -2,1063 +2,189 @@
 <html lang="pt-br">
 
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>{{ imovel.titulo }}</title>
-
-<meta property="og:title"
-content="{{ imovel.titulo }}">
-
-<meta property="og:description"
-content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
-
-{% if foto %}
-<meta property="og:image"
-content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
-{% endif %}
-
-<link rel="preconnect"
-href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-href="https://fonts.gstatic.com"
-crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-rel="stylesheet">
-
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/informa_imovel.css') }}">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ imovel.titulo }}</title>
+    <meta property="og:title" content="{{ imovel.titulo }}">
+    <meta property="og:description" content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
+    {% if foto %}
+    <meta property="og:image" content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
+    {% endif %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/informa_imovel.css') }}">
 </head>
 
 <body>
 
-
-
-<!-- ==============================
-TOAST
-============================== -->
-
-<div
-id="toast"
-class="toast">
-
-<div class="toast-icon">
-
-✔
-
-</div>
-
-<div>
-
-<strong>
-
-Solicitação enviada!
-
-</strong>
-
-<p>
-
-Nossa equipe entrará em contato em breve.
-
-</p>
-
-</div>
-
-</div>
-
-
-
-<!-- ==============================
-LAYOUT
-============================== -->
-
-<div class="container fade">
-
-
-
-<!-- ==============================
-COLUNA ESQUERDA
-============================== -->
-
-<div class="left-column"><!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>{{ imovel.titulo }}</title>
-
-<meta property="og:title"
-content="{{ imovel.titulo }}">
-
-<meta property="og:description"
-content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
-
-{% if foto %}
-<meta property="og:image"
-content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
-{% endif %}
-
-<link rel="preconnect"
-href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-href="https://fonts.gstatic.com"
-crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-rel="stylesheet">
-
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/informa_imovel.css') }}">
-
-</head>
-
-<body>
-
-
-
-<!-- ==============================
-TOAST
-============================== -->
-
-<div
-id="toast"
-class="toast">
-
-<div class="toast-icon">
-
-✔
-
-</div>
-
-<div>
-
-<strong>
-
-Solicitação enviada!
-
-</strong>
-
-<p>
-
-Nossa equipe entrará em contato em breve.
-
-</p>
-
-</div>
-
-</div>
-
-
-
-<!-- ==============================
-LAYOUT
-============================== -->
-
-<div class="container fade">
-
-
-
-<!-- ==============================
-COLUNA ESQUERDA
-============================== -->
-
-<div class="left-column"><!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
-
-<title>{{ imovel.titulo }}</title>
-
-<meta property="og:title"
-content="{{ imovel.titulo }}">
-
-<meta property="og:description"
-content="R$ {{ imovel.valor }} • {{ imovel.quartos }} Quartos • {{ imovel.bairro }}">
-
-{% if foto %}
-<meta property="og:image"
-content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
-{% endif %}
-
-<link rel="preconnect"
-href="https://fonts.googleapis.com">
-
-<link rel="preconnect"
-href="https://fonts.gstatic.com"
-crossorigin>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-rel="stylesheet">
-
-<link rel="stylesheet"
-href="{{ url_for('static', filename='css/informa_imovel.css') }}">
-
-</head>
-
-<body>
-
-
-
-<!-- ==============================
-TOAST
-============================== -->
-
-<div
-id="toast"
-class="toast">
-
-<div class="toast-icon">
-
-✔
-
-</div>
-
-<div>
-
-<strong>
-
-Solicitação enviada!
-
-</strong>
-
-<p>
-
-Nossa equipe entrará em contato em breve.
-
-</p>
-
-</div>
-
-</div>
-
-
-
-<!-- ==============================
-LAYOUT
-============================== -->
-
-<div class="container fade">
-
-
-
-<!-- ==============================
-COLUNA ESQUERDA
-============================== -->
-
-<div class="left-column">
- <!-- =======================================
-GALERIA
-======================================= -->
-
-<div class="card galeria">
-
-{% if imovel.fotos %}
-
-<div class="galeria-principal">
-
-<img
-
-id="fotoPrincipal"
-
-src="/uploads/imoveis/{{ imovel.fotos[0] }}"
-
-alt="{{ imovel.titulo }}"
-
-onclick="abrirGaleria()">
-
-<div class="contador-fotos">
-
-📷 {{ imovel.fotos|length }} Fotos
-
-</div>
-
-<button
-
-type="button"
-
-class="galeria-btn btn-prev"
-
-onclick="fotoAnterior()">
-
-❮
-
-</button>
-
-<button
-
-type="button"
-
-class="galeria-btn btn-next"
-
-onclick="proximaFoto()">
-
-❯
-
-</button>
-
-<div
-
-class="zoom"
-
-onclick="abrirGaleria()">
-
-🔍
-
-</div>
-
-</div>
-
-
-
-<div class="miniaturas">
-
-{% for foto in imovel.fotos %}
-
-<img
-
-src="/uploads/imoveis/{{ foto }}"
-
-class="{% if loop.first %}ativa{% endif %}"
-
-onclick="selecionarFoto(this,'/uploads/imoveis/{{ foto }}')"
-
-alt="Foto {{ loop.index }}">
-
-{% endfor %}
-
-</div>
-
-{% else %}
-
-<div class="galeria-principal">
-
-<img
-
-src="/static/img/sem-foto.jpg"
-
-alt="Sem foto disponível">
-
-</div>
-
-{% endif %}
-
-</div>
-<!-- =======================================
-INFORMAÇÕES DO IMÓVEL
-======================================= -->
-
-<div class="card info">
-
-    <div class="topo-imovel">
-
+    <div id="toast" class="toast">
+        <div class="toast-icon">✔</div>
         <div>
-
-            <h1 class="titulo-imovel">
-
-                {{ imovel.titulo }}
-
-            </h1>
-
-            <div class="localizacao">
-
-                📍 {{ imovel.bairro }} - {{ imovel.cidade }}
-
-            </div>
-
+            <strong>Solicitação enviada!</strong>
+            <p>Nossa equipe entrará em contato em breve.</p>
         </div>
-
-        <div class="codigo-imovel">
-
-            Código #{{ imovel.id }}
-
-        </div>
-
     </div>
 
+    <div class="container fade">
 
-    <div class="preco">
-
-        {{ imovel.valor }}
-
-    </div>
-
-
-    <div class="badges">
-
-        <div class="badge green">
-
-            ✅ Disponível
-
-        </div>
-
-        <div class="badge blue">
-
-            📑 Documentação OK
-
-        </div>
-
-        <div class="badge orange">
-
-            ⭐ Destaque
-
-        </div>
-
-    </div>
-
-
-
-    <!-- ===============================
-    CARACTERÍSTICAS
-    ================================ -->
-
-    <div class="caracteristicas">
-
-        <div class="caracteristica">
-
-            <div class="icon-box">
-
-                🛏
-
+        <div class="left-column">
+            <div class="card galeria">
+                {% if imovel.fotos %}
+                <div class="galeria-principal">
+                    <img id="fotoPrincipal" src="/uploads/imoveis/{{ imovel.fotos[0] }}" alt="{{ imovel.titulo }}" onclick="abrirGaleria()">
+                    <div class="contador-fotos">📷 {{ imovel.fotos|length }} Fotos</div>
+                    <button type="button" class="galeria-btn btn-prev" onclick="fotoAnterior()">❮</button>
+                    <button type="button" class="galeria-btn btn-next" onclick="proximaFoto()">❯</button>
+                    <div class="zoom" onclick="abrirGaleria()">🔍</div>
+                </div>
+                <div class="miniaturas">
+                    {% for foto in imovel.fotos %}
+                    <img src="/uploads/imoveis/{{ foto }}" class="{% if loop.first %}ativa{% endif %}" onclick="selecionarFoto(this,'/uploads/imoveis/{{ foto }}')" alt="Foto {{ loop.index }}">
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="galeria-principal">
+                    <img src="/static/img/sem-foto.jpg" alt="Sem foto disponível">
+                </div>
+                {% endif %}
             </div>
 
-            <div>
-
-                <h4>
-
-                    {{ imovel.quartos }}
-
-                </h4>
-
-                <span>
-
-                    Quartos
-
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="caracteristica">
-
-            <div class="icon-box">
-
-                🚿
-
-            </div>
-
-            <div>
-
-                <h4>
-
-                    {{ imovel.banheiros }}
-
-                </h4>
-
-                <span>
-
-                    Banheiros
-
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="caracteristica">
-
-            <div class="icon-box">
-
-                🚗
-
-            </div>
-
-            <div>
-
-                <h4>
-
-                    {{ imovel.vaga_garagem }}
-
-                </h4>
-
-                <span>
-
-                    Garagens
-
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="caracteristica">
-
-            <div class="icon-box">
-
-                📐
-
-            </div>
-
-            <div>
-
-                <h4>
-
-                    {{ imovel.area }}
-
-                </h4>
-
-                <span>
-
-                    Área (m²)
-
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="caracteristica">
-
-            <div class="icon-box">
-
-                💰
-
-            </div>
-
-            <div>
-
-                <h4>
-
-                    {{ imovel.iptu }}
-
-                </h4>
-
-                <span>
-
-                    IPTU
-
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="caracteristica">
-
-            <div class="icon-box">
-
-                🚽
-
-            </div>
-
-            <div>
-
-                <h4>
-
-                    {{ imovel.lavabo }}
-
-                </h4>
-
-                <span>
-
-                    Lavabo
-
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- ===============================
-    BOTÕES
-    ================================ -->
-
-    <div class="acoes">
-
-        <a
-
-        class="btn btn-whatsapp"
-
-        target="_blank"
-
-        href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-        💬 WhatsApp
-
-        </a>
-
-
-        <button
-
-        class="btn btn-share"
-
-        onclick="compartilhar()">
-
-        📤 Compartilhar
-
-        </button>
-
-    </div>
-
-
-
-    <!-- ===============================
-    DESCRIÇÃO
-    ================================ -->
-
-    <div class="descricao">
-
-        <h2>
-
-            📝 Sobre este imóvel
-
-        </h2>
-
-        <p>
-
-            {{ imovel.descricao }}
-
-        </p>
-
-    </div>
-
-
-
-    <!-- ===============================
-    INFORMAÇÕES EXTRAS
-    ================================ -->
-
-    <div class="info-extra">
-
-        <div class="info-card">
-
-            <strong>
-
-                Bairro
-
-            </strong>
-
-            <span>
-
-                {{ imovel.bairro }}
-
-            </span>
-
-        </div>
-
-
-        <div class="info-card">
-
-            <strong>
-
-                Cidade
-
-            </strong>
-
-            <span>
-
-                {{ imovel.cidade }}
-
-            </span>
-
-        </div>
-
-    </div>
-
-</div>
-<!-- =======================================
-COLUNA DIREITA
-======================================= -->
-
-<div class="right-column">
-
-    <!-- ===========================
-    FORMULÁRIO
-    ============================ -->
-
-    <div class="card lead-box">
-
-        <div class="lead-header">
-
-            <h2>
-
-                Receba mais informações
-
-            </h2>
-
-            <p>
-
-                Preencha seus dados e um corretor entrará em contato.
-
-            </p>
-
-        </div>
-
-        <form id="formLead">
-
-            <input
-            type="hidden"
-            name="id_imovel"
-            value="{{ imovel.id }}">
-
-            <div class="input-group">
-
-                <label>
-
-                    Nome
-
-                </label>
-
-                <input
-                type="text"
-                name="nome"
-                placeholder="Digite seu nome"
-                required>
-
-            </div>
-
-            <div class="input-group">
-
-                <label>
-
-                    Telefone
-
-                </label>
-
-                <input
-                type="text"
-                name="telefone"
-                placeholder="(99) 99999-9999"
-                required>
-
-            </div>
-
-            <div class="input-group">
-
-                <label>
-
-                    Mensagem
-
-                </label>
-
-                <textarea
-                name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de receber mais informações.</textarea>
-
-            </div>
-
-            <button
-            class="btn-lead"
-            type="submit">
-
-                Quero ser atendido
-
-            </button>
-
-        </form>
-
-        <!-- ===========================
-        SELO
-        ============================ -->
-
-        <div class="selo">
-
-            <div class="selo-icon">
-
-                🔒
-
-            </div>
-
-            <div>
-
-                <strong>
-
-                    Seus dados estão seguros
-
-                </strong>
-
-                <span>
-
-                    Nunca compartilhamos suas informações.
-
-                </span>
-
-            </div>
-
-        </div>
-
-        <!-- ===========================
-        CONTATOS
-        ============================ -->
-
-        <div class="contatos">
-
-            <a
-
-            class="contato whats"
-
-            target="_blank"
-
-            href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-                💬 Conversar no WhatsApp
-
-            </a>
-
-            <a
-
-            class="contato ligar"
-
-            href="tel:{{ empresa.telefone if empresa else '' }}">
-
-                📞 Ligar agora
-
-            </a>
-
-        </div>
-
-        <!-- ===========================
-        CORRETOR
-        ============================ -->
-
-        <div class="corretor">
-
-            <img
-
-            src="/static/img/corretor.png"
-
-            alt="Corretor">
-
-            <div>
-
-                <h4>
-
-                    Atendimento Especializado
-
-                </h4>
-
-                <span>
-
-                    Nossa equipe responderá o mais rápido possível.
-
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-    <!-- =======================================
-IMÓVEIS SEMELHANTES
-======================================= -->
-
-<div class="card semelhantes">
-
-    <h2>
-
-        🏡 Imóveis semelhantes
-
-    </h2>
-
-    <div class="lista-semelhantes">
-
-        {% for item in semelhantes %}
-
-        <a
-
-        href="/informa-imovel/{{ item.id }}"
-
-        class="imovel-card">
-
-            {% if item.foto %}
-
-            <img
-
-            src="/uploads/imoveis/{{ item.foto }}"
-
-            alt="{{ item.titulo }}">
-
-            {% else %}
-
-            <img
-
-            src="/static/img/sem-foto.jpg"
-
-            alt="Sem foto">
-
-            {% endif %}
-
-            <div class="imovel-conteudo">
-
-                <h3>
-
-                    {{ item.titulo }}
-
-                </h3>
-
-                <div class="imovel-preco">
-
-                    {{ item.valor }}
-
+            <div class="card info">
+                <div class="topo-imovel">
+                    <div>
+                        <h1 class="titulo-imovel">{{ imovel.titulo }}</h1>
+                        <div class="localizacao">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
+                    </div>
+                    <div class="codigo-imovel">Código #{{ imovel.id }}</div>
+                </div>
+                <div class="preco">{{ imovel.valor }}</div>
+                <div class="badges">
+                    <div class="badge green">✅ Disponível</div>
+                    <div class="badge blue">📑 Documentação OK</div>
+                    <div class="badge orange">⭐ Destaque</div>
                 </div>
 
-                <div class="imovel-local">
-
-                    📍 {{ item.bairro }} - {{ item.cidade }}
-
+                <div class="caracteristicas">
+                    <div class="caracteristica">
+                        <div class="icon-box">🛏</div>
+                        <div><h4>{{ imovel.quartos }}</h4><span>Quartos</span></div>
+                    </div>
+                    <div class="caracteristica">
+                        <div class="icon-box">🚿</div>
+                        <div><h4>{{ imovel.banheiros }}</h4><span>Banheiros</span></div>
+                    </div>
+                    <div class="caracteristica">
+                        <div class="icon-box">🚗</div>
+                        <div><h4>{{ imovel.vaga_garagem }}</h4><span>Garagens</span></div>
+                    </div>
+                    <div class="caracteristica">
+                        <div class="icon-box">📐</div>
+                        <div><h4>{{ imovel.area }}</h4><span>Área (m²)</span></div>
+                    </div>
+                    <div class="caracteristica">
+                        <div class="icon-box">💰</div>
+                        <div><h4>{{ imovel.iptu }}</h4><span>IPTU</span></div>
+                    </div>
+                    <div class="caracteristica">
+                        <div class="icon-box">🚽</div>
+                        <div><h4>{{ imovel.lavabo }}</h4><span>Lavabo</span></div>
+                    </div>
                 </div>
 
-                <div class="imovel-info">
-
-                    <span>
-
-                        🛏 {{ item.quartos }}
-
-                    </span>
-
-                    <span>
-
-                        🚿 {{ item.banheiros }}
-
-                    </span>
-
-                    <span>
-
-                        🚗 {{ item.vaga_garagem }}
-
-                    </span>
-
+                <div class="acoes">
+                    <a class="btn btn-whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">💬 WhatsApp</a>
+                    <button class="btn btn-share" onclick="compartilhar()">📤 Compartilhar</button>
                 </div>
 
+                <div class="descricao">
+                    <h2>📝 Sobre este imóvel</h2>
+                    <p>{{ imovel.descricao }}</p>
+                </div>
+
+                <div class="info-extra">
+                    <div class="info-card"><strong>Bairro</strong><span>{{ imovel.bairro }}</span></div>
+                    <div class="info-card"><strong>Cidade</strong><span>{{ imovel.cidade }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="card lead-box">
+                <div class="lead-header">
+                    <h2>Receba mais informações</h2>
+                    <p>Preencha seus dados e um corretor entrará em contato.</p>
+                </div>
+                <form id="formLead">
+                    <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
+                    <div class="input-group">
+                        <label>Nome</label>
+                        <input type="text" name="nome" placeholder="Digite seu nome" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Telefone</label>
+                        <input type="text" name="telefone" placeholder="(99) 99999-9999" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Mensagem</label>
+                        <textarea name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de receber mais informações.</textarea>
+                    </div>
+                    <button class="btn-lead" type="submit">Quero ser atendido</button>
+                </form>
+
+                <div class="selo">
+                    <div class="selo-icon">🔒</div>
+                    <div><strong>Seus dados estão seguros</strong><span>Nunca compartilhamos suas informações.</span></div>
+                </div>
+
+                <div class="contatos">
+                    <a class="contato whats" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">💬 Conversar no WhatsApp</a>
+                    <a class="contato ligar" href="tel:{{ empresa.telefone if empresa else '' }}">📞 Ligar agora</a>
+                </div>
+
+                <div class="corretor">
+                    <img src="/static/img/corretor.png" alt="Corretor">
+                    <div><h4>Atendimento Especializado</h4><span>Nossa equipe responderá o mais rápido possível.</span></div>
+                </div>
             </div>
 
-        </a>
-
-        {% endfor %}
-
+            <div class="card semelhantes">
+                <h2>🏡 Imóveis semelhantes</h2>
+                <div class="lista-semelhantes">
+                    {% for item in semelhantes %}
+                    <a href="/informa-imovel/{{ item.id }}" class="imovel-card">
+                        {% if item.foto %}
+                        <img src="/uploads/imoveis/{{ item.foto }}" alt="{{ item.titulo }}">
+                        {% else %}
+                        <img src="/static/img/sem-foto.jpg" alt="Sem foto">
+                        {% endif %}
+                        <div class="imovel-conteudo">
+                            <h3>{{ item.titulo }}</h3>
+                            <div class="imovel-preco">{{ item.valor }}</div>
+                            <div class="imovel-local">📍 {{ item.bairro }} - {{ item.cidade }}</div>
+                            <div class="imovel-info">
+                                <span>🛏 {{ item.quartos }}</span>
+                                <span>🚿 {{ item.banheiros }}</span>
+                                <span>🚗 {{ item.vaga_garagem }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div> <div id="modalGaleria" class="modal">
+        <button class="fechar-modal" onclick="fecharGaleria()">✕</button>
+        <img id="imagemModal" src="">
     </div>
 
-</div>
+    <a class="float-whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">💬</a>
 
-</div>
-<!-- FIM DA RIGHT COLUMN -->
+    <div class="mobile-bar">
+        <a class="whats" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">💬 WhatsApp</a>
+        <a class="share" href="#" onclick="compartilhar()">📤 Compartilhar</a>
+    </div>
 
-
-</div>
-<!-- FIM DO CONTAINER -->
- <!-- =======================================
-MODAL DA GALERIA
-======================================= -->
-
-<div
-
-id="modalGaleria"
-
-class="modal">
-
-<button
-
-class="fechar-modal"
-
-onclick="fecharGaleria()">
-
-✕
-
-</button>
-
-<img
-
-id="imagemModal"
-
-src="">
-
-</div>
-
-
-
-<!-- =======================================
-BOTÃO FLUTUANTE WHATSAPP
-======================================= -->
-
-<a
-
-class="float-whatsapp"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-💬
-
-</a>
-
-
-
-<!-- =======================================
-BARRA MOBILE
-======================================= -->
-
-<div class="mobile-bar">
-
-<a
-
-class="whats"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-💬 WhatsApp
-
-</a>
-
-<a
-
-class="share"
-
-href="#"
-
-onclick="compartilhar()">
-
-📤 Compartilhar
-
-</a>
-
-</div>
-
-
-
-<!-- =======================================
-SCRIPT
-======================================= -->
-
-<script src="{{ url_for('static', filename='js/informa_imovel.js') }}"></script>
-
+    <script src="{{ url_for('static', filename='js/informa_imovel.js') }}"></script>
 </body>
-
 </html>
