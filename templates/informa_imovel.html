@@ -207,6 +207,19 @@ padding:14px;
 gap:20px;
 
 }
+ .sidebar{
+
+margin-top:25px;
+
+}
+
+.lead-box{
+
+position:relative;
+
+top:auto;
+
+}
 
 }
  /* ================= GALERIA ================= */
@@ -301,6 +314,186 @@ border-color:#7c3aed;
 box-shadow:
 
 0 8px 20px rgba(124,58,237,.25);
+
+}
+ .sidebar{
+
+display:flex;
+
+flex-direction:column;
+
+gap:25px;
+
+}
+ .lead-box{
+
+padding:0;
+
+overflow:hidden;
+
+position:sticky;
+
+top:20px;
+
+}
+ .lead-topo{
+
+background:
+
+linear-gradient(135deg,#7c3aed,#4f46e5);
+
+padding:30px;
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+color:white;
+
+}
+ .lead-avatar{
+
+width:65px;
+
+height:65px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,.18);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:30px;
+
+backdrop-filter:blur(8px);
+
+}
+ .lead-topo h2{
+
+margin:0;
+
+font-size:24px;
+
+}
+
+.lead-topo p{
+
+margin-top:6px;
+
+opacity:.9;
+
+color:white;
+
+}
+ .lead-box form{
+
+padding:28px;
+
+}
+ .lead-box label{
+
+display:block;
+
+font-weight:700;
+
+margin-bottom:8px;
+
+color:#334155;
+
+}
+ .lead-box input,
+
+.lead-box textarea{
+
+width:100%;
+
+padding:15px;
+
+margin-bottom:18px;
+
+border-radius:14px;
+
+border:1px solid #dbe4f0;
+
+background:#f8fafc;
+
+transition:.3s;
+
+font-size:15px;
+
+outline:none;
+
+}
+ .lead-box input:focus,
+
+.lead-box textarea:focus{
+
+border-color:#7c3aed;
+
+background:white;
+
+box-shadow:
+
+0 0 0 4px rgba(124,58,237,.15);
+
+}
+ .lead-box button{
+
+width:100%;
+
+padding:18px;
+
+border:0;
+
+border-radius:16px;
+
+background:
+
+linear-gradient(135deg,#7c3aed,#4f46e5);
+
+color:white;
+
+font-size:17px;
+
+font-weight:700;
+
+cursor:pointer;
+
+transition:.3s;
+
+box-shadow:
+
+0 15px 30px rgba(124,58,237,.25);
+
+}
+ .lead-box button:hover{
+
+transform:translateY(-3px);
+
+box-shadow:
+
+0 25px 45px rgba(124,58,237,.35);
+
+}
+ .lead-seguro{
+
+padding:20px;
+
+background:#f8fafc;
+
+text-align:center;
+
+color:#64748b;
+
+font-size:14px;
+
+border-top:1px solid #edf2f7;
 
 }
  .contador-fotos{
@@ -816,32 +1009,53 @@ onclick="compartilhar()">
 <!-- DIREITA -->
 
 
-<div class="lead-box">
+<!-- DIREITA -->
 
-<div class="lead-header">
+<div class="sidebar">
 
-<div class="lead-icon">
+<div class="lead-box card">
+
+<div class="lead-topo">
+
+<div class="lead-avatar">
+
 💬
+
 </div>
 
 <div>
 
-<h2>Receba mais informações</h2>
+<h2>
 
-<p>Fale com um corretor especializado.</p>
+Receba mais informações
+
+</h2>
+
+<p>
+
+Fale agora com um corretor especialista.
+
+</p>
 
 </div>
 
 </div>
 
-<form id="formLead" action="/capturar_lead" method="POST">
+<form
+id="formLead"
+action="/capturar_lead"
+method="POST">
 
 <input
 type="hidden"
 name="id_imovel"
 value="{{ imovel.id }}">
 
-<label>Nome</label>
+<label>
+
+Nome
+
+</label>
 
 <input
 type="text"
@@ -849,7 +1063,11 @@ name="nome"
 placeholder="Digite seu nome"
 required>
 
-<label>Telefone</label>
+<label>
+
+Telefone
+
+</label>
 
 <input
 type="text"
@@ -857,12 +1075,17 @@ name="telefone"
 placeholder="(99) 99999-9999"
 required>
 
-<label>Mensagem</label>
+<label>
+
+Mensagem
+
+</label>
 
 <textarea
 name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.</textarea>
 
-<button type="submit" id="btnEnviar">
+<button
+type="submit">
 
 🚀 Quero ser atendido
 
@@ -870,53 +1093,36 @@ name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais
 
 </form>
 
-<div class="lead-footer">
+<div class="lead-seguro">
 
-🔒 Seus dados estão protegidos e não serão compartilhados.
-
-</div>
+🔒 Seus dados estão protegidos.
 
 </div>
 
+</div>
 
+<div class="lead-box card">
 
+<h2>
 
-<div class="lead-box">
+🏡 Imóveis semelhantes
 
-
-<h3>
-
-🏡 Imóveis Semelhantes
-
-</h3>
-
-
-
+</h2>
 
 {% for item in semelhantes %}
 
-
-
 <a
-
 class="imovel-semelhante"
-
 href="/informa-imovel/{{ item.id }}">
-
-
 
 {% if item.foto %}
 
-<img src="/uploads/imoveis/{{ item.foto }}">
-
+<img
+src="/uploads/imoveis/{{ item.foto }}">
 
 {% endif %}
 
-
-
 <div class="sim-info">
-
-
 
 <div class="sim-titulo">
 
@@ -924,55 +1130,27 @@ href="/informa-imovel/{{ item.id }}">
 
 </div>
 
-
-
-
 <div class="sim-valor">
-
 
 {{ item.valor }}
 
-
 </div>
-
-
-
 
 <div class="sim-local">
 
-
-📍 {{ item.bairro }} - {{ item.cidade }}
-
+📍 {{ item.bairro }}
 
 </div>
 
-
-
-
 </div>
-
 
 </a>
 
-
-
 {% endfor %}
 
-
-
-
-
 </div>
 
-
-
 </div>
-
-
-
-</div>
-
-
 
 
 
