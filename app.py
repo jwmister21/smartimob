@@ -4888,7 +4888,7 @@ def informa_imovel(imovel_id):
     conn.close()
 
 
-    empresa = Configuracao.query.first()
+    
     return render_template(
         "informa_imovel.html",
         imovel=imovel,
