@@ -876,39 +876,28 @@ IA
 
 <!-- ================= SITE PÚBLICO ================= -->
 
-<div class="panel" style="margin-top:25px;">
+<div class="panel">
 
     <div class="panel-header">
 
         <div class="panel-title">
             <h3>🌐 Site Público</h3>
-            <p>Seu portal imobiliário na internet</p>
+            <p>Publique sua imobiliária na internet</p>
         </div>
 
-        {% if configuracao_site %}
+        {% if site %}
 
-            <a href="/site/{{ configuracao_site['slug'] }}"
+            <a href="/site/{{ site['subdominio'] }}"
                target="_blank"
-               style="
-               background:#16a34a;
-               color:#fff;
-               padding:12px 22px;
-               border-radius:12px;
-               text-decoration:none;
-               font-weight:600;">
+               class="btn-primary"
+               style="background:#16a34a;">
                 🌍 Acessar Site
             </a>
 
         {% else %}
 
             <a href="/gerar_site"
-               style="
-               background:#2563eb;
-               color:#fff;
-               padding:12px 22px;
-               border-radius:12px;
-               text-decoration:none;
-               font-weight:600;">
+               class="btn-primary">
                 🚀 Gerar Site
             </a>
 
@@ -917,7 +906,6 @@ IA
     </div>
 
 </div>
-
 
 <!-- ================= GRAFICOS ================= -->
 
