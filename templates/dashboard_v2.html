@@ -697,7 +697,7 @@ Clientes
 </strong>
 
 <span>
-este mês
+Este mês
 </span>
 
 </div>
@@ -752,7 +752,7 @@ Imóveis
 </strong>
 
 <span>
-carteira
+Carteira
 </span>
 
 </div>
@@ -807,7 +807,7 @@ Leads
 </strong>
 
 <span>
-conversão
+Conversão
 </span>
 
 </div>
@@ -874,7 +874,49 @@ IA
 </div>
 
 
+<!-- ================= SITE PÚBLICO ================= -->
 
+<div class="panel" style="margin-top:25px;">
+
+    <div class="panel-header">
+
+        <div class="panel-title">
+            <h3>🌐 Site Público</h3>
+            <p>Seu portal imobiliário na internet</p>
+        </div>
+
+        {% if configuracao_site %}
+
+            <a href="/site/{{ configuracao_site['slug'] }}"
+               target="_blank"
+               style="
+               background:#16a34a;
+               color:#fff;
+               padding:12px 22px;
+               border-radius:12px;
+               text-decoration:none;
+               font-weight:600;">
+                🌍 Acessar Site
+            </a>
+
+        {% else %}
+
+            <a href="/gerar_site"
+               style="
+               background:#2563eb;
+               color:#fff;
+               padding:12px 22px;
+               border-radius:12px;
+               text-decoration:none;
+               font-weight:600;">
+                🚀 Gerar Site
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</div>
 
 
 <!-- ================= GRAFICOS ================= -->
