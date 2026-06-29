@@ -1,138 +1,1386 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>{{ imovel.titulo }}</title>
-    
-    <meta property="og:title" content="{{ imovel.titulo }}">
-    <meta property="og:description" content="R$ {{ imovel.valor }} | {{ imovel.quartos }} quartos | {{ imovel.bairro }} - {{ imovel.cidade }}">
-    {% if foto %}
-    <meta property="og:image" content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
-    {% endif %}
 
-    <style>
-        :root {
-            --primary: #7c3aed;
-            --whatsapp: #25D366;
-            --text: #0f172a;
-            --bg: #f8fafc;
-        }
+<meta charset="UTF-8">
+<meta property="og:title"
+content="{{ imovel.titulo }}">
 
-        body {
-            font-family: "Inter", sans-serif;
-            background: #f1f5f9;
-            color: var(--text);
-            margin: 0;
-            line-height: 1.6;
-        }
 
-        .container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
-        }
+<meta property="og:description"
+content="
+R$ {{ imovel.valor }} |
+{{ imovel.quartos }} quartos |
+{{ imovel.bairro }} - {{ imovel.cidade }}
+">
 
-        /* Galeria e Cards */
-        .card {
-            background: white;
-            padding: 24px;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
 
-        .galeria-principal {
-            width: 100%;
-            aspect-ratio: 16/9;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #e2e8f0;
-        }
+{% if foto %}
 
-        .galeria-principal img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+<meta property="og:image"
+content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
+{% endif %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-        .miniaturas { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; padding-bottom: 5px; }
-        .miniaturas img { width: 80px; height: 60px; border-radius: 8px; cursor: pointer; object-fit: cover; border: 2px solid transparent; }
-        .miniaturas img:hover { border-color: var(--primary); }
 
-        /* Estilo Texto */
-        .titulo { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-        .valor { color: #059669; font-size: 32px; font-weight: 900; margin: 15px 0; }
-        
-        .caracteristicas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-        .item { background: var(--bg); padding: 10px; border-radius: 10px; font-size: 14px; text-align: center; font-weight: 500; }
+<title>{{ imovel.titulo }}</title>
 
-        /* Botões */
-        .btn { display: block; width: 100%; padding: 15px; border-radius: 12px; color: white; text-align: center; font-weight: 700; text-decoration: none; transition: 0.2s; border: none; cursor: pointer; }
-        .whatsapp { background: var(--whatsapp); }
-        .whatsapp:hover { background: #128C44; }
-        .btn-lead { background: var(--primary); margin-top: 10px; }
 
-        /* Responsivo */
-        @media (max-width: 900px) {
-            .container { grid-template-columns: 1fr; }
-            .lead-box { position: static; }
-        }
+<style>
 
-        /* Toast e Outros mantêm a lógica anterior */
-        .toast { position: fixed; top: 20px; right: 20px; background: #059669; color: white; padding: 16px 24px; border-radius: 12px; transform: translateX(120%); transition: 0.3s; z-index: 9999; }
-        .toast.show { transform: translateX(0); }
-    </style>
+ /* ================= TOAST ================= */
+
+.toast{
+
+position:fixed;
+
+top:30px;
+
+right:30px;
+
+background:#16a34a;
+
+color:#fff;
+
+padding:18px 24px;
+
+border-radius:16px;
+
+box-shadow:0 15px 35px rgba(0,0,0,.25);
+
+display:flex;
+
+align-items:center;
+
+gap:14px;
+
+font-size:16px;
+
+font-weight:600;
+
+z-index:99999;
+
+opacity:0;
+
+transform:translateY(-20px);
+
+pointer-events:none;
+
+transition:.35s;
+
+}
+
+.toast.show{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+.toast .icon{
+
+width:42px;
+
+height:42px;
+
+border-radius:50%;
+
+background:rgba(255,255,255,.2);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:22px;
+
+}
+
+
+*{
+box-sizing:border-box;
+}
+
+
+
+html,body{
+
+margin:0;
+padding:0;
+width:100%;
+overflow-x:hidden;
+
+}
+
+
+
+body{
+
+    font-family:"Inter","Segoe UI",Arial,sans-serif;
+
+    background:
+    radial-gradient(circle at top,#eef4ff 0%,#f8fafc 35%,#eef2f7 100%);
+
+    color:#0f172a;
+
+    line-height:1.6;
+
+}
+
+
+
+
+/* LAYOUT */
+
+
+.container{
+
+width:100%;
+
+max-width:1200px;
+
+margin:auto;
+
+padding:20px;
+
+display:grid;
+
+grid-template-columns:minmax(0,2fr) 360px;
+
+gap:25px;
+
+}
+
+
+
+
+
+/* GALERIA */
+
+
+.galeria-principal{
+
+width:100%;
+
+aspect-ratio:16/10;
+
+border-radius:18px;
+
+overflow:hidden;
+
+background:#ddd;
+
+}
+
+
+
+.galeria-principal img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
+cursor:pointer;
+
+}
+
+
+
+.miniaturas{
+
+display:flex;
+
+gap:10px;
+
+margin-top:12px;
+
+overflow-x:auto;
+
+}
+
+
+
+.miniaturas img{
+
+width:95px;
+
+height:70px;
+
+flex-shrink:0;
+
+object-fit:cover;
+
+border-radius:10px;
+
+}
+
+
+
+
+
+/* INFO */
+
+
+.info{
+
+background:white;
+
+padding:25px;
+
+margin-top:20px;
+
+border-radius:18px;
+
+box-shadow:0 10px 30px #0001;
+
+}
+
+
+
+.titulo{
+
+font-size:32px;
+
+font-weight:800;
+
+}
+
+
+
+.valor{
+
+color:#16a34a;
+
+font-size:38px;
+
+font-weight:900;
+
+margin:15px 0;
+
+}
+
+
+
+
+
+.caracteristicas{
+
+display:grid;
+
+grid-template-columns:repeat(2,1fr);
+
+gap:10px;
+
+}
+
+
+
+.item{
+
+background:#f8fafc;
+
+padding:12px;
+
+border-radius:12px;
+
+}
+
+
+
+
+/* BOTÕES */
+
+
+.botoes{
+
+display:flex;
+
+gap:12px;
+
+margin-top:20px;
+
+}
+
+
+
+.btn{
+
+flex:1;
+
+padding:14px;
+
+border-radius:12px;
+
+color:white;
+
+text-decoration:none;
+
+text-align:center;
+
+font-weight:bold;
+
+}
+
+
+
+.whatsapp{
+
+background:#25D366;
+
+}
+
+
+
+.compartilhar{
+
+background:#2563eb;
+
+}
+
+
+
+
+
+/* FORM */
+
+
+.lead-box{
+
+background:white;
+
+padding:22px;
+
+border-radius:18px;
+
+margin-bottom:20px;
+
+box-shadow:0 10px 30px #0001;
+
+position:sticky;
+
+top:20px;
+
+}
+
+
+
+.lead-box input,
+.lead-box textarea{
+
+width:100%;
+
+padding:13px;
+
+margin-bottom:12px;
+
+border-radius:10px;
+
+border:1px solid #ddd;
+
+}
+
+
+
+.lead-box textarea{
+
+height:120px;
+
+resize:none;
+
+}
+
+
+
+.lead-box button{
+
+width:100%;
+
+padding:14px;
+
+border:0;
+
+border-radius:12px;
+
+background:#7c3aed;
+
+color:white;
+
+font-weight:bold;
+
+}
+
+
+
+
+
+/* SEMELHANTES */
+
+
+.imovel-semelhante{
+
+display:flex;
+
+width:100%;
+
+height:95px;
+
+margin-top:12px;
+
+background:#f8fafc;
+
+border-radius:14px;
+
+overflow:hidden;
+
+text-decoration:none;
+
+color:#0f172a;
+
+transition:.2s;
+
+}
+
+
+
+.imovel-semelhante:hover{
+
+transform:translateY(-3px);
+
+box-shadow:0 8px 20px #0002;
+
+}
+
+
+
+.imovel-semelhante img{
+
+width:105px;
+
+min-width:105px;
+
+height:95px;
+
+object-fit:cover;
+
+}
+
+
+
+.sim-info{
+
+flex:1;
+
+min-width:0;
+
+padding:10px;
+
+overflow:hidden;
+
+}
+
+
+
+.sim-titulo{
+
+font-size:14px;
+
+font-weight:700;
+
+white-space:nowrap;
+
+overflow:hidden;
+
+text-overflow:ellipsis;
+
+}
+
+
+
+.sim-valor{
+
+color:#16a34a;
+
+font-weight:800;
+
+font-size:16px;
+
+}
+
+
+
+.sim-local{
+
+font-size:12px;
+
+color:#64748b;
+
+overflow:hidden;
+
+white-space:nowrap;
+
+}
+
+
+
+
+
+/* MODAL */
+
+
+.modal{
+
+display:none;
+
+position:fixed;
+
+inset:0;
+
+background:#000;
+
+z-index:9999;
+
+}
+
+
+
+.modal img{
+
+width:100%;
+
+height:100%;
+
+object-fit:contain;
+
+}
+
+
+
+.fechar{
+
+position:absolute;
+
+top:20px;
+
+right:20px;
+
+color:white;
+
+font-size:40px;
+
+}
+
+
+
+
+
+/* WHATS */
+
+
+.float-whats{
+
+position:fixed;
+
+right:20px;
+
+bottom:20px;
+
+width:60px;
+
+height:60px;
+
+border-radius:50%;
+
+background:#25D366;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+color:white;
+
+z-index:100;
+
+}
+
+
+
+
+
+.mobile-bar{
+
+display:none;
+
+}
+ id="hmtb3a"
+<style>
+
+
+@media(max-width:900px){
+
+
+.container{
+
+grid-template-columns:1fr;
+
+padding:12px;
+
+}
+
+
+.lead-box{
+
+position:relative;
+
+top:auto;
+
+}
+
+
+}
+
+
+
+@media(max-width:600px){
+
+
+.container{
+
+    width:100%;
+
+    max-width:1350px;
+
+    margin:auto;
+
+    padding:30px;
+
+    display:grid;
+
+    grid-template-columns:minmax(0,2fr) 390px;
+
+    gap:35px;
+
+}
+
+
+.galeria-principal{
+
+aspect-ratio:4/3;
+
+}
+
+
+
+.info{
+
+padding:18px;
+
+}
+
+
+
+.caracteristicas{
+
+grid-template-columns:1fr;
+
+}
+
+
+
+.botoes{
+
+display:none;
+
+}
+
+
+
+.mobile-bar{
+
+display:flex;
+
+position:fixed;
+
+bottom:0;
+
+left:0;
+
+right:0;
+
+background:white;
+
+padding:10px;
+
+gap:10px;
+
+z-index:1000;
+
+}
+
+
+
+.mobile-bar a{
+
+flex:1;
+
+padding:12px;
+
+border-radius:10px;
+
+text-align:center;
+
+color:white;
+
+text-decoration:none;
+
+}
+
+
+
+.float-whats{
+
+bottom:90px;
+
+}
+
+
+
+.imovel-semelhante{
+
+height:90px;
+
+}
+
+
+
+.imovel-semelhante img{
+
+width:90px;
+
+min-width:90px;
+
+height:90px;
+
+}
+
+
+
+.valor{
+
+font-size:28px;
+
+}
+
+
+}
+
+
+</style>
+
 </head>
 
+
+
 <body>
-    <div class="container">
-        <div>
-            {% if imovel.fotos %}
-            <div class="galeria-principal">
-                <img id="fotoPrincipal" src="/uploads/imoveis/{{ imovel.fotos[0] }}" onclick="abrirGaleria(this.src)">
-            </div>
-            <div class="miniaturas">
-                {% for foto in imovel.fotos %}
-                <img src="/uploads/imoveis/{{ foto }}" onclick="trocarFoto(this.src)">
-                {% endfor %}
-            </div>
-            {% endif %}
 
-            <div class="card" style="margin-top: 20px;">
-                <div class="titulo">{{ imovel.titulo }}</div>
-                <div class="valor">{{ imovel.valor }}</div>
-                <p>📍 {{ imovel.bairro }} - {{ imovel.cidade }}</p>
-                
-                <div class="caracteristicas">
-                    <div class="item">🛏 {{ imovel.quartos }}</div>
-                    <div class="item">🚿 {{ imovel.banheiros }}</div>
-                    <div class="item">🚗 {{ imovel.vaga_garagem }}</div>
-                </div>
 
-                <div class="descricao">
-                    <h3>Descrição</h3>
-                    <p>{{ imovel.descricao }}</p>
-                </div>
-            </div>
-        </div>
 
-        <div>
-            <div class="card lead-box">
-                <h2>Fale com um corretor</h2>
-                <form id="formLead">
-                    <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
-                    <input type="text" name="nome" placeholder="Seu nome" required style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-                    <input type="text" name="telefone" placeholder="Seu telefone" required style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:8px;">
-                    <textarea name="mensagem" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; height: 80px;">Olá! Gostei do imóvel.</textarea>
-                    <button class="btn btn-lead">Quero ser atendido</button>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="container">
 
-    <script>
-        function trocarFoto(src){ document.getElementById("fotoPrincipal").src = src; }
-        // ... (resto do seu JavaScript original)
-    </script>
+
+
+<!-- ESQUERDA -->
+
+
+<div>
+
+
+
+{% if imovel.fotos %}
+
+
+<div class="galeria-principal">
+
+
+<img
+
+id="fotoPrincipal"
+
+src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+
+onclick="abrirGaleria(this.src)">
+
+
+</div>
+
+
+
+
+<div class="miniaturas">
+
+
+{% for foto in imovel.fotos %}
+
+
+<img
+
+src="/uploads/imoveis/{{ foto }}"
+
+onclick="trocarFoto(this.src)">
+
+
+
+{% endfor %}
+
+
+</div>
+
+
+{% endif %}
+
+
+
+
+
+<div class="info">
+
+
+<div class="titulo">
+
+{{ imovel.titulo }}
+
+</div>
+
+
+
+<div class="valor">
+
+
+{{ imovel.valor }}
+
+
+</div>
+
+
+
+<h4>
+
+📍 {{ imovel.bairro }} - {{ imovel.cidade }}
+
+</h4>
+
+
+
+
+<div class="caracteristicas">
+
+
+<div class="item">
+🛏 {{ imovel.quartos }} Quartos
+</div>
+
+
+<div class="item">
+🚿 {{ imovel.banheiros }} Banheiros
+</div>
+
+
+<div class="item">
+🚗 {{ imovel.vaga_garagem }} Vagas
+</div>
+
+
+<div class="item">
+📐 {{ imovel.area }} m²
+</div>
+
+
+<div class="item">
+💲 {{ imovel.iptu }} IPTU
+</div>
+
+
+<div class="item">
+🚽 {{ imovel.lavabo }} Lavabo
+</div>
+
+
+
+</div>
+
+
+
+
+<div class="botoes">
+
+
+<a
+
+class="btn whatsapp"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+
+WhatsApp
+
+</a>
+
+
+
+
+<a
+
+class="btn compartilhar"
+
+href="#"
+
+onclick="compartilhar()">
+
+
+Compartilhar
+
+</a>
+
+
+</div>
+
+
+
+
+<div class="descricao">
+
+
+<h3>
+
+Descrição
+
+</h3>
+
+
+<p>
+
+{{ imovel.descricao }}
+
+</p>
+
+
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<!-- DIREITA -->
+
+
+<div>
+
+
+
+
+<div class="lead-box">
+
+
+<h2>
+
+Receba mais informações
+
+</h2>
+
+
+
+<form id="formLead">
+
+
+<input
+
+type="hidden"
+
+name="id_imovel"
+
+value="{{ imovel.id }}">
+
+
+
+<input
+
+type="text"
+
+name="nome"
+
+placeholder="Seu nome"
+
+required>
+
+
+
+<input
+
+type="text"
+
+name="telefone"
+
+placeholder="Seu telefone"
+
+required>
+
+
+
+
+<textarea
+
+name="mensagem">
+
+
+Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
+
+
+</textarea>
+
+
+
+<button>
+
+Quero ser atendido
+
+</button>
+
+
+
+</form>
+
+
+
+</div>
+
+
+
+
+
+<div class="lead-box">
+
+
+<h3>
+
+🏡 Imóveis Semelhantes
+
+</h3>
+
+
+
+
+{% for item in semelhantes %}
+
+
+
+<a
+
+class="imovel-semelhante"
+
+href="/informa-imovel/{{ item.id }}">
+
+
+
+{% if item.foto %}
+
+<img src="/uploads/imoveis/{{ item.foto }}">
+
+
+{% endif %}
+
+
+
+<div class="sim-info">
+
+
+
+<div class="sim-titulo">
+
+{{ item.titulo }}
+
+</div>
+
+
+
+
+<div class="sim-valor">
+
+
+{{ item.valor }}
+
+
+</div>
+
+
+
+
+<div class="sim-local">
+
+
+📍 {{ item.bairro }} - {{ item.cidade }}
+
+
+</div>
+
+
+
+
+</div>
+
+
+</a>
+
+
+
+{% endfor %}
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+<!-- MODAL -->
+
+
+<div class="modal" id="modal">
+
+
+<span
+
+class="fechar"
+
+onclick="fecharGaleria()">
+
+×
+
+</span>
+
+
+
+<img id="fotoModal">
+
+
+</div>
+
+
+
+
+
+
+
+<a
+
+class="float-whats"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+
+🟢
+
+
+</a>
+
+
+
+
+
+
+<div class="mobile-bar">
+
+
+<a
+
+class="whatsapp"
+
+target="_blank"
+
+href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
+
+
+WhatsApp
+
+
+</a>
+
+
+
+
+<a
+
+class="compartilhar"
+
+onclick="compartilhar()">
+
+
+Compartilhar
+
+
+</a>
+
+
+
+</div>
+
+
+
+
+
+
+
+<script>
+
+
+function trocarFoto(src){
+
+document.getElementById("fotoPrincipal").src=src;
+
+}
+
+
+
+function abrirGaleria(src){
+
+document.getElementById("modal").style.display="block";
+
+document.getElementById("fotoModal").src=src;
+
+}
+
+
+
+function fecharGaleria(){
+
+document.getElementById("modal").style.display="none";
+
+}
+
+
+
+function compartilhar(){
+
+
+if(navigator.share){
+
+
+navigator.share({
+
+title:document.title,
+
+url:window.location.href
+
+});
+
+
+}else{
+
+
+navigator.clipboard.writeText(window.location.href);
+
+
+alert("Link copiado!");
+
+
+}
+
+
+}
+
+function mostrarToast(){
+
+const toast=document.getElementById("toast");
+
+toast.classList.add("show");
+
+setTimeout(()=>{
+
+toast.classList.remove("show");
+
+},4000);
+
+}
+
+
+ document.getElementById("formLead").addEventListener("submit",async function(e){
+
+e.preventDefault();
+
+const form=this;
+
+const dados=new FormData(form);
+
+const resposta=await fetch("/capturar_lead",{
+
+method:"POST",
+
+body:dados
+
+});
+
+if(resposta.ok){
+
+mostrarToast();
+
+form.reset();
+
+}else{
+
+alert("Erro ao enviar solicitação.");
+
+}
+
+});
+
+</script>
+
+<div id="toast" class="toast">
+
+<div class="icon">
+✔
+</div>
+
+<div>
+
+Solicitação enviada com sucesso!<br>
+
+<small>Nossa equipe entrará em contato.</small>
+
+</div>
+
+</div>
+
+
 </body>
+
 </html>
