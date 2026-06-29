@@ -300,16 +300,23 @@ gap:25px;
 
 .valor{
 
-    font-size:48px;
+font-size:52px;
 
-    font-weight:900;
+font-weight:900;
 
-    color:#16a34a;
+color:#16a34a;
 
-    margin:20px 0;
+margin:18px 0;
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+flex-wrap:wrap;
 
 }
-
 
 
 
@@ -327,39 +334,83 @@ gap:10px;
 
 .item{
 
-    background:linear-gradient(
+display:flex;
 
-    180deg,
+align-items:center;
 
-    #ffffff,
+gap:18px;
 
-    #f8fafc
+background:white;
 
-    );
+border-radius:18px;
 
-    padding:18px;
+padding:22px;
 
-    border-radius:18px;
+border:1px solid #e8eef7;
 
-    border:1px solid #e5e7eb;
+transition:.25s;
 
-    transition:.25s;
-
-    font-weight:600;
+box-shadow:0 8px 18px rgba(15,23,42,.05);
 
 }
 
 .item:hover{
 
-    transform:translateY(-5px);
+transform:translateY(-5px);
 
-    box-shadow:0 12px 30px rgba(124,58,237,.10);
+box-shadow:0 15px 35px rgba(124,58,237,.15);
+
+border-color:#7c3aed;
 
 }
 
 
+.icone{
+
+width:60px;
+
+height:60px;
+
+border-radius:16px;
+
+background:linear-gradient(135deg,#7c3aed,#4f46e5);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:28px;
+
+color:white;
+
+flex-shrink:0;
+
+box-shadow:0 12px 20px rgba(124,58,237,.25);
+
+}
+
+ .item h4{
+
+margin:0;
+
+font-size:26px;
+
+font-weight:800;
+
+color:#0f172a;
+
+}
 
 
+ .item span{
+
+color:#64748b;
+
+font-size:14px;
+
+}
 /* BOTÕES */
 
 
@@ -634,6 +685,34 @@ object-fit:contain;
 
 }
 
+ .descricao{
+
+margin-top:45px;
+
+padding-top:35px;
+
+border-top:1px solid #edf2f7;
+
+}
+
+.descricao h3{
+
+font-size:28px;
+
+margin-bottom:20px;
+
+}
+
+.descricao p{
+
+font-size:17px;
+
+line-height:1.9;
+
+color:#475569;
+
+}
+
 
 
 .fechar{
@@ -853,15 +932,21 @@ height:90px;
 
 .valor{
 
-    font-size:48px;
+font-size:52px;
 
-    font-weight:900;
+font-weight:900;
 
-    color:#16a34a;
+color:#16a34a;
 
-    margin:20px 0;
+margin:18px 0;
 
-}
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+flex-wrap:wrap;
 
 }
 
@@ -905,6 +990,28 @@ height:90px;
     line-height:1.9;
 
     font-size:17px;
+
+}
+
+ .badge-negocio{
+
+display:inline-flex;
+
+align-items:center;
+
+gap:8px;
+
+padding:10px 18px;
+
+background:#dcfce7;
+
+color:#15803d;
+
+font-weight:700;
+
+border-radius:30px;
+
+margin-bottom:25px;
 
 }
 
@@ -994,7 +1101,11 @@ onclick="trocarFoto(this.src)">
 
 </div>
 
+<div class="badge-negocio">
 
+✅ Documentação OK
+
+</div>
 
 <h4>
 
@@ -1007,34 +1118,102 @@ onclick="trocarFoto(this.src)">
 
 <div class="caracteristicas">
 
-
 <div class="item">
-🛏 {{ imovel.quartos }} Quartos
+
+<div class="icone">
+🛏
 </div>
 
+<div>
 
-<div class="item">
-🚿 {{ imovel.banheiros }} Banheiros
+<h4>{{ imovel.quartos }}</h4>
+
+<span>Quartos</span>
+
 </div>
 
-
-<div class="item">
-🚗 {{ imovel.vaga_garagem }} Vagas
 </div>
 
-
 <div class="item">
-📐 {{ imovel.area }} m²
+
+<div class="icone">
+🚿
 </div>
 
+<div>
 
-<div class="item">
-💲 {{ imovel.iptu }} IPTU
+<h4>{{ imovel.banheiros }}</h4>
+
+<span>Banheiros</span>
+
 </div>
 
+</div>
 
 <div class="item">
-🚽 {{ imovel.lavabo }} Lavabo
+
+<div class="icone">
+🚗
+</div>
+
+<div>
+
+<h4>{{ imovel.vaga_garagem }}</h4>
+
+<span>Garagem</span>
+
+</div>
+
+</div>
+
+<div class="item">
+
+<div class="icone">
+📐
+</div>
+
+<div>
+
+<h4>{{ imovel.area }}</h4>
+
+<span>m²</span>
+
+</div>
+
+</div>
+
+<div class="item">
+
+<div class="icone">
+💲
+</div>
+
+<div>
+
+<h4>{{ imovel.iptu }}</h4>
+
+<span>IPTU</span>
+
+</div>
+
+</div>
+
+<div class="item">
+
+<div class="icone">
+🚽
+</div>
+
+<div>
+
+<h4>{{ imovel.lavabo }}</h4>
+
+<span>Lavabo</span>
+
+</div>
+
+</div>
+
 </div>
 
 
@@ -1084,13 +1263,11 @@ Compartilhar
 
 <div class="descricao">
 
-
 <h3>
 
-Descrição
+📝 Sobre este imóvel
 
 </h3>
-
 
 <p>
 
@@ -1098,17 +1275,7 @@ Descrição
 
 </p>
 
-
-
 </div>
-
-
-</div>
-
-
-
-</div>
-
 
 
 
