@@ -29,76 +29,6 @@ content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
 
 <style>
 
- /* ================= TOAST ================= */
-
-.toast{
-
-position:fixed;
-
-top:30px;
-
-right:30px;
-
-background:#16a34a;
-
-color:#fff;
-
-padding:18px 24px;
-
-border-radius:16px;
-
-box-shadow:0 15px 35px rgba(0,0,0,.25);
-
-display:flex;
-
-align-items:center;
-
-gap:14px;
-
-font-size:16px;
-
-font-weight:600;
-
-z-index:99999;
-
-opacity:0;
-
-transform:translateY(-20px);
-
-pointer-events:none;
-
-transition:.35s;
-
-}
-
-.toast.show{
-
-opacity:1;
-
-transform:translateY(0);
-
-}
-
-.toast .icon{
-
-width:42px;
-
-height:42px;
-
-border-radius:50%;
-
-background:rgba(255,255,255,.2);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:22px;
-
-}
-
 
 *{
 box-sizing:border-box;
@@ -119,14 +49,11 @@ overflow-x:hidden;
 
 body{
 
-    font-family:"Inter","Segoe UI",Arial,sans-serif;
+font-family:"Segoe UI",Arial,sans-serif;
 
-    background:
-    radial-gradient(circle at top,#eef4ff 0%,#f8fafc 35%,#eef2f7 100%);
+background:#f1f5f9;
 
-    color:#0f172a;
-
-    line-height:1.6;
+color:#0f172a;
 
 }
 
@@ -618,7 +545,7 @@ z-index:100;
 display:none;
 
 }
- id="hmtb3a"
+id="hmtb3a"
 <style>
 
 
@@ -652,21 +579,12 @@ top:auto;
 
 .container{
 
-    width:100%;
+display:block;
 
-    max-width:1350px;
-
-    margin:auto;
-
-    padding:30px;
-
-    display:grid;
-
-    grid-template-columns:minmax(0,2fr) 390px;
-
-    gap:35px;
+padding:10px;
 
 }
+
 
 
 .galeria-principal{
@@ -862,6 +780,7 @@ onclick="trocarFoto(this.src)">
 <div class="valor">
 
 
+R$ {{ "{:,.2f}".format(imovel.valor|float).replace(",", "X").replace(".", ",").replace("X",".") }}
 {{ imovel.valor }}
 
 
@@ -1005,7 +924,8 @@ Receba mais informações
 
 
 
-<form id="formLead">
+<form action="/capturar_lead" method="POST">
+
 
 
 <input
@@ -1122,6 +1042,7 @@ href="/informa-imovel/{{ item.id }}">
 <div class="sim-valor">
 
 
+R$ {{ "{:,.2f}".format(item.valor|float).replace(",", "X").replace(".", ",").replace("X",".") }}
 {{ item.valor }}
 
 
@@ -1317,68 +1238,11 @@ alert("Link copiado!");
 
 }
 
-function mostrarToast(){
 
-const toast=document.getElementById("toast");
-
-toast.classList.add("show");
-
-setTimeout(()=>{
-
-toast.classList.remove("show");
-
-},4000);
-
-}
-
-
- document.getElementById("formLead").addEventListener("submit",async function(e){
-
-e.preventDefault();
-
-const form=this;
-
-const dados=new FormData(form);
-
-const resposta=await fetch("/capturar_lead",{
-
-method:"POST",
-
-body:dados
-
-});
-
-if(resposta.ok){
-
-mostrarToast();
-
-form.reset();
-
-}else{
-
-alert("Erro ao enviar solicitação.");
-
-}
-
-});
 
 </script>
 
-<div id="toast" class="toast">
 
-<div class="icon">
-✔
-</div>
-
-<div>
-
-Solicitação enviada com sucesso!<br>
-
-<small>Nossa equipe entrará em contato.</small>
-
-</div>
-
-</div>
 
 
 </body>
