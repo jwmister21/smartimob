@@ -64,21 +64,19 @@
 <table>
     <thead>
         <tr>
-            <th>ID</th>
             <th>Nome</th>
             <th>Telefone</th>
             <th>Interesse</th>
             <th>Bairro</th>
-            <th>captação</th>
-            <th>empreendimento</th>
-            <th>construtora</th>
+            <th>Captação</th>
+            <th>Empreendimento</th>
+            <th>Construtora</th>
             <th>Ações</th>
         </tr>
     </thead>
     <tbody>
         {% for cliente in clientes %}
         <tr>
-            <td>{{ cliente[0] }}</td>
             <td><a href="/cliente/{{ cliente[0] }}" class="nome-link">{{ cliente[1] }}</a></td>
             <td>{{ cliente[2] }}</td>
             <td>{{ cliente[5] }}</td>
