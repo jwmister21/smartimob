@@ -186,7 +186,222 @@
         Imóveis compartilhados por corretores parceiros.
     </p>
 </div>
+<!-- ========================= -->
+<!-- FILTROS -->
+<!-- ========================= -->
 
+<style>
+.filtros-box{
+    background:#fff;
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    margin-bottom:25px;
+}
+
+.filtros-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+}
+
+.filtros-grid input,
+.filtros-grid select{
+    width:100%;
+    padding:12px;
+    border:1px solid #dbe2ea;
+    border-radius:10px;
+    font-size:14px;
+}
+
+.filtros-acoes{
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.btn-filtrar{
+    background:#16a34a;
+    color:white;
+    border:none;
+    padding:12px 22px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn-limpar{
+    background:#e2e8f0;
+    color:#334155;
+    text-decoration:none;
+    padding:12px 22px;
+    border-radius:10px;
+    font-weight:600;
+}
+
+.total-imoveis{
+    margin-top:18px;
+    color:#64748b;
+    font-weight:600;
+}
+</style>
+
+<form method="GET" class="filtros-box">
+
+<div class="filtros-grid">
+
+<input
+type="text"
+name="busca"
+placeholder="🔍 Buscar imóvel..."
+value="{{ busca }}">
+
+<select name="tipo">
+<option value="">Tipo</option>
+{% for item in tipos %}
+<option value="{{ item.tipo }}"
+{% if tipo==item.tipo %}selected{% endif %}>
+{{ item.tipo }}
+</option>
+{% endfor %}
+</select>
+
+<select name="cidade">
+<option value="">Cidade</option>
+{% for item in cidades %}
+<option value="{{ item.cidade }}"
+{% if cidade==item.cidade %}selected{% endif %}>
+{{ item.cidade }}
+</option>
+{% endfor %}
+</select>
+
+<select name="bairro">
+<option value="">Bairro</option>
+{% for item in bairros %}
+<option value="{{ item.bairro }}"
+{% if bairro==item.bairro %}selected{% endif %}>
+{{ item.bairro }}
+</option>
+{% endfor %}
+</select>
+
+<select name="empreendimento">
+<option value="">Empreendimento</option>
+{% for item in empreendimentos %}
+<option value="{{ item.empreendimento }}"
+{% if empreendimento==item.empreendimento %}selected{% endif %}>
+{{ item.empreendimento }}
+</option>
+{% endfor %}
+</select>
+
+<select name="quartos">
+<option value="">Quartos</option>
+
+<option value="1" {% if quartos=="1" %}selected{% endif %}>1+</option>
+<option value="2" {% if quartos=="2" %}selected{% endif %}>2+</option>
+<option value="3" {% if quartos=="3" %}selected{% endif %}>3+</option>
+<option value="4" {% if quartos=="4" %}selected{% endif %}>4+</option>
+<option value="5" {% if quartos=="5" %}selected{% endif %}>5+</option>
+
+</select>
+
+<select name="corretor">
+
+<option value="">Corretor</option>
+
+{% for item in corretores %}
+
+<option value="{{ item.nome }}"
+{% if corretor==item.nome %}selected{% endif %}>
+
+{{ item.nome }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<select name="status">
+
+<option value="">Status</option>
+
+{% for item in status_lista %}
+
+<option value="{{ item.status }}"
+{% if status==item.status %}selected{% endif %}>
+
+{{ item.status }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<select name="ordenar">
+
+<option value="recentes"
+{% if ordenar=="recentes" %}selected{% endif %}>
+Mais recentes
+</option>
+
+<option value="menor_preco"
+{% if ordenar=="menor_preco" %}selected{% endif %}>
+Menor preço
+</option>
+
+<option value="maior_preco"
+{% if ordenar=="maior_preco" %}selected{% endif %}>
+Maior preço
+</option>
+
+<option value="maior_area"
+{% if ordenar=="maior_area" %}selected{% endif %}>
+Maior área
+</option>
+
+<option value="mais_quartos"
+{% if ordenar=="mais_quartos" %}selected{% endif %}>
+Mais quartos
+</option>
+
+</select>
+
+</div>
+
+<div class="filtros-acoes">
+
+<button
+type="submit"
+class="btn-filtrar">
+
+🔍 Filtrar
+
+</button>
+
+<a
+href="{{ url_for('fifit') }}"
+class="btn-limpar">
+
+Limpar
+
+</a>
+
+</div>
+
+<div class="total-imoveis">
+
+Foram encontrados
+<strong>{{ imoveis|length }}</strong>
+imóveis.
+
+</div>
+
+</form>
 <div class="grid-imoveis">
 
 {% for imovel in imoveis %}
