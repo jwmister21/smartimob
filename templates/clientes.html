@@ -71,6 +71,8 @@
             <th>Bairro</th>
             <th>captação</th>
             <th>Ações</th>
+            <th>empreendimento</th>
+            <th>construtora</th>
         </tr>
     </thead>
     <tbody>
@@ -82,6 +84,7 @@
             <td>{{ cliente[5] }}</td>
             <td>{{ cliente[7] }}</td>
             <td>{{ cliente.origem }}</td>
+            <td>{{ cliente.empreendimento }}</td>
             <td>
                 <button class="btn-dados" onclick="window.location.href='/cliente/{{ cliente[0] }}'">👤 Perfil</button>
                 <a class="btn-whats" target="_blank" href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">WhatsApp</a>
