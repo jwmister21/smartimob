@@ -3788,6 +3788,7 @@ def cadastrar_cliente():
         entrada = request.form.get("entrada", "")
         pagamento = request.form.get("pagamento", "")
         origem = request.form.get("origem", "")
+        empreendimento = request.form.get("empreendimento", "")
 
         user_id = session["usuario_id"]
         empresa_id = session["empresa_id"]
@@ -3809,11 +3810,12 @@ def cadastrar_cliente():
                 entrada,
                 pagamento,
                 origem,
+                empreendimento,
                 usuario_id,
                 empresa_id,
                 data_criacao
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             nome,
             telefone,
@@ -3824,6 +3826,7 @@ def cadastrar_cliente():
             entrada,
             pagamento,
             origem,
+            empreendimento,
             user_id,
             empresa_id,
             data_criacao
