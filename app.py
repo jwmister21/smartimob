@@ -1683,20 +1683,49 @@ def desativar_usuario():
 @app.route("/clientes")
 @verificar_sessao
 def listar_clientes():
-    empresa_id = session.get('empresa_id')
 
-    # Estabelece a conexão com o banco
+    empresa_id = session.get("empresa_id")
+
+    data_inicio = request.args.get("data_inicio")
+    data_fim = request.args.get("data_fim")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Busca os clientes da empresa logada
-    cursor.execute("SELECT * FROM clientes WHERE empresa_id = ?", (empresa_id,))
+    if data_inicio and data_fim:
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE empresa_id = ?
+            AND data_criacao BETWEEN ? AND ?
+            ORDER BY data_criacao DESC
+        """, (
+            empresa_id,
+            data_inicio,
+            data_fim
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE empresa_id = ?
+            ORDER BY data_criacao DESC
+        """, (empresa_id,))
+
     clientes = cursor.fetchall()
-    
+
     conn.close()
 
-    return render_template("clientes.html", clientes=clientes)
+    return render_template(
+        "clientes.html",
+        clientes=clientes,
+        data_inicio=data_inicio,
+        data_fim=data_fim
+    )
  
 
 
