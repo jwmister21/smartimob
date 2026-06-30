@@ -998,10 +998,23 @@ def fifit():
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
 
-    cursor.execute("""
+    # ============================
+    # FILTROS
+    # ============================
+
+    busca = request.args.get("busca", "").strip()
+    tipo = request.args.get("tipo", "").strip()
+    cidade = request.args.get("cidade", "").strip()
+    bairro = request.args.get("bairro", "").strip()
+    empreendimento = request.args.get("empreendimento", "").strip()
+    quartos = request.args.get("quartos", "").strip()
+    corretor = request.args.get("corretor", "").strip()
+    status = request.args.get("status", "").strip()
+    ordenar = request.args.get("ordenar", "recentes")
+
+    sql = """
         SELECT
             i.*,
             u.nome AS corretor_nome,
@@ -1011,8 +1024,95 @@ def fifit():
         LEFT JOIN usuarios u
             ON u.id = i.usuario_id
         WHERE i.compartilhar_fifit = 1
-        ORDER BY i.id DESC
-    """)
+    """
+
+    params = []
+
+    # ============================
+    # BUSCA
+    # ============================
+
+    if busca:
+        sql += """
+        AND (
+            i.titulo LIKE ?
+            OR i.descricao LIKE ?
+            OR i.cidade LIKE ?
+            OR i.bairro LIKE ?
+            OR i.tipo LIKE ?
+            OR i.empreendimento LIKE ?
+            OR u.nome LIKE ?
+        )
+        """
+
+        termo = f"%{busca}%"
+
+        params.extend([
+            termo,
+            termo,
+            termo,
+            termo,
+            termo,
+            termo,
+            termo
+        ])
+
+    # ============================
+    # FILTROS
+    # ============================
+
+    if tipo:
+        sql += " AND i.tipo = ?"
+        params.append(tipo)
+
+    if cidade:
+        sql += " AND i.cidade = ?"
+        params.append(cidade)
+
+    if bairro:
+        sql += " AND i.bairro = ?"
+        params.append(bairro)
+
+    if empreendimento:
+        sql += " AND i.empreendimento = ?"
+        params.append(empreendimento)
+
+    if quartos:
+        sql += " AND i.quartos >= ?"
+        params.append(quartos)
+
+    if corretor:
+        sql += " AND u.nome = ?"
+        params.append(corretor)
+
+    if status:
+        sql += " AND i.status = ?"
+        params.append(status)
+
+    # ============================
+    # ORDENAÇÃO
+    # ============================
+
+    if ordenar == "menor_preco":
+        sql += " ORDER BY i.valor ASC"
+
+    elif ordenar == "maior_preco":
+        sql += " ORDER BY i.valor DESC"
+
+    elif ordenar == "maior_area":
+        sql += " ORDER BY i.area DESC"
+
+    elif ordenar == "mais_quartos":
+        sql += " ORDER BY i.quartos DESC"
+
+    else:
+        sql += " ORDER BY i.id DESC"
+
+    # ============================
+    # CONSULTA PRINCIPAL
+    # ============================
+
+    cursor.execute(sql, params)
 
     imoveis = cursor.fetchall()
 
@@ -1037,11 +1137,85 @@ def fifit():
 
         imoveis_com_fotos.append(imovel_dict)
 
+    # ============================
+    # DADOS DOS FILTROS
+    # ============================
+
+    cursor.execute("""
+        SELECT DISTINCT tipo
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY tipo
+    """)
+    tipos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT cidade
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY cidade
+    """)
+    cidades = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT bairro
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY bairro
+    """)
+    bairros = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT empreendimento
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+          AND empreendimento IS NOT NULL
+          AND empreendimento <> ''
+        ORDER BY empreendimento
+    """)
+    empreendimentos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT status
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY status
+    """)
+    status_lista = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT u.nome
+        FROM usuarios u
+        INNER JOIN imoveis i
+            ON i.usuario_id = u.id
+        WHERE i.compartilhar_fifit = 1
+        ORDER BY u.nome
+    """)
+    corretores = cursor.fetchall()
+
     conn.close()
 
     return render_template(
         "fifit.html",
-        imoveis=imoveis_com_fotos
+
+        imoveis=imoveis_com_fotos,
+
+        tipos=tipos,
+        cidades=cidades,
+        bairros=bairros,
+        empreendimentos=empreendimentos,
+        corretores=corretores,
+        status_lista=status_lista,
+
+        busca=busca,
+        tipo=tipo,
+        cidade=cidade,
+        bairro=bairro,
+        empreendimento=empreendimento,
+        quartos=quartos,
+        corretor=corretor,
+        status=status,
+        ordenar=ordenar
     )
  
 @app.route("/catalogo")
