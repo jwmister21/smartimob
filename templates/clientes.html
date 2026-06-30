@@ -55,7 +55,46 @@
 <div class="contador-clientes">
     👥 <span id="clientesVisiveis">{{ clientes|length }}</span> Clientes Filtrados
 </div>
+<div style="display:flex;gap:15px;align-items:end;margin-bottom:20px;flex-wrap:wrap;">
 
+<form method="GET" style="display:flex;gap:10px;align-items:end;">
+
+<div>
+<label>De</label><br>
+<input
+type="date"
+name="data_inicio"
+value="{{ data_inicio or '' }}"
+class="pesquisa"
+style="width:170px;">
+</div>
+
+<div>
+<label>Até</label><br>
+<input
+type="date"
+name="data_fim"
+value="{{ data_fim or '' }}"
+class="pesquisa"
+style="width:170px;">
+</div>
+
+<button
+class="btn-primary"
+type="submit">
+Filtrar
+</button>
+
+<a
+href="/clientes"
+class="btn-primary"
+style="background:#64748b;">
+Limpar
+</a>
+
+</form>
+
+</div>
 <div class="acoes">
     <a href="/cadastrar_cliente" class="btn-primary">+ Novo Cliente</a>
     <input class="pesquisa" type="text" id="filtroClientes" placeholder="Pesquisar cliente..." onkeyup="filtrarTabela()">
