@@ -70,9 +70,9 @@
             <th>Interesse</th>
             <th>Bairro</th>
             <th>captação</th>
-            <th>Ações</th>
             <th>empreendimento</th>
             <th>construtora</th>
+            <th>Ações</th>
         </tr>
     </thead>
     <tbody>
@@ -84,6 +84,7 @@
             <td>{{ cliente[5] }}</td>
             <td>{{ cliente[7] }}</td>
             <td>{{ cliente.origem }}</td>
+            <td>{{ cliente.construtora }}</td>
             <td>{{ cliente.empreendimento }}</td>
             <td>
                 <button class="btn-dados" onclick="window.location.href='/cliente/{{ cliente[0] }}'">👤 Perfil</button>
