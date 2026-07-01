@@ -149,10 +149,9 @@ CARDS
 
 .cards{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(4, minmax(220px,1fr));
     gap:22px;
 }
-
 .card{
     background:white;
     border-radius:22px;
@@ -254,9 +253,17 @@ GRAFICOS
 ==================================================*/
 
 .content-grid{
+
     display:grid;
-    grid-template-columns:2fr 1fr;
+
+    grid-template-columns:
+    minmax(500px,2fr)
+    minmax(320px,1fr);
+
     gap:24px;
+
+    align-items:start;
+
 }
 
 .panel{
@@ -299,6 +306,11 @@ GRAFICOS
 .chart-area canvas{
     width:100%!important;
     height:100%!important;
+}
+   .imoveis-panel{
+
+    height:fit-content;
+
 }
 
 /*==================================================
@@ -571,6 +583,13 @@ flex-wrap:wrap;
 
 .search-box{
 width:100%;
+}
+   .tipo-chart-box{
+
+height:220px;
+width:220px;
+margin:auto;
+
 }
 
 .cards{
@@ -1079,7 +1098,7 @@ Distribuição
 
 
 
-<div style="height:300px;">
+<div class="tipo-chart-box">
     <canvas id="tipoChart"></canvas>
 </div>
 
