@@ -316,6 +316,29 @@ def extrair_links_pdf(caminho):
 
     return links
 
+from functools import wraps
+from flask import session, flash, redirect, url_for
+
+def somente_ceo(func):
+
+    @wraps(func)
+
+    def wrapper(*args, **kwargs):
+
+        if "usuario_id" not in session:
+            return redirect(url_for("login"))
+
+        if session.get("perfil") != "CEO":
+
+            flash("Você não possui permissão para acessar esta área.", "danger")
+
+            return redirect(url_for("dashboard"))
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def verificar_sessao(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -2238,6 +2261,13 @@ def renderizar_video():
         })
 
 
+@app.route("/ceo")
+@verificar_sessao
+@somente_ceo
+def dashboard_ceo():
+
+    return render_template("ceo/dashboard_ceo.html")
+     
 @app.route('/site/<subdominio>')
 def exibir_site(subdominio):
 
