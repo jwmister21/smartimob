@@ -1,1 +1,264 @@
+{% extends "base.html" %}
 
+{% block title %}Central Administrativa{% endblock %}
+{% block pagina %}⚙ Central Administrativa{% endblock %}
+
+{% block content %}
+
+<style>
+
+.admin-header{
+    background:linear-gradient(135deg,#0f172a,#1e3a8a);
+    color:white;
+    padding:35px;
+    border-radius:20px;
+    margin-bottom:30px;
+}
+
+.admin-header h2{
+    margin:0;
+    font-size:30px;
+}
+
+.admin-header p{
+    margin-top:8px;
+    opacity:.9;
+}
+
+.admin-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:22px;
+}
+
+.admin-card{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    border:1px solid #e2e8f0;
+
+    text-decoration:none;
+
+    color:#1e293b;
+
+    transition:.25s;
+
+    box-shadow:0 6px 16px rgba(0,0,0,.08);
+
+}
+
+.admin-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 15px 35px rgba(0,0,0,.15);
+
+}
+
+.admin-icon{
+
+    font-size:42px;
+
+    margin-bottom:18px;
+
+}
+
+.admin-title{
+
+    font-size:20px;
+
+    font-weight:700;
+
+    margin-bottom:8px;
+
+}
+
+.admin-desc{
+
+    color:#64748b;
+
+    font-size:14px;
+
+    line-height:1.6;
+
+}
+
+</style>
+
+
+<div class="admin-header">
+
+<h2>⚙ Central Administrativa</h2>
+
+<p>
+
+Bem-vindo à área exclusiva do CEO.
+
+Gerencie todo o SMARTZEN IMOB em um único lugar.
+
+</p>
+
+</div>
+
+
+<div class="admin-grid">
+
+
+<a href="/ceo/empresas" class="admin-card">
+
+<div class="admin-icon">🏢</div>
+
+<div class="admin-title">
+
+Empresas
+
+</div>
+
+<div class="admin-desc">
+
+Cadastrar e administrar empresas.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/usuarios" class="admin-card">
+
+<div class="admin-icon">👥</div>
+
+<div class="admin-title">
+
+Usuários
+
+</div>
+
+<div class="admin-desc">
+
+Cadastrar, editar e alterar perfis.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/planos" class="admin-card">
+
+<div class="admin-icon">📦</div>
+
+<div class="admin-title">
+
+Planos
+
+</div>
+
+<div class="admin-desc">
+
+Gerencie os planos do sistema.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/configuracoes" class="admin-card">
+
+<div class="admin-icon">⚙</div>
+
+<div class="admin-title">
+
+Configurações
+
+</div>
+
+<div class="admin-desc">
+
+Configurações gerais do sistema.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/integracoes" class="admin-card">
+
+<div class="admin-icon">🔌</div>
+
+<div class="admin-title">
+
+Integrações
+
+</div>
+
+<div class="admin-desc">
+
+WhatsApp, OpenAI, Google e APIs.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/logs" class="admin-card">
+
+<div class="admin-icon">📋</div>
+
+<div class="admin-title">
+
+Logs
+
+</div>
+
+<div class="admin-desc">
+
+Visualizar atividades do sistema.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/backup" class="admin-card">
+
+<div class="admin-icon">💾</div>
+
+<div class="admin-title">
+
+Backup
+
+</div>
+
+<div class="admin-desc">
+
+Gerar backups do banco.
+
+</div>
+
+</a>
+
+
+<a href="/ceo/restaurar" class="admin-card">
+
+<div class="admin-icon">♻</div>
+
+<div class="admin-title">
+
+Restaurar
+
+</div>
+
+<div class="admin-desc">
+
+Restaurar um backup existente.
+
+</div>
+
+</a>
+
+</div>
+
+{% endblock %}
