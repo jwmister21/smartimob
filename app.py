@@ -332,7 +332,7 @@ def somente_ceo(func):
 
             flash("Você não possui permissão para acessar esta área.", "danger")
 
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("dashboard_v2"))
 
         return func(*args, **kwargs)
 
