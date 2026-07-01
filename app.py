@@ -1966,7 +1966,29 @@ def editar_usuario(user_id):
     return jsonify({"status": "sucesso"})
 
 
+@app.route("/ceo/usuarios")
+@verificar_sessao
+@somente_ceo
+def ceo_usuarios():
 
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM usuarios
+        ORDER BY nome
+    """)
+
+    usuarios = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "ceo/usuarios.html",
+        usuarios=usuarios
+    )
 
 @app.route("/admin/usuarios")
 @verificar_sessao
