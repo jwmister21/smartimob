@@ -3487,6 +3487,7 @@ def login():
             session["usuario_nome"] = usuario['nome']
             session["is_admin"] = usuario['is_admin']
             session["user_email"] = usuario['email']
+            session["perfil"] = usuario["perfil"]
             conn.close()
             return redirect('/dashboard_v2')
 
