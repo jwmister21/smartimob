@@ -914,7 +914,7 @@ Match IA
 
 
 <div class="card-value">
-12
+{{ match_ia }}%
 </div>
 
 
@@ -931,7 +931,7 @@ Match IA
 
 <div class="progress">
 
-<div style="width:95%"></div>
+<div style="width:{{ match_ia }}%"></div>
 
 </div>
 
@@ -939,21 +939,25 @@ Match IA
 <div class="card-footer">
 
 <strong>
-Online
+{% if match_ia >= 70 %}
+Alto
+{% elif match_ia >= 40 %}
+Médio
+{% else %}
+Baixo
+{% endif %}
 </strong>
+
 
 <span>
 IA
 </span>
 
-</div>
-
 
 </div>
 
 
 </div>
-
 
 <!-- ================= SITE PÚBLICO ================= -->
 
