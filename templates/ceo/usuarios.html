@@ -1,1 +1,353 @@
+{% extends "base.html" %}
 
+{% block title %}Usuários{% endblock %}
+{% block pagina %}👥 Gerenciar Usuários{% endblock %}
+
+{% block content %}
+
+<style>
+
+.topo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.topo h2{
+    margin:0;
+    color:#1e293b;
+}
+
+.btn-novo{
+    background:#2563eb;
+    color:#fff;
+    text-decoration:none;
+    padding:12px 18px;
+    border-radius:10px;
+    font-weight:600;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.card-info{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:22px;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+.card-info h3{
+
+    margin:0;
+
+    font-size:32px;
+
+    color:#1e293b;
+
+}
+
+.card-info span{
+
+    color:#64748b;
+
+}
+
+.pesquisa{
+
+    width:100%;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    border:1px solid #dbe2ea;
+
+    margin-bottom:20px;
+
+}
+
+.tabela{
+
+    width:100%;
+
+    background:white;
+
+    border-collapse:collapse;
+
+    border-radius:18px;
+
+    overflow:hidden;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+.tabela th{
+
+    background:#f8fafc;
+
+    padding:15px;
+
+    text-align:left;
+
+}
+
+.tabela td{
+
+    padding:15px;
+
+    border-top:1px solid #eef2f7;
+
+}
+
+.badge{
+
+    padding:6px 12px;
+
+    border-radius:30px;
+
+    color:white;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+}
+
+.ceo{
+    background:#7c3aed;
+}
+
+.admin{
+    background:#dc2626;
+}
+
+.gerente{
+    background:#f59e0b;
+}
+
+.corretor{
+    background:#16a34a;
+}
+
+.ativo{
+
+    background:#16a34a;
+
+}
+
+.inativo{
+
+    background:#94a3b8;
+
+}
+
+.bloqueado{
+
+    background:#dc2626;
+
+}
+
+.acoes{
+
+    display:flex;
+
+    gap:8px;
+
+}
+
+.btn{
+
+    padding:8px 12px;
+
+    border-radius:8px;
+
+    text-decoration:none;
+
+    color:white;
+
+}
+
+.editar{
+
+    background:#2563eb;
+
+}
+
+</style>
+
+
+<div class="topo">
+
+<h2>👥 Gerenciar Usuários</h2>
+
+<a href="#" class="btn-novo">
+
++ Novo Usuário
+
+</a>
+
+</div>
+
+
+<div class="cards">
+
+<div class="card-info">
+
+<h3>{{ usuarios|length }}</h3>
+
+<span>Total de Usuários</span>
+
+</div>
+
+<div class="card-info">
+
+<h3>{{ usuarios|selectattr('perfil','equalto','CEO')|list|length }}</h3>
+
+<span>CEO</span>
+
+</div>
+
+<div class="card-info">
+
+<h3>{{ usuarios|selectattr('perfil','equalto','ADMIN')|list|length }}</h3>
+
+<span>Administradores</span>
+
+</div>
+
+<div class="card-info">
+
+<h3>{{ usuarios|selectattr('perfil','equalto','GERENTE')|list|length }}</h3>
+
+<span>Gerentes</span>
+
+</div>
+
+<div class="card-info">
+
+<h3>{{ usuarios|selectattr('perfil','equalto','CORRETOR')|list|length }}</h3>
+
+<span>Corretores</span>
+
+</div>
+
+</div>
+
+
+<input
+type="text"
+id="pesquisa"
+class="pesquisa"
+placeholder="🔍 Pesquisar usuário...">
+
+
+<table class="tabela" id="tabelaUsuarios">
+
+<thead>
+
+<tr>
+
+<th>Nome</th>
+
+<th>Email</th>
+
+<th>Perfil</th>
+
+<th>Status</th>
+
+<th>Ações</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for usuario in usuarios %}
+
+<tr>
+
+<td>{{ usuario.nome }}</td>
+
+<td>{{ usuario.email }}</td>
+
+<td>
+
+<span class="badge {{ usuario.perfil|lower }}">
+
+{{ usuario.perfil }}
+
+</span>
+
+</td>
+
+<td>
+
+<span class="badge {{ usuario.status|lower }}">
+
+{{ usuario.status }}
+
+</span>
+
+</td>
+
+<td>
+
+<div class="acoes">
+
+<a
+href="/ceo/usuarios/editar/{{ usuario.id }}"
+class="btn editar">
+
+Editar
+
+</a>
+
+</div>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+
+<script>
+
+const pesquisa=document.getElementById("pesquisa");
+
+pesquisa.addEventListener("keyup",function(){
+
+let valor=this.value.toLowerCase();
+
+let linhas=document.querySelectorAll("#tabelaUsuarios tbody tr");
+
+linhas.forEach(function(linha){
+
+let texto=linha.innerText.toLowerCase();
+
+linha.style.display=texto.includes(valor)?"":"none";
+
+});
+
+});
+
+</script>
+
+{% endblock %}
