@@ -1904,7 +1904,7 @@ def listar_clientes():
             FROM clientes
             WHERE empresa_id = ?
             AND data_criacao BETWEEN ? AND ?
-            ORDER BY data_criacao DESC
+            ORDER BY id DESC
         """, (
             empresa_id,
             data_inicio,
@@ -1917,7 +1917,7 @@ def listar_clientes():
             SELECT *
             FROM clientes
             WHERE empresa_id = ?
-            ORDER BY data_criacao DESC
+            ORDER BY id DESC
         """, (empresa_id,))
 
     clientes = cursor.fetchall()
