@@ -93,7 +93,7 @@ def injetar_lembretes():
         SELECT *
         FROM clientes
         WHERE date(data_visita) = ?
-          AND usuario_id = ?
+          AND empresa_id = ?
     """, (
         hoje,
         session["usuario_id"]
