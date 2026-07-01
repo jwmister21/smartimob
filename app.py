@@ -81,16 +81,23 @@ api_key = os.getenv('GCP_API_KEY')
 
 @app.context_processor
 def injetar_lembretes():
-    # Pega a data de hoje formatada como 'YYYY-MM-DD'
-    hoje = datetime.now().strftime('%Y-%m-%d')
+
+    if "usuario_id" not in session:
+        return dict(lembretes=[])
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
 
     conn = get_db()
 
-    # Busca clientes onde a data_visita é hoje
-    lembretes = conn.execute(
-        "SELECT * FROM clientes WHERE date(data_visita) = ?",
-        (hoje,)
-    ).fetchall()
+    lembretes = conn.execute("""
+        SELECT *
+        FROM clientes
+        WHERE date(data_visita) = ?
+          AND usuario_id = ?
+    """, (
+        hoje,
+        session["usuario_id"]
+    )).fetchall()
 
     conn.close()
 
