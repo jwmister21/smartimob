@@ -3164,7 +3164,7 @@ def dashboard_v2():
 
     cursor.execute("""
         SELECT COUNT(*) FROM lead_site l
-        JOIN imoveis i ON i.id = l.imovel_id
+        JOIN imoveis i ON i.id = l.id_imovel
         WHERE i.empresa_id = ?
     """, (empresa_id,))
     total_leads = cursor.fetchone()[0]
@@ -3185,9 +3185,9 @@ def dashboard_v2():
     pct_imoveis = calcular_percentual(imoveis_mes, imoveis_mes_anterior)
 
     # Leads
-    cursor.execute("SELECT COUNT(*) FROM lead_site l JOIN imoveis i ON i.id = l.imovel_id WHERE i.empresa_id=? AND strftime('%m',l.data_criacao)=? AND strftime('%Y',l.data_criacao)=?", (empresa_id, mes_atual, ano_atual))
+    cursor.execute("SELECT COUNT(*) FROM lead_site l JOIN imoveis i ON i.id = l.id_imovel WHERE i.empresa_id=? AND strftime('%m',l.data_criacao)=? AND strftime('%Y',l.data_criacao)=?", (empresa_id, mes_atual, ano_atual))
     leads_mes = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM lead_site l JOIN imoveis i ON i.id = l.imovel_id WHERE i.empresa_id=? AND strftime('%m',l.data_criacao)=? AND strftime('%Y',l.data_criacao)=?", (empresa_id, mes_anterior, ano_anterior))
+    cursor.execute("SELECT COUNT(*) FROM lead_site l JOIN imoveis i ON i.id = l.id_imovel WHERE i.empresa_id=? AND strftime('%m',l.data_criacao)=? AND strftime('%Y',l.data_criacao)=?", (empresa_id, mes_anterior, ano_anterior))
     leads_mes_anterior = cursor.fetchone()[0]
     pct_leads = calcular_percentual(leads_mes, leads_mes_anterior)
 
