@@ -106,6 +106,14 @@
 
         <button class="btn-selecionar" onclick="selecionarTodos()">☑ SELECIONAR VISÍVEIS</button>
 
+       <label>📋 Importar lista (Nome,Telefone)</label>
+<textarea id="importarLista" rows="5"
+placeholder="Ex:
+JOAO SILVA,551199999999
+MARIA SOUZA,551188888888"></textarea>
+
+<button onclick="importarPlanilha()">📥 Importar lista</button>
+        
         <div class="lista">
             {% for c in clientes %}
             <div class="cliente" data-orcamento="{{c.faixa_preco}}">
@@ -143,24 +151,24 @@
     // SELECIONAR INDIVIDUAL
     // =========================
     function selecionarCliente(check){
-        let card = check.closest(".cliente");
+    let card = check.closest(".cliente");
 
-        let name = card.querySelector(".nome-cliente").innerText.trim();
-        let tel = check.dataset.tel.replace(/\D/g,'');
+    let name = card.querySelector(".nome-cliente").innerText.trim();
+    let tel = check.dataset.tel.replace(/\D/g,'');
 
-        if(!tel.startsWith("55")) tel = "55" + tel;
+    if(!tel.startsWith("55")) tel = "55" + tel;
 
-        if(check.checked){
-            if(!selecionados.find(c => c.phone === tel)){
-                selecionados.push({ name, phone: tel });
-            }
-        } else {
-            selecionados = selecionados.filter(c => c.phone !== tel);
+    if(check.checked){
+        if(!selecionados.find(c => c.phone === tel)){
+            selecionados.push({ name, phone: tel });
         }
-
-        atualizarTextarea();
-        atualizarContador();
+    } else {
+        selecionados = selecionados.filter(c => c.phone !== tel);
     }
+
+    atualizarTextarea();
+    atualizarContador();
+}
 
     // =========================
     // SELECIONAR VISÍVEIS (BOTÃO)
@@ -235,5 +243,32 @@
 
         status.innerHTML = "✅ Campanha finalizada";
     }
+    function importarPlanilha(){
+    let texto = document.getElementById("importarLista").value;
+
+    let linhas = texto.split("\n");
+
+    linhas.forEach(linha => {
+        if(!linha.trim()) return;
+
+        let partes = linha.split(",");
+
+        let name = partes[0]?.trim();
+        let phone = partes[1]?.replace(/\D/g,'').trim();
+
+        if(!phone.startsWith("55")) phone = "55" + phone;
+
+        if(name && phone){
+            if(!selecionados.find(c => c.phone === phone)){
+                selecionados.push({ name, phone });
+            }
+        }
+    });
+
+    atualizarTextarea();
+    atualizarContador();
+
+    alert("Lista importada com sucesso!");
+}
 </script>
 {% endblock %}
