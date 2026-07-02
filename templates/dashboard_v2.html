@@ -733,227 +733,158 @@ Corretor
 
 <div class="cards">
 
+    <!-- CLIENTES -->
+    <div class="card">
 
+        <div class="card-header">
 
-<div class="card">
+            <div>
+                <div class="card-title">
+                    Clientes
+                </div>
 
+                <div class="card-value">
+                    {{ total_clientes }}
+                </div>
+            </div>
 
-<div class="card-header">
+            <div class="icon blue">
+                👥
+            </div>
 
+        </div>
 
-<div>
+        <div class="progress">
+            <div style="width:{{ progresso_clientes }}%"></div>
+        </div>
 
-<div class="card-title">
-Clientes
-</div>
+        <div class="card-footer">
 
+            <strong class="{% if crescimento_clientes > 0 %}positivo{% elif crescimento_clientes < 0 %}negativo{% else %}neutro{% endif %}">
+                {% if crescimento_clientes > 0 %}+{% endif %}{{ crescimento_clientes }}%
+            </strong>
 
-<div class="card-value">
-{{ total_clientes }}
-</div>
+            <span>Este mês</span>
 
+        </div>
 
-</div>
+    </div>
 
 
-<div class="icon blue">
-👥
-</div>
+    <!-- IMÓVEIS -->
+    <div class="card">
 
+        <div class="card-header">
 
-</div>
+            <div>
+                <div class="card-title">
+                    Imóveis
+                </div>
 
+                <div class="card-value">
+                    {{ total_imoveis }}
+                </div>
+            </div>
 
-<div class="progress">
+            <div class="icon green">
+                🏠
+            </div>
 
-<div style="width:80%"></div>
+        </div>
 
-</div>
+        <div class="progress">
+            <div style="width:{{ progresso_imoveis }}%"></div>
+        </div>
 
+        <div class="card-footer">
 
-<div class="card-footer">
+            <strong class="{% if crescimento_imoveis > 0 %}positivo{% elif crescimento_imoveis < 0 %}negativo{% else %}neutro{% endif %}">
+                {% if crescimento_imoveis > 0 %}+{% endif %}{{ crescimento_imoveis }}%
+            </strong>
 
-<strong>
-+18%
-</strong>
+            <span>Carteira</span>
 
-<span>
-Este mês
-</span>
+        </div>
 
-</div>
+    </div>
 
 
-</div>
+    <!-- LEADS -->
+    <div class="card">
 
+        <div class="card-header">
 
+            <div>
+                <div class="card-title">
+                    Leads
+                </div>
 
+                <div class="card-value">
+                    {{ total_leads }}
+                </div>
+            </div>
 
+            <div class="icon orange">
+                📈
+            </div>
 
-<div class="card">
+        </div>
 
+        <div class="progress">
+            <div style="width:{{ progresso_leads }}%"></div>
+        </div>
 
-<div class="card-header">
+        <div class="card-footer">
 
+            <strong class="{% if crescimento_leads > 0 %}positivo{% elif crescimento_leads < 0 %}negativo{% else %}neutro{% endif %}">
+                {% if crescimento_leads > 0 %}+{% endif %}{{ crescimento_leads }}%
+            </strong>
 
-<div>
+            <span>Conversão</span>
 
-<div class="card-title">
-Imóveis
-</div>
+        </div>
 
+    </div>
 
-<div class="card-value">
-{{ total_imoveis }}
-</div>
 
+    <!-- MATCH IA -->
+    <div class="card">
 
-</div>
+        <div class="card-header">
 
+            <div>
+                <div class="card-title">
+                    Match IA
+                </div>
 
-<div class="icon green">
-🏠
-</div>
+                <div class="card-value">
+                    {{ total_matchs }}
+                </div>
+            </div>
 
+            <div class="icon purple">
+                🤖
+            </div>
 
-</div>
+        </div>
 
+        <div class="progress">
+            <div style="width:{{ progresso_match }}%"></div>
+        </div>
 
-<div class="progress">
+        <div class="card-footer">
 
-<div style="width:65%"></div>
+            <strong class="positivo">
+                {{ total_matchs }}
+            </strong>
 
-</div>
+            <span>Matches encontrados</span>
 
+        </div>
 
-<div class="card-footer">
-
-<strong>
-+8%
-</strong>
-
-<span>
-Carteira
-</span>
-
-</div>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-
-<div class="card-header">
-
-
-<div>
-
-<div class="card-title">
-Leads
-</div>
-
-
-<div class="card-value">
-0
-</div>
-
-
-</div>
-
-
-<div class="icon orange">
-📈
-</div>
-
-
-</div>
-
-
-<div class="progress">
-
-<div style="width:90%"></div>
-
-</div>
-
-
-<div class="card-footer">
-
-<strong>
-+25%
-</strong>
-
-<span>
-Conversão
-</span>
+    </div>
 
 </div>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-
-<div class="card-header">
-
-
-<div>
-
-<div class="card-title">
-Match IA
-</div>
-
-
-<div class="card-value">
-12
-</div>
-
-
-</div>
-
-
-<div class="icon purple">
-🤖
-</div>
-
-
-</div>
-
-
-<div class="progress">
-
-<div style="width:95%"></div>
-
-</div>
-
-
-<div class="card-footer">
-
-<strong>
-Online
-</strong>
-
-<span>
-IA
-</span>
-
-</div>
-
-
-</div>
-
-
-</div>
-
 
 <!-- ================= SITE PÚBLICO ================= -->
 
