@@ -58,23 +58,33 @@ wppconnect.create({
 
     statusFind:(statusSession)=>{
 
-        console.log(
-        "STATUS:",
-        statusSession
-        );
+    console.log(
+    "STATUS:",
+    statusSession
+    );
 
 
-        if(
-        statusSession==="isLogged"
-        ){
+    if(
+        statusSession === "isLogged" ||
+        statusSession === "inChat" ||
+        statusSession === "qrReadSuccess"
+    ){
 
-            status="connected";
-
-        }
-
+        status="connected";
 
     }
 
+
+    if(
+        statusSession === "notLogged" ||
+        statusSession === "disconnectedMobile"
+    ){
+
+        status="waiting";
+
+    }
+
+}
 
 })
 .then((c)=>{
