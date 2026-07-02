@@ -3130,13 +3130,13 @@ from collections import defaultdict
 @app.route("/dashboard_v2")
 @verificar_sessao
 def dashboard_v2():
+
     empresa_id = session.get("empresa_id")
     hoje = datetime.now()
 
-    # Definição de datas para filtros
     mes_atual = hoje.strftime("%m")
     ano_atual = hoje.strftime("%Y")
-    
+
     if hoje.month == 1:
         mes_anterior = "12"
         ano_anterior = str(hoje.year - 1)
@@ -3144,106 +3144,314 @@ def dashboard_v2():
         mes_anterior = f"{hoje.month-1:02}"
         ano_anterior = str(hoje.year)
 
-    # Conexão com banco
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Função de auxílio
+    # =====================================================
+    # FUNÇÃO AUXILIAR
+    # =====================================================
+
     def calcular_percentual(atual, anterior):
         if anterior == 0:
             return 100 if atual > 0 else 0
         return round(((atual - anterior) / anterior) * 100)
 
-    # --- TOTAIS GERAIS ---
-    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id = ?", (empresa_id,))
+    # =====================================================
+    # TOTAIS
+    # =====================================================
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
+        (empresa_id,)
+    )
     total_clientes = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id = ?", (empresa_id,))
+    cursor.execute(
+        "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
+        (empresa_id,)
+    )
     total_imoveis = cursor.fetchone()[0]
 
     cursor.execute("""
-        SELECT COUNT(*) FROM lead_site l
-        JOIN imoveis i ON i.id = l.id_imovel
+        SELECT COUNT(*)
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id = l.id_imovel
         WHERE i.empresa_id = ?
     """, (empresa_id,))
     total_leads = cursor.fetchone()[0]
 
-    # --- MÊS ATUAL VS ANTERIOR (CLIENTES, IMÓVEIS E LEADS) ---
-    # Clientes
-    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id=? AND strftime('%m',data_criacao)=? AND strftime('%Y',data_criacao)=?", (empresa_id, mes_atual, ano_atual))
+    # =====================================================
+    # CLIENTES MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_atual, ano_atual))
+
     clientes_mes = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id=? AND strftime('%m',data_criacao)=? AND strftime('%Y',data_criacao)=?", (empresa_id, mes_anterior, ano_anterior))
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_anterior, ano_anterior))
+
     clientes_mes_anterior = cursor.fetchone()[0]
-    pct_clientes = calcular_percentual(clientes_mes, clientes_mes_anterior)
 
-    # Imóveis
-    cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id=? AND strftime('%m',data_criacao)=? AND strftime('%Y',data_criacao)=?", (empresa_id, mes_atual, ano_atual))
+    pct_clientes = calcular_percentual(
+        clientes_mes,
+        clientes_mes_anterior
+    )
+
+    # =====================================================
+    # IMÓVEIS MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_atual, ano_atual))
+
     imoveis_mes = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id=? AND strftime('%m',data_criacao)=? AND strftime('%Y',data_criacao)=?", (empresa_id, mes_anterior, ano_anterior))
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_anterior, ano_anterior))
+
     imoveis_mes_anterior = cursor.fetchone()[0]
-    pct_imoveis = calcular_percentual(imoveis_mes, imoveis_mes_anterior)
 
-    # Leads
-    cursor.execute("SELECT COUNT(*) FROM lead_site l JOIN imoveis i ON i.id = l.id_imovel WHERE i.empresa_id=? AND strftime('%m',l.data_criacao)=? AND strftime('%Y',l.data_criacao)=?", (empresa_id, mes_atual, ano_atual))
+    pct_imoveis = calcular_percentual(
+        imoveis_mes,
+        imoveis_mes_anterior
+    )
+
+    # =====================================================
+    # LEADS MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id=l.id_imovel
+        WHERE i.empresa_id=?
+        AND strftime('%m',l.data_criacao)=?
+        AND strftime('%Y',l.data_criacao)=?
+    """, (empresa_id, mes_atual, ano_atual))
+
     leads_mes = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM lead_site l JOIN imoveis i ON i.id = l.id_imovel WHERE i.empresa_id=? AND strftime('%m',l.data_criacao)=? AND strftime('%Y',l.data_criacao)=?", (empresa_id, mes_anterior, ano_anterior))
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id=l.id_imovel
+        WHERE i.empresa_id=?
+        AND strftime('%m',l.data_criacao)=?
+        AND strftime('%Y',l.data_criacao)=?
+    """, (empresa_id, mes_anterior, ano_anterior))
+
     leads_mes_anterior = cursor.fetchone()[0]
-    pct_leads = calcular_percentual(leads_mes, leads_mes_anterior)
 
-    # --- MATCH IA ---
-    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id=? AND interesse IS NOT NULL AND interesse <> ''", (empresa_id,))
-    clientes_match = cursor.fetchone()[0]
-    match_ia = round((clientes_match / total_clientes) * 100, 1) if total_clientes else 0
+    pct_leads = calcular_percentual(
+        leads_mes,
+        leads_mes_anterior
+    )
 
-    # --- CONFIGURAÇÕES ---
-    cursor.execute("SELECT * FROM configuracoes_site WHERE empresa_id=?", (empresa_id,))
+    # =====================================================
+    # MATCH IA
+    # Clientes com interesse preenchido
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id=?
+        AND interesse IS NOT NULL
+        AND interesse <> ''
+    """, (empresa_id,))
+
+    total_matchs = cursor.fetchone()[0]
+
+    # =====================================================
+    # BARRAS
+    # =====================================================
+
+    progresso_clientes = min(total_clientes, 100)
+    progresso_imoveis = min(total_imoveis, 100)
+    progresso_leads = min(total_leads, 100)
+    progresso_match = min(total_matchs, 100)
+
+    # =====================================================
+    # CONFIGURAÇÕES
+    # =====================================================
+
+    cursor.execute(
+        "SELECT * FROM configuracoes_site WHERE empresa_id=?",
+        (empresa_id,)
+    )
+
     site = cursor.fetchone()
 
-    # --- GRÁFICO CLIENTES POR MÊS ---
-    cursor.execute("SELECT strftime('%m',data_criacao) AS mes, COUNT(*) AS total FROM clientes WHERE empresa_id=? GROUP BY mes ORDER BY mes", (empresa_id,))
-    meses_clientes = {f"{i:02}": 0 for i in range(1, 13)}
+    # =====================================================
+    # CLIENTES POR MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            strftime('%m',data_criacao) AS mes,
+            COUNT(*) AS total
+        FROM clientes
+        WHERE empresa_id=?
+        GROUP BY mes
+        ORDER BY mes
+    """, (empresa_id,))
+
+    meses_clientes = {
+        f"{i:02}":0
+        for i in range(1,13)
+    }
+
     for row in cursor.fetchall():
         meses_clientes[row["mes"]] = row["total"]
-    
-    dados_clientes = list(meses_clientes.values())
-    labels_clientes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
 
-    # --- IMÓVEIS POR TIPO ---
-    cursor.execute("SELECT LOWER(tipo) AS tipo, COUNT(*) AS total FROM imoveis WHERE empresa_id=? GROUP BY LOWER(tipo) ORDER BY total DESC", (empresa_id,))
+    labels_clientes = [
+        "Jan","Fev","Mar","Abr","Mai","Jun",
+        "Jul","Ago","Set","Out","Nov","Dez"
+    ]
+
+    dados_clientes = list(meses_clientes.values())
+
+        # =====================================================
+    # IMÓVEIS POR TIPO
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            LOWER(tipo) AS tipo,
+            COUNT(*) AS total
+        FROM imoveis
+        WHERE empresa_id=?
+        GROUP BY LOWER(tipo)
+        ORDER BY total DESC
+    """, (empresa_id,))
+
     rows = cursor.fetchall()
-    
-    labels_tipo, dados_tipo, imoveis_por_tipo = [], [], []
-    casas = apartamentos = terrenos = 0
-    
+
+    labels_tipo = []
+    dados_tipo = []
+    imoveis_por_tipo = []
+
+    casas = 0
+    apartamentos = 0
+    terrenos = 0
+
     for row in rows:
-        tipo = row["tipo"] or "não informado"
+
+        tipo = row["tipo"] or "Não informado"
         total = row["total"]
+
         labels_tipo.append(tipo.capitalize())
         dados_tipo.append(total)
-        percentual = round((total / total_imoveis) * 100, 1) if total_imoveis else 0
-        imoveis_por_tipo.append({"tipo": tipo.capitalize(), "total": total, "percentual": percentual})
-        
-        if tipo == "casa": casas = total
-        elif tipo == "apartamento": apartamentos = total
-        elif tipo == "terreno": terrenos = total
 
-    # --- ÚLTIMOS CLIENTES ---
-    cursor.execute("SELECT nome, interesse FROM clientes WHERE empresa_id=? ORDER BY id DESC LIMIT 3", (empresa_id,))
+        percentual = round(
+            (total / total_imoveis) * 100,
+            1
+        ) if total_imoveis else 0
+
+        imoveis_por_tipo.append({
+            "tipo": tipo.capitalize(),
+            "total": total,
+            "percentual": percentual
+        })
+
+        if tipo == "casa":
+            casas = total
+
+        elif tipo == "apartamento":
+            apartamentos = total
+
+        elif tipo == "terreno":
+            terrenos = total
+
+    # =====================================================
+    # ÚLTIMOS CLIENTES
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            nome,
+            interesse
+        FROM clientes
+        WHERE empresa_id=?
+        ORDER BY id DESC
+        LIMIT 3
+    """, (empresa_id,))
+
     ultimos_clientes = cursor.fetchall()
 
     conn.close()
 
-    # --- RETORNO ---
+    # =====================================================
+    # RENDER
+    # =====================================================
+
     return render_template(
+
         "dashboard_v2.html",
-        total_clientes=total_clientes, total_imoveis=total_imoveis, total_leads=total_leads,
-        pct_clientes=pct_clientes, pct_imoveis=pct_imoveis, pct_leads=pct_leads,
-        match_ia=match_ia, site=site,
-        labels_clientes=labels_clientes, dados_clientes=dados_clientes,
-        labels_tipo=labels_tipo, dados_tipo=dados_tipo,
-        casas=casas, apartamentos=apartamentos, terrenos=terrenos,
-        imoveis_por_tipo=imoveis_por_tipo, ultimos_clientes=ultimos_clientes
+
+        # Totais
+        total_clientes=total_clientes,
+        total_imoveis=total_imoveis,
+        total_leads=total_leads,
+        total_matchs=total_matchs,
+
+        # Crescimento
+        crescimento_clientes=pct_clientes,
+        crescimento_imoveis=pct_imoveis,
+        crescimento_leads=pct_leads,
+
+        # Barras
+        progresso_clientes=progresso_clientes,
+        progresso_imoveis=progresso_imoveis,
+        progresso_leads=progresso_leads,
+        progresso_match=progresso_match,
+
+        # Configuração do site
+        site=site,
+
+        # Gráfico Clientes
+        labels_clientes=labels_clientes,
+        dados_clientes=dados_clientes,
+
+        # Gráfico Tipos
+        labels_tipo=labels_tipo,
+        dados_tipo=dados_tipo,
+
+        # Cards por tipo
+        casas=casas,
+        apartamentos=apartamentos,
+        terrenos=terrenos,
+
+        imoveis_por_tipo=imoveis_por_tipo,
+
+        # Últimos clientes
+        ultimos_clientes=ultimos_clientes
     )
  
 @app.route("/importar_imoveis_pdf", methods=["POST"])
