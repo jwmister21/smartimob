@@ -351,7 +351,26 @@ body{
     background:#f3f4f6;
 }
 
-.dropdown:hover .dropdown-content{
+.dropdown-content{
+    display:none;
+
+    position:absolute;
+    right:0;
+    top:55px;
+
+    width:220px;
+
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+
+    overflow:hidden;
+    z-index:9999;
+}
+
+.dropdown-content.ativo{
     display:block;
 }
 
@@ -621,8 +640,12 @@ body{
 </div>
 
     <!-- Dropdown do Usuário -->
-    <div class="dropdown">
-        <button class="dropbtn">Olá, {{ session.get('nome', 'Usuário') }} ▾</button>
+    <div class="dropdown-content" onclick="event.stopPropagation()">
+       <button
+    class="dropbtn"
+    onclick="toggleUsuario(event)">
+    Olá, {{ session.get('nome', 'Usuário') }} ▾
+</button>
         <div class="dropdown-content">
             <a href="/configuracoes">⚙ Configurações</a>
             <a href="/logout" style="color: #ef4444;">🚪 Sair</a>
@@ -776,6 +799,22 @@ async function analisarIA() {
 
     chatBody.scrollTop = chatBody.scrollHeight;
 }
+    function toggleUsuario(event){
+
+    event.stopPropagation();
+
+    const menu = document.querySelector(".dropdown-content");
+
+    menu.classList.toggle("ativo");
+
+}
+    document.addEventListener("click", function(){
+
+    document
+        .querySelector(".dropdown-content")
+        .classList.remove("ativo");
+
+});
 </script>
 </body>
 </html>
