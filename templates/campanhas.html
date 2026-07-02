@@ -215,21 +215,27 @@ MARIA SOUZA,551188888888"></textarea>
     // =========================
     // ENVIO WHATSAPP
     // =========================
-    async function iniciarEnvio(){
-        let mensagem = document.getElementById("mensagem").value;
-        let delay = parseInt(document.getElementById("delay").value);
-        let status = document.getElementById("status");
+    async function iniciarEnvio() {
 
-        for(let i = 0; i < selecionados.length; i++){
-            let cliente = selecionados[i];
+    let mensagem = document.getElementById("mensagem").value;
+    let delay = parseInt(document.getElementById("delay").value);
+    let statusEl = document.getElementById("status");
 
-            let msgFinal = mensagem
-                .replace("{name}", cliente.name)
-                .replace("{phone}", cliente.phone);
+    if (!delay || delay < 1) delay = 1;
 
-            status.innerHTML = "Enviando para: " + cliente.phone;
+    for (let i = 0; i < selecionados.length; i++) {
 
-            await fetch("/enviar_mensagem", {
+        let cliente = selecionados[i];
+
+        let msgFinal = mensagem
+            .replace("{name}", cliente.name || "")
+            .replace("{phone}", cliente.phone || "");
+
+        statusEl.innerHTML = "📤 Enviando para: " + cliente.phone;
+
+        try {
+
+            const res = await fetch("/enviar_mensagem", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -238,28 +244,48 @@ MARIA SOUZA,551188888888"></textarea>
                 })
             });
 
-            await new Promise(r => setTimeout(r, delay * 1000));
+            const data = await res.json();
+
+            if (!data || data.status === "error") {
+                console.log("Erro envio:", cliente.phone, data);
+            }
+
+        } catch (err) {
+            console.log("Erro fetch:", err);
         }
 
-        status.innerHTML = "✅ Campanha finalizada";
+        await new Promise(r => setTimeout(r, delay * 1000));
     }
-    function importarPlanilha(){
+
+    statusEl.innerHTML = "✅ Campanha finalizada";
+}
+    
+}
+
+   function importarPlanilha() {
+
     let texto = document.getElementById("importarLista").value;
 
     let linhas = texto.split("\n");
 
     linhas.forEach(linha => {
-        if(!linha.trim()) return;
+
+        if (!linha.trim()) return;
 
         let partes = linha.split(",");
 
         let name = partes[0]?.trim();
-        let phone = partes[1]?.replace(/\D/g,'').trim();
+        let phone = partes[1]?.replace(/\D/g, '').trim();
 
-        if(!phone.startsWith("55")) phone = "55" + phone;
+        if (!phone) return;
 
-        if(name && phone){
-            if(!selecionados.find(c => c.phone === phone)){
+        if (!phone.startsWith("55")) {
+            phone = "55" + phone;
+        }
+
+        if (name && phone) {
+
+            if (!selecionados.find(c => c.phone === phone)) {
                 selecionados.push({ name, phone });
             }
         }
@@ -269,6 +295,6 @@ MARIA SOUZA,551188888888"></textarea>
     atualizarContador();
 
     alert("Lista importada com sucesso!");
-}
+}             
 </script>
 {% endblock %}
