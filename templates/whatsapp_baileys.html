@@ -10,7 +10,7 @@
 
 body {
     font-family: Poppins, sans-serif;
-    background: #0f172a;
+    background: linear-gradient(135deg, #0f172a, #020617);
     color: white;
     margin: 0;
 }
@@ -21,36 +21,48 @@ body {
     padding: 30px;
 }
 
+.header {
+    margin-bottom: 25px;
+}
+
 .card {
-    background: #111827;
-    padding: 20px;
-    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px);
+    border-radius: 18px;
+    padding: 22px;
     margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .status {
     font-size: 18px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
-.green { color: #22c55e; }
-.red { color: #ef4444; }
+.green { color: #00ff88; }
+.red { color: #ff4d4d; }
 
 button {
-    padding: 10px 15px;
+    padding: 10px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
+    font-weight: 600;
     margin-right: 10px;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: scale(1.03);
 }
 
 .btn-connect {
-    background: #22c55e;
-    color: white;
+    background: #00ff88;
+    color: #0f172a;
 }
 
 .btn-disconnect {
-    background: #ef4444;
+    background: #ff4d4d;
     color: white;
 }
 
@@ -60,14 +72,23 @@ button {
 }
 
 .qr img {
-    width: 280px;
-    border-radius: 10px;
+    width: 260px;
+    border-radius: 12px;
     background: white;
     padding: 10px;
 }
 
 small {
     opacity: 0.7;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 8px;
+    background: rgba(255,255,255,0.1);
 }
 
 </style>
@@ -77,27 +98,28 @@ small {
 
 <div class="container">
 
-    <h2>SMARTZEN WHATSAPP (Baileys)</h2>
+    <div class="header">
+        <h2>📱 SMARTZEN WhatsApp <span class="badge">Baileys Engine</span></h2>
+        <small>Sessão: empresa_1</small>
+    </div>
 
+    <!-- STATUS -->
     <div class="card">
 
         <div>Status:</div>
-        <div id="status" class="status red">Desconectado</div>
+        <div id="status" class="status red">🔴 Desconectado</div>
 
         <br>
 
-        <button class="btn-connect" onclick="conectar()">Conectar</button>
-        <button class="btn-disconnect" onclick="desconectar()">Desconectar</button>
-
-        <br><br>
-
-        <small>Sessão: empresa_1</small>
+        <button id="btnConnect" class="btn-connect" onclick="conectar()">Conectar</button>
+        <button id="btnDisconnect" class="btn-disconnect" onclick="desconectar()" style="display:none;">Desconectar</button>
 
     </div>
 
+    <!-- QR CODE -->
     <div class="card qr" id="qrBox">
 
-        <div>QR Code</div>
+        <div style="margin-bottom:10px;font-weight:600;">QR Code</div>
 
         <div id="qr"></div>
 
@@ -120,6 +142,9 @@ async function atualizar() {
     const qr = document.getElementById("qr");
     const info = document.getElementById("info");
 
+    const btnConnect = document.getElementById("btnConnect");
+    const btnDisconnect = document.getElementById("btnDisconnect");
+
     if (data.conectado) {
 
         status.innerHTML = "🟢 Conectado";
@@ -128,10 +153,16 @@ async function atualizar() {
         qr.innerHTML = "";
         info.innerHTML = "Conectado ao WhatsApp";
 
+        btnConnect.style.display = "none";
+        btnDisconnect.style.display = "inline-block";
+
     } else {
 
         status.innerHTML = "🔴 Desconectado";
         status.className = "status red";
+
+        btnConnect.style.display = "inline-block";
+        btnDisconnect.style.display = "none";
 
         if (data.qr) {
 
@@ -144,9 +175,7 @@ async function atualizar() {
             info.innerHTML = "Gerando QR Code...";
 
         }
-
     }
-
 }
 
 async function conectar() {
