@@ -6,60 +6,88 @@
     <p style="color: #64748b;">Acompanhe a jornada de cada cliente.</p>
 </div>
 
-<div class="funil-filtros">
+<form method="GET" class="funil-filtros">
 
     <input
-        type="text"
-        id="pesquisaFunil"
-        placeholder="🔍 Pesquisar cliente..."
-        onkeyup="filtrarFunil()">
+    type="text"
+    name="pesquisa"
+    value="{{ pesquisa }}"
+    placeholder="🔍 Pesquisar cliente...">
 
-    <select id="filtroCorretor" onchange="filtrarFunil()">
-        <option value="">👨‍💼 Todos os Corretores</option>
+    <select name="corretor">
 
-        {% for corretor in corretores %}
-            <option value="{{ corretor.nome }}">
-                {{ corretor.nome }}
-            </option>
-        {% endfor %}
+    <option value="">👨‍💼 Todos os Corretores</option>
 
-    </select>
+    {% for c in corretores %}
 
-    <select id="filtroOrigem" onchange="filtrarFunil()">
-        <option value="">📍 Todas as Origens</option>
+        <option
+            value="{{ c.id }}"
+            {% if corretor|string == c.id|string %}selected{% endif %}>
+            {{ c.nome }}
+        </option>
 
-        {% for origem in origens %}
-            <option value="{{ origem }}">
-                {{ origem }}
-            </option>
-        {% endfor %}
+    {% endfor %}
 
-    </select>
+</select>
 
-    <select id="filtroEmpreendimento" onchange="filtrarFunil()">
-        <option value="">🏢 Todos Empreendimentos</option>
+    <select name="origem">
 
-        {% for emp in empreendimentos %}
-            <option value="{{ emp }}">
-                {{ emp }}
-            </option>
-        {% endfor %}
+    <option value="">📍 Todas as Origens</option>
 
-    </select>
+    {% for item in origens %}
 
+        <option
+            value="{{ item }}"
+            {% if origem == item %}selected{% endif %}>
+            {{ item }}
+        </option>
+
+    {% endfor %}
+
+</select>
+
+    <select name="empreendimento">
+
+    <option value="">🏢 Todos Empreendimentos</option>
+
+    {% for item in empreendimentos %}
+
+        <option
+            value="{{ item }}"
+            {% if empreendimento == item %}selected{% endif %}>
+            {{ item }}
+        </option>
+
+    {% endfor %}
+
+</select>
     <input
-        type="date"
-        id="dataInicio">
-
+    type="date"
+    name="data_inicio"
+    value="{{ data_inicio }}">
+    
     <input
-        type="date"
-        id="dataFim">
+    type="date"
+    name="data_fim"
+    value="{{ data_fim }}">
 
-    <button class="btn-filtrar">
-        Filtrar
-    </button>
+    <button
+    type="submit"
+    class="btn-filtrar">
 
-</div>
+    🔍 Filtrar
+
+</button>
+
+    <a
+    href="/funil"
+    class="btn-limpar">
+
+    Limpar
+
+</a>
+
+</form>
 
 <div class="dashboard-funil">
  
@@ -185,6 +213,24 @@
     border:none;
     font-weight:600;
     cursor:pointer;
+
+}
+    .btn-limpar{
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:#64748b;
+    color:#fff;
+
+    text-decoration:none;
+
+    border-radius:10px;
+
+    font-weight:600;
+
+    height:46px;
 
 }
 </style>
