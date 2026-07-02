@@ -30,6 +30,8 @@ wppconnect.create({
 
     autoClose:0,
 
+    waitForLogin: true,
+
     puppeteerOptions: {
 
         executablePath: "/usr/bin/chromium",
