@@ -7,133 +7,160 @@ const app = express();
 
 
 app.use(cors());
-
 app.use(express.json());
 
 
 
-let client = null;
+let clientes = {};
 
-let qrCode = null;
+let qrs = {};
 
-let status = "disconnected";
-
-
+let statusUsuarios = {};
 
 
 
-wppconnect.create({
-
-    session:"smartzen",
-
-    folderNameToken:"tokens",
-
-    autoClose:0,
-
-    waitForLogin: true,
-
-    puppeteerOptions: {
-
-        executablePath: "/usr/bin/chromium",
-
-        args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage"
-        ]
-
-    },
 
 
-    catchQR:(base64Qr)=>{
-
-        console.log("QR RECEBIDO");
-
-        qrCode = base64Qr;
-
-        status="waiting";
-
-    },
+async function iniciarWhatsApp(session){
 
 
-    statusFind:(statusSession)=>{
+    if(clientes[session]){
+
+        return;
+
+    }
+
+
 
     console.log(
-    "STATUS:",
-    statusSession
+    "Iniciando:",
+    session
     );
 
 
-    if(
-        statusSession === "isLogged" ||
-        statusSession === "inChat" ||
-        statusSession === "qrReadSuccess"
-    ){
-
-        status="connected";
-
-    }
 
 
-    if(
-        statusSession === "notLogged" ||
-        statusSession === "disconnectedMobile"
-    ){
+    const client = await wppconnect.create({
 
-        status="waiting";
 
-    }
+        session:session,
+
+
+        folderNameToken:"tokens",
+
+
+        autoClose:0,
+
+
+
+        puppeteerOptions:{
+
+
+            executablePath:"/usr/bin/chromium",
+
+
+            args:[
+
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage"
+
+            ]
+
+        },
+
+
+
+
+        catchQR:(qr)=>{
+
+
+            console.log(
+            "QR RECEBIDO",
+            session
+            );
+
+
+            qrs[session]=qr;
+
+
+            statusUsuarios[session]="waiting";
+
+
+        },
+
+
+
+
+        statusFind:(status)=>{
+
+
+            console.log(
+            session,
+            status
+            );
+
+
+
+            if(
+            status==="isLogged" ||
+            status==="inChat" ||
+            status==="qrReadSuccess"
+            ){
+
+
+                statusUsuarios[session]="connected";
+
+
+            }
+
+
+            if(
+            status==="disconnectedMobile"
+            ){
+
+
+                statusUsuarios[session]="disconnected";
+
+
+            }
+
+
+
+        }
+
+
+    });
+
+
+
+    clientes[session]=client;
+
+
+
+    try{
+
+
+        const conectado =
+        await client.isConnected();
+
+
+
+        if(conectado){
+
+
+            statusUsuarios[session]="connected";
+
+
+        }
+
+
+    }catch(e){}
+
+
 
 }
 
-})
-.then((c)=>{
-
-
-client=c;
-
-
-});
-
-
-
-
-
-
-app.get(
-"/status",
-(req,res)=>{
-
-
-res.json({
-
-status:status
-
-});
-
-
-});
-
-
-
-
-
-
-app.get(
-"/qr",
-(req,res)=>{
-
-
-res.json({
-
-qr:qrCode,
-
-status:status
-
-});
-
-
-});
 
 
 
@@ -141,19 +168,151 @@ status:status
 
 
 
-app.post(
-"/disconnect",
+// iniciar sessão
+
+app.post("/start",
 async(req,res)=>{
 
 
-if(client){
+    const session =
+    req.body.session_name;
 
-await client.logout();
+
+
+    if(!session){
+
+        return res.json({
+
+            error:"session_name obrigatório"
+
+        });
+
+    }
+
+
+
+    await iniciarWhatsApp(session);
+
+
+
+    res.json({
+
+        success:true,
+
+        session:session
+
+    });
+
+
+
+});
+
+
+
+
+
+
+
+
+// status
+
+app.get(
+"/status/:session",
+(req,res)=>{
+
+
+const session =
+req.params.session;
+
+
+
+res.json({
+
+
+status:
+statusUsuarios[session]
+||
+"disconnected"
+
+
+});
+
+
+});
+
+
+
+
+
+
+
+
+// qr
+
+app.get(
+"/qr/:session",
+(req,res)=>{
+
+
+const session =
+req.params.session;
+
+
+
+res.json({
+
+
+qr:
+qrs[session]
+||
+null,
+
+
+status:
+statusUsuarios[session]
+||
+"disconnected"
+
+
+});
+
+
+});
+
+
+
+
+
+
+
+
+
+// desconectar
+
+app.post(
+"/disconnect/:session",
+async(req,res)=>{
+
+
+const session =
+req.params.session;
+
+
+
+if(clientes[session]){
+
+
+await clientes[session].logout();
+
+
+delete clientes[session];
+
 
 }
 
 
-status="disconnected";
+
+statusUsuarios[session]="disconnected";
 
 
 res.json({
@@ -171,12 +330,16 @@ success:true
 
 
 
+
+
 app.listen(
 3001,
 ()=>{
 
+
 console.log(
-"WhatsApp V2 rodando porta 3001"
+"WhatsApp Multiuser rodando porta 3001"
 );
+
 
 });
