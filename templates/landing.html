@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMARTZEN - CRM Inteligente</title>
+<title>SMARTZEN - CRM Imobiliário Inteligente</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{
@@ -16,126 +16,115 @@
 }
 
 body{
-    background:#0b0f1a;
-    color:white;
-    overflow-x:hidden;
+    background:#ffffff;
+    color:#0f172a;
 }
 
-/* ===== NAVBAR ===== */
+/* ===== HEADER ===== */
 header{
-    position:fixed;
+    position:sticky;
     top:0;
-    width:100%;
-    padding:18px 6%;
+    background:white;
+    border-bottom:1px solid #e2e8f0;
+    z-index:1000;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:0 5%;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    background:rgba(11,15,26,0.7);
-    backdrop-filter:blur(12px);
-    z-index:1000;
-    border-bottom:1px solid rgba(255,255,255,0.05);
+    height:70px;
 }
 
-.logo{
-    font-weight:800;
-    color:#7c3aed;
-    font-size:18px;
+.logo img{
+    height:38px;
 }
 
 nav a{
-    color:#cbd5e1;
     margin-left:18px;
     text-decoration:none;
-    font-size:14px;
-    transition:0.3s;
+    color:#334155;
+    font-weight:500;
 }
 
-nav a:hover{
+.btn-login{
+    background:#2563eb;
     color:white;
-}
-
-.btn{
-    background:#7c3aed;
     padding:10px 16px;
     border-radius:10px;
-    color:white;
     text-decoration:none;
     margin-left:18px;
-    font-weight:600;
 }
 
 /* ===== HERO ===== */
 .hero{
-    padding:140px 6% 80px;
     text-align:center;
-    background: radial-gradient(circle at top, #7c3aed33, transparent 60%);
+    padding:90px 5% 60px;
 }
 
 .hero h1{
     font-size:52px;
-    line-height:1.1;
-    margin-bottom:20px;
+    font-weight:800;
+    margin-bottom:15px;
 }
 
 .hero p{
-    color:#94a3b8;
+    color:#64748b;
     font-size:18px;
     max-width:700px;
     margin:auto;
 }
 
 .cta{
-    margin-top:30px;
+    margin-top:25px;
     display:inline-block;
-    background:#7c3aed;
+    background:#2563eb;
+    color:white;
     padding:14px 22px;
     border-radius:12px;
     text-decoration:none;
-    color:white;
     font-weight:600;
-    transition:0.3s;
-}
-
-.cta:hover{
-    transform:scale(1.05);
 }
 
 /* ===== FEATURES ===== */
 .section{
-    padding:80px 6%;
-    max-width:1100px;
+    max-width:1200px;
     margin:auto;
+    padding:70px 5%;
 }
 
 .title{
     text-align:center;
-    font-size:28px;
+    font-size:30px;
     margin-bottom:40px;
-    color:white;
 }
 
 .features{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
     gap:20px;
 }
 
 .card{
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.08);
-    padding:24px;
+    border:1px solid #e2e8f0;
     border-radius:16px;
+    padding:22px;
     transition:0.3s;
+    background:white;
 }
 
 .card:hover{
     transform:translateY(-8px);
-    border-color:#7c3aed;
+    border-color:#2563eb;
+    box-shadow:0 10px 25px rgba(0,0,0,0.05);
 }
 
 .card h3{
-    margin-bottom:10px;
-    color:#a78bfa;
+    margin-bottom:8px;
+    color:#2563eb;
 }
 
 /* ===== PLANOS ===== */
@@ -145,29 +134,30 @@ nav a:hover{
     gap:20px;
 }
 
-.plano{
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.08);
-    padding:28px;
+.plan{
+    border:1px solid #e2e8f0;
     border-radius:18px;
+    padding:28px;
     text-align:center;
     transition:0.3s;
+    background:white;
 }
 
-.plano:hover{
+.plan:hover{
     transform:translateY(-10px);
-    border-color:#7c3aed;
+    border-color:#2563eb;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
-.plano h3{
+.plan h3{
     margin-bottom:10px;
 }
 
 .price{
-    font-size:40px;
+    font-size:42px;
     font-weight:800;
-    color:#a78bfa;
-    margin:20px 0;
+    color:#2563eb;
+    margin:15px 0;
 }
 
 ul{
@@ -178,86 +168,91 @@ ul{
 
 ul li{
     margin-bottom:10px;
-    color:#cbd5e1;
+    color:#475569;
 }
 
 ul li::before{
-    content:"•";
-    color:#7c3aed;
+    content:"✓";
+    color:#2563eb;
     margin-right:8px;
 }
 
 .highlight{
-    border:1px solid #7c3aed;
-    transform:scale(1.05);
+    border:2px solid #2563eb;
 }
 
 /* ===== FOOTER ===== */
 footer{
     text-align:center;
-    padding:50px 6%;
+    padding:40px;
+    border-top:1px solid #e2e8f0;
     color:#64748b;
-    border-top:1px solid rgba(255,255,255,0.05);
-    margin-top:80px;
+    margin-top:60px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAV -->
+<!-- HEADER -->
 <header>
-<div class="logo">SMARTZEN</div>
+<div class="container">
 
-<nav>
-<a href="#func">Funcionalidades</a>
-<a href="#planos">Planos</a>
-<a href="/login">Login</a>
-<a class="btn" href="/login">Entrar</a>
-</nav>
+    <div class="logo">
+        <img src="/static/logo.jpg" alt="SMARTZEN">
+    </div>
+
+    <nav>
+        <a href="#func">Funcionalidades</a>
+        <a href="#planos">Planos</a>
+        <a href="/login" class="btn-login">Entrar</a>
+    </nav>
+
+</div>
 </header>
 
 <!-- HERO -->
 <section class="hero">
 <h1>Seu CRM imobiliário inteligente</h1>
-<p>REDE FIFFTY • WhatsApp Automático • Sites • Leads • IA de anúncios • Gestão completa de clientes</p>
-<a class="cta" href="/login">Começar agora</a>
+<p>REDE FIFFTY • WhatsApp Automático • CRM • Sites grátis • IA de anúncios • Gestão completa de clientes</p>
+<a href="/login" class="cta">Começar agora</a>
 </section>
 
 <!-- FEATURES -->
 <section id="func" class="section">
-<h2 class="title">Tudo que você precisa em um só sistema</h2>
+
+<h2 class="title">Tudo que o SMARTZEN entrega</h2>
 
 <div class="features">
 
 <div class="card">
 <h3>REDE FIFFTY</h3>
-<p>Conecte corretores e aumente suas vendas com rede inteligente de indicações.</p>
+<p>Rede de corretores conectados para gerar mais vendas.</p>
 </div>
 
 <div class="card">
 <h3>WhatsApp Automático</h3>
-<p>Dispare mensagens, fotos de imóveis e follow-ups automáticos.</p>
+<p>Disparo de mensagens, imagens e follow-ups automáticos.</p>
 </div>
 
 <div class="card">
 <h3>Gerador de Anúncios</h3>
-<p>Crie anúncios profissionais com IA em segundos.</p>
+<p>Criação automática de anúncios com IA.</p>
 </div>
 
 <div class="card">
-<h3>Site Automático</h3>
-<p>Seu site imobiliário gerado automaticamente com seus imóveis.</p>
+<h3>Sites Automáticos</h3>
+<p>Seu site imobiliário gerado em segundos.</p>
 </div>
 
 <div class="card">
 <h3>CRM Completo</h3>
-<p>Controle de clientes, leads, histórico e funil de vendas.</p>
+<p>Controle de clientes, leads e histórico de vendas.</p>
 </div>
 
 <div class="card">
 <h3>Organização Inteligente</h3>
-<p>Pipeline, tarefas e automações para não perder nenhuma venda.</p>
+<p>Funil de vendas e automação de tarefas.</p>
 </div>
 
 </div>
@@ -266,44 +261,41 @@ footer{
 <!-- PLANOS -->
 <section id="planos" class="section">
 
-<h2 class="title">Planos simples e transparentes</h2>
+<h2 class="title">Planos simples</h2>
 
 <div class="planos">
 
-<div class="plano">
+<div class="plan">
 <h3>Mensal</h3>
 <div class="price">R$100</div>
 <ul>
 <li>CRM completo</li>
 <li>WhatsApp</li>
 <li>Site básico</li>
-<li>Suporte padrão</li>
 </ul>
-<a class="cta" href="/login">Assinar</a>
+<a href="/login" class="cta">Assinar</a>
 </div>
 
-<div class="plano highlight">
-<h3>Semestral 🔥</h3>
+<div class="plan highlight">
+<h3>Semestral</h3>
 <div class="price">R$540</div>
 <ul>
 <li>REDE FIFFTY</li>
-<li>Disparo avançado</li>
 <li>IA de anúncios</li>
-<li>Suporte prioritário</li>
+<li>Disparo avançado</li>
 </ul>
-<a class="cta" href="/login">Mais escolhido</a>
+<a href="/login" class="cta">Mais escolhido</a>
 </div>
 
-<div class="plano">
+<div class="plan">
 <h3>Anual</h3>
 <div class="price">R$960</div>
 <ul>
 <li>Tudo incluso</li>
 <li>Automação total</li>
 <li>Sites ilimitados</li>
-<li>Máximo desempenho</li>
 </ul>
-<a class="cta" href="/login">Assinar</a>
+<a href="/login" class="cta">Assinar</a>
 </div>
 
 </div>
@@ -311,7 +303,7 @@ footer{
 
 <!-- FOOTER -->
 <footer>
-SMARTZEN TECNOLOGIA • CRM Inteligente para o mercado imobiliário
+© 2026 SMARTZEN TECNOLOGIA — CRM Imobiliário Inteligente
 </footer>
 
 </body>
