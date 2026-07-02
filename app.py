@@ -2519,160 +2519,75 @@ def enviar_mensagem():
 
         data = request.get_json() or {}
 
-
         telefone = data.get("telefone")
         mensagem = data.get("mensagem")
 
-
         if not telefone or not mensagem:
-
             return jsonify({
-
-                "status":"error",
-                "erro":"Telefone e mensagem obrigatórios"
-
+                "status": "error",
+                "erro": "Telefone e mensagem obrigatórios"
             })
-
-
 
         empresa_id = session["empresa_id"]
         usuario_id = session["usuario_id"]
 
-
-
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-
         cursor = conn.cursor()
-
-
-
-        # pega whatsapp do usuário
 
         cursor.execute("""
             SELECT whatsapp_sessao
             FROM usuarios
             WHERE id = ?
             AND empresa_id = ?
-        """,
-        (
-            usuario_id,
-            empresa_id
-        ))
-
-
+        """, (usuario_id, empresa_id))
 
         usuario = cursor.fetchone()
-
-
         conn.close()
 
-
-
-
         if not usuario:
-
-
             return jsonify({
-
-                "status":"error",
-                "erro":"WhatsApp não configurado"
-
+                "status": "error",
+                "erro": "WhatsApp não configurado"
             })
 
-
-
-
-
-
-        telefone = ''.join(
-
-            filter(
-                str.isdigit,
-                str(telefone)
-            )
-
-        )
-
-
+        # limpar telefone
+        telefone = ''.join(filter(str.isdigit, str(telefone)))
 
         if not telefone.startswith("55"):
+            telefone = "55" + telefone
 
-            telefone = "55"+telefone
-
-
-
-
-
-
-
-        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-
-
-
-
+        # URL do Baileys
+        WPP_URL = os.getenv("WPP_URL", "http://localhost:3001")
 
         resp = requests.post(
-
-
             f"{WPP_URL}/enviar",
-
-
             json={
-
-
-                "sessao":
-                usuario["whatsapp_sessao"],
-
-
-                "numero":
-                telefone,
-
-
-                "mensagem":
-                mensagem
-
-
+                "sessao": usuario["whatsapp_sessao"],
+                "numero": telefone,
+                "mensagem": mensagem
             },
-
-
             timeout=15
-
-
         )
 
+        if resp.status_code != 200:
+            return jsonify({
+                "status": "error",
+                "erro": "Falha no WhatsApp",
+                "detalhe": resp.text
+            }), 500
 
-
-
-
-
-        return jsonify(
-
-            resp.json()
-
-        )
-
-
-
-
+        return jsonify(resp.json())
 
     except Exception as e:
 
-
-        print(
-            "ERRO MENSAGEM:",
-            e
-        )
-
+        print("ERRO MENSAGEM:", e)
 
         return jsonify({
-
-            "status":"error",
-
-            "erro":str(e)
-
+            "status": "error",
+            "erro": str(e)
         })
-
+     
 @app.route('/termos')
 def termos():
     return render_template('termos.html')
