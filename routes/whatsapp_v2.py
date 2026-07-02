@@ -28,34 +28,35 @@ def central_whatsapp():
 # STATUS
 # =====================================
 
+import requests
+
+
+NODE_URL = "http://localhost:3001"
+
+
+
 @whatsapp_v2.route("/api/whatsapp/status")
 def whatsapp_status():
 
+    try:
 
-    # futuramente vem do Node
-
-    dados = {
-
-
-        "status":"disconnected",
-
-        "phone":None,
-
-        "name":None,
-
-        "session":None,
-
-        "time":
-        datetime.datetime.now().strftime(
-            "%H:%M:%S"
+        resposta = requests.get(
+            NODE_URL + "/status",
+            timeout=3
         )
 
 
-    }
+        return resposta.json()
 
 
-    return jsonify(dados)
+    except:
 
+
+        return {
+
+            "status":"offline"
+
+        }
 
 
 
