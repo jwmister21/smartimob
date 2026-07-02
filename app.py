@@ -2476,6 +2476,10 @@ def excluir_foto(foto_id):
 
 
 
+@app.route("/whatsappp")
+def whatsapp():
+    return render_template("whatsapp_baileys.html")
+
 @app.route("/campanhas")
 @verificar_sessao
 def campanhas():
