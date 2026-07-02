@@ -14,6 +14,7 @@ from moviepy.video.VideoClip import TextClip
 from moviepy.audio.io.AudioFileClip import AudioFileClip 
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
+from routes.whatsapp_v2 import whatsapp_v2
 import google.generativeai as genai
 import json
 import pdfplumber
@@ -31,6 +32,7 @@ import uuid
 
 
 app = Flask(__name__)
+app.register_blueprint(whatsapp_v2)
 socketio = SocketIO(app, cors_allowed_origins="*")
 DB_DIR = "/data"
 
