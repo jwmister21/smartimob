@@ -129,11 +129,6 @@ catch(e){
 async function buscarQR(){
 
 
-adicionarLog(
-"Solicitando novo QR Code..."
-);
-
-
 try{
 
 
@@ -141,20 +136,82 @@ const resposta =
 await fetch("/api/whatsapp/qr");
 
 
+
 const dados =
 await resposta.json();
+
+
+
+const img =
+document.getElementById("qr-image");
+
+const icon =
+document.querySelector(".qr-icon");
+
+const texto =
+document.querySelector(".qr-text");
+
+
 
 
 
 if(dados.qr){
 
 
-qrText.innerHTML =
-"QR Code carregado";
+
+img.src =
+dados.qr;
+
+
+img.style.display =
+"block";
+
+
+icon.style.display =
+"none";
+
+
+texto.innerHTML =
+"Escaneie o QR Code";
+
 
 
 adicionarLog(
-"QR atualizado"
+"QR recebido do WhatsApp"
+);
+
+
+
+}
+
+else{
+
+
+img.style.display =
+"none";
+
+
+icon.style.display =
+"block";
+
+
+texto.innerHTML =
+"Aguardando QR";
+
+
+
+}
+
+
+
+
+}
+
+catch(e){
+
+
+adicionarLog(
+"Erro buscando QR"
 );
 
 
@@ -162,20 +219,7 @@ adicionarLog(
 
 
 
-}catch(e){
-
-
-adicionarLog(
-"Erro ao buscar QR"
-);
-
-
 }
-
-
-
-}
-
 
 
 
@@ -247,8 +291,11 @@ method:"POST"
 buscarStatus();
 
 
-setInterval(
-buscarStatus,
-5000
-);
+setInterval(()=>{
+
+buscarStatus();
+
+buscarQR();
+
+},5000);
 
