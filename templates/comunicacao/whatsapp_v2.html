@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Central de Comunicação</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+
+body{
+
+    background:#f4f7fb;
+    min-height:100vh;
+    padding:30px;
+
+}
+
+
+/* HEADER */
+
+.header{
+
+    background:white;
+    border-radius:22px;
+    padding:25px 30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    margin-bottom:25px;
+
+}
+
+
+.header h1{
+
+    font-size:28px;
+    color:#111827;
+
+}
+
+
+.header p{
+
+    color:#64748b;
+    margin-top:5px;
+
+}
+
+
+
+
+/* GRID PRINCIPAL */
+
+
+.container{
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+
+}
+
+
+
+/* CARD */
+
+
+.card{
+
+    background:white;
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+
+}
+
+
+
+
+.card-title{
+
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:20px;
+
+}
+
+
+
+
+/* QR */
+
+
+.qr-box{
+
+    height:350px;
+
+    border:2px dashed #d1d5db;
+
+    border-radius:20px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    flex-direction:column;
+
+}
+
+
+
+.qr-icon{
+
+    font-size:80px;
+    margin-bottom:20px;
+
+}
+
+
+
+.qr-text{
+
+    color:#64748b;
+
+}
+
+
+
+
+
+/* STATUS */
+
+
+.status{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    padding:15px;
+
+    border-radius:15px;
+
+    background:#f8fafc;
+
+}
+
+
+
+.dot{
+
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    background:#94a3b8;
+
+}
+
+
+
+.info{
+
+    margin-top:20px;
+
+}
+
+
+
+.info div{
+
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+
+    color:#475569;
+
+}
+
+
+
+/* BOTÕES */
+
+
+.actions{
+
+    margin-top:25px;
+
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+
+}
+
+
+
+button{
+
+    border:none;
+    padding:13px 20px;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-weight:500;
+
+}
+
+
+.primary{
+
+    background:#22c55e;
+    color:white;
+
+}
+
+
+
+.secondary{
+
+    background:#e2e8f0;
+
+}
+
+
+
+
+/* ESTATISTICAS */
+
+
+.stats{
+
+    margin-top:25px;
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:15px;
+
+}
+
+
+
+.stat{
+
+    background:#f8fafc;
+
+    border-radius:18px;
+
+    padding:20px;
+
+}
+
+
+
+.stat h3{
+
+    font-size:25px;
+
+}
+
+
+
+
+.stat span{
+
+    color:#64748b;
+
+}
+
+
+
+
+/* LOGS */
+
+
+.logs{
+
+    margin-top:25px;
+
+    background:#0f172a;
+
+    color:#cbd5e1;
+
+    padding:20px;
+
+    border-radius:20px;
+
+    height:180px;
+
+    overflow:auto;
+
+}
+
+
+
+.log{
+
+    margin-bottom:8px;
+
+}
+
+
+
+
+
+/* RESPONSIVO */
+
+
+@media(max-width:900px){
+
+
+.container{
+
+    grid-template-columns:1fr;
+
+}
+
+
+
+.stats{
+
+grid-template-columns:1fr;
+
+}
+
+
+}
+
+
+</style>
+
+
+</head>
+
+
+<body>
+
+
+
+<div class="header">
+
+<h1>Central de Comunicação</h1>
+
+<p>Gerencie suas conexões e mensagens do SMARTZEN IMOB</p>
+
+</div>
+
+
+
+
+
+<div class="container">
+
+
+
+<div class="card">
+
+
+<div class="card-title">
+
+WhatsApp
+
+</div>
+
+
+
+<div class="qr-box">
+
+
+<div class="qr-icon">
+📱
+</div>
+
+
+<div class="qr-text">
+
+QR Code aguardando conexão
+
+</div>
+
+
+
+</div>
+
+
+
+
+<div class="actions">
+
+
+<button class="primary">
+
+Gerar QR
+
+</button>
+
+
+<button class="secondary">
+
+Reconectar
+
+</button>
+
+
+
+<button class="secondary">
+
+Desconectar
+
+</button>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="card">
+
+
+<div class="card-title">
+
+Status
+
+</div>
+
+
+
+
+<div class="status">
+
+
+<div class="dot"></div>
+
+
+<div>
+
+Aguardando conexão
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="info">
+
+
+<div>
+📱 Número: —
+</div>
+
+
+<div>
+👤 Conta: —
+</div>
+
+
+
+<div>
+🏢 Empresa: SMARTZEN IMOB
+</div>
+
+
+
+<div>
+⚡ Sessão: —
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="card" style="margin-top:25px;">
+
+
+<div class="card-title">
+
+Estatísticas
+
+</div>
+
+
+
+<div class="stats">
+
+
+<div class="stat">
+
+<h3>0</h3>
+
+<span>Mensagens</span>
+
+</div>
+
+
+
+<div class="stat">
+
+<h3>0</h3>
+
+<span>Contatos</span>
+
+</div>
+
+
+
+<div class="stat">
+
+<h3>0</h3>
+
+<span>Conversas</span>
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="card" style="margin-top:25px;">
+
+
+<div class="card-title">
+
+Logs do WhatsApp
+
+</div>
+
+
+<div class="logs">
+
+
+<div class="log">
+
+[ Sistema ] aguardando inicialização...
+
+</div>
+
+
+<div class="log">
+
+[ WhatsApp ] sessão não iniciada
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+</body>
+
+</html>
