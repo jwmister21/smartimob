@@ -6,6 +6,95 @@
     <p style="color: #64748b;">Acompanhe a jornada de cada cliente.</p>
 </div>
 
+<div class="funil-filtros">
+
+    <input
+        type="text"
+        id="pesquisaFunil"
+        placeholder="🔍 Pesquisar cliente..."
+        onkeyup="filtrarFunil()">
+
+    <select id="filtroCorretor" onchange="filtrarFunil()">
+        <option value="">👨‍💼 Todos os Corretores</option>
+
+        {% for corretor in corretores %}
+            <option value="{{ corretor.nome }}">
+                {{ corretor.nome }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <select id="filtroOrigem" onchange="filtrarFunil()">
+        <option value="">📍 Todas as Origens</option>
+
+        {% for origem in origens %}
+            <option value="{{ origem }}">
+                {{ origem }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <select id="filtroEmpreendimento" onchange="filtrarFunil()">
+        <option value="">🏢 Todos Empreendimentos</option>
+
+        {% for emp in empreendimentos %}
+            <option value="{{ emp }}">
+                {{ emp }}
+            </option>
+        {% endfor %}
+
+    </select>
+
+    <input
+        type="date"
+        id="dataInicio">
+
+    <input
+        type="date"
+        id="dataFim">
+
+    <button class="btn-filtrar">
+        Filtrar
+    </button>
+
+</div>
+
+<div class="dashboard-funil">
+
+    <div class="card-indicador">
+        <span>👥</span>
+        <h2>{{ total_leads }}</h2>
+        <p>Leads</p>
+    </div>
+
+    <div class="card-indicador">
+        <span>📞</span>
+        <h2>{{ atendimento }}</h2>
+        <p>Em Atendimento</p>
+    </div>
+
+    <div class="card-indicador">
+        <span>🏠</span>
+        <h2>{{ visitas }}</h2>
+        <p>Visitas</p>
+    </div>
+
+    <div class="card-indicador">
+        <span>💰</span>
+        <h2>{{ propostas }}</h2>
+        <p>Propostas</p>
+    </div>
+
+    <div class="card-indicador">
+        <span>🎉</span>
+        <h2>{{ vendas }}</h2>
+        <p>Vendas</p>
+    </div>
+
+</div>
+
 <div class="funil-container">
     {% for etapa in etapas %}
     <!-- Definimos a classe da cor baseada no nome da etapa -->
@@ -86,5 +175,136 @@
     }
 
     .card-vazio { padding: 20px; text-align: center; color: #94a3b8; font-size: 0.85rem; border: 2px dashed #e2e8f0; border-radius: 10px; }
+    .funil-filtros{
+
+    background:#fff;
+    padding:18px;
+    border-radius:16px;
+    margin:25px 0;
+
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr 160px 160px auto;
+    gap:12px;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
+
+}
+
+.funil-filtros input,
+.funil-filtros select{
+
+    height:45px;
+
+    border:1px solid #dbe4ef;
+
+    border-radius:10px;
+
+    padding:0 15px;
+
+    font-size:14px;
+
+    outline:none;
+
+}
+
+.btn-filtrar{
+
+    border:0;
+
+    border-radius:10px;
+
+    background:#2563eb;
+
+    color:#fff;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.btn-filtrar:hover{
+
+    background:#1d4ed8;
+
+}
+
+.dashboard-funil{
+
+    display:grid;
+
+    grid-template-columns:repeat(5,1fr);
+
+    gap:15px;
+
+    margin-bottom:25px;
+
+}
+
+.card-indicador{
+
+    background:#fff;
+
+    padding:22px;
+
+    border-radius:16px;
+
+    text-align:center;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
+
+}
+
+.card-indicador span{
+
+    font-size:28px;
+
+}
+
+.card-indicador h2{
+
+    margin:10px 0 5px;
+
+    font-size:28px;
+
+    color:#2563eb;
+
+}
+
+.card-indicador p{
+
+    margin:0;
+
+    color:#64748b;
+
+}
+
+@media(max-width:1200px){
+
+.funil-filtros{
+
+grid-template-columns:1fr 1fr;
+
+}
+
+.dashboard-funil{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:700px){
+
+.dashboard-funil{
+
+grid-template-columns:1fr;
+
+}
+
+}
 </style>
 {% endblock %}
