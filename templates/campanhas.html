@@ -130,139 +130,112 @@ MARIA SOUZA,551188888888"></textarea>
 </div>
 
 <script>
-    // =========================
-    // ESTADO CENTRAL (IMPORTANTE)
-    // =========================
-    let selecionados = [];
+  
+// =========================
+// ESTADO GLOBAL
+// =========================
+let selecionados = [];
 
-    function atualizarContador(){
-        document.getElementById("qtd").innerHTML = selecionados.length;
-    }
+// =========================
+// UTIL
+// =========================
+function atualizarContador() {
+    document.getElementById("qtd").innerText = selecionados.length;
+}
 
-    function atualizarTextarea(){
-        let campo = document.getElementById("telefones");
+function atualizarTextarea() {
+    const campo = document.getElementById("telefones");
 
-        campo.value = selecionados
-            .map(c => `${c.name}, ${c.phone}`)
-            .join("\n");
-    }
+    campo.value = selecionados
+        .map(c => `${c.name},${c.phone}`)
+        .join("\n");
+}
 
-    // =========================
-    // SELECIONAR INDIVIDUAL
-    // =========================
-    function selecionarCliente(check){
-    let card = check.closest(".cliente");
+// =========================
+// SELEÇÃO INDIVIDUAL
+// =========================
+function selecionarCliente(check) {
+
+    const card = check.closest(".cliente");
 
     let name = card.querySelector(".nome-cliente").innerText.trim();
-    let tel = check.dataset.tel.replace(/\D/g,'');
+    let phone = check.dataset.tel.replace(/\D/g, '');
 
-    if(!tel.startsWith("55")) tel = "55" + tel;
+    if (!phone.startsWith("55")) {
+        phone = "55" + phone;
+    }
 
-    if(check.checked){
-        if(!selecionados.find(c => c.phone === tel)){
-            selecionados.push({ name, phone: tel });
+    if (check.checked) {
+
+        if (!selecionados.find(c => c.phone === phone)) {
+            selecionados.push({ name, phone });
         }
+
     } else {
-        selecionados = selecionados.filter(c => c.phone !== tel);
+
+        selecionados = selecionados.filter(c => c.phone !== phone);
     }
 
     atualizarTextarea();
     atualizarContador();
 }
 
-    // =========================
-    // SELECIONAR VISÍVEIS (BOTÃO)
-    // =========================
-    function selecionarTodos(){
-        document.querySelectorAll(".cliente").forEach(card => {
-            if(card.style.display !== "none"){
-                let check = card.querySelector(".checkCliente");
+// =========================
+// SELEÇÃO VISÍVEL
+// =========================
+function selecionarTodos() {
 
-                if(!check.checked){
-                    check.checked = true;
-                    selecionarCliente(check);
-                }
+    document.querySelectorAll(".cliente").forEach(card => {
+
+        if (card.style.display !== "none") {
+
+            const check = card.querySelector(".checkCliente");
+
+            if (!check.checked) {
+                check.checked = true;
+                selecionarCliente(check);
             }
-        });
-    }
-
-    // =========================
-    // FILTRO
-    // =========================
-    function limparValor(valor){
-        if(!valor) return 0;
-        valor = valor.replace("R$","").replace(/\./g,"").replace(",",".").trim();
-        return parseFloat(valor) || 0;
-    }
-
-    function filtrarClientes(){
-        let campo = document.getElementById("filtroValor").value;
-        let limite = limparValor(campo);
-        if(!limite) limite = 999999999;
-
-        document.querySelectorAll(".cliente").forEach(card => {
-            let preco = limparValor(card.dataset.orcamento);
-            card.style.display = (preco <= limite) ? "flex" : "none";
-        });
-    }
-
-    function formatarFiltro(){
-        let campo = document.getElementById("filtroValor");
-        let valor = campo.value.replace(/\D/g,'');
-        if(valor) campo.value = parseInt(valor).toLocaleString('pt-BR');
-    }
-
-    // =========================
-    // ENVIO WHATSAPP
-    // =========================
-    async function iniciarEnvio() {
-
-    let mensagem = document.getElementById("mensagem").value;
-    let delay = parseInt(document.getElementById("delay").value);
-    let statusEl = document.getElementById("status");
-
-    if (!delay || delay < 1) delay = 1;
-
-    for (let i = 0; i < selecionados.length; i++) {
-
-        let cliente = selecionados[i];
-
-        let msgFinal = mensagem
-            .replace("{name}", cliente.name || "")
-            .replace("{phone}", cliente.phone || "");
-
-        statusEl.innerHTML = "📤 Enviando para: " + cliente.phone;
-
-        try {
-
-            const res = await fetch("/enviar_mensagem", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    telefone: cliente.phone,
-                    mensagem: msgFinal
-                })
-            });
-
-            const data = await res.json();
-
-            if (!data || data.status === "error") {
-                console.log("Erro envio:", cliente.phone, data);
-            }
-
-        } catch (err) {
-            console.log("Erro fetch:", err);
         }
+    });
+}
 
-        await new Promise(r => setTimeout(r, delay * 1000));
+// =========================
+// FILTRO CLIENTES
+// =========================
+function limparValor(valor) {
+    if (!valor) return 0;
+    return parseFloat(valor.replace(/\D/g, "")) || 0;
+}
+
+function filtrarClientes() {
+
+    let campo = document.getElementById("filtroValor").value;
+    let limite = limparValor(campo);
+
+    if (!limite) limite = 999999999;
+
+    document.querySelectorAll(".cliente").forEach(card => {
+
+        let preco = limparValor(card.dataset.orcamento);
+
+        card.style.display = (preco <= limite) ? "flex" : "none";
+    });
+}
+
+function formatarFiltro() {
+
+    let campo = document.getElementById("filtroValor");
+    let valor = campo.value.replace(/\D/g, '');
+
+    if (valor) {
+        campo.value = parseInt(valor).toLocaleString('pt-BR');
     }
-
-    statusEl.innerHTML = "✅ Campanha finalizada";
-}
-    
 }
 
-   function importarPlanilha() {
+// =========================
+// IMPORTAÇÃO CSV (NOME, TELEFONE)
+// =========================
+function importarPlanilha() {
 
     let texto = document.getElementById("importarLista").value;
 
@@ -274,8 +247,8 @@ MARIA SOUZA,551188888888"></textarea>
 
         let partes = linha.split(",");
 
-        let name = partes[0]?.trim();
-        let phone = partes[1]?.replace(/\D/g, '').trim();
+        let name = (partes[0] || "").trim();
+        let phone = (partes[1] || "").replace(/\D/g, '').trim();
 
         if (!phone) return;
 
@@ -295,6 +268,56 @@ MARIA SOUZA,551188888888"></textarea>
     atualizarContador();
 
     alert("Lista importada com sucesso!");
-}             
+}
+
+// =========================
+// TEMPLATE DE MENSAGEM
+// =========================
+function montarMensagem(template, cliente) {
+
+    return template
+        .replaceAll("{name}", cliente.name || "")
+        .replaceAll("{phone}", cliente.phone || "");
+}
+
+// =========================
+// ENVIO WHATSAPP
+// =========================
+async function iniciarEnvio() {
+
+    let mensagem = document.getElementById("mensagem").value;
+    let delay = parseInt(document.getElementById("delay").value);
+    let statusEl = document.getElementById("status");
+
+    if (!delay || delay < 1) delay = 1;
+
+    for (let i = 0; i < selecionados.length; i++) {
+
+        let cliente = selecionados[i];
+
+        let msgFinal = montarMensagem(mensagem, cliente);
+
+        statusEl.innerHTML = "📤 Enviando para: " + cliente.name;
+
+        try {
+
+            await fetch("/enviar_mensagem", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    telefone: cliente.phone,
+                    mensagem: msgFinal
+                })
+            });
+
+        } catch (err) {
+            console.log("Erro envio:", err);
+        }
+
+        await new Promise(r => setTimeout(r, delay * 1000));
+    }
+
+    statusEl.innerHTML = "✅ Campanha finalizada";
+}
 </script>
 {% endblock %}
