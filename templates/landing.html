@@ -4,106 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMARTZEN TECNOLOGIA - Planos</title>
-    <style>
-        /* Estilos base */
-        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
-        body { background: #f8fafc; color: #1e293b; padding-bottom: 50px; }
 
-        /* Container de Preços */
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { background:#f8fafc; color:#1e293b; }
+
+        /* ================= HEADER ================= */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width:1200px;
+            margin:auto;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:18px 5%;
+        }
+
+        .logo {
+            font-size:20px;
+            font-weight:700;
+            color:#2563eb;
+        }
+
+        nav a {
+            margin-left:20px;
+            text-decoration:none;
+            color:#334155;
+            font-weight:500;
+            transition:0.3s;
+        }
+
+        nav a:hover { color:#2563eb; }
+
+        /* ================= HERO ================= */
+        .hero {
+            text-align:center;
+            padding:70px 5% 40px;
+            background: linear-gradient(135deg,#2563eb,#1d4ed8);
+            color:white;
+        }
+
+        .hero h1 { font-size:42px; margin-bottom:10px; }
+        .hero p { font-size:18px; opacity:0.9; }
+
+        /* ================= PLANOS ================= */
         .planos-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            padding: 50px 5%;
-            max-width: 1200px;
-            margin: auto;
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:25px;
+            padding:60px 5%;
+            max-width:1200px;
+            margin:auto;
         }
 
         .card-plano {
-            background: white;
-            padding: 40px;
-            border-radius: 25px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.4s ease;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            background:white;
+            padding:35px;
+            border-radius:20px;
+            border:1px solid #e2e8f0;
+            text-align:center;
+            transition:0.4s;
+            box-shadow:0 10px 25px rgba(0,0,0,0.05);
         }
 
-        /* Animação Hover */
         .card-plano:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 20px 40px rgba(37,99,235,0.15);
-            border-color: #2563eb;
+            transform:translateY(-12px);
+            border-color:#2563eb;
+            box-shadow:0 20px 40px rgba(37,99,235,0.15);
         }
 
-        .card-plano h3 { font-size: 24px; margin-bottom: 15px; color: #0f172a; }
-        .preco { font-size: 36px; font-weight: bold; color: #2563eb; margin: 15px 0; }
-        .sub-preco { color: #64748b; font-size: 14px; margin-bottom: 20px; }
-        
-        .lista-beneficios { list-style: none; text-align: left; margin: 25px 0; }
-        .lista-beneficios li { margin-bottom: 10px; font-size: 15px; color: #475569; }
-        .lista-beneficios li::before { content: "✓"; color: #2563eb; font-weight: bold; margin-right: 10px; }
+        .card-plano h3 { font-size:22px; margin-bottom:10px; }
+        .preco { font-size:38px; font-weight:700; color:#2563eb; margin:15px 0; }
+        .sub-preco { font-size:14px; color:#64748b; }
+
+        .lista-beneficios {
+            list-style:none;
+            text-align:left;
+            margin:25px 0;
+        }
+
+        .lista-beneficios li {
+            margin-bottom:10px;
+            font-size:15px;
+            color:#475569;
+        }
+
+        .lista-beneficios li::before {
+            content:"✓";
+            color:#2563eb;
+            margin-right:8px;
+            font-weight:bold;
+        }
 
         .btn-plano {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 12px;
-            font-weight: bold;
-            transition: 0.3s;
+            display:block;
+            padding:14px;
+            background:#2563eb;
+            color:white;
+            text-decoration:none;
+            border-radius:12px;
+            font-weight:600;
+            transition:0.3s;
         }
-        
-        .btn-plano:hover { background: #1d4ed8; }
+
+        .btn-plano:hover { background:#1d4ed8; }
+
+        /* ================= FOOTER ================= */
+        footer {
+            background:#0f172a;
+            color:#cbd5e1;
+            padding:50px 5%;
+            margin-top:40px;
+        }
+
+        .footer-container {
+            max-width:1200px;
+            margin:auto;
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+            gap:30px;
+        }
+
+        .footer-container h4 {
+            color:white;
+            margin-bottom:12px;
+        }
+
+        .footer-container a {
+            display:block;
+            color:#94a3b8;
+            text-decoration:none;
+            margin-bottom:8px;
+            font-size:14px;
+        }
+
+        .footer-container a:hover { color:white; }
+
+        .copyright {
+            text-align:center;
+            margin-top:30px;
+            font-size:13px;
+            color:#64748b;
+        }
     </style>
 </head>
+
 <body>
 
-    <section class="planos-container">
-        <!-- Plano Mensal -->
-        <div class="card-plano">
-            <h3>MENSAL</h3>
-            <div class="preco">R$ 100,00</div>
-            <p class="sub-preco">por usuário/mês</p>
-            <ul class="lista-beneficios">
-                <li>Todas as funcionalidades</li>
-                <li>Suporte especializado</li>
-                <li>Atualizações constantes</li>
-                <li>Segurança de dados</li>
-            </ul>
-            <a href="#" class="btn-plano">Assinar Mensal</a>
+<!-- HEADER -->
+<header>
+    <div class="header-container">
+        <div class="logo">SMARTZEN TECNOLOGIA</div>
+        <nav>
+            <a href="#">Início</a>
+            <a href="#">Planos</a>
+            <a href="#">Recursos</a>
+            <a href="#">Contato</a>
+        </nav>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+    <h1>Escolha o plano ideal para seu negócio</h1>
+    <p>Automação, CRM e tecnologia para acelerar suas vendas imobiliárias</p>
+</section>
+
+<!-- PLANOS -->
+<section class="planos-container">
+
+    <div class="card-plano">
+        <h3>MENSAL</h3>
+        <div class="preco">R$ 100</div>
+        <p class="sub-preco">por usuário/mês</p>
+        <ul class="lista-beneficios">
+            <li>CRM completo</li>
+            <li>Suporte padrão</li>
+            <li>Atualizações</li>
+            <li>Acesso imediato</li>
+        </ul>
+        <a href="#" class="btn-plano">Assinar</a>
+    </div>
+
+    <div class="card-plano">
+        <h3>SEMESTRAL</h3>
+        <div class="preco">R$ 540</div>
+        <p class="sub-preco">equivale a R$ 90/mês</p>
+        <ul class="lista-beneficios">
+            <li>Economia de 10%</li>
+            <li>Suporte prioritário</li>
+            <li>CRM completo</li>
+            <li>Relatórios avançados</li>
+        </ul>
+        <a href="#" class="btn-plano">Assinar</a>
+    </div>
+
+    <div class="card-plano">
+        <h3>ANUAL</h3>
+        <div class="preco">R$ 960</div>
+        <p class="sub-preco">equivale a R$ 80/mês</p>
+        <ul class="lista-beneficios">
+            <li>Economia de 20%</li>
+            <li>Suporte premium</li>
+            <li>Todos recursos</li>
+            <li>Acesso antecipado</li>
+        </ul>
+        <a href="#" class="btn-plano">Assinar</a>
+    </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-container">
+
+        <div>
+            <h4>SMARTZEN</h4>
+            <p>CRM e automação para o mercado imobiliário com inteligência e performance.</p>
         </div>
 
-        <!-- Plano Semestral -->
-        <div class="card-plano">
-            <h3>SEMESTRAL</h3>
-            <div class="preco">R$ 540,00</div>
-            <p class="sub-preco">equivale a R$ 90,00/mês</p>
-            <ul class="lista-beneficios">
-                <li>Todas as funcionalidades</li>
-                <li>Suporte especializado</li>
-                <li>Atualizações constantes</li>
-                <li>Economia de 10%</li>
-            </ul>
-            <a href="#" class="btn-plano">Assinar Semestral</a>
+        <div>
+            <h4>Links</h4>
+            <a href="#">Planos</a>
+            <a href="#">Recursos</a>
+            <a href="#">Login</a>
         </div>
 
-        <!-- Plano Anual -->
-        <div class="card-plano">
-            <h3>ANUAL</h3>
-            <div class="preco">R$ 960,00</div>
-            <p class="sub-preco">equivale a R$ 80,00/mês</p>
-            <ul class="lista-beneficios">
-                <li>Todas as funcionalidades</li>
-                <li>Suporte especializado</li>
-                <li>Atualizações constantes</li>
-                <li>Economia de 20%</li>
-            </ul>
-            <a href="#" class="btn-plano">Assinar Anual</a>
+        <div>
+            <h4>Suporte</h4>
+            <a href="#">Ajuda</a>
+            <a href="#">Contato</a>
+            <a href="#">Documentação</a>
         </div>
-    </section>
+
+    </div>
+
+    <div class="copyright">
+        © 2026 SMARTZEN TECNOLOGIA. Todos os direitos reservados.
+    </div>
+</footer>
 
 </body>
 </html>
