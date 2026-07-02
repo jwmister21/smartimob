@@ -1,1 +1,18 @@
+{
+  "name": "smartzen-whatsapp-v2",
+  "version": "1.0.0",
+  "description": "WhatsApp engine SMARTZEN IMOB",
+  "main": "server.js",
 
+  "scripts": {
+    "start": "node server.js"
+  },
+
+  "dependencies": {
+
+    "@wppconnect-team/wppconnect": "^1.37.3",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+
+  }
+}
