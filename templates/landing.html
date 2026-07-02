@@ -253,6 +253,71 @@ footer{
     color:#64748b;
     margin-top:70px;
 }
+    .card-plano{
+    border:1px solid #eef2f7;
+    border-radius:20px;
+    padding:30px;
+    background:white;
+    transition:0.3s;
+    text-align:center;
+}
+
+.card-plano:hover{
+    transform:translateY(-12px);
+    border-color:#2563eb;
+    box-shadow:0 25px 50px rgba(0,0,0,0.08);
+}
+
+.destaque{
+    border:2px solid #2563eb;
+    transform:scale(1.05);
+}
+
+.preco{
+    font-size:42px;
+    font-weight:800;
+    color:#2563eb;
+    margin:15px 0;
+}
+
+.sub-preco{
+    color:#64748b;
+    font-size:14px;
+}
+
+.lista-beneficios{
+    list-style:none;
+    text-align:left;
+    margin:20px 0;
+}
+
+.lista-beneficios li{
+    margin-bottom:10px;
+    color:#475569;
+}
+
+.lista-beneficios li::before{
+    content:"✓";
+    color:#2563eb;
+    margin-right:8px;
+    font-weight:700;
+}
+
+.btn-plano{
+    display:block;
+    padding:14px;
+    background:#2563eb;
+    color:white;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    transition:0.3s;
+}
+
+.btn-plano:hover{
+    background:#1d4ed8;
+    transform:scale(1.03);
+}
 </style>
 </head>
 
@@ -335,45 +400,61 @@ REDE FIFFTY • WhatsApp Automático • Geração de Anúncios com IA • Sites
 </section>
 
 <!-- PLANOS -->
+<!-- PLANOS -->
 <section class="section" id="planos">
 
-<h2 class="title">Escolha seu plano</h2>
+<h2 class="title">Escolha o plano ideal para seu negócio</h2>
 
 <div class="planos">
 
-<div class="plan">
-<h3>Mensal</h3>
-<div class="price">R$100</div>
-<ul>
-<li>CRM completo</li>
-<li>WhatsApp</li>
-<li>Site básico</li>
-</ul>
-<a class="cta" href="/login">Assinar</a>
+<!-- MENSAL -->
+<div class="card-plano">
+    <h3>MENSAL</h3>
+    <div class="preco">R$ 100,00</div>
+    <p class="sub-preco">por usuário/mês</p>
+
+    <ul class="lista-beneficios">
+        <li>Todas as funcionalidades</li>
+        <li>Suporte especializado</li>
+        <li>Atualizações constantes</li>
+        <li>Segurança de dados</li>
+    </ul>
+
+    <a href="/login" class="btn-plano">Assinar Mensal</a>
 </div>
 
-<div class="plan featured">
-<h3>Semestral 🔥</h3>
-<div class="price">R$540</div>
-<ul>
-<li>REDE FIFFTY</li>
-<li>IA de anúncios</li>
-<li>Disparo avançado</li>
-<li>Suporte prioritário</li>
-</ul>
-<a class="cta" href="/login">Mais escolhido</a>
+<!-- SEMESTRAL -->
+<div class="card-plano destaque">
+    <h3>SEMESTRAL 🔥</h3>
+    <div class="preco">R$ 540,00</div>
+    <p class="sub-preco">equivale a R$ 90,00/mês</p>
+
+    <ul class="lista-beneficios">
+        <li>Todas as funcionalidades</li>
+        <li>Suporte especializado</li>
+        <li>Atualizações constantes</li>
+        <li>Economia de 10%</li>
+        <li>REDE FIFFTY incluída</li>
+    </ul>
+
+    <a href="/login" class="btn-plano">Mais escolhido</a>
 </div>
 
-<div class="plan">
-<h3>Anual</h3>
-<div class="price">R$960</div>
-<ul>
-<li>Todos os recursos</li>
-<li>Automação total</li>
-<li>Sites ilimitados</li>
-<li>Máximo desempenho</li>
-</ul>
-<a class="cta" href="/login">Assinar</a>
+<!-- ANUAL -->
+<div class="card-plano">
+    <h3>ANUAL</h3>
+    <div class="preco">R$ 960,00</div>
+    <p class="sub-preco">equivale a R$ 80,00/mês</p>
+
+    <ul class="lista-beneficios">
+        <li>Todas as funcionalidades</li>
+        <li>Suporte especializado</li>
+        <li>Atualizações constantes</li>
+        <li>Economia de 20%</li>
+        <li>Acesso completo ao sistema</li>
+    </ul>
+
+    <a href="/login" class="btn-plano">Assinar Anual</a>
 </div>
 
 </div>
