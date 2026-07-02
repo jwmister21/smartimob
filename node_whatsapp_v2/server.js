@@ -28,6 +28,8 @@ wppconnect.create({
 
     folderNameToken:"tokens",
 
+    autoClose:0,
+
     puppeteerOptions: {
 
         executablePath: "/usr/bin/chromium",
