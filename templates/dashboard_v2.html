@@ -927,10 +927,11 @@ class="site-btn green">
 
 {% else %}
 
-<a href="/gerar_site"
-class="site-btn blue">
-🚀 Gerar Site
-</a>
+<form action="/gerar_site/salvar" method="POST">
+    <button type="submit" class="site-btn blue">
+        🚀 Gerar Site
+    </button>
+</form>
 
 {% endif %}
 
