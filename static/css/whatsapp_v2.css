@@ -1,1 +1,357 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
 
+
+body{
+
+    background:#f4f7fb;
+    min-height:100vh;
+    padding:30px;
+
+}
+
+
+/* HEADER */
+
+.header{
+
+    background:white;
+    border-radius:22px;
+    padding:25px 30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+    margin-bottom:25px;
+
+}
+
+
+.header h1{
+
+    font-size:28px;
+    color:#111827;
+
+}
+
+
+.header p{
+
+    color:#64748b;
+
+}
+
+
+
+/* GRID */
+
+
+.container{
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+
+}
+
+
+
+.card{
+
+    background:white;
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+
+}
+
+
+
+
+.card-title{
+
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:20px;
+
+}
+
+
+
+
+
+/* QR */
+
+.qr-box{
+
+    height:350px;
+
+    border:2px dashed #d1d5db;
+
+    border-radius:20px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+
+}
+
+
+.qr-icon{
+
+    font-size:80px;
+    margin-bottom:20px;
+
+}
+
+
+.qr-text{
+
+    color:#64748b;
+
+}
+
+
+
+/* STATUS */
+
+
+.status{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    background:#f8fafc;
+
+    padding:15px;
+
+    border-radius:15px;
+
+}
+
+
+
+.dot{
+
+    width:15px;
+    height:15px;
+    border-radius:50%;
+
+    background:#94a3b8;
+
+}
+
+
+
+
+.info{
+
+    margin-top:20px;
+
+}
+
+
+
+.info div{
+
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+
+    color:#475569;
+
+}
+
+
+
+
+
+/* BUTTONS */
+
+
+.actions{
+
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+    flex-wrap:wrap;
+
+}
+
+
+
+button{
+
+    border:none;
+    padding:13px 22px;
+    border-radius:14px;
+    cursor:pointer;
+
+    font-weight:600;
+
+}
+
+
+
+.primary{
+
+    background:#16a34a;
+    color:white;
+
+}
+
+
+
+.secondary{
+
+    background:#e2e8f0;
+
+}
+
+
+
+/* STATS */
+
+
+.stats{
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+
+}
+
+
+.stat{
+
+    background:#f8fafc;
+
+    padding:20px;
+
+    border-radius:18px;
+
+}
+
+
+
+.stat h3{
+
+    font-size:26px;
+
+}
+
+
+
+.stat span{
+
+    color:#64748b;
+
+}
+
+
+
+
+/* LOGS */
+
+
+.logs{
+
+    background:#0f172a;
+
+    color:#cbd5e1;
+
+    padding:20px;
+
+    border-radius:20px;
+
+    height:180px;
+
+    overflow:auto;
+
+}
+
+
+.log{
+
+    margin-bottom:10px;
+
+}
+
+
+
+
+/* ANIMAÇÃO QR */
+
+
+.qr-box::after{
+
+content:"";
+
+width:70%;
+
+height:3px;
+
+background:#22c55e;
+
+position:absolute;
+
+animation:scan 2s infinite;
+
+}
+
+
+
+.qr-box{
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+
+
+@keyframes scan{
+
+
+0%{
+
+top:10%;
+
+}
+
+
+100%{
+
+top:90%;
+
+}
+
+
+}
+
+
+
+
+@media(max-width:900px){
+
+
+.container{
+
+grid-template-columns:1fr;
+
+}
+
+
+
+.stats{
+
+grid-template-columns:1fr;
+
+}
+
+
+
+}
