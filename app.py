@@ -751,6 +751,75 @@ def excluir_cliente(cliente_id):
 
     return redirect("/clientes")
 
+def criar_tabela_whatsapp():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS whatsapp_sessoes (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        empresa_id INTEGER,
+
+        usuario_id INTEGER,
+
+        session_name TEXT,
+
+        status TEXT DEFAULT 'disconnected',
+
+        telefone TEXT,
+
+        qr_code TEXT,
+
+        criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+criar_tabela_whatsapp()
+
+@app.route("/teste-whatsapp-db")
+def teste_whatsapp_db():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+    INSERT INTO whatsapp_sessoes
+    (
+    empresa_id,
+    usuario_id,
+    session_name,
+    status
+    )
+
+    VALUES
+    (?,?,?,?)
+
+    """,
+    (
+    1,
+    1,
+    "empresa_1_usuario_1",
+    "disconnected"
+    ))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return "sessao criada"
+
 @app.route("/leads_site")
 @verificar_sessao
 def leads_site():
