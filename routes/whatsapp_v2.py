@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, render_template
-import datetime
+import requests
+
 
 
 whatsapp_v2 = Blueprint(
@@ -8,10 +9,11 @@ whatsapp_v2 = Blueprint(
 )
 
 
+NODE_URL = "http://localhost:3001"
 
-# =====================================
-# TELA PRINCIPAL
-# =====================================
+
+
+
 
 @whatsapp_v2.route("/central-whatsapp")
 def central_whatsapp():
@@ -24,19 +26,10 @@ def central_whatsapp():
 
 
 
-# =====================================
-# STATUS
-# =====================================
-
-import requests
-
-
-NODE_URL = "http://localhost:3001"
-
-
 
 @whatsapp_v2.route("/api/whatsapp/status")
 def whatsapp_status():
+
 
     try:
 
@@ -46,44 +39,58 @@ def whatsapp_status():
         )
 
 
-        return resposta.json()
+        return jsonify(
+            resposta.json()
+        )
+
+
+    except Exception as e:
+
+
+        return jsonify({
+
+            "status":"offline",
+
+            "error":
+            str(e)
+
+        })
+
+
+
+
+
+
+
+
+@whatsapp_v2.route("/api/whatsapp/qr")
+def whatsapp_qr():
+
+
+    try:
+
+
+        resposta = requests.get(
+            NODE_URL + "/qr",
+            timeout=3
+        )
+
+
+        return jsonify(
+            resposta.json()
+        )
 
 
     except:
 
 
-        return {
+        return jsonify({
+
+            "qr":None,
 
             "status":"offline"
 
-        }
-
-
-
-
-# =====================================
-# QR CODE
-# =====================================
-
-
-@whatsapp_v2.route(
-    "/api/whatsapp/qr"
-)
-def whatsapp_qr():
-
-
-    # temporário
-
-    return jsonify({
-
-        "success":True,
-
-        "qr":None,
-
-        "message":
-        "aguardando node"
-
-    })
+        })
 
 
 
@@ -91,23 +98,37 @@ def whatsapp_qr():
 
 
 
-# =====================================
-# DESCONECTAR
-# =====================================
 
 
 @whatsapp_v2.route(
 "/api/whatsapp/disconnect",
 methods=["POST"]
 )
-def whatsapp_disconnect():
+def disconnect():
 
 
-    return jsonify({
+    try:
 
-        "success":True,
 
-        "message":
-        "Sessão encerrada"
+        resposta = requests.post(
+            NODE_URL + "/disconnect",
+            timeout=5
+        )
 
-    })
+
+        return jsonify(
+            resposta.json()
+        )
+
+
+    except:
+
+
+        return jsonify({
+
+            "success":False,
+
+            "message":
+            "Node offline"
+
+        })
