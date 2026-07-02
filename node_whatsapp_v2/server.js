@@ -26,6 +26,21 @@ wppconnect.create({
 
     session:"smartzen",
 
+    folderNameToken:"tokens",
+
+    puppeteerOptions: {
+
+        executablePath: "/usr/bin/chromium",
+
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage"
+        ]
+
+    },
+
+
     catchQR:(base64Qr)=>{
 
         console.log("QR RECEBIDO");
