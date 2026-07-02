@@ -2573,7 +2573,7 @@ def enviar_mensagem():
         # ==========================
         # NODE (BAILEYS)
         # ==========================
-        WPP_URL = os.getenv("WPP_URL", "http://localhost:3001")
+        WPP_URL = os.getenv("WPP_URL", "https://smartimob-production.up.railway.app")
 
         payload = {
             "sessao": usuario["whatsapp_sessao"],
