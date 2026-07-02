@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>SMARTZEN WhatsApp</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+body {
+    font-family: Poppins, sans-serif;
+    background: #0f172a;
+    color: white;
+    margin: 0;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 30px;
+}
+
+.card {
+    background: #111827;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.status {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.green { color: #22c55e; }
+.red { color: #ef4444; }
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.btn-connect {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-disconnect {
+    background: #ef4444;
+    color: white;
+}
+
+.qr {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.qr img {
+    width: 280px;
+    border-radius: 10px;
+    background: white;
+    padding: 10px;
+}
+
+small {
+    opacity: 0.7;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>SMARTZEN WHATSAPP (Baileys)</h2>
+
+    <div class="card">
+
+        <div>Status:</div>
+        <div id="status" class="status red">Desconectado</div>
+
+        <br>
+
+        <button class="btn-connect" onclick="conectar()">Conectar</button>
+        <button class="btn-disconnect" onclick="desconectar()">Desconectar</button>
+
+        <br><br>
+
+        <small>Sessão: empresa_1</small>
+
+    </div>
+
+    <div class="card qr" id="qrBox">
+
+        <div>QR Code</div>
+
+        <div id="qr"></div>
+
+        <small id="info">Aguardando QR...</small>
+
+    </div>
+
+</div>
+
+<script>
+
+const sessao = "empresa_1";
+
+async function atualizar() {
+
+    const res = await fetch("http://localhost:3001/status/" + sessao);
+    const data = await res.json();
+
+    const status = document.getElementById("status");
+    const qr = document.getElementById("qr");
+    const info = document.getElementById("info");
+
+    if (data.conectado) {
+
+        status.innerHTML = "🟢 Conectado";
+        status.className = "status green";
+
+        qr.innerHTML = "";
+        info.innerHTML = "Conectado ao WhatsApp";
+
+    } else {
+
+        status.innerHTML = "🔴 Desconectado";
+        status.className = "status red";
+
+        if (data.qr) {
+
+            qr.innerHTML = `<img src="${data.qr}" />`;
+            info.innerHTML = "Escaneie o QR Code";
+
+        } else {
+
+            qr.innerHTML = "";
+            info.innerHTML = "Gerando QR Code...";
+
+        }
+
+    }
+
+}
+
+async function conectar() {
+
+    await fetch("http://localhost:3001/conectar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessao })
+    });
+
+}
+
+async function desconectar() {
+
+    await fetch("http://localhost:3001/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessao })
+    });
+
+}
+
+setInterval(atualizar, 3000);
+atualizar();
+
+</script>
+
+</body>
+</html>
