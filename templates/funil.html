@@ -178,132 +178,43 @@
     .funil-filtros{
 
     background:#fff;
-    padding:18px;
+    padding:20px;
     border-radius:16px;
     margin:25px 0;
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
 
     display:grid;
-    grid-template-columns:2fr 1fr 1fr 1fr 160px 160px auto;
-    gap:12px;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
 
-    box-shadow:0 5px 20px rgba(0,0,0,.05);
+}
+
+.funil-filtros input,
+.funil-filtros select,
+.funil-filtros button{
+
+    width:100%;
+    height:46px;
+    border-radius:10px;
+    font-size:14px;
 
 }
 
 .funil-filtros input,
 .funil-filtros select{
 
-    height:45px;
-
     border:1px solid #dbe4ef;
-
-    border-radius:10px;
-
     padding:0 15px;
-
-    font-size:14px;
-
-    outline:none;
 
 }
 
 .btn-filtrar{
 
-    border:0;
-
-    border-radius:10px;
-
     background:#2563eb;
-
     color:#fff;
-
+    border:none;
     font-weight:600;
-
     cursor:pointer;
-
-    transition:.3s;
-
-}
-
-.btn-filtrar:hover{
-
-    background:#1d4ed8;
-
-}
-
-.dashboard-funil{
-
-    display:grid;
-
-    grid-template-columns:repeat(5,1fr);
-
-    gap:15px;
-
-    margin-bottom:25px;
-
-}
-
-.card-indicador{
-
-    background:#fff;
-
-    padding:22px;
-
-    border-radius:16px;
-
-    text-align:center;
-
-    box-shadow:0 5px 20px rgba(0,0,0,.05);
-
-}
-
-.card-indicador span{
-
-    font-size:28px;
-
-}
-
-.card-indicador h2{
-
-    margin:10px 0 5px;
-
-    font-size:28px;
-
-    color:#2563eb;
-
-}
-
-.card-indicador p{
-
-    margin:0;
-
-    color:#64748b;
-
-}
-
-@media(max-width:1200px){
-
-.funil-filtros{
-
-grid-template-columns:1fr 1fr;
-
-}
-
-.dashboard-funil{
-
-grid-template-columns:repeat(2,1fr);
-
-}
-
-}
-
-@media(max-width:700px){
-
-.dashboard-funil{
-
-grid-template-columns:1fr;
-
-}
 
 }
 </style>
