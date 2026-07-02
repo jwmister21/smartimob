@@ -2476,7 +2476,7 @@ def excluir_foto(foto_id):
 
 
 
-@app.route("/whatsappp")
+@app.route("/whatsapp")
 def whatsapp():
     return render_template("whatsapp_baileys.html")
 
