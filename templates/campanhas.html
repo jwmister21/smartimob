@@ -122,33 +122,65 @@
 </div>
 
 <script>
-    // LÓGICA ORIGINAL MANTIDA
+    // =========================
+    // ESTADO CENTRAL (IMPORTANTE)
+    // =========================
+    let selecionados = [];
+
     function atualizarContador(){
-        let qtd = document.querySelectorAll(".checkCliente:checked").length;
-        document.getElementById("qtd").innerHTML = qtd;
+        document.getElementById("qtd").innerHTML = selecionados.length;
     }
 
-    function selecionarCliente(check){
-        let tel = check.dataset.tel.replace(/\D/g,'');
-        if(!tel.startsWith("55")) tel = "55" + tel;
+    function atualizarTextarea(){
         let campo = document.getElementById("telefones");
-        let lista = campo.value.split("\n").filter(x=>x);
-        if(check.checked){ if(!lista.includes(tel)) lista.push(tel); }
-        else{ lista = lista.filter(x=>x != tel); }
-        campo.value = lista.join("\n");
+
+        campo.value = selecionados
+            .map(c => `${c.name}, ${c.phone}`)
+            .join("\n");
+    }
+
+    // =========================
+    // SELECIONAR INDIVIDUAL
+    // =========================
+    function selecionarCliente(check){
+        let card = check.closest(".cliente");
+
+        let name = card.querySelector(".nome-cliente").innerText.trim();
+        let tel = check.dataset.tel.replace(/\D/g,'');
+
+        if(!tel.startsWith("55")) tel = "55" + tel;
+
+        if(check.checked){
+            if(!selecionados.find(c => c.phone === tel)){
+                selecionados.push({ name, phone: tel });
+            }
+        } else {
+            selecionados = selecionados.filter(c => c.phone !== tel);
+        }
+
+        atualizarTextarea();
         atualizarContador();
     }
 
+    // =========================
+    // SELECIONAR VISÍVEIS (BOTÃO)
+    // =========================
     function selecionarTodos(){
-        document.querySelectorAll(".cliente").forEach(card=>{
-            if(card.style.display != "none"){
+        document.querySelectorAll(".cliente").forEach(card => {
+            if(card.style.display !== "none"){
                 let check = card.querySelector(".checkCliente");
-                check.checked = true;
-                selecionarCliente(check);
+
+                if(!check.checked){
+                    check.checked = true;
+                    selecionarCliente(check);
+                }
             }
         });
     }
 
+    // =========================
+    // FILTRO
+    // =========================
     function limparValor(valor){
         if(!valor) return 0;
         valor = valor.replace("R$","").replace(/\./g,"").replace(",",".").trim();
@@ -159,35 +191,49 @@
         let campo = document.getElementById("filtroValor").value;
         let limite = limparValor(campo);
         if(!limite) limite = 999999999;
-        document.querySelectorAll(".cliente").forEach(card=>{
+
+        document.querySelectorAll(".cliente").forEach(card => {
             let preco = limparValor(card.dataset.orcamento);
             card.style.display = (preco <= limite) ? "flex" : "none";
         });
-    }
-
-    async function iniciarEnvio(){
-        let telefones = document.getElementById("telefones").value.split("\n").filter(x=>x);
-        let mensagem = document.getElementById("mensagem").value;
-        let delay = parseInt(document.getElementById("delay").value);
-        let status = document.getElementById("status");
-
-        for(let i=0; i<telefones.length; i++){
-            let telefone = telefones[i];
-            status.innerHTML = "Enviando para: " + telefone;
-            await fetch("/enviar_mensagem", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ telefone, mensagem })
-            });
-            await new Promise(r => setTimeout(r, delay * 1000));
-        }
-        status.innerHTML = "✅ Campanha finalizada";
     }
 
     function formatarFiltro(){
         let campo = document.getElementById("filtroValor");
         let valor = campo.value.replace(/\D/g,'');
         if(valor) campo.value = parseInt(valor).toLocaleString('pt-BR');
+    }
+
+    // =========================
+    // ENVIO WHATSAPP
+    // =========================
+    async function iniciarEnvio(){
+        let mensagem = document.getElementById("mensagem").value;
+        let delay = parseInt(document.getElementById("delay").value);
+        let status = document.getElementById("status");
+
+        for(let i = 0; i < selecionados.length; i++){
+            let cliente = selecionados[i];
+
+            let msgFinal = mensagem
+                .replace("{name}", cliente.name)
+                .replace("{phone}", cliente.phone);
+
+            status.innerHTML = "Enviando para: " + cliente.phone;
+
+            await fetch("/enviar_mensagem", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    telefone: cliente.phone,
+                    mensagem: msgFinal
+                })
+            });
+
+            await new Promise(r => setTimeout(r, delay * 1000));
+        }
+
+        status.innerHTML = "✅ Campanha finalizada";
     }
 </script>
 {% endblock %}
