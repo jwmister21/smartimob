@@ -9,8 +9,12 @@ whatsapp_v2 = Blueprint(
 )
 
 
-NODE_URL = "http://localhost:3001"
+import os
 
+NODE_URL = os.getenv(
+    "WHATSAPP_NODE_URL",
+    "http://localhost:3001"
+)
 
 
 
