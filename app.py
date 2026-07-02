@@ -4933,7 +4933,7 @@ def salvar_site():
 
         conn.close()
 
-        return redirect(f"/site/{site['subdominio']}")
+        return redirect("/dashboard_v2")
 
 
 
