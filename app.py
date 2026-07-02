@@ -3866,36 +3866,6 @@ def cadastrar_usuario():
 
 
 
-@app.route("/whatsapp")
-def whatsapp():
-
-    if "usuario_id" not in session:
-        return redirect("/login")
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT whatsapp_sessao,
-               whatsapp_status,
-               whatsapp_numero
-        FROM usuarios
-        WHERE id = ?
-    """, (session["usuario_id"],))
-
-    usuario = cursor.fetchone()
-
-    conn.close()
-
-    return render_template(
-        "whatsapp.html",
-        sessao=usuario["whatsapp_sessao"],
-        status=usuario["whatsapp_status"],
-        numero=usuario["whatsapp_numero"]
-    )
-
-
 @app.route("/logout")
 def logout():
     session.clear()
