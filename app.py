@@ -2516,7 +2516,6 @@ def campanhas():
 def enviar_mensagem():
 
     try:
-
         data = request.get_json() or {}
 
         telefone = data.get("telefone")
@@ -2526,10 +2525,16 @@ def enviar_mensagem():
             return jsonify({
                 "status": "error",
                 "erro": "Telefone e mensagem obrigatórios"
-            })
+            }), 400
 
-        empresa_id = session["empresa_id"]
-        usuario_id = session["usuario_id"]
+        empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id")
+
+        if not empresa_id or not usuario_id:
+            return jsonify({
+                "status": "error",
+                "erro": "Sessão inválida"
+            }), 401
 
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
@@ -2545,39 +2550,74 @@ def enviar_mensagem():
         usuario = cursor.fetchone()
         conn.close()
 
-        if not usuario:
+        if not usuario or not usuario["whatsapp_sessao"]:
             return jsonify({
                 "status": "error",
                 "erro": "WhatsApp não configurado"
-            })
+            }), 400
 
-        # limpar telefone
+        # ==========================
+        # LIMPEZA DO TELEFONE
+        # ==========================
         telefone = ''.join(filter(str.isdigit, str(telefone)))
+
+        if not telefone:
+            return jsonify({
+                "status": "error",
+                "erro": "Telefone inválido"
+            }), 400
 
         if not telefone.startswith("55"):
             telefone = "55" + telefone
 
-        # URL do Baileys
+        # ==========================
+        # NODE (BAILEYS)
+        # ==========================
         WPP_URL = os.getenv("WPP_URL", "http://localhost:3001")
 
-        resp = requests.post(
-            f"{WPP_URL}/enviar",
-            json={
-                "sessao": usuario["whatsapp_sessao"],
-                "numero": telefone,
-                "mensagem": mensagem
-            },
-            timeout=15
-        )
+        payload = {
+            "sessao": usuario["whatsapp_sessao"],
+            "numero": telefone,
+            "mensagem": mensagem
+        }
+
+        try:
+            resp = requests.post(
+                f"{WPP_URL}/enviar",
+                json=payload,
+                timeout=20
+            )
+
+        except requests.exceptions.RequestException as e:
+            return jsonify({
+                "status": "error",
+                "erro": "Servidor WhatsApp offline",
+                "detalhe": str(e)
+            }), 500
+
+        # ==========================
+        # RESPOSTA NODE
+        # ==========================
+        try:
+            data_resp = resp.json()
+        except:
+            return jsonify({
+                "status": "error",
+                "erro": "Resposta inválida do WhatsApp",
+                "raw": resp.text
+            }), 500
 
         if resp.status_code != 200:
             return jsonify({
                 "status": "error",
-                "erro": "Falha no WhatsApp",
-                "detalhe": resp.text
+                "erro": "Falha ao enviar no WhatsApp",
+                "detalhe": data_resp
             }), 500
 
-        return jsonify(resp.json())
+        return jsonify({
+            "status": "success",
+            "whatsapp": data_resp
+        })
 
     except Exception as e:
 
@@ -2586,7 +2626,7 @@ def enviar_mensagem():
         return jsonify({
             "status": "error",
             "erro": str(e)
-        })
+        }), 500
      
 @app.route('/termos')
 def termos():
