@@ -4235,11 +4235,26 @@ def funil():
 
     empresa_id = session.get("empresa_id")
 
+    # ==========================
+    # FILTROS
+    # ==========================
+
+    pesquisa = request.args.get("pesquisa", "").strip()
+    corretor = request.args.get("corretor", "")
+    origem = request.args.get("origem", "")
+    empreendimento = request.args.get("empreendimento", "")
+    data_inicio = request.args.get("data_inicio", "")
+    data_fim = request.args.get("data_fim", "")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    cursor.execute("""
+    # ==========================
+    # CONSULTA PRINCIPAL
+    # ==========================
+
+    sql = """
         SELECT
             c.*,
             u.nome AS nome_corretor
@@ -4250,11 +4265,102 @@ def funil():
             ON u.id = c.atendido_por
 
         WHERE c.empresa_id = ?
-    """, (empresa_id,))
+    """
+
+    parametros = [empresa_id]
+
+    # Pesquisa
+    if pesquisa:
+        sql += """
+            AND (
+                c.nome LIKE ?
+                OR c.telefone LIKE ?
+            )
+        """
+        parametros.extend([
+            f"%{pesquisa}%",
+            f"%{pesquisa}%"
+        ])
+
+    # Corretor
+    if corretor:
+        sql += " AND c.atendido_por = ? "
+        parametros.append(corretor)
+
+    # Origem
+    if origem:
+        sql += " AND c.origem = ? "
+        parametros.append(origem)
+
+    # Empreendimento
+    if empreendimento:
+        sql += " AND c.empreendimento = ? "
+        parametros.append(empreendimento)
+
+    # Data inicial
+    if data_inicio:
+        sql += " AND DATE(c.data_criacao) >= DATE(?) "
+        parametros.append(data_inicio)
+
+    # Data final
+    if data_fim:
+        sql += " AND DATE(c.data_criacao) <= DATE(?) "
+        parametros.append(data_fim)
+
+    sql += " ORDER BY c.id DESC "
+
+    cursor.execute(sql, parametros)
 
     clientes = cursor.fetchall()
 
+    # ==========================
+    # LISTA DE CORRETORES
+    # ==========================
+
+    cursor.execute("""
+        SELECT id, nome
+        FROM usuarios
+        WHERE empresa_id = ?
+        ORDER BY nome
+    """, (empresa_id,))
+
+    corretores = cursor.fetchall()
+
+    # ==========================
+    # ORIGENS
+    # ==========================
+
+    cursor.execute("""
+        SELECT DISTINCT origem
+        FROM clientes
+        WHERE empresa_id = ?
+        AND origem IS NOT NULL
+        AND origem <> ''
+        ORDER BY origem
+    """, (empresa_id,))
+
+    origens = [x["origem"] for x in cursor.fetchall()]
+
+    # ==========================
+    # EMPREENDIMENTOS
+    # ==========================
+
+    cursor.execute("""
+        SELECT DISTINCT empreendimento
+        FROM clientes
+        WHERE empresa_id = ?
+        AND empreendimento IS NOT NULL
+        AND empreendimento <> ''
+        ORDER BY empreendimento
+    """, (empresa_id,))
+
+    empreendimentos = [x["empreendimento"] for x in cursor.fetchall()]
+
     conn.close()
+
+    # ==========================
+    # ETAPAS
+    # ==========================
 
     etapas = [
         "Lead Novo",
@@ -4269,19 +4375,46 @@ def funil():
         for etapa in etapas
     }
 
-    for c in clientes:
+    for cliente in clientes:
 
-        status = c["status_funil"] or "Lead Novo"
+        status = cliente["status_funil"] or "Lead Novo"
 
         if status not in funil_dados:
             status = "Lead Novo"
 
-        funil_dados[status].append(c)
+        funil_dados[status].append(cliente)
+
+    # ==========================
+    # INDICADORES
+    # ==========================
+
+    total_leads = len(clientes)
+    atendimento = len(funil_dados["Lead Novo"])
+    visitas = len(funil_dados["Visita Agendada"])
+    propostas = len(funil_dados["Negociação"])
+    vendas = len(funil_dados["Concluido"])
 
     return render_template(
         "funil.html",
         funil_dados=funil_dados,
-        etapas=etapas
+        etapas=etapas,
+
+        corretores=corretores,
+        origens=origens,
+        empreendimentos=empreendimentos,
+
+        total_leads=total_leads,
+        atendimento=atendimento,
+        visitas=visitas,
+        propostas=propostas,
+        vendas=vendas,
+
+        pesquisa=pesquisa,
+        corretor=corretor,
+        origem=origem,
+        empreendimento=empreendimento,
+        data_inicio=data_inicio,
+        data_fim=data_fim
     )
 
 @app.route("/editar_imovel/<int:id>", methods=["GET", "POST"])
