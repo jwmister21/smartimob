@@ -15,6 +15,7 @@ from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
 from routes.whatsapp_v2 import whatsapp_v2
+from flask_login import current_user
 import google.generativeai as genai
 import json
 import pdfplumber
@@ -4176,6 +4177,9 @@ def admin_resetar_senha(id):
 @verificar_sessao
 def cadastrar_cliente():
 
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
     if request.method == "POST":
 
         nome = request.form["nome"]
@@ -4190,15 +4194,10 @@ def cadastrar_cliente():
         empreendimento = request.form.get("empreendimento", "")
         construtora = request.form.get("construtora", "")
 
-
         user_id = session["usuario_id"]
         empresa_id = session["empresa_id"]
 
-        # NOVO
         data_criacao = datetime.now().strftime("%Y-%m-%d")
-
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
 
         cursor.execute("""
             INSERT INTO clientes (
@@ -4240,7 +4239,28 @@ def cadastrar_cliente():
 
         return redirect("/clientes")
 
-    return render_template("cadastrar_cliente.html")
+    # =========================
+    # GET (LISTAGEM OU FORM)
+    # =========================
+
+    cursor.execute("""
+        SELECT 
+            c.*,
+            u.nome AS nome_criador
+        FROM clientes c
+        LEFT JOIN usuarios u ON u.id = c.usuario_id
+        WHERE c.empresa_id = ?
+        ORDER BY c.id DESC
+    """, (session["empresa_id"],))
+
+    clientes = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "cadastrar_cliente.html",
+        clientes=clientes
+    )
 # ==========================================
 # 5. ROTAS DE IMÓVEIS
 # ==========================================
