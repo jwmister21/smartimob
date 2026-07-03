@@ -2512,7 +2512,6 @@ def campanhas():
     )
 
 @app.route("/enviar_mensagem", methods=["POST"])
-@verificar_sessao
 def enviar_mensagem():
 
     try:
@@ -2520,30 +2519,13 @@ def enviar_mensagem():
 
         telefone = data.get("telefone")
         mensagem = data.get("mensagem")
+        sessao = data.get("sessao")  # 🔥 agora vem direto do front
 
-        if not telefone or not mensagem:
-            return jsonify({"status":"error","erro":"dados inválidos"}), 400
-
-        empresa_id = session.get("empresa_id")
-        usuario_id = session.get("usuario_id")
-
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        cur = conn.cursor()
-
-        cur.execute("""
-            SELECT whatsapp_sessao
-            FROM usuarios
-            WHERE id = ? AND empresa_id = ?
-        """, (usuario_id, empresa_id))
-
-        user = cur.fetchone()
-        conn.close()
-
-        if not user or not user["whatsapp_sessao"]:
-            return jsonify({"status":"error","erro":"sem sessão wpp"}), 400
-
-        sessao = user["whatsapp_sessao"]
+        if not telefone or not mensagem or not sessao:
+            return jsonify({
+                "status": "error",
+                "erro": "dados inválidos (telefone, mensagem, sessao)"
+            }), 400
 
         telefone = ''.join(filter(str.isdigit, str(telefone)))
 
@@ -2552,6 +2534,33 @@ def enviar_mensagem():
 
         WPP_URL = "http://localhost:3001"
 
+        # ==============================
+        # CHECAR STATUS NO NODE
+        # ==============================
+        status_resp = requests.get(
+            f"{WPP_URL}/status/{sessao}",
+            timeout=10
+        )
+
+        if status_resp.status_code != 200:
+            return jsonify({
+                "status": "error",
+                "erro": "node offline ou erro status"
+            }), 500
+
+        status_data = status_resp.json()
+
+        print("📊 STATUS NODE:", status_data)
+
+        if not status_data.get("conectado"):
+            return jsonify({
+                "status": "error",
+                "erro": "whatsapp não conectado"
+            }), 400
+
+        # ==============================
+        # ENVIO
+        # ==============================
         resp = requests.post(
             f"{WPP_URL}/enviar",
             json={
@@ -2562,10 +2571,16 @@ def enviar_mensagem():
             timeout=20
         )
 
+        print("📤 RESPOSTA NODE:", resp.text)
+
         return jsonify(resp.json())
 
     except Exception as e:
-        return jsonify({"status":"error","erro":str(e)})
+        print("🔥 ERRO FLASK:", str(e))
+        return jsonify({
+            "status": "error",
+            "erro": str(e)
+        })
      
 @app.route('/termos')
 def termos():
