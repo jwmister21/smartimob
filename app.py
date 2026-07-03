@@ -4433,7 +4433,7 @@ def funil():
             ON u.id = c.atendido_por
             
         LEFT JOIN usuarios u_cria
-            ON u_cria.id = c.criado_por    
+            ON u_cria.id = c.usuario_id    
 
         WHERE c.empresa_id = ?
     """
