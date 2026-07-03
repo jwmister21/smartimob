@@ -105,6 +105,7 @@
                 <p><strong>{{ cliente.nome }}</strong></p>
                 <p style="font-size: 0.85rem; color: #64748b;">☎️ {{ cliente.telefone }}</p>
                 <p style="font-size: 0.85rem; color: #64748b;"> {{ cliente.sobre }}</p>
+                👤 Criado por: {{ cliente.nome_criador or 'Sistema' }} <br>
                 {% if cliente.nome_corretor %}
 <div style="
     margin-top:8px;
