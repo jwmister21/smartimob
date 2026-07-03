@@ -237,11 +237,17 @@ function formatarFiltro() {
 function importarPlanilha() {
 
     let texto = document.getElementById("importarLista").value;
-    let linhas = texto.split("\n");
+
+    let linhas = texto
+        .split(/\r?\n/)
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+
+    console.log("📌 LINHAS ENCONTRADAS:", linhas);
+
+    let novos = 0;
 
     linhas.forEach(linha => {
-
-        if (!linha.trim()) return;
 
         let partes = linha.split(",");
 
@@ -254,20 +260,21 @@ function importarPlanilha() {
             phone = "55" + phone;
         }
 
-        if (name && phone) {
+        let existe = selecionados.find(c => c.phone === phone);
 
-            if (!selecionados.find(c => c.phone === phone)) {
-                selecionados.push({ name, phone });
-            }
+        if (!existe) {
+            selecionados.push({ name, phone });
+            novos++;
         }
     });
+
+    console.log("📌 TOTAL SELECIONADOS:", selecionados);
 
     atualizarTextarea();
     atualizarContador();
 
-    alert("Lista importada com sucesso!");
+    alert(`Importação concluída: ${novos} novos contatos`);
 }
-
 // =========================
 // TEMPLATE
 // =========================
