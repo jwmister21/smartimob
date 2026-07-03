@@ -2514,7 +2514,7 @@ def teste_envio():
                 "erro": "telefone e mensagem obrigatórios"
             }), 400
 
-        WPP_URL = "http://localhost:3001"
+        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
         resp = requests.post(
             f"{WPP_URL}/enviar",
