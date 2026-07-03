@@ -2698,7 +2698,7 @@ def cadastrar_imovel():
         )
 
         try:
-            valor = float(valor)
+            valor = int(valor)
         except:
             valor = 0
 
