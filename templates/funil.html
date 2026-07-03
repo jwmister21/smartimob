@@ -102,25 +102,41 @@
         <div class="cards-area">
             {% for cliente in funil_dados[etapa] %}
             <div class="card-cliente">
-                <p><strong>{{ cliente.nome }}</strong></p>
-                <p style="font-size: 0.85rem; color: #64748b;">☎️ {{ cliente.telefone }}</p>
-                <p style="font-size: 0.85rem; color: #64748b;"> {{ cliente.sobre }}</p>
-                <span class="criador-info">
-    👤 <strong>{{ cliente.nome_criador or 'Sistema' }}</strong>
-</span>
-                {% if cliente.nome_corretor %}
-<div style="
-    margin-top:8px;
-    padding:6px 10px;
-    background:#eff6ff;
-    color:#2563eb;
-    border-radius:8px;
-    font-size:12px;
-    font-weight:600;
-    display:inline-block;
-">
-    Atendimento  
- 👨‍💼 : {{ cliente.nome_corretor.split(' ')[0] }}   
+
+    <div class="card-topo">
+        <div class="nome-cliente">
+            {{ cliente.nome }}
+        </div>
+
+        <div class="telefone">
+            ☎️ {{ cliente.telefone }}
+        </div>
+    </div>
+
+    {% if cliente.sobre %}
+    <div class="sobre-cliente">
+        {{ cliente.sobre[:70] }}{% if cliente.sobre|length > 70 %}...{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="meta-info">
+        <span class="criador">
+            👤 {{ cliente.nome_criador or 'Sistema' }}
+        </span>
+
+        {% if cliente.nome_corretor %}
+        <span class="corretor">
+            👨‍💼 {{ cliente.nome_corretor.split(' ')[0] }}
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="card-actions">
+        <a href="/cliente/{{ cliente.id }}" class="btn-detalhes">
+            Ver Perfil →
+        </a>
+    </div>
+
 </div>
 {% endif %}
                 <div class="card-actions">
@@ -138,6 +154,81 @@
 </div>
 
 <style>
+    .card-cliente {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--etapa-cor);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: 0.2s;
+}
+
+.card-cliente:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+}
+
+/* topo */
+.card-topo {
+    margin-bottom: 8px;
+}
+
+.nome-cliente {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.telefone {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* sobre */
+.sobre-cliente {
+    font-size: 12px;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 6px 8px;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+/* meta */
+.meta-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.meta-info span {
+    background: #f8fafc;
+    padding: 3px 6px;
+    border-radius: 6px;
+}
+
+/* botão */
+.btn-detalhes {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-detalhes:hover {
+    opacity: 0.9;
+}
+    
     .criador-info {
     font-size: 12px;
     color: #94a3b8;
