@@ -238,42 +238,39 @@ function importarPlanilha() {
 
     let texto = document.getElementById("importarLista").value;
 
+    // 🔥 quebra correta de linhas (Windows + Linux)
     let linhas = texto
         .split(/\r?\n/)
         .map(l => l.trim())
         .filter(l => l.length > 0);
 
-    console.log("📌 LINHAS ENCONTRADAS:", linhas);
-
     let novos = 0;
 
     linhas.forEach(linha => {
 
+        // aceita "nome,telefone"
         let partes = linha.split(",");
 
         let name = (partes[0] || "").trim();
-        let phone = (partes[1] || "").replace(/\D/g, '').trim();
+        let phone = (partes[1] || "").replace(/\D/g, "").trim();
 
-        if (!phone) return;
+        if (!name || !phone) return;
 
         if (!phone.startsWith("55")) {
             phone = "55" + phone;
         }
 
-        let existe = selecionados.find(c => c.phone === phone);
-
-        if (!existe) {
+        // evita duplicado
+        if (!selecionados.find(c => c.phone === phone)) {
             selecionados.push({ name, phone });
             novos++;
         }
     });
 
-    console.log("📌 TOTAL SELECIONADOS:", selecionados);
-
     atualizarTextarea();
     atualizarContador();
 
-    alert(`Importação concluída: ${novos} novos contatos`);
+    alert(`Importado: ${novos} contatos`);
 }
 // =========================
 // TEMPLATE
