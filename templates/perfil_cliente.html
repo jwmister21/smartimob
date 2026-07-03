@@ -439,12 +439,6 @@ MODAL EDITAR CLIENTE
         <span class="info-label">Sobre o cliente</span>
         <div class="info-val" style="color:#059669;">📝 {{ cliente[13] }}</div>
 
-        <form action="/cliente/atualizar_dados/{{ cliente[0] }}" method="POST" style="background:#f8fafc; padding:15px; border-radius:12px;">
-            <span style="color:#2563eb; font-weight:bold;">📋 Informações adicionais</span>
-            <label class="info-label" style="margin-top:10px;">Telefone</label>
-            <input type="text" name="telefone" value="{{ cliente[2] or '' }}" class="funnel-selector">
-            <button class="btn-salvar-status">💾 Salvar Alterações</button>
-        </form>
 
         <form action="{{ url_for('excluir_cliente', cliente_id=cliente[0]) }}" method="POST" onsubmit="return confirm('Excluir definitivamente?');">
             <button class="btn-excluir">🗑 Excluir Cliente</button>
