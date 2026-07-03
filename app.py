@@ -2532,7 +2532,7 @@ def enviar_mensagem():
         if not telefone.startswith("55"):
             telefone = "55" + telefone
 
-        WPP_URL = "http://localhost:3001"
+        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 
         # ==============================
         # CHECAR STATUS NO NODE
