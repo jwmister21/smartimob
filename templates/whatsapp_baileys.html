@@ -145,7 +145,11 @@ async function atualizar() {
     const btnConnect = document.getElementById("btnConnect");
     const btnDisconnect = document.getElementById("btnDisconnect");
 
-    if (data.conectado) {
+    // 🔥 normaliza estado (IMPORTANTE)
+    const conectado = data.conectado?.conectado ?? data.conectado ?? false;
+    const pronto = data.conectado?.pronto ?? false;
+
+    if (conectado) {
 
         status.innerHTML = "🟢 Conectado";
         status.className = "status green";
@@ -158,8 +162,8 @@ async function atualizar() {
 
     } else {
 
-        status.innerHTML = "🔴 Desconectado";
-        status.className = "status red";
+        status.innerHTML = pronto ? "🟡 Conectando..." : "🔴 Desconectado";
+        status.className = pronto ? "status green" : "status red";
 
         btnConnect.style.display = "inline-block";
         btnDisconnect.style.display = "none";
@@ -173,7 +177,6 @@ async function atualizar() {
 
             qr.innerHTML = "";
             info.innerHTML = "Gerando QR Code...";
-
         }
     }
 }
