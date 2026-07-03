@@ -4424,7 +4424,7 @@ def funil():
     sql = """
         SELECT
             c.*,
-            u.nome AS nome_corretor
+            u.nome AS nome_corretor,
             u_cria.nome AS nome_criador
 
         FROM clientes c
