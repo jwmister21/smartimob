@@ -4425,11 +4425,15 @@ def funil():
         SELECT
             c.*,
             u.nome AS nome_corretor
+            u_cria.nome AS nome_criador
 
         FROM clientes c
 
         LEFT JOIN usuarios u
             ON u.id = c.atendido_por
+            
+        LEFT JOIN usuarios u_cria
+            ON u_cria.id = c.criado_por    
 
         WHERE c.empresa_id = ?
     """
