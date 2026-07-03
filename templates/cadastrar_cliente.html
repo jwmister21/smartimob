@@ -85,7 +85,7 @@
 
             <div class="campo">
     <label>Criado por</label>
-    <input type="text" value="{{ session['usuario_nome'] }}" disabled>
+    <input type="text" name="empreendimento" value="{{ session.get('usuario_nome') }}" readonly>
 </div>
             
             <div class="campo">
