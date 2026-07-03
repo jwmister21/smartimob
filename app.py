@@ -2511,6 +2511,43 @@ def campanhas():
         clientes=clientes
     )
 
+@app.route("/teste_envio", methods=["POST"])
+def teste_envio():
+
+    try:
+        data = request.get_json() or {}
+
+        print("🔥 TESTE RECEBIDO:", data)
+
+        telefone = data.get("telefone")
+        mensagem = data.get("mensagem")
+
+        if not telefone or not mensagem:
+            return jsonify({
+                "status": "error",
+                "erro": "telefone e mensagem obrigatórios"
+            }), 400
+
+        WPP_URL = "http://localhost:3001"
+
+        resp = requests.post(
+            f"{WPP_URL}/enviar",
+            json={
+                "sessao": "empresa_1",
+                "numero": telefone,
+                "mensagem": mensagem
+            },
+            timeout=20
+        )
+
+        print("📤 RESPOSTA NODE:", resp.text)
+
+        return jsonify(resp.json())
+
+    except Exception as e:
+        print("🔥 ERRO TESTE:", str(e))
+        return jsonify({"status": "error", "erro": str(e)})
+
 @app.route("/enviar_mensagem", methods=["POST"])
 def enviar_mensagem():
 
