@@ -92,7 +92,15 @@
         <label>⏱ Intervalo entre envios (segundos)</label>
         <input id="delay" type="number" value="5">
 
-        <button onclick="iniciarEnvio()">🚀 Iniciar campanha</button>
+        <div style="padding:20px;">
+
+    <h3>🔥 Teste WhatsApp Automático</h3>
+
+    <button onclick="enviarTeste()" style="padding:12px 25px; font-size:16px;">
+        Enviar Mensagem Teste
+    </button>
+
+</div>
 
         <div class="contador">Clientes selecionados: <span id="qtd">0</span></div>
         <div id="status"></div>
@@ -130,7 +138,25 @@ MARIA SOUZA,551188888888"></textarea>
 </div>
 
 <script>
-  
+  async function enviarTeste() {
+
+    const resp = await fetch("https://zoom-leggings-viability.ngrok-free.dev/teste_envio", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            telefone: "5511920900085",
+            mensagem: "teste"
+        })
+    });
+
+    const data = await resp.json();
+
+    console.log("RESPOSTA:", data);
+
+    alert(JSON.stringify(data, null, 2));
+}
 // =========================
 // ESTADO GLOBAL
 // =========================
