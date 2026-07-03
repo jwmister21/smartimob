@@ -94,13 +94,9 @@
 
         <div style="padding:20px;">
 
-    <h3>🔥 Teste WhatsApp Automático</h3>
-
-    <button onclick="enviarTeste()" style="padding:12px 25px; font-size:16px;">
-        Enviar Mensagem Teste
-    </button>
-
-</div>
+   <button type="button" onclick="iniciarEnvio()">
+    Enviar Mensagem
+</button>
 
         <div class="contador">Clientes selecionados: <span id="qtd">0</span></div>
         <div id="status"></div>
@@ -138,28 +134,7 @@ MARIA SOUZA,551188888888"></textarea>
 </div>
 
 <script>
-  async function enviarTeste() {
-
-    const resp = await fetch("https://zoom-leggings-viability.ngrok-free.dev/teste_envio", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            telefone: "5511920900085",
-            mensagem: "teste"
-        })
-    });
-
-    const data = await resp.json();
-
-    console.log("RESPOSTA:", data);
-
-    alert(JSON.stringify(data, null, 2));
-}
-// =========================
-// ESTADO GLOBAL
-// =========================
+  
 let selecionados = [];
 
 // =========================
@@ -198,7 +173,6 @@ function selecionarCliente(check) {
         }
 
     } else {
-
         selecionados = selecionados.filter(c => c.phone !== phone);
     }
 
@@ -226,7 +200,7 @@ function selecionarTodos() {
 }
 
 // =========================
-// FILTRO CLIENTES
+// FILTRO
 // =========================
 function limparValor(valor) {
     if (!valor) return 0;
@@ -259,12 +233,11 @@ function formatarFiltro() {
 }
 
 // =========================
-// IMPORTAÇÃO CSV (NOME, TELEFONE)
+// IMPORTAÇÃO
 // =========================
 function importarPlanilha() {
 
     let texto = document.getElementById("importarLista").value;
-
     let linhas = texto.split("\n");
 
     linhas.forEach(linha => {
@@ -297,7 +270,7 @@ function importarPlanilha() {
 }
 
 // =========================
-// TEMPLATE DE MENSAGEM
+// TEMPLATE
 // =========================
 function montarMensagem(template, cliente) {
 
@@ -307,7 +280,7 @@ function montarMensagem(template, cliente) {
 }
 
 // =========================
-// ENVIO WHATSAPP
+// ENVIO WHATSAPP (NODE)
 // =========================
 async function iniciarEnvio() {
 
@@ -323,18 +296,24 @@ async function iniciarEnvio() {
 
         let msgFinal = montarMensagem(mensagem, cliente);
 
-        statusEl.innerHTML = "📤 Enviando para: " + cliente.name;
+        statusEl.innerHTML = `📤 Enviando ${i + 1}/${selecionados.length} → ${cliente.name}`;
 
         try {
 
-            await fetch("/enviar_mensagem", {
+            const resp = await fetch("https://zoom-leggings-viability.ngrok-free.dev/enviar", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
-                    telefone: cliente.phone,
+                    sessao: "empresa_1",
+                    numero: cliente.phone,
                     mensagem: msgFinal
                 })
             });
+
+            const data = await resp.json();
+            console.log("ENVIO OK:", cliente.name, data);
 
         } catch (err) {
             console.log("Erro envio:", err);
