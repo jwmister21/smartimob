@@ -15,7 +15,6 @@ from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
 from moviepy import concatenate_videoclips
 from routes.whatsapp_v2 import whatsapp_v2
-from flask_login import current_user
 import google.generativeai as genai
 import json
 import pdfplumber
