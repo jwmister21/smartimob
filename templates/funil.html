@@ -121,12 +121,12 @@
 
     <div class="meta-info">
         <span class="criador">
-            👤 {{ cliente.nome_criador or 'Sistema' }}
+            Criado : {{ cliente.nome_criador or 'Sistema' }}
         </span>
 
         {% if cliente.nome_corretor %}
         <span class="corretor">
-            👨‍💼 {{ cliente.nome_corretor.split(' ')[0] }}
+            Atendido : {{ cliente.nome_corretor.split(' ')[0] }}
         </span>
         {% endif %}
     </div>
@@ -266,9 +266,20 @@
     }
     
     .btn-detalhes { 
-        display: inline-block; margin-top: 10px; color: var(--etapa-cor); 
-        text-decoration: none; font-size: 0.8rem; font-weight: 600;
-    }
+    display: inline-block;
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    transition: 0.2s;
+}
 
     .card-vazio { padding: 20px; text-align: center; color: #94a3b8; font-size: 0.85rem; border: 2px dashed #e2e8f0; border-radius: 10px; }
     .funil-filtros{
