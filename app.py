@@ -2241,20 +2241,6 @@ def importar_clientes():
             return redirect("/importar_clientes")
 
     return render_template("importar_clientes.html")
-@app.route("/teste_envio")
-def teste_envio():
-
-    requests.post(
-        "",
-        json={
-            "sessao": "corretor_1",
-            "numero": "5511920900085@c.us",
-            "mensagem": "🚀 Teste SMARTZEN IMOB"
-        }
-    )
-
-    return "Mensagem enviada"
-
 
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
 @super_admin_required
