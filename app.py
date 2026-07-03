@@ -2690,11 +2690,6 @@ def cadastrar_imovel():
 
         valor = request.form.get("valor", "")
 
-        valor = re.sub(r"\D", "", valor)
-
-
-        valor = int(valor) if valor else 0
-
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
