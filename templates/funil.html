@@ -105,7 +105,9 @@
                 <p><strong>{{ cliente.nome }}</strong></p>
                 <p style="font-size: 0.85rem; color: #64748b;">☎️ {{ cliente.telefone }}</p>
                 <p style="font-size: 0.85rem; color: #64748b;"> {{ cliente.sobre }}</p>
-                👤 Criado por: {{ cliente.nome_criador or 'Sistema' }} <br>
+                <span class="criador-info">
+    👤 <strong>{{ cliente.nome_criador or 'Sistema' }}</strong>
+</span>
                 {% if cliente.nome_corretor %}
 <div style="
     margin-top:8px;
@@ -136,6 +138,14 @@
 </div>
 
 <style>
+    .criador-info {
+    font-size: 12px;
+    color: #94a3b8;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 8px;
+    border-radius: 8px;
+    display: inline-block;
+}
     /* Cores das etapas - Você pode ajustar os códigos hex conforme preferir */
     .etapa-1 { --etapa-cor: #3b82f6; } /* Azul */
     .etapa-2 { --etapa-cor: #8b5cf6; } /* Roxo */
