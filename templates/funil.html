@@ -101,7 +101,7 @@
         
         <div class="cards-area">
             {% for cliente in funil_dados[etapa] %}
-            <div class="card-cliente">
+<div class="card-cliente">
 
     <div class="card-topo">
         <div class="nome-cliente">
@@ -138,16 +138,12 @@
     </div>
 
 </div>
-{% endif %}
-                <div class="card-actions">
-                    <a href="/cliente/{{ cliente.id }}" class="btn-detalhes">Ver Perfil</a>
-                </div>
-            </div>
-            {% else %}
-            <div class="card-vazio">
-                <small>Nenhum lead</small>
-            </div>
-            {% endfor %}
+
+{% else %}
+<div class="card-vazio">
+    <small>Nenhum lead</small>
+</div>
+{% endfor %}
         </div>
     </div>
     {% endfor %}
