@@ -27,7 +27,7 @@ body {
     padding: 30px;
     border-radius: 15px;
     text-align: center;
-    width: 400px;
+    width: 420px;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
@@ -36,9 +36,17 @@ h2 {
 }
 
 .status {
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-size: 14px;
     color: #38bdf8;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
 }
 
 .qr-box {
@@ -62,6 +70,7 @@ button {
     border-radius: 8px;
     cursor: pointer;
     margin: 5px;
+    width: 100%;
 }
 
 button:hover {
@@ -86,7 +95,14 @@ button:hover {
 
     <div class="card">
 
-        <h2>WhatsApp SMARTZEN</h2>
+        <h2>SMARTZEN WhatsApp</h2>
+
+        <!-- SELEÇÃO DE SESSÃO -->
+        <select id="sessaoSelect" onchange="trocarSessao()">
+            <option value="empresa_1">Empresa 1</option>
+            <option value="empresa_2">Empresa 2</option>
+            <option value="empresa_3">Empresa 3</option>
+        </select>
 
         <div id="status" class="status">
             Aguardando conexão...
@@ -95,8 +111,6 @@ button:hover {
         <div class="qr-box">
             <img id="qr" src="" />
         </div>
-
-        <br>
 
         <button onclick="conectar()">Gerar QR</button>
         <button class="red" onclick="desconectar()">Desconectar</button>
@@ -107,11 +121,29 @@ button:hover {
 
 <script>
 
-const sessao = "empresa_1";
+const NODE_API = "https://lucky-analysis-production-e497.up.railway.app/";
 
+let sessao = document.getElementById("sessaoSelect").value;
+
+// ======================
+// TROCAR SESSÃO
+// ======================
+function trocarSessao() {
+
+    sessao = document.getElementById("sessaoSelect").value;
+
+    document.getElementById("qr").src = "";
+    document.getElementById("status").innerText = "Sessão alterada";
+
+    monitorar();
+}
+
+// ======================
+// CONECTAR
+// ======================
 async function conectar() {
 
-    await fetch("/whatsapp/conectar", {
+    await fetch(`${NODE_API}/api/whatsapp/conectar`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -119,13 +151,15 @@ async function conectar() {
         body: JSON.stringify({ sessao })
     });
 
-    buscarQR();
     monitorar();
 }
 
+// ======================
+// PEGAR QR
+// ======================
 async function buscarQR() {
 
-    const res = await fetch(`/whatsapp/qr/${sessao}`);
+    const res = await fetch(`${NODE_API}/api/whatsapp/qr/${sessao}`);
     const data = await res.json();
 
     if (data.qr) {
@@ -133,26 +167,37 @@ async function buscarQR() {
     }
 }
 
-async function monitorar() {
+// ======================
+// MONITORAMENTO EM TEMPO REAL
+// ======================
+function monitorar() {
 
     setInterval(async () => {
 
-        const res = await fetch(`/whatsapp/status/${sessao}`);
+        const res = await fetch(`${NODE_API}/api/whatsapp/status/${sessao}`);
         const data = await res.json();
 
         document.getElementById("status").innerText = data.status;
 
         if (data.status === "conectado") {
             document.getElementById("qr").style.display = "none";
+        } else {
+            document.getElementById("qr").style.display = "block";
+            buscarQR();
         }
 
-    }, 3000);
-
+    }, 2000);
 }
 
-async function desconectar() {
-    alert("Função será adicionada na próxima etapa");
+// ======================
+// DESCONEXÃO (futuro)
+// ======================
+function desconectar() {
+    alert("Vamos implementar logout na próxima etapa");
 }
+
+// inicia monitoramento automático
+monitorar();
 
 </script>
 
