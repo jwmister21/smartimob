@@ -1965,9 +1965,9 @@ def editar_usuario(user_id):
 @app.route("/whatsapp")
 def whatsapp_qr():
 
-    usuario = session.get("usuario")
+    usuario = get_usuario()
 
-    if not usuario:
+    if not usuario["id"]:
         return redirect("/login")
 
     return render_template(
@@ -3534,41 +3534,56 @@ def salvar_configuracoes():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+
     if request.method == "POST":
-        # Só processa se for um envio de formulário
+
         email = request.form.get("email")
         senha = request.form.get("senha")
+
+        if not email or not senha:
+            return render_template("login.html", erro="Preencha todos os campos.")
 
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM usuarios WHERE email = ?", (email,))
+        cursor.execute("""
+            SELECT * FROM usuarios WHERE email = ?
+        """, (email,))
+
         usuario = cursor.fetchone()
 
-        if usuario and check_password_hash(usuario['senha'], senha):
-            novo_token = secrets.token_hex(16)
-            cursor.execute("UPDATE usuarios SET session_token = ? WHERE id = ?", 
-                           (novo_token, usuario['id']))
-            conn.commit()
+        if usuario and check_password_hash(usuario["senha"], senha):
 
-            session["usuario_id"] = usuario['id']
-            session["empresa_id"] = usuario['empresa_id']
-            session["session_token"] = novo_token
-            session["usuario_nome"] = usuario['nome']
-            session["is_admin"] = usuario['is_admin']
-            session["user_email"] = usuario['email']
-            session["perfil"] = usuario["perfil"]
+            # gera token de sessão (SaaS segurança)
+            novo_token = secrets.token_hex(16)
+
+            cursor.execute("""
+                UPDATE usuarios 
+                SET session_token = ?
+                WHERE id = ?
+            """, (novo_token, usuario["id"]))
+
+            conn.commit()
             conn.close()
-            return redirect('/dashboard_v2')
+
+            # =========================
+            # SESSION PADRÃO DO SISTEMA
+            # =========================
+            session["usuario_id"] = usuario["id"]
+            session["empresa_id"] = usuario["empresa_id"]
+            session["usuario_nome"] = usuario["nome"]
+            session["user_email"] = usuario["email"]
+            session["perfil"] = usuario["perfil"]
+            session["is_admin"] = usuario["is_admin"]
+            session["session_token"] = novo_token
+
+            return redirect("/dashboard_v2")
 
         conn.close()
         return render_template("login.html", erro="E-mail ou senha incorretos.")
-        return redirect("/login")
 
-    # Se o método for GET, apenas mostra o HTML
     return render_template("login.html")
-
 
 @app.route("/cadastrar_usuario", methods=["GET", "POST"])
 def cadastrar_usuario():
