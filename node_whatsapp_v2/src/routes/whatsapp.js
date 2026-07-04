@@ -35,7 +35,10 @@ router.get(
     "/perfil/:sessao",
     controller.perfil
 );
+//enviar
+router.post("/enviar", controller.enviar);
 
+);
 // ===============================
 // LISTAR SESSÕES
 // ===============================
