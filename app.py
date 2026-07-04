@@ -1908,6 +1908,10 @@ def editar_usuario(user_id):
     return jsonify({"status": "sucesso"})
 
 
+@app.route("/whatsapp")
+def whatsapp_qr():
+    return render_template("whatsapp_qr.html")
+
 @app.route("/ceo/usuarios")
 @verificar_sessao
 @somente_ceo
