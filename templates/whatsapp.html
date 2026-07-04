@@ -1,19 +1,79 @@
-<button onclick="criar()">Criar WhatsApp</button>
-<button onclick="qr()">Ver QR</button>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Smartzen WhatsApp</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            color: white;
+            padding: 20px;
+        }
 
-<pre id="saida"></pre>
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 500px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: #22c55e;
+            color: white;
+            cursor: pointer;
+        }
+
+        img {
+            width: 250px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📲 WhatsApp Smartzen</h1>
+
+    <div class="card">
+        <p>Status: <b id="status">Desconectado</b></p>
+
+        <button onclick="criarInstancia()">Criar Instância</button>
+
+        <div id="qr"></div>
+    </div>
 
 <script>
-async function criar(){
-  let r = await fetch("/whatsapp/criar/smartzen1");
-  document.getElementById("saida").innerText = await r.text();
-}
+const API = "http://SEU-NGROK-AQUI"; // troca aqui
+const APIKEY = "smartzen123";
 
-async function qr(){
-  let r = await fetch("/whatsapp/qr/smartzen1");
-  let data = await r.json();
+async function criarInstancia() {
+    const res = await fetch(API + "/instance/create", {
+        method: "POST",
+        headers: {
+            "apikey": APIKEY,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            instanceName: "smartzen1",
+            integration: "WHATSAPP-BAILEYS",
+            qrcode: true
+        })
+    });
 
-  document.getElementById("saida").innerText =
-    data.qrcode?.base64 || JSON.stringify(data);
+    const data = await res.json();
+    console.log(data);
+
+    if (data.qrcode?.base64) {
+        document.getElementById("qr").innerHTML =
+            `<img src="${data.qrcode.base64}" />`;
+    }
+
+    document.getElementById("status").innerText = "Conectando...";
 }
 </script>
+
+</body>
+</html>
