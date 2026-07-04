@@ -108,10 +108,9 @@ button:hover {
 
 const NODE_API = "https://lucky-analysis-production-e497.up.railway.app";
 
-// 🔥 SESSÃO AUTOMÁTICA DO USUÁRIO (SAAAS REAL)
+// 🔥 sessão vinda do Flask (multi usuário real)
 const sessao = "{{ usuario.whatsapp_sessao }}";
 
-// controle de intervalos
 let intervalQR = null;
 let intervalStatus = null;
 
@@ -120,7 +119,7 @@ let intervalStatus = null;
 // ======================
 async function conectar() {
 
-    await fetch(`${NODE_API}/api/whatsapp/conectar`, {
+    await fetch(`${NODE_API}/whatsapp/conectar`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -132,15 +131,20 @@ async function conectar() {
 }
 
 // ======================
-// PEGAR QR
+// QR CODE
 // ======================
 async function buscarQR() {
 
-    const res = await fetch(`${NODE_API}/api/whatsapp/qr/${sessao}`);
-    const data = await res.json();
+    try {
+        const res = await fetch(`${NODE_API}/whatsapp/qr/${sessao}`);
+        const data = await res.json();
 
-    if (data.qr) {
-        document.getElementById("qr").src = data.qr;
+        if (data.qr) {
+            document.getElementById("qr").src = data.qr;
+        }
+
+    } catch (err) {
+        console.log("Erro QR:", err);
     }
 }
 
@@ -149,20 +153,28 @@ async function buscarQR() {
 // ======================
 async function buscarStatus() {
 
-    const res = await fetch(`${NODE_API}/api/whatsapp/status/${sessao}`);
-    const data = await res.json();
+    try {
+        const res = await fetch(`${NODE_API}/whatsapp/status/${sessao}`);
 
-    document.getElementById("status").innerText = data.status;
+        if (!res.ok) return;
 
-    if (data.status === "conectado") {
-        document.getElementById("qr").style.display = "none";
-    } else {
-        document.getElementById("qr").style.display = "block";
+        const data = await res.json();
+
+        document.getElementById("status").innerText = data.status;
+
+        if (data.status === "conectado") {
+            document.getElementById("qr").style.display = "none";
+        } else {
+            document.getElementById("qr").style.display = "block";
+        }
+
+    } catch (err) {
+        console.log("Erro status:", err);
     }
 }
 
 // ======================
-// MONITORAMENTO (CLEAN)
+// MONITORAMENTO LIMPO
 // ======================
 function iniciarMonitoramento() {
 
@@ -174,13 +186,13 @@ function iniciarMonitoramento() {
 }
 
 // ======================
-// DESCONEXÃO
+// DESCONEXÃO (futuro)
 // ======================
 function desconectar() {
-    alert("Desconectar será implementado na próxima etapa");
+    alert("Logout será implementado na próxima etapa");
 }
 
-// inicia automaticamente ao abrir tela
+// inicia automático
 window.onload = function () {
     iniciarMonitoramento();
 };
