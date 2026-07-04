@@ -1983,19 +1983,6 @@ def editar_usuario(user_id):
     return jsonify({"status": "sucesso"})
 
 
-@app.route("/whatsapp")
-def whatsapp_qr():
-
-    usuario = get_usuario()
-
-    if not usuario:
-        return redirect("/login")
-
-    return render_template(
-        "whatsapp_qr.html",
-        usuario=usuario
-    )
-
 @app.route("/ceo/usuarios")
 @verificar_sessao
 @somente_ceo
