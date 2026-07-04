@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.utils import secure_filename
 from google import genai
+from whatsapp_service import criar_instancia, pegar_qrcode
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from moviepy.video.VideoClip import ColorClip 
@@ -1389,6 +1390,16 @@ def catalogo():
     return render_template("catalogo.html", imoveis=imoveis)
 
 
+@app.route("/whatsapp/criar/<nome>")
+def whatsapp_criar(nome):
+    return jsonify(criar_instancia(nome))
+
+
+@app.route("/whatsapp/qr/<nome>")
+def whatsapp_qr(nome):
+    return jsonify(pegar_qrcode(nome))
+
+ 
 @app.route("/excluir_lead/<int:lead_id>", methods=["POST"])
 @verificar_sessao
 def excluir_lead(lead_id):
