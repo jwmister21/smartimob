@@ -674,20 +674,6 @@ def salvar_status_whatsapp(sessao, status):
     conn.close()
 
 
-@app.route("/webhook_whatsapp_status", methods=["POST"])
-def webhook_whatsapp_status():
-
-    dados = request.get_json()
-
-    sessao = dados.get("sessao")
-    status = dados.get("status")
-
-    salvar_status_whatsapp(sessao, status)
-
-    print("STATUS SALVO:", sessao, status)
-
-    return {"ok": True}
-
 @app.route('/uploads/imoveis/<filename>')
 def foto_imovel(filename):
     return send_from_directory(
@@ -786,39 +772,6 @@ def criar_tabela_whatsapp():
 
 criar_tabela_whatsapp()
 
-@app.route("/teste-whatsapp-db")
-def teste_whatsapp_db():
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-
-    cursor.execute("""
-    INSERT INTO whatsapp_sessoes
-    (
-    empresa_id,
-    usuario_id,
-    session_name,
-    status
-    )
-
-    VALUES
-    (?,?,?,?)
-
-    """,
-    (
-    1,
-    1,
-    "empresa_1_usuario_1",
-    "disconnected"
-    ))
-
-
-    conn.commit()
-    conn.close()
-
-
-    return "sessao criada"
 
 @app.route("/leads_site")
 @verificar_sessao
@@ -1318,7 +1271,23 @@ def fifit():
         status=status,
         ordenar=ordenar
     )
- 
+
+NODE_API = "https://lucky-analysis-production-e497.up.railway.app"
+
+
+@app.route("/whatsapp/qr/<sessao>")
+def pegar_qr(sessao):
+
+    r = requests.get(f"{NODE_API}/api/whatsapp/qr/{sessao}")
+    return jsonify(r.json())
+
+
+@app.route("/whatsapp/status/<sessao>")
+def status_whatsapp(sessao):
+
+    r = requests.get(f"{NODE_API}/api/whatsapp/status/{sessao}")
+    return jsonify(r.json())
+
 @app.route("/catalogo")
 def catalogo():
 
@@ -1747,39 +1716,7 @@ def total_leads_site():
         }
 
 
-@app.route("/conectar_whatsapp")
-def conectar_whatsapp():
 
-    import requests
-
-    usuario_id = session["usuario_id"]
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT whatsapp_sessao FROM usuarios WHERE id = ?",
-        (usuario_id,)
-    )
-
-    usuario = cursor.fetchone()
-
-    conn.close()
-
-    r = requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/criar-sessao",
-        json={
-            "sessao": usuario["whatsapp_sessao"]
-        }
-    )
-
-    print("RESPOSTA NODE:", r.text)
-
-    return {
-        "ok": True,
-        "sessao": usuario["whatsapp_sessao"]
-    }
 
 @app.route('/data/uploads/imoveis/<filename>')
 def servir_video_do_volume(filename):
@@ -1792,53 +1729,6 @@ def servir_video_do_volume(filename):
 
 
 
-@app.route("/verificar_conexao_whatsapp")
-def verificar_conexao_whatsapp():
-
-    sessao = session.get("sessao")  # ou pega do usuário logado
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT whatsapp_sessao
-        FROM usuarios
-        WHERE id = ?
-    """, (session["usuario_id"],))
-
-    user = cursor.fetchone()
-
-    if not user:
-        return {"status": "desconectado"}
-
-    sessao = user[0]
-
-    # chama NODE pra verificar status real
-    import requests
-
-    try:
-        r = requests.get(
-            f"https://zoom-leggings-viability.ngrok-free.dev/status/{sessao}"
-        )
-
-        data = r.json()
-
-        status = data.get("status", "desconectado")
-
-        # atualiza banco
-        cursor.execute("""
-            UPDATE usuarios
-            SET whatsapp_status = ?
-            WHERE whatsapp_sessao = ?
-        """, (status, sessao))
-
-        conn.commit()
-        conn.close()
-
-        return {"status": status}
-
-    except Exception as e:
-        return {"status": "desconectado", "erro": str(e)}
 
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
@@ -2004,32 +1894,6 @@ def listar_clientes():
  
 
 
-@app.route("/status_whatsapp")
-@verificar_sessao
-def status_whatsapp():
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            whatsapp_status,
-            whatsapp_numero
-        FROM usuarios
-        WHERE id = ?
-    """, (session["usuario_id"],))
-
-    usuario = cursor.fetchone()
-
-    conn.close()
-
-    return {
-        "status": usuario["whatsapp_status"],
-        "numero": usuario["whatsapp_numero"]
-    }
-
 
 @app.route("/superadmin/usuario/editar/<int:user_id>", methods=["POST"])
 @super_admin_required
@@ -2094,34 +1958,6 @@ def admin_usuarios():
     )
 
 
-
-@app.route("/atualizar_status_whatsapp", methods=["POST"])
-def atualizar_status_whatsapp():
-
-    dados = request.get_json()
-
-    sessao = dados.get("sessao")
-    status = dados.get("status")
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        UPDATE usuarios
-        SET whatsapp_status = ?
-        WHERE whatsapp_sessao = ?
-    """, (status, sessao))
-
-    conn.commit()
-    conn.close()
-
-    # 🔥 TEMPO REAL
-    socketio.emit("whatsapp_status", {
-        "sessao": sessao,
-        "status": status
-    })
-
-    return {"sucesso": True}
 
 @app.route("/importar_clientes", methods=["GET", "POST"])
 @verificar_sessao
@@ -2460,11 +2296,6 @@ def excluir_foto(foto_id):
 
     return redirect(request.referrer)
 
-
-
-@app.route("/whatsapp")
-def whatsapp():
-    return render_template("whatsapp_baileys.html")
 
 @app.route("/campanhas")
 @verificar_sessao
