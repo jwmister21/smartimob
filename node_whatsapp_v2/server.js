@@ -1,129 +1,98 @@
 const express = require("express");
 const cors = require("cors");
 
-const whatsapp = require("./whatsapp");
+const config = require("./src/config");
+const whatsappRoutes = require("./src/routes/whatsapp");
 
 const app = express();
 
+// ==============================
+// MIDDLEWARES
+// ==============================
+
 app.use(cors());
-app.use(express.json());
 
-const PORT = process.env.PORT || 3001;
+app.use(express.json({
+    limit: "50mb"
+}));
 
-const baileysPkg = require("@whiskeysockets/baileys/package.json");
-console.log("Baileys:", baileysPkg.version);
+app.use(express.urlencoded({
+    extended: true,
+    limit: "50mb"
+}));
 
-// ================================
-// HEALTH CHECK
-// ================================
+// ==============================
+// ROTA PRINCIPAL
+// ==============================
+
 app.get("/", (req, res) => {
 
     res.json({
-        sistema: "SMARTZEN WhatsApp",
-        status: "online",
-        versao: "2.0"
-    });
 
-});
+        sistema: config.APP_NAME,
 
-// ================================
-// CONECTAR
-// ================================
-app.post("/conectar", async (req, res) => {
+        versao: config.VERSION,
 
-    try {
-
-        const { sessao } = req.body;
-
-        if (!sessao) {
-
-            return res.status(400).json({
-                sucesso: false,
-                erro: "Sessão não informada."
-            });
-
-        }
-
-        await whatsapp.conectar(sessao);
-
-        res.json({
-            sucesso: true,
-            mensagem: "Conectando..."
-        });
-
-    } catch (e) {
-
-        console.error(e);
-
-        res.status(500).json({
-            sucesso: false,
-            erro: e.message
-        });
-
-    }
-
-});
-
-// ================================
-// QR CODE
-// ================================
-app.get("/qr/:sessao", (req, res) => {
-
-    const qr = whatsapp.obterQR(req.params.sessao);
-
-    res.json({
-        qr
-    });
-
-});
-
-// ================================
-// STATUS
-// ================================
-app.get("/status/:sessao", (req, res) => {
-
-    res.json({
-
-        status: whatsapp.obterStatus(req.params.sessao),
-
-        numero: whatsapp.obterNumero(req.params.sessao)
+        status: "online"
 
     });
 
 });
 
-// ================================
-// LISTAR SESSÕES
-// ================================
-app.get("/sessoes", (req, res) => {
+// ==============================
+// ROTAS WHATSAPP
+// ==============================
 
-    const lista = {};
+app.use("/api/whatsapp", whatsappRoutes);
 
-    const sessoes = whatsapp.listarSessoes();
+// ==============================
+// ROTA NÃO ENCONTRADA
+// ==============================
 
-    for (const nome in sessoes) {
+app.use((req, res) => {
 
-        lista[nome] = {
+    res.status(404).json({
 
-            status: sessoes[nome].status,
+        sucesso: false,
 
-            numero: sessoes[nome].numero
+        erro: "Rota não encontrada."
 
-        };
-
-    }
-
-    res.json(lista);
+    });
 
 });
 
-// ================================
+// ==============================
+// TRATAMENTO DE ERROS
+// ==============================
 
-app.listen(PORT, () => {
+app.use((err, req, res, next) => {
 
-    console.log("=========================================");
-    console.log(" SMARTZEN WHATSAPP V2 ");
-    console.log(" Porta:", PORT);
-    console.log("=========================================");
+    console.error(err);
+
+    res.status(500).json({
+
+        sucesso: false,
+
+        erro: err.message
+
+    });
+
+});
+
+// ==============================
+// START SERVER
+// ==============================
+
+app.listen(config.PORT, () => {
+
+    console.log("==========================================");
+
+    console.log(" SMARTZEN WHATSAPP ");
+
+    console.log(" Porta:", config.PORT);
+
+    console.log(" Versão:", config.VERSION);
+
+    console.log("==========================================");
 
 });
