@@ -387,6 +387,13 @@ async function iniciarEnvio() {
 
     if (!delay || delay < 1) delay = 1;
 
+    if (!mensagem) {
+        alert("Digite uma mensagem");
+        return;
+    }
+
+    const NODE_API = "https://lucky-analysis-production-e497.up.railway.app";
+
     for (let i = 0; i < selecionados.length; i++) {
 
         let cliente = selecionados[i];
@@ -397,7 +404,7 @@ async function iniciarEnvio() {
 
         try {
 
-            const resp = await fetch("https://zoom-leggings-viability.ngrok-free.dev/enviar", {
+            const resp = await fetch(`${NODE_API}/api/whatsapp/enviar`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -410,7 +417,12 @@ async function iniciarEnvio() {
             });
 
             const data = await resp.json();
-            console.log("ENVIO OK:", cliente.name, data);
+
+            if (!data.sucesso) {
+                console.log("ERRO ENVIO:", data);
+            } else {
+                console.log("ENVIO OK:", cliente.name);
+            }
 
         } catch (err) {
             console.log("Erro envio:", err);
@@ -421,7 +433,6 @@ async function iniciarEnvio() {
 
     statusEl.innerHTML = "✅ Campanha finalizada";
 }
-
   
 function fecharPopup() {
     document.getElementById("popupAviso").style.display = "none";
