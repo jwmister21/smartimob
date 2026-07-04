@@ -100,3 +100,38 @@ async function conectarSessao(nomeSessao) {
     });
 
 }
+// ==========================
+// QR
+// ==========================
+
+function obterQR(nomeSessao) {
+
+    return sessoes[nomeSessao]?.qr || null;
+
+}
+
+// ==========================
+// STATUS
+// ==========================
+
+function obterStatus(nomeSessao) {
+
+    return sessoes[nomeSessao]?.status || "desconectado";
+
+}
+
+// ==========================
+// EXPORTA
+// ==========================
+
+module.exports = {
+
+    conectarSessao,
+
+    obterQR,
+
+    obterStatus,
+
+    sessoes
+
+};
