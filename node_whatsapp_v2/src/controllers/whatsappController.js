@@ -111,3 +111,37 @@ exports.sessoes = (req, res) => {
     });
 
 };
+
+exports.enviar = async (req, res) => {
+
+    try {
+
+        const { sessao, numero, mensagem } = req.body;
+
+        if (!sessao || !numero || !mensagem) {
+            return res.status(400).json({
+                sucesso: false,
+                erro: "Dados incompletos."
+            });
+        }
+
+        const result = await whatsapp.enviarMensagem(
+            sessao,
+            numero,
+            mensagem
+        );
+
+        return res.json(result);
+
+    } catch (err) {
+
+        console.error(err);
+
+        return res.status(500).json({
+            sucesso: false,
+            erro: err.message
+        });
+
+    }
+
+};
