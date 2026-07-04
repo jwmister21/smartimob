@@ -271,3 +271,43 @@ class WhatsAppManager {
 }
 
 module.exports = new WhatsAppManager();
+
+}
+async enviarMensagem(sessao, numero, mensagem) {
+
+    const s = this.sessoes.get(sessao);
+
+    if (!s || !s.sock) {
+        throw new Error("Sessão não encontrada ou desconectada.");
+    }
+
+    try {
+
+        const jid = numero.includes("@s.whatsapp.net")
+            ? numero
+            : `${numero}@s.whatsapp.net`;
+
+        const result = await s.sock.sendMessage(jid, {
+            text: mensagem
+        });
+
+        s.ultimaAtividade = new Date();
+
+        return {
+            sucesso: true,
+            result
+        };
+
+    } catch (err) {
+
+        console.error("ERRO ENVIAR MENSAGEM:", err);
+
+        return {
+            sucesso: false,
+            erro: err.message
+        };
+
+    }
+}
+
+
