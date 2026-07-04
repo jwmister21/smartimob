@@ -2,6 +2,7 @@ import os
 import sqlite3
 import secrets
 import requests 
+import mysql.connector
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.utils import secure_filename
@@ -1970,22 +1971,23 @@ def whatsapp_qr():
     if not usuario_id:
         return redirect("/login")
 
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="sua_senha",
+        database="smartzen"
+    )
+
+    cursor = conn.cursor(dictionary=True)
+
     cursor.execute("""
         SELECT * FROM usuarios WHERE id = %s
     """, (usuario_id,))
 
-    row = cursor.fetchone()
+    usuario = cursor.fetchone()
 
-    if not row:
-        return redirect("/login")
-
-    # ajuste se seu fetch retorna tuple
-    usuario = {
-        "id": row[0],
-        "nome": row[1],
-        "email": row[2],
-        "whatsapp_sessao": row[10]
-    }
+    cursor.close()
+    conn.close()
 
     return render_template(
         "whatsapp_qr.html",
