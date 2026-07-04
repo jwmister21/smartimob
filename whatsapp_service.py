@@ -1,6 +1,6 @@
 import requests
 
-EVOLUTION_URL = "http://localhost:8080"
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 API_KEY = "smartzen123"
 
 
