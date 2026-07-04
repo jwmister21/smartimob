@@ -492,6 +492,38 @@ def init_db():
     print("Banco de dados atualizado com sucesso!")
     print(f"Banco utilizado: {DB_PATH}")
 
+def get_usuario():
+
+    usuario_id = session.get("usuario_id")
+
+    if not usuario_id:
+        return None
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome, email, empresa_id, whatsapp_sessao
+        FROM usuarios
+        WHERE id = ?
+    """, (usuario_id,))
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    if not usuario:
+        return None
+
+    return {
+        "id": usuario["id"],
+        "nome": usuario["nome"],
+        "email": usuario["email"],
+        "empresa_id": usuario["empresa_id"],
+        "whatsapp_sessao": usuario["whatsapp_sessao"]
+    }
+
 def baixar_fotos_drive(link, imovel_id):
 
     import os
@@ -1967,7 +1999,7 @@ def whatsapp_qr():
 
     usuario = get_usuario()
 
-    if not usuario["id"]:
+    if not usuario:
         return redirect("/login")
 
     return render_template(
