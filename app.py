@@ -211,7 +211,7 @@ def conectar_whatsapp():
     sessao = usuario["whatsapp_sessao"]
 
     resposta = requests.post(
-        "https://lucky-analysis-production-e497.up.railway.app/api/whatsapp/conectar",
+        "https://lucky-analysis-production-e497.up.railway.app/whatsapp/conectar",
         json={
             "user_id": usuario["id"],
             "sessao": sessao
@@ -752,7 +752,7 @@ def qr():
         return {"erro": "sessão não configurada"}
 
     r = requests.get(
-        f"{NODE_API}/api/whatsapp/qr/{sessao}"
+        f"{NODE_API}/whatsapp/qr/{sessao}"
     )
 
     try:
@@ -1364,14 +1364,14 @@ NODE_API = "https://lucky-analysis-production-e497.up.railway.app"
 @app.route("/whatsapp/qr/<sessao>")
 def pegar_qr(sessao):
 
-    r = requests.get(f"{NODE_API}/api/whatsapp/qr/{sessao}")
+    r = requests.get(f"{NODE_API}/whatsapp/qr/{sessao}")
     return jsonify(r.json())
 
 
 @app.route("/whatsapp/status/<sessao>")
 def status_whatsapp(sessao):
 
-    r = requests.get(f"{NODE_API}/api/whatsapp/status/{sessao}")
+    r = requests.get(f"{NODE_API}/whatsapp/status/{sessao}")
     return jsonify(r.json())
 
 @app.route("/catalogo")
