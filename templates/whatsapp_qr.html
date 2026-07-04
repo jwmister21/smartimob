@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+<meta charset="UTF-8">
+<title>SMARTZEN WhatsApp</title>
+
+<style>
+
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.card {
+    background: #111827;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 400px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+.status {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #38bdf8;
+}
+
+.qr-box {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.qr-box img {
+    width: 250px;
+    height: 250px;
+}
+
+button {
+    background: #22c55e;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background: #16a34a;
+}
+
+.red {
+    background: #ef4444;
+}
+
+.red:hover {
+    background: #dc2626;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>WhatsApp SMARTZEN</h2>
+
+        <div id="status" class="status">
+            Aguardando conexão...
+        </div>
+
+        <div class="qr-box">
+            <img id="qr" src="" />
+        </div>
+
+        <br>
+
+        <button onclick="conectar()">Gerar QR</button>
+        <button class="red" onclick="desconectar()">Desconectar</button>
+
+    </div>
+
+</div>
+
+<script>
+
+const sessao = "empresa_1";
+
+async function conectar() {
+
+    await fetch("/whatsapp/conectar", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ sessao })
+    });
+
+    buscarQR();
+    monitorar();
+}
+
+async function buscarQR() {
+
+    const res = await fetch(`/whatsapp/qr/${sessao}`);
+    const data = await res.json();
+
+    if (data.qr) {
+        document.getElementById("qr").src = data.qr;
+    }
+}
+
+async function monitorar() {
+
+    setInterval(async () => {
+
+        const res = await fetch(`/whatsapp/status/${sessao}`);
+        const data = await res.json();
+
+        document.getElementById("status").innerText = data.status;
+
+        if (data.status === "conectado") {
+            document.getElementById("qr").style.display = "none";
+        }
+
+    }, 3000);
+
+}
+
+async function desconectar() {
+    alert("Função será adicionada na próxima etapa");
+}
+
+</script>
+
+</body>
+</html>
