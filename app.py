@@ -739,28 +739,6 @@ def salvar_status_whatsapp(sessao, status):
     conn.commit()
     conn.close()
 
-@app.route("/whatsapp/qr")
-def qr():
-
-    usuario = get_usuario()
-
-    if not usuario:
-        return {"erro": "usuário não logado"}, 401
-
-    sessao = usuario["whatsapp_sessao"]
-
-    if not sessao:
-        return {"erro": "sessão não configurada"}
-
-    r = requests.get(
-        f"{NODE_API}/whatsapp/qr/{sessao}"
-    )
-
-    try:
-        return r.json()
-    except:
-        return {"erro": "resposta inválida do node"}
-
 @app.route('/uploads/imoveis/<filename>')
 def foto_imovel(filename):
     return send_from_directory(
