@@ -7,44 +7,31 @@ const controller = require("../controllers/whatsappController");
 // ===============================
 // CONECTAR
 // ===============================
-router.post(
-    "/conectar",
-    controller.conectar
-);
+router.post("/conectar", controller.conectar);
 
 // ===============================
 // QR CODE
 // ===============================
-router.get(
-    "/qr/:sessao",
-    controller.qr
-);
+router.get("/qr/:sessao", controller.qr);
 
 // ===============================
 // STATUS
 // ===============================
-router.get(
-    "/status/:sessao",
-    controller.status
-);
+router.get("/status/:sessao", controller.status);
 
 // ===============================
 // PERFIL
 // ===============================
-router.get(
-    "/perfil/:sessao",
-    controller.perfil
-);
-//enviar
+router.get("/perfil/:sessao", controller.perfil);
+
+// ===============================
+// ENVIAR MENSAGEM
+// ===============================
 router.post("/enviar", controller.enviar);
 
-);
 // ===============================
 // LISTAR SESSÕES
 // ===============================
-router.get(
-    "/sessoes",
-    controller.sessoes
-);
+router.get("/sessoes", controller.sessoes);
 
 module.exports = router;
