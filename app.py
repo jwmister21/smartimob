@@ -1965,28 +1965,10 @@ def editar_usuario(user_id):
 @app.route("/whatsapp")
 def whatsapp_qr():
 
-    usuario_id = session.get("usuario_id")
+    usuario = session.get("usuario")
 
-    if not usuario_id:
+    if not usuario:
         return redirect("/login")
-
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="sua_senha",
-        database="smartzen"
-    )
-
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT * FROM usuarios WHERE id = %s
-    """, (usuario_id,))
-
-    usuario = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
 
     return render_template(
         "whatsapp_qr.html",
