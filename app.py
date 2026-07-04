@@ -711,14 +711,22 @@ def qr():
 
     usuario = get_usuario()
 
+    if not usuario:
+        return {"erro": "usuário não logado"}, 401
+
     sessao = usuario["whatsapp_sessao"]
 
+    if not sessao:
+        return {"erro": "sessão não configurada"}
+
     r = requests.get(
-        f"https://lucky-analysis-production-e497.up.railway.app/api/whatsapp/qr/{sessao}"
+        f"{NODE_API}/api/whatsapp/qr/{sessao}"
     )
 
-    return r.json()
-
+    try:
+        return r.json()
+    except:
+        return {"erro": "resposta inválida do node"}
 
 @app.route('/uploads/imoveis/<filename>')
 def foto_imovel(filename):
@@ -1956,7 +1964,33 @@ def editar_usuario(user_id):
 
 @app.route("/whatsapp")
 def whatsapp_qr():
-    return render_template("whatsapp_qr.html")
+
+    usuario_id = session.get("usuario_id")
+
+    if not usuario_id:
+        return redirect("/login")
+
+    cursor.execute("""
+        SELECT * FROM usuarios WHERE id = %s
+    """, (usuario_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return redirect("/login")
+
+    # ajuste se seu fetch retorna tuple
+    usuario = {
+        "id": row[0],
+        "nome": row[1],
+        "email": row[2],
+        "whatsapp_sessao": row[10]
+    }
+
+    return render_template(
+        "whatsapp_qr.html",
+        usuario=usuario
+    )
 
 @app.route("/ceo/usuarios")
 @verificar_sessao
@@ -3552,69 +3586,6 @@ def login():
     # Se o método for GET, apenas mostra o HTML
     return render_template("login.html")
 
-
-
-@app.route("/buscar_qr")
-@verificar_sessao
-def buscar_qr():
-
-    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-
-    usuario_id = session["usuario_id"]
-
-
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-
-    cursor = conn.cursor()
-
-
-    cursor.execute("""
-        SELECT whatsapp_sessao
-        FROM usuarios
-        WHERE id=?
-    """, (usuario_id,))
-
-
-    usuario = cursor.fetchone()
-
-    conn.close()
-
-
-    if not usuario:
-        return jsonify({
-            "erro": "Usuário não encontrado"
-        }), 404
-
-
-    sessao = usuario["whatsapp_sessao"]
-
-
-    if not sessao:
-        return jsonify({
-            "erro": "Sessão WhatsApp não configurada"
-        }), 400
-
-
-
-    try:
-
-        r = requests.get(
-            f"{WPP_URL}/qr/{sessao}",
-            timeout=15
-        )
-
-
-        return jsonify(
-            r.json()
-        )
-
-
-    except Exception as e:
-
-        return jsonify({
-            "erro": str(e)
-        }), 500
 
 @app.route("/cadastrar_usuario", methods=["GET", "POST"])
 def cadastrar_usuario():
