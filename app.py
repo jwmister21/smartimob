@@ -186,6 +186,39 @@ def limpar_prefixo_fotos_func():
         total
     )
 
+def get_usuario_logado():
+    from flask import session
+    return session.get("usuario_id")
+
+def get_usuario():
+    usuario_id = get_usuario_logado()
+
+    cursor.execute("""
+        SELECT * FROM usuarios WHERE id = %s
+    """, (usuario_id,))
+
+    return cursor.fetchone()
+
+
+@app.route("/whatsapp/conectar", methods=["POST"])
+def conectar_whatsapp():
+
+    usuario = get_usuario()
+
+    if not usuario:
+        return {"erro": "não logado"}
+
+    sessao = usuario["whatsapp_sessao"]
+
+    resposta = requests.post(
+        "https://lucky-analysis-production-e497.up.railway.app/api/whatsapp/conectar",
+        json={
+            "user_id": usuario["id"],
+            "sessao": sessao
+        }
+    )
+
+    return resposta.json()
 
 
 @app.route("/limpar_prefixo_fotos")
@@ -672,6 +705,19 @@ def salvar_status_whatsapp(sessao, status):
 
     conn.commit()
     conn.close()
+
+@app.route("/whatsapp/qr")
+def qr():
+
+    usuario = get_usuario()
+
+    sessao = usuario["whatsapp_sessao"]
+
+    r = requests.get(
+        f"https://lucky-analysis-production-e497.up.railway.app/api/whatsapp/qr/{sessao}"
+    )
+
+    return r.json()
 
 
 @app.route('/uploads/imoveis/<filename>')
