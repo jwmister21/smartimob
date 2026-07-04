@@ -15,21 +15,15 @@ const config = require("../config");
 class WhatsAppManager {
 
     constructor() {
-
         this.sessoes = new Map();
-
     }
 
     getSessao(id) {
-
         return this.sessoes.get(id);
-
     }
 
     existeSessao(id) {
-
         return this.sessoes.has(id);
-
     }
 
     listarSessoes() {
@@ -39,275 +33,165 @@ class WhatsAppManager {
         for (const [id, sessao] of this.sessoes.entries()) {
 
             lista.push({
-
                 id,
-
                 status: sessao.status,
-
                 numero: sessao.numero,
-
                 nome: sessao.nome,
-
                 conectadoEm: sessao.conectadoEm
-
             });
 
         }
 
         return lista;
-
     }
 
     async conectar(id) {
 
         if (!id) {
-
             throw new Error("Sessão inválida.");
-
         }
 
         if (this.existeSessao(id)) {
-
             return this.getSessao(id);
-
         }
 
-        const pastaSessao = path.join(
-            config.SESSION_PATH,
-            id
-        );
+        const pastaSessao = path.join(config.SESSION_PATH, id);
 
         if (!fs.existsSync(pastaSessao)) {
-
-            fs.mkdirSync(
-                pastaSessao,
-                { recursive: true }
-            );
-
+            fs.mkdirSync(pastaSessao, { recursive: true });
         }
 
-        const {
-            state,
-            saveCreds
-        } = await useMultiFileAuthState(
-            pastaSessao
-        );
-
-        const {
-            version
-        } = await fetchLatestBaileysVersion();
+        const { state, saveCreds } = await useMultiFileAuthState(pastaSessao);
+        const { version } = await fetchLatestBaileysVersion();
 
         const sock = makeWASocket({
 
             version,
-
             auth: state,
-
-            logger: P({
-
-                level: config.LOG_LEVEL
-
-            }),
-
+            logger: P({ level: config.LOG_LEVEL }),
             browser: config.BROWSER,
-
             printQRInTerminal: false
 
         });
 
         const sessao = {
-
             id,
-
             sock,
-
             qr: null,
-
             status: "conectando",
-
             numero: null,
-
             nome: null,
-
             conectadoEm: null,
-
             ultimaAtividade: null
-
         };
 
         this.sessoes.set(id, sessao);
 
-        sock.ev.on(
-            "creds.update",
-            saveCreds
-        );
+        sock.ev.on("creds.update", saveCreds);
 
-        sock.ev.on(
-            "connection.update",
-            async (update) => {
+        sock.ev.on("connection.update", async (update) => {
 
-                const {
+            const { connection, qr, lastDisconnect } = update;
 
-                    connection,
+            if (qr) {
 
-                    qr,
+                sessao.qr = await QRCode.toDataURL(qr);
+                sessao.status = "qrcode";
 
-                    lastDisconnect
-
-                } = update;
-
-                if (qr) {
-
-                    sessao.qr = await QRCode.toDataURL(qr);
-
-                    sessao.status = "qrcode";
-
-                    console.log(`[${id}] QR GERADO`);
-
-                }
-
-                if (connection === "open") {
-
-                    sessao.status = "conectado";
-
-                    sessao.qr = null;
-
-                    sessao.numero = sock.user?.id || null;
-
-                    sessao.nome = sock.user?.name || null;
-
-                    sessao.conectadoEm = new Date();
-
-                    sessao.ultimaAtividade = new Date();
-
-                    console.log(`[${id}] CONECTADO`);
-
-                }
-
-                if (connection === "close") {
-
-                    sessao.status = "desconectado";
-
-                    const codigo =
-                        lastDisconnect?.error?.output?.statusCode;
-
-                    console.log(`[${id}] DESCONECTADO`);
-
-                    if (codigo !== DisconnectReason.loggedOut) {
-
-                        console.log(`[${id}] RECONECTANDO...`);
-
-                        this.sessoes.delete(id);
-
-                        setTimeout(() => {
-
-                            this.conectar(id);
-
-                        }, config.RECONNECT_DELAY);
-
-                    }
-
-                }
-
+                console.log(`[${id}] QR GERADO`);
             }
-        );
+
+            if (connection === "open") {
+
+                sessao.status = "conectado";
+                sessao.qr = null;
+
+                sessao.numero = sock.user?.id || null;
+                sessao.nome = sock.user?.name || null;
+
+                sessao.conectadoEm = new Date();
+                sessao.ultimaAtividade = new Date();
+
+                console.log(`[${id}] CONECTADO`);
+            }
+
+            if (connection === "close") {
+
+                sessao.status = "desconectado";
+
+                const codigo =
+                    lastDisconnect?.error?.output?.statusCode;
+
+                console.log(`[${id}] DESCONECTADO`);
+
+                if (codigo !== DisconnectReason.loggedOut) {
+
+                    console.log(`[${id}] RECONECTANDO...`);
+
+                    this.sessoes.delete(id);
+
+                    setTimeout(() => {
+                        this.conectar(id);
+                    }, config.RECONNECT_DELAY);
+
+                }
+            }
+
+        });
 
         return sessao;
-
     }
 
     obterQR(id) {
-
         const sessao = this.getSessao(id);
-
-        if (!sessao) {
-
-            return null;
-
-        }
-
-        return sessao.qr;
-
+        return sessao ? sessao.qr : null;
     }
 
     obterStatus(id) {
-
         const sessao = this.getSessao(id);
-
-        if (!sessao) {
-
-            return "desconectado";
-
-        }
-
-        return sessao.status;
-
+        return sessao ? sessao.status : "desconectado";
     }
 
     obterPerfil(id) {
 
         const sessao = this.getSessao(id);
 
-        if (!sessao) {
-
-            return null;
-
-        }
+        if (!sessao) return null;
 
         return {
-
             numero: sessao.numero,
-
             nome: sessao.nome,
-
             conectadoEm: sessao.conectadoEm,
-
             status: sessao.status
-
         };
-
     }
 
-}
+    // ================================
+    // ENVIO DE MENSAGEM (CORRETO)
+    // ================================
+    async enviarMensagem(sessaoId, numero, mensagem) {
 
-module.exports = new WhatsAppManager();
+        const sessao = this.sessoes.get(sessaoId);
 
-}
-async enviarMensagem(sessao, numero, mensagem) {
-
-    const s = this.sessoes.get(sessao);
-
-    if (!s || !s.sock) {
-        throw new Error("Sessão não encontrada ou desconectada.");
-    }
-
-    try {
+        if (!sessao || !sessao.sock) {
+            throw new Error("Sessão não encontrada ou desconectada.");
+        }
 
         const jid = numero.includes("@s.whatsapp.net")
             ? numero
             : `${numero}@s.whatsapp.net`;
 
-        const result = await s.sock.sendMessage(jid, {
+        const result = await sessao.sock.sendMessage(jid, {
             text: mensagem
         });
 
-        s.ultimaAtividade = new Date();
+        sessao.ultimaAtividade = new Date();
 
         return {
             sucesso: true,
             result
         };
-
-    } catch (err) {
-
-        console.error("ERRO ENVIAR MENSAGEM:", err);
-
-        return {
-            sucesso: false,
-            erro: err.message
-        };
-
     }
 }
 
-
+module.exports = new WhatsAppManager();
