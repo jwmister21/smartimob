@@ -10,6 +10,9 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 
+const baileysPkg = require("@whiskeysockets/baileys/package.json");
+console.log("Baileys:", baileysPkg.version);
+
 // ================================
 // HEALTH CHECK
 // ================================
