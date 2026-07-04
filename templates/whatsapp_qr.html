@@ -41,14 +41,6 @@ h2 {
     color: #38bdf8;
 }
 
-select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    border: none;
-}
-
 .qr-box {
     background: white;
     padding: 15px;
@@ -97,13 +89,6 @@ button:hover {
 
         <h2>SMARTZEN WhatsApp</h2>
 
-        <!-- SELEÇÃO DE SESSÃO -->
-        <select id="sessaoSelect" onchange="trocarSessao()">
-            <option value="empresa_1">Empresa 1</option>
-            <option value="empresa_2">Empresa 2</option>
-            <option value="empresa_3">Empresa 3</option>
-        </select>
-
         <div id="status" class="status">
             Aguardando conexão...
         </div>
@@ -123,20 +108,12 @@ button:hover {
 
 const NODE_API = "https://lucky-analysis-production-e497.up.railway.app";
 
-let sessao = document.getElementById("sessaoSelect").value;
+// 🔥 SESSÃO AUTOMÁTICA DO USUÁRIO (SAAAS REAL)
+const sessao = "{{ usuario.whatsapp_sessao }}";
 
-// ======================
-// TROCAR SESSÃO
-// ======================
-function trocarSessao() {
-
-    sessao = document.getElementById("sessaoSelect").value;
-
-    document.getElementById("qr").src = "";
-    document.getElementById("status").innerText = "Sessão alterada";
-
-    monitorar();
-}
+// controle de intervalos
+let intervalQR = null;
+let intervalStatus = null;
 
 // ======================
 // CONECTAR
@@ -151,7 +128,7 @@ async function conectar() {
         body: JSON.stringify({ sessao })
     });
 
-    monitorar();
+    iniciarMonitoramento();
 }
 
 // ======================
@@ -168,36 +145,45 @@ async function buscarQR() {
 }
 
 // ======================
-// MONITORAMENTO EM TEMPO REAL
+// STATUS
 // ======================
-function monitorar() {
+async function buscarStatus() {
 
-    setInterval(async () => {
+    const res = await fetch(`${NODE_API}/api/whatsapp/status/${sessao}`);
+    const data = await res.json();
 
-        const res = await fetch(`${NODE_API}/api/whatsapp/status/${sessao}`);
-        const data = await res.json();
+    document.getElementById("status").innerText = data.status;
 
-        document.getElementById("status").innerText = data.status;
-
-        if (data.status === "conectado") {
-            document.getElementById("qr").style.display = "none";
-        } else {
-            document.getElementById("qr").style.display = "block";
-            buscarQR();
-        }
-
-    }, 2000);
+    if (data.status === "conectado") {
+        document.getElementById("qr").style.display = "none";
+    } else {
+        document.getElementById("qr").style.display = "block";
+    }
 }
 
 // ======================
-// DESCONEXÃO (futuro)
+// MONITORAMENTO (CLEAN)
+// ======================
+function iniciarMonitoramento() {
+
+    if (intervalQR) clearInterval(intervalQR);
+    if (intervalStatus) clearInterval(intervalStatus);
+
+    intervalQR = setInterval(buscarQR, 2000);
+    intervalStatus = setInterval(buscarStatus, 2000);
+}
+
+// ======================
+// DESCONEXÃO
 // ======================
 function desconectar() {
-    alert("Vamos implementar logout na próxima etapa");
+    alert("Desconectar será implementado na próxima etapa");
 }
 
-// inicia monitoramento automático
-monitorar();
+// inicia automaticamente ao abrir tela
+window.onload = function () {
+    iniciarMonitoramento();
+};
 
 </script>
 
