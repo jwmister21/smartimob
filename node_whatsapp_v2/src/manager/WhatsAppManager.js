@@ -15,54 +15,78 @@ const config = require("../config");
 class WhatsAppManager {
 
     constructor() {
-        this.sessoes = new Map();
+        // 🔥 AGORA É MULTI-USER REAL
+        // userId → sessaoId → socket
+        this.sessoes = {};
     }
 
-    getSessao(id) {
-        return this.sessoes.get(id);
+    // ================================
+    // GET SESSÃO
+    // ================================
+    getSessao(userId, sessaoId) {
+        return this.sessoes?.[userId]?.[sessaoId];
     }
 
-    existeSessao(id) {
-        return this.sessoes.has(id);
+    existeSessao(userId, sessaoId) {
+        return !!this.getSessao(userId, sessaoId);
     }
 
     listarSessoes() {
 
         const lista = [];
 
-        for (const [id, sessao] of this.sessoes.entries()) {
+        for (const userId in this.sessoes) {
+            for (const sessaoId in this.sessoes[userId]) {
 
-            lista.push({
-                id,
-                status: sessao.status,
-                numero: sessao.numero,
-                nome: sessao.nome,
-                conectadoEm: sessao.conectadoEm
-            });
+                const sessao = this.sessoes[userId][sessaoId];
 
+                lista.push({
+                    userId,
+                    sessaoId,
+                    status: sessao.status,
+                    numero: sessao.numero,
+                    nome: sessao.nome,
+                    conectadoEm: sessao.conectadoEm
+                });
+            }
         }
 
         return lista;
     }
 
-    async conectar(id) {
+    // ================================
+    // CONECTAR (MULTI USUÁRIO REAL)
+    // ================================
+    async conectar(userId, sessaoId) {
 
-        if (!id) {
-            throw new Error("Sessão inválida.");
+        if (!userId || !sessaoId) {
+            throw new Error("Usuário ou sessão inválida.");
         }
 
-        if (this.existeSessao(id)) {
-            return this.getSessao(id);
+        // cria estrutura
+        if (!this.sessoes[userId]) {
+            this.sessoes[userId] = {};
         }
 
-        const pastaSessao = path.join(config.SESSION_PATH, id);
+        if (this.existeSessao(userId, sessaoId)) {
+            return this.getSessao(userId, sessaoId);
+        }
+
+        const pastaSessao = path.join(
+            config.SESSION_PATH,
+            String(userId),
+            String(sessaoId)
+        );
 
         if (!fs.existsSync(pastaSessao)) {
             fs.mkdirSync(pastaSessao, { recursive: true });
         }
 
-        const { state, saveCreds } = await useMultiFileAuthState(pastaSessao);
-        const { version } = await fetchLatestBaileysVersion();
+        const { state, saveCreds } =
+            await useMultiFileAuthState(pastaSessao);
+
+        const { version } =
+            await fetchLatestBaileysVersion();
 
         const sock = makeWASocket({
 
@@ -75,7 +99,8 @@ class WhatsAppManager {
         });
 
         const sessao = {
-            id,
+            userId,
+            sessaoId,
             sock,
             qr: null,
             status: "conectando",
@@ -85,10 +110,12 @@ class WhatsAppManager {
             ultimaAtividade: null
         };
 
-        this.sessoes.set(id, sessao);
+        this.sessoes[userId][sessaoId] = sessao;
 
+        // salvar credenciais
         sock.ev.on("creds.update", saveCreds);
 
+        // eventos
         sock.ev.on("connection.update", async (update) => {
 
             const { connection, qr, lastDisconnect } = update;
@@ -98,7 +125,7 @@ class WhatsAppManager {
                 sessao.qr = await QRCode.toDataURL(qr);
                 sessao.status = "qrcode";
 
-                console.log(`[${id}] QR GERADO`);
+                console.log(`[${userId} | ${sessaoId}] QR GERADO`);
             }
 
             if (connection === "open") {
@@ -112,7 +139,7 @@ class WhatsAppManager {
                 sessao.conectadoEm = new Date();
                 sessao.ultimaAtividade = new Date();
 
-                console.log(`[${id}] CONECTADO`);
+                console.log(`[${userId} | ${sessaoId}] CONECTADO`);
             }
 
             if (connection === "close") {
@@ -122,16 +149,16 @@ class WhatsAppManager {
                 const codigo =
                     lastDisconnect?.error?.output?.statusCode;
 
-                console.log(`[${id}] DESCONECTADO`);
+                console.log(`[${userId} | ${sessaoId}] DESCONECTADO`);
 
                 if (codigo !== DisconnectReason.loggedOut) {
 
-                    console.log(`[${id}] RECONECTANDO...`);
+                    console.log(`[${userId} | ${sessaoId}] RECONECTANDO...`);
 
-                    this.sessoes.delete(id);
+                    delete this.sessoes[userId][sessaoId];
 
                     setTimeout(() => {
-                        this.conectar(id);
+                        this.conectar(userId, sessaoId);
                     }, config.RECONNECT_DELAY);
 
                 }
@@ -142,19 +169,28 @@ class WhatsAppManager {
         return sessao;
     }
 
-    obterQR(id) {
-        const sessao = this.getSessao(id);
+    // ================================
+    // QR
+    // ================================
+    obterQR(userId, sessaoId) {
+        const sessao = this.getSessao(userId, sessaoId);
         return sessao ? sessao.qr : null;
     }
 
-    obterStatus(id) {
-        const sessao = this.getSessao(id);
+    // ================================
+    // STATUS
+    // ================================
+    obterStatus(userId, sessaoId) {
+        const sessao = this.getSessao(userId, sessaoId);
         return sessao ? sessao.status : "desconectado";
     }
 
-    obterPerfil(id) {
+    // ================================
+    // PERFIL
+    // ================================
+    obterPerfil(userId, sessaoId) {
 
-        const sessao = this.getSessao(id);
+        const sessao = this.getSessao(userId, sessaoId);
 
         if (!sessao) return null;
 
@@ -167,11 +203,11 @@ class WhatsAppManager {
     }
 
     // ================================
-    // ENVIO DE MENSAGEM (CORRETO)
+    // ENVIO DE MENSAGEM
     // ================================
-    async enviarMensagem(sessaoId, numero, mensagem) {
+    async enviarMensagem(userId, sessaoId, numero, mensagem) {
 
-        const sessao = this.sessoes.get(sessaoId);
+        const sessao = this.getSessao(userId, sessaoId);
 
         if (!sessao || !sessao.sock) {
             throw new Error("Sessão não encontrada ou desconectada.");
