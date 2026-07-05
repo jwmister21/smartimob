@@ -1817,16 +1817,23 @@ EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 API_KEY = "smartzen123"
 
 
+SESSOES_WHATSAPP = {}
+
 @app.route("/whatsapp/enviar", methods=["POST"])
 def whatsapp_enviar():
 
     data = request.json
 
-    user_id = data.get("user_id")
     numero = data.get("numero")
     mensagem = data.get("mensagem")
 
-    if not user_id or not numero or not mensagem:
+    # pega usuário logado do Flask
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "usuário não logado"}), 401
+
+    if not numero or not mensagem:
         return jsonify({"error": "dados inválidos"}), 400
 
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
@@ -1834,7 +1841,6 @@ def whatsapp_enviar():
     if not instance:
         return jsonify({"error": "instância não encontrada"}), 404
 
-    # ENVIA NA EVOLUTION API
     res = requests.post(
         f"{EVOLUTION_URL}/message/sendText/{instance}",
         headers={
