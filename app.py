@@ -222,6 +222,30 @@ def conectar_whatsapp():
     return resposta.json()
 
 
+@app.route("/whatsapp")
+def whatsapp_page():
+    return render_template("whatsapp.html")
+
+
+@app.route("/whatsapp/create", methods=["POST"])
+def whatsapp_create():
+    user_id = session.get("user_id", "user1")
+    return jsonify(criar_instancia(user_id))
+
+
+@app.route("/whatsapp/status")
+def whatsapp_status():
+    user_id = session.get("user_id", "user1")
+    return jsonify({"status": status_instancia(user_id)})
+
+
+@app.route("/whatsapp/disconnect")
+def whatsapp_disconnect():
+    user_id = session.get("user_id", "user1")
+    desconectar(user_id)
+    return jsonify({"ok": True})
+
+
 @app.route("/limpar_prefixo_fotos")
 def limpar_prefixo_fotos_rota():
 
@@ -1340,18 +1364,6 @@ def fifit():
 NODE_API = "https://lucky-analysis-production-e497.up.railway.app"
 
 
-@app.route("/whatsapp/qr/<sessao>")
-def pegar_qr(sessao):
-
-    r = requests.get(f"{NODE_API}/whatsapp/qr/{sessao}")
-    return jsonify(r.json())
-
-
-@app.route("/whatsapp/status/<sessao>")
-def status_whatsapp(sessao):
-
-    r = requests.get(f"{NODE_API}/whatsapp/status/{sessao}")
-    return jsonify(r.json())
 
 @app.route("/catalogo")
 def catalogo():
@@ -1368,14 +1380,8 @@ def catalogo():
     return render_template("catalogo.html", imoveis=imoveis)
 
 
-@app.route("/whatsapp/criar/<nome>")
-def whatsapp_criar(nome):
-    return jsonify(criar_instancia(nome))
 
 
-@app.route("/whatsapp/qr/<nome>")
-def whatsapp_qr(nome):
-    return jsonify(pegar_qrcode(nome))
 
  
 @app.route("/excluir_lead/<int:lead_id>", methods=["POST"])
@@ -1764,101 +1770,9 @@ Exemplo:
         "resultado": resultado
     })
 
-@app.route("/whatsapp/create", methods=["POST"])
-def create():
-
-    instance = request.json["instance"]
-
-    res = requests.post(
-        f"{EVOLUTION_URL}/instance/create",
-        json={
-            "instanceName": instance,
-            "integration": "WHATSAPP-BAILEYS",
-            "qrcode": True
-        },
-        headers={"apikey": API_KEY}
-    )
-
-    # salva novo registro sempre
-    db.execute("""
-        INSERT INTO whatsapp_instances
-        (instance_name, status)
-        VALUES (?, 'connecting')
-    """, (instance,))
-
-    return res.json()
-
-@app.route("/whatsapp/create", methods=["POST"])
-def create():
-
-    user_id = request.json["user_id"]
-
-    instance = f"user_{user_id}"
-
-    res = requests.post(
-        f"{EVOLUTION_URL}/instance/create",
-        json={
-            "instanceName": instance,
-            "integration": "WHATSAPP-BAILEYS",
-            "qrcode": True
-        },
-        headers={"apikey": API_KEY}
-    )
-
-    # guarda só em memória
-    SESSOES[user_id] = {
-        "instance": instance,
-        "status": "connecting"
-    }
-
-    return res.json()
 
 
-@app.route("/whatsapp/status/<user_id>")
-def status(user_id):
 
-    instance = SESSOES.get(user_id, {}).get("instance")
-
-    res = requests.get(
-        f"{EVOLUTION_URL}/instance/connectionState/{instance}",
-        headers={"apikey": API_KEY}
-    )
-
-    return res.json()
-
-@app.route("/whatsapp/qr/<user_id>")
-def qr(user_id):
-
-    instance = SESSOES.get(user_id, {}).get("instance")
-
-    res = requests.get(
-        f"{EVOLUTION_URL}/instance/qrcode/{instance}",
-        headers={"apikey": API_KEY}
-    )
-
-    return res.json()
-
-@app.route("/whatsapp/disconnect/<user_id>")
-def disconnect(user_id):
-
-    instance = SESSOES.get(user_id, {}).get("instance")
-
-    # logout
-    requests.delete(
-        f"{EVOLUTION_URL}/instance/logout/{instance}",
-        headers={"apikey": API_KEY}
-    )
-
-    # deletar instância
-    requests.delete(
-        f"{EVOLUTION_URL}/instance/delete/{instance}",
-        headers={"apikey": API_KEY}
-    )
-
-    # remove da memória
-    SESSOES.pop(user_id, None)
-
-    return {"status": "deleted"}
 @app.context_processor
 def total_leads_site():
 
@@ -5201,36 +5115,6 @@ def atualizar_status_cliente(id):
 
     return redirect(f"/cliente/{id}")
 
-@app.route("/desconectar_whatsapp")
-@verificar_sessao
-def desconectar_whatsapp():
-
-    import requests
-    import sqlite3
-
-    sessao = f"corretor_{session['usuario_id']}"
-
-    requests.post(
-        "https://zoom-leggings-viability.ngrok-free.dev/desconectar",
-        json={
-            "sessao": sessao
-        }
-    )
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        UPDATE usuarios
-        SET whatsapp_status='desconectado',
-            whatsapp_numero=NULL
-        WHERE id=?
-    """, (session["usuario_id"],))
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/whatsapp")
 
 
 @app.route("/cliente/atualizar_dados/<int:id>", methods=["POST"])
