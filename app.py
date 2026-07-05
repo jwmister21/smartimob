@@ -3521,6 +3521,10 @@ def salvar_configuracoes():
     conn.close()
     return "Site configurado com sucesso!"
 
+@app.route("/manutencao")
+def manutencao():
+    return render_template("manutencao.html")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
