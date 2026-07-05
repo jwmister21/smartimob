@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .pagina-manutencao{
+        min-height: 80vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        padding:40px;
+    }
+
+    .card-manutencao{
+        max-width:700px;
+        width:100%;
+        background:#fff;
+        border-radius:20px;
+        padding:50px;
+        text-align:center;
+        box-shadow:0 15px 40px rgba(0,0,0,.12);
+        animation:subir .7s ease;
+    }
+
+    @keyframes subir{
+        from{
+            opacity:0;
+            transform:translateY(30px);
+        }
+        to{
+            opacity:1;
+            transform:translateY(0);
+        }
+    }
+
+    .icone{
+        font-size:90px;
+        animation:girar 3s linear infinite;
+    }
+
+    @keyframes girar{
+        0%{transform:rotate(0deg);}
+        25%{transform:rotate(10deg);}
+        50%{transform:rotate(0deg);}
+        75%{transform:rotate(-10deg);}
+        100%{transform:rotate(0deg);}
+    }
+
+    h1{
+        margin-top:20px;
+        color:#2c3e50;
+        font-size:38px;
+        font-weight:700;
+    }
+
+    p{
+        margin-top:20px;
+        color:#6c757d;
+        font-size:18px;
+        line-height:1.8;
+    }
+
+    .barra{
+        width:100%;
+        height:12px;
+        background:#e9ecef;
+        border-radius:50px;
+        margin-top:35px;
+        overflow:hidden;
+    }
+
+    .barra span{
+        display:block;
+        width:35%;
+        height:100%;
+        background:linear-gradient(90deg,#ffc107,#ff9800);
+        border-radius:50px;
+        animation:carregar 2s infinite;
+    }
+
+    @keyframes carregar{
+        0%{
+            margin-left:-35%;
+        }
+        100%{
+            margin-left:100%;
+        }
+    }
+
+    .mensagem{
+        margin-top:30px;
+        padding:15px;
+        border-radius:12px;
+        background:#fff8e1;
+        color:#856404;
+        font-weight:600;
+    }
+
+    .botao{
+        margin-top:35px;
+        display:inline-block;
+        background:#0d6efd;
+        color:white;
+        padding:14px 30px;
+        border-radius:10px;
+        text-decoration:none;
+        transition:.3s;
+        font-weight:bold;
+    }
+
+    .botao:hover{
+        background:#0b5ed7;
+        color:white;
+        transform:translateY(-2px);
+    }
+</style>
+
+<div class="pagina-manutencao">
+
+    <div class="card-manutencao">
+
+        <div class="icone">🛠️</div>
+
+        <h1>Estamos Trabalhando</h1>
+
+        <p>
+            Estamos realizando melhorias nesta funcionalidade para oferecer
+            uma experiência ainda melhor para você.
+        </p>
+
+        <p>
+            Nossa equipe está trabalhando para resolver o problema o mais
+            rápido possível.
+        </p>
+
+        <div class="barra">
+            <span></span>
+        </div>
+
+        <div class="mensagem">
+            🚀 Em breve esta funcionalidade estará disponível novamente.
+        </div>
+
+        <a href="/dashboard_v2" class="botao">
+            Voltar ao Início
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
