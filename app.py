@@ -2778,72 +2778,7 @@ def atualizar_senha():
     conn.close()
     return redirect("/configuracoes")
 
-@app.route("/enviar_mensagem", methods=["POST"])
-def enviar_mensagem():
 
-    try:
-        data = request.get_json() or {}
-
-        print("📥 REQUEST FLASK:", data)
-
-        telefone = data.get("telefone")
-        mensagem = data.get("mensagem")
-
-        # opcional (mas recomendado)
-        sessao = data.get("sessao", "empresa_1")
-
-        # ==============================
-        # VALIDAÇÃO
-        # ==============================
-        if not telefone or not mensagem:
-            return jsonify({
-                "status": "error",
-                "erro": "telefone e mensagem obrigatórios"
-            }), 400
-
-        # ==============================
-        # NORMALIZA TELEFONE
-        # ==============================
-        telefone = ''.join(filter(str.isdigit, str(telefone)))
-
-        if not telefone.startswith("55"):
-            telefone = "55" + telefone
-
-        print("📱 TELEFONE NORMALIZADO:", telefone)
-
-        # ==============================
-        # URL DO NODE (NGROK)
-        # ==============================
-        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-
-        # ==============================
-        # ENVIA PARA NODE
-        # ==============================
-        resp = requests.post(
-            f"{WPP_URL}/enviar",
-            json={
-                "sessao": sessao,
-                "numero": telefone,
-                "mensagem": mensagem
-            },
-            timeout=20
-        )
-
-        print("📤 RESPOSTA NODE:", resp.text)
-
-        # ==============================
-        # RETORNO FINAL
-        # ==============================
-        return jsonify(resp.json())
-
-    except Exception as e:
-        print("🔥 ERRO FLASK:", str(e))
-
-        return jsonify({
-            "status": "error",
-            "erro": str(e)
-        })
-     
 @app.route("/sistema")
 @verificar_sessao
 def index():
