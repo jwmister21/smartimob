@@ -288,36 +288,42 @@ async function iniciarEnvio(){
 
     if(!delay || delay < 1) delay = 3;
 
-    const NODE_API = "https://lucky-analysis-production-e497.up.railway.app";
-
     for(let i=0;i<selecionados.length;i++){
 
         let cliente = selecionados[i];
         let msgFinal = montarMensagem(mensagem, cliente);
 
         document.getElementById("status").innerText =
-            `Enviando ${i+1}/${selecionados.length} → ${cliente.name}`;
+            `📤 Enviando ${i+1}/${selecionados.length} → ${cliente.name}`;
 
         try{
-            await fetch(`${NODE_API}/api/whatsapp/enviar`,{
-                method:"POST",
-                headers:{ "Content-Type":"application/json" },
-                body:JSON.stringify({
-                    sessao:"empresa_1",
-                    numero:cliente.phone,
-                    mensagem:msgFinal
+
+            const resp = await fetch("/whatsapp/enviar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    numero: cliente.phone,
+                    mensagem: msgFinal
                 })
             });
+
+            const data = await resp.json();
+
+            if(!data.success){
+                console.log("Erro envio:", data);
+            }
+
         }catch(e){
-            console.log("erro envio", e);
+            console.log("Erro fetch:", e);
         }
 
-        await new Promise(r=>setTimeout(r, delay*1000));
+        await new Promise(r => setTimeout(r, delay * 1000));
     }
 
     document.getElementById("status").innerText = "✅ Finalizado";
 }
-
 </script>
 
 {% endblock %}
