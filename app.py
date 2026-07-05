@@ -1764,6 +1764,101 @@ Exemplo:
         "resultado": resultado
     })
 
+@app.route("/whatsapp/create", methods=["POST"])
+def create():
+
+    instance = request.json["instance"]
+
+    res = requests.post(
+        f"{EVOLUTION_URL}/instance/create",
+        json={
+            "instanceName": instance,
+            "integration": "WHATSAPP-BAILEYS",
+            "qrcode": True
+        },
+        headers={"apikey": API_KEY}
+    )
+
+    # salva novo registro sempre
+    db.execute("""
+        INSERT INTO whatsapp_instances
+        (instance_name, status)
+        VALUES (?, 'connecting')
+    """, (instance,))
+
+    return res.json()
+
+@app.route("/whatsapp/create", methods=["POST"])
+def create():
+
+    user_id = request.json["user_id"]
+
+    instance = f"user_{user_id}"
+
+    res = requests.post(
+        f"{EVOLUTION_URL}/instance/create",
+        json={
+            "instanceName": instance,
+            "integration": "WHATSAPP-BAILEYS",
+            "qrcode": True
+        },
+        headers={"apikey": API_KEY}
+    )
+
+    # guarda só em memória
+    SESSOES[user_id] = {
+        "instance": instance,
+        "status": "connecting"
+    }
+
+    return res.json()
+
+
+@app.route("/whatsapp/status/<user_id>")
+def status(user_id):
+
+    instance = SESSOES.get(user_id, {}).get("instance")
+
+    res = requests.get(
+        f"{EVOLUTION_URL}/instance/connectionState/{instance}",
+        headers={"apikey": API_KEY}
+    )
+
+    return res.json()
+
+@app.route("/whatsapp/qr/<user_id>")
+def qr(user_id):
+
+    instance = SESSOES.get(user_id, {}).get("instance")
+
+    res = requests.get(
+        f"{EVOLUTION_URL}/instance/qrcode/{instance}",
+        headers={"apikey": API_KEY}
+    )
+
+    return res.json()
+
+@app.route("/whatsapp/disconnect/<user_id>")
+def disconnect(user_id):
+
+    instance = SESSOES.get(user_id, {}).get("instance")
+
+    # logout
+    requests.delete(
+        f"{EVOLUTION_URL}/instance/logout/{instance}",
+        headers={"apikey": API_KEY}
+    )
+
+    # deletar instância
+    requests.delete(
+        f"{EVOLUTION_URL}/instance/delete/{instance}",
+        headers={"apikey": API_KEY}
+    )
+
+    # remove da memória
+    SESSOES.pop(user_id, None)
+
+    return {"status": "deleted"}
 @app.context_processor
 def total_leads_site():
 
