@@ -1811,7 +1811,46 @@ def servir_video_do_volume(filename):
         abort(404)
 
 
+from whatsapp_service import SESSOES_WHATSAPP
 
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+API_KEY = "smartzen123"
+
+
+@app.route("/whatsapp/enviar", methods=["POST"])
+def whatsapp_enviar():
+
+    data = request.json
+
+    user_id = data.get("user_id")
+    numero = data.get("numero")
+    mensagem = data.get("mensagem")
+
+    if not user_id or not numero or not mensagem:
+        return jsonify({"error": "dados inválidos"}), 400
+
+    instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
+
+    if not instance:
+        return jsonify({"error": "instância não encontrada"}), 404
+
+    # ENVIA NA EVOLUTION API
+    res = requests.post(
+        f"{EVOLUTION_URL}/message/sendText/{instance}",
+        headers={
+            "apikey": API_KEY,
+            "Content-Type": "application/json"
+        },
+        json={
+            "number": numero,
+            "text": mensagem
+        }
+    )
+
+    return jsonify({
+        "success": True,
+        "response": res.json()
+    })
 
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
