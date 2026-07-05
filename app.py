@@ -27,7 +27,12 @@ import base64
 from pypdf import PdfReader
 import gdown
 import uuid
-
+from whatsapp_service import (
+    criar_instancia,
+    status_instancia,
+    desconectar,
+    enviar_mensagem
+)
 # Configuração do Banco
 
 
@@ -1824,39 +1829,22 @@ def whatsapp_enviar():
 
     data = request.json
 
+    user_id = data.get("user_id")
     numero = data.get("numero")
     mensagem = data.get("mensagem")
 
-    # pega usuário logado do Flask
-    user_id = session.get("user_id")
+    print("===================================")
+    print("ROTA ENVIAR CHAMADA")
+    print(data)
+    print("===================================")
 
-    if not user_id:
-        return jsonify({"error": "usuário não logado"}), 401
-
-    if not numero or not mensagem:
-        return jsonify({"error": "dados inválidos"}), 400
-
-    instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
-
-    if not instance:
-        return jsonify({"error": "instância não encontrada"}), 404
-
-    res = requests.post(
-        f"{EVOLUTION_URL}/message/sendText/{instance}",
-        headers={
-            "apikey": API_KEY,
-            "Content-Type": "application/json"
-        },
-        json={
-            "number": numero,
-            "text": mensagem
-        }
+    resposta = enviar_mensagem(
+        user_id,
+        numero,
+        mensagem
     )
 
-    return jsonify({
-        "success": True,
-        "response": res.json()
-    })
+    return jsonify(resposta)
 
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
