@@ -3,15 +3,10 @@ import requests
 EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 API_KEY = "smartzen123"
 
-# memória temporária (sem banco)
 SESSOES_WHATSAPP = {}
 
 
-# =========================
-# CRIAR INSTÂNCIA
-# =========================
 def criar_instancia(user_id):
-
     instance_name = f"smartzen_{user_id}"
 
     res = requests.post(
@@ -29,21 +24,13 @@ def criar_instancia(user_id):
 
     data = res.json()
 
-    # valida erro
-    if res.status_code != 200:
-        return {"error": True, "response": data}
-
     SESSOES_WHATSAPP[user_id] = {
-        "instance": instance_name,
-        "status": "connecting"
+        "instance": instance_name
     }
 
     return data
 
 
-# =========================
-# STATUS
-# =========================
 def status_instancia(user_id):
 
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
@@ -56,21 +43,16 @@ def status_instancia(user_id):
         headers={"apikey": API_KEY}
     )
 
-    if res.status_code != 200:
-        return "error"
-
     data = res.json()
 
     for i in data:
+
         if i["instance"]["instanceName"] == instance:
             return i["instance"]["status"]
 
     return "unknown"
 
 
-# =========================
-# DESCONECTAR / DELETE
-# =========================
 def desconectar(user_id):
 
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
@@ -78,34 +60,32 @@ def desconectar(user_id):
     if not instance:
         return
 
-    try:
-        requests.delete(
-            f"{EVOLUTION_URL}/instance/logout/{instance}",
-            headers={"apikey": API_KEY}
-        )
+    requests.delete(
+        f"{EVOLUTION_URL}/instance/logout/{instance}",
+        headers={"apikey": API_KEY}
+    )
 
-        requests.delete(
-            f"{EVOLUTION_URL}/instance/delete/{instance}",
-            headers={"apikey": API_KEY}
-        )
-
-    except Exception as e:
-        print("Erro ao desconectar:", e)
+    requests.delete(
+        f"{EVOLUTION_URL}/instance/delete/{instance}",
+        headers={"apikey": API_KEY}
+    )
 
     SESSOES_WHATSAPP.pop(user_id, None)
 
 
-# =========================
-# ENVIAR MENSAGEM (IMPORTANTE)
-# =========================
-def enviar_mensagem(user_id, numero, mensagem):
+def enviar_mensagem(user_id, numero, texto):
 
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
 
     if not instance:
-        return {"error": "instancia_nao_existe"}
+        return {
+            "success": False,
+            "erro": "Instância não encontrada."
+        }
 
-    res = requests.post(
+    print("ENVIANDO PARA:", instance)
+
+    resposta = requests.post(
         f"{EVOLUTION_URL}/message/sendText/{instance}",
         headers={
             "apikey": API_KEY,
@@ -113,8 +93,15 @@ def enviar_mensagem(user_id, numero, mensagem):
         },
         json={
             "number": numero,
-            "text": mensagem
+            "text": texto
         }
     )
 
-    return res.json()
+    print("STATUS:", resposta.status_code)
+    print("BODY:", resposta.text)
+
+    return {
+        "success": resposta.status_code in [200, 201],
+        "status": resposta.status_code,
+        "body": resposta.text
+    }
