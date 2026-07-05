@@ -75,33 +75,63 @@ def desconectar(user_id):
 
 def enviar_mensagem(user_id, numero, texto):
 
+    print("\n================= ENVIAR MENSAGEM =================")
+    print("USER_ID RECEBIDO:", user_id)
+    print("NÚMERO:", numero)
+    print("TEXTO:", texto)
+    print("SESSÕES:", SESSOES_WHATSAPP)
+
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
 
+    print("INSTÂNCIA ENCONTRADA:", instance)
+
     if not instance:
+        print("ERRO: Instância não encontrada!")
         return {
             "success": False,
             "erro": "Instância não encontrada."
         }
 
-    print("ENVIANDO PARA:", instance)
+    url = f"{EVOLUTION_URL}/message/sendText/{instance}"
 
-    resposta = requests.post(
-        f"{EVOLUTION_URL}/message/sendText/{instance}",
-        headers={
-            "apikey": API_KEY,
-            "Content-Type": "application/json"
-        },
-        json={
-            "number": numero,
-            "text": texto
-        }
-    )
-
-    print("STATUS:", resposta.status_code)
-    print("BODY:", resposta.text)
-
-    return {
-        "success": resposta.status_code in [200, 201],
-        "status": resposta.status_code,
-        "body": resposta.text
+    headers = {
+        "apikey": API_KEY,
+        "Content-Type": "application/json"
     }
+
+    payload = {
+        "number": numero,
+        "text": texto
+    }
+
+    print("\nURL:", url)
+    print("HEADERS:", headers)
+    print("PAYLOAD:", payload)
+
+    try:
+        resposta = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=30
+        )
+
+        print("\nSTATUS:", resposta.status_code)
+        print("BODY:", resposta.text)
+        print("==================================================\n")
+
+        return {
+            "success": resposta.status_code in [200, 201],
+            "status": resposta.status_code,
+            "body": resposta.text
+        }
+
+    except Exception as e:
+        print("\nERRO AO ENVIAR:")
+        print(repr(e))
+        print("==================================================\n")
+
+        return {
+            "success": False,
+            "erro": str(e)
+        }
