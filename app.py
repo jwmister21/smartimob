@@ -1829,20 +1829,25 @@ def whatsapp_enviar():
 
     data = request.json
 
+    print("\n================= ROTA ENVIAR =================")
+    print("JSON RECEBIDO:", data)
+
     user_id = data.get("user_id")
     numero = data.get("numero")
     mensagem = data.get("mensagem")
 
-    print("===================================")
-    print("ROTA ENVIAR CHAMADA")
-    print(data)
-    print("===================================")
+    print("USER_ID:", user_id)
+    print("NÚMERO:", numero)
+    print("MENSAGEM:", mensagem)
 
     resposta = enviar_mensagem(
         user_id,
         numero,
         mensagem
     )
+
+    print("RESPOSTA FINAL:", resposta)
+    print("===============================================\n")
 
     return jsonify(resposta)
 
