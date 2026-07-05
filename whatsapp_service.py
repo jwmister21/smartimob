@@ -7,7 +7,11 @@ API_KEY = "smartzen123"
 SESSOES_WHATSAPP = {}
 
 
+# =========================
+# CRIAR INSTÂNCIA
+# =========================
 def criar_instancia(user_id):
+
     instance_name = f"smartzen_{user_id}"
 
     res = requests.post(
@@ -25,16 +29,23 @@ def criar_instancia(user_id):
 
     data = res.json()
 
+    # valida erro
+    if res.status_code != 200:
+        return {"error": True, "response": data}
+
     SESSOES_WHATSAPP[user_id] = {
         "instance": instance_name,
-        "qr": data.get("qrcode", {}).get("base64"),
         "status": "connecting"
     }
 
     return data
 
 
+# =========================
+# STATUS
+# =========================
 def status_instancia(user_id):
+
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
 
     if not instance:
@@ -45,6 +56,9 @@ def status_instancia(user_id):
         headers={"apikey": API_KEY}
     )
 
+    if res.status_code != 200:
+        return "error"
+
     data = res.json()
 
     for i in data:
@@ -54,20 +68,53 @@ def status_instancia(user_id):
     return "unknown"
 
 
+# =========================
+# DESCONECTAR / DELETE
+# =========================
 def desconectar(user_id):
+
     instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
 
     if not instance:
         return
 
-    requests.delete(
-        f"{EVOLUTION_URL}/instance/logout/{instance}",
-        headers={"apikey": API_KEY}
-    )
+    try:
+        requests.delete(
+            f"{EVOLUTION_URL}/instance/logout/{instance}",
+            headers={"apikey": API_KEY}
+        )
 
-    requests.delete(
-        f"{EVOLUTION_URL}/instance/delete/{instance}",
-        headers={"apikey": API_KEY}
-    )
+        requests.delete(
+            f"{EVOLUTION_URL}/instance/delete/{instance}",
+            headers={"apikey": API_KEY}
+        )
+
+    except Exception as e:
+        print("Erro ao desconectar:", e)
 
     SESSOES_WHATSAPP.pop(user_id, None)
+
+
+# =========================
+# ENVIAR MENSAGEM (IMPORTANTE)
+# =========================
+def enviar_mensagem(user_id, numero, mensagem):
+
+    instance = SESSOES_WHATSAPP.get(user_id, {}).get("instance")
+
+    if not instance:
+        return {"error": "instancia_nao_existe"}
+
+    res = requests.post(
+        f"{EVOLUTION_URL}/message/sendText/{instance}",
+        headers={
+            "apikey": API_KEY,
+            "Content-Type": "application/json"
+        },
+        json={
+            "number": numero,
+            "text": mensagem
+        }
+    )
+
+    return res.json()
