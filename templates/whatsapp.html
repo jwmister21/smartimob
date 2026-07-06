@@ -47,7 +47,8 @@
 
 <script>
 
-const API = "https://zoom-leggings-viability.ngrok-free.dev/api/smartzen1";
+const session = "smartzen1"; // depois vira dinâmico
+const API = `https://zoom-leggings-viability.ngrok-free.dev/api/session/${session}`;
 const TOKEN = "THISISMYSECURETOKEN";
 
 let qrInterval = null;
