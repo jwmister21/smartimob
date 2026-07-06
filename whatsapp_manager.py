@@ -924,3 +924,40 @@ class WhatsAppManager:
         resultado["sync"] = self.sync_instance(usuario_id)
 
         return resultado
+
+def buscar_status(self, usuario_id):
+
+    sessao = self.buscar_sessao(usuario_id)
+
+    if not sessao:
+        return {"success": False, "body": "Sessão não encontrada."}
+
+    instance = sessao["instance_name"]
+
+    resposta = self.listar_instancias()
+
+    if not resposta["success"]:
+        return resposta
+
+    for item in resposta["body"]:
+
+        try:
+
+            if item["instance"]["instanceName"] == instance:
+
+                status = item["instance"]["status"]
+
+                self.atualizar_status(usuario_id, status)
+
+                return {
+                    "success": True,
+                    "status": status
+                }
+
+        except:
+            continue
+
+    return {
+        "success": False,
+        "body": "Instância não localizada."
+    }
