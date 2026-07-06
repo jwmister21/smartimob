@@ -176,6 +176,22 @@ button:hover {
 <script>
 
 let selecionados = [];
+let currentSession = null;
+
+/* =========================
+   DEFINIR SESSÃO ATIVA
+========================= */
+function setSession() {
+    currentSession = document.getElementById("sessionName").value.trim();
+
+    if (!currentSession) {
+        alert("Digite ou selecione uma sessão");
+        return;
+    }
+
+    document.getElementById("status").innerText =
+        "🟡 Sessão ativa: " + currentSession;
+}
 
 /* =========================
    CONTADOR
@@ -217,7 +233,7 @@ function selecionarCliente(check){
 }
 
 /* =========================
-   SELECIONAR VISÍVEIS
+   SELECIONAR TODOS
 ========================= */
 function selecionarTodos(){
     document.querySelectorAll(".checkCliente").forEach(chk=>{
@@ -229,43 +245,7 @@ function selecionarTodos(){
 }
 
 /* =========================
-   IMPORTAÇÃO JACKSON,NUMERO
-========================= */
-function importarPlanilha(){
-
-    let texto = document.getElementById("importarLista").value;
-
-    let linhas = texto.split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
-
-    let novos = 0;
-
-    linhas.forEach(linha=>{
-
-        let partes = linha.split(",");
-
-        let name = (partes[0] || "").trim();
-        let phone = (partes[1] || "").replace(/\D/g,"").trim();
-
-        if(!name || !phone) return;
-
-        if(!phone.startsWith("55")) phone = "55"+phone;
-
-        if(!selecionados.find(c => c.phone === phone)){
-            selecionados.push({name, phone});
-            novos++;
-        }
-    });
-
-    atualizarTextarea();
-    atualizarContador();
-
-    alert("Importados: " + novos);
-}
-
-/* =========================
-   TEMPLATE {name}
+   TEMPLATE
 ========================= */
 function montarMensagem(template, cliente){
     return template
@@ -274,9 +254,14 @@ function montarMensagem(template, cliente){
 }
 
 /* =========================
-   ENVIO COM DELAY
+   ENVIO EM MASSA (MULTI-SESSÃO)
 ========================= */
 async function iniciarEnvio(){
+
+    if(!currentSession){
+        alert("Selecione uma sessão primeiro");
+        return;
+    }
 
     let mensagem = document.getElementById("mensagem").value;
     let delay = parseInt(document.getElementById("delay").value);
@@ -294,7 +279,7 @@ async function iniciarEnvio(){
         let msgFinal = montarMensagem(mensagem, cliente);
 
         document.getElementById("status").innerText =
-            `📤 Enviando ${i+1}/${selecionados.length} → ${cliente.name}`;
+            `📤 [${currentSession}] ${i+1}/${selecionados.length} → ${cliente.name}`;
 
         try{
 
@@ -304,6 +289,7 @@ async function iniciarEnvio(){
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
+                    session: currentSession,
                     numero: cliente.phone,
                     mensagem: msgFinal
                 })
@@ -322,8 +308,9 @@ async function iniciarEnvio(){
         await new Promise(r => setTimeout(r, delay * 1000));
     }
 
-    document.getElementById("status").innerText = "✅ Finalizado";
+    document.getElementById("status").innerText =
+        `✅ Finalizado (${currentSession})`;
 }
-</script>
 
+</script>
 {% endblock %}
