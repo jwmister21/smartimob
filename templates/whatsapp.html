@@ -54,9 +54,7 @@
 </div>
 
 </div>
-
 <script>
-
 const API = "https://zoom-leggings-viability.ngrok-free.dev/api";
 const TOKEN = "THISISMYSECURETOKEN";
 
@@ -64,225 +62,148 @@ let currentSession = null;
 let qrLoop = null;
 let statusLoop = null;
 
-// ==========================
-// LOG
-// ==========================
-function log(msg) {
-  const el = document.getElementById("logs");
-  if (el) el.innerText += "➡️ " + msg + "\n";
+/* =========================
+   SALVAR SESSÃO POR USUÁRIO
+========================= */
+function salvarSessao(session) {
+    const key = "smartzen_session_" + window.USER_ID;
+    localStorage.setItem(key, session);
 }
 
-// ==========================
-// CRIAR / INICIAR SESSÃO
-// ==========================
+function carregarSessao() {
+    const key = "smartzen_session_" + window.USER_ID;
+    return localStorage.getItem(key);
+}
+
+/* =========================
+   CRIAR / INICIAR SESSÃO
+========================= */
 async function createSession() {
 
-  const session = document.getElementById("sessionName").value.trim();
+    const session = document.getElementById("sessionName").value.trim();
 
-  if (!session) {
-    log("❌ Digite o nome da sessão");
-    return;
-  }
+    if (!session) {
+        alert("Digite o nome da sessão");
+        return;
+    }
 
-  currentSession = session;
+    currentSession = session;
 
-  log("🚀 Criando sessão: " + session);
+    try {
 
-  try {
+        const res = await fetch(`${API}/${session}/start-session`, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + TOKEN,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ waitQrCode: true })
+        });
 
-    const res = await fetch(`${API}/${session}/start-session`, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ waitQrCode: true })
+        const data = await res.json();
+
+        log("STATUS: " + data.status);
+
+        // 🔥 SALVA SESSÃO POR USUÁRIO
+        salvarSessao(session);
+
+        startStatusLoop();
+        startQrLoop();
+
+    } catch (err) {
+        log("ERRO: " + err.message);
+    }
+}
+
+/* =========================
+   STATUS LOOP
+========================= */
+function startStatusLoop() {
+
+    if (statusLoop) clearInterval(statusLoop);
+
+    statusLoop = setInterval(async () => {
+
+        const res = await fetch(`${API}/${currentSession}/start-session`, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + TOKEN
+            },
+            body: JSON.stringify({ waitQrCode: true })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("status").innerText =
+            "Status: " + data.status;
+
+    }, 3000);
+}
+
+/* =========================
+   QR LOOP
+========================= */
+function startQrLoop() {
+
+    if (qrLoop) clearInterval(qrLoop);
+
+    qrLoop = setInterval(async () => {
+
+        const res = await fetch(`${API}/${currentSession}/start-session`, {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + TOKEN
+            },
+            body: JSON.stringify({ waitQrCode: true })
+        });
+
+        const data = await res.json();
+
+        if (data.qrcode) {
+            document.getElementById("qr").src = data.qrcode;
+            document.getElementById("qr").style.display = "block";
+        }
+
+        if (data.status === "CONNECTED") {
+            clearInterval(qrLoop);
+            log("🟢 Conectado!");
+        }
+
+    }, 2500);
+}
+
+/* =========================
+   ENVIAR MENSAGEM SIMPLES
+========================= */
+async function sendMessage() {
+
+    const phone = document.getElementById("phone").value;
+    const message = document.getElementById("message").value;
+
+    if (!currentSession) {
+        alert("Nenhuma sessão ativa");
+        return;
+    }
+
+    const res = await fetch("/whatsapp/enviar", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            session: currentSession,
+            numero: phone,
+            mensagem: message
+        })
     });
 
     const data = await res.json();
-
-    log("STATUS: " + data.status);
-
-    if (data.qrcode) {
-      showQR(data.qrcode);
-    }
-
-    startQrLoop();
-    startStatusLoop();
-
-  } catch (err) {
-    log("❌ ERRO createSession: " + err.message);
-  }
+    log("Mensagem enviada");
 }
 
-// ==========================
-// QR LOOP (ATUALIZA QR)
-// ==========================
-function startQrLoop() {
-
-  if (qrLoop) clearInterval(qrLoop);
-
-  qrLoop = setInterval(async () => {
-
-    if (!currentSession) return;
-
-    try {
-
-      const res = await fetch(`${API}/${currentSession}/start-session`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + TOKEN,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ waitQrCode: true })
-      });
-
-      const data = await res.json();
-
-      if (data.qrcode) {
-        showQR(data.qrcode);
-      }
-
-      if (data.status === "CONNECTED") {
-        log("🟢 Conectado!");
-        clearInterval(qrLoop);
-      }
-
-      if (data.status === "FAILED" || data.status === "CLOSED") {
-        log("🔴 Sessão caiu");
-        clearInterval(qrLoop);
-      }
-
-    } catch (err) {
-      log("❌ QR ERROR: " + err.message);
-    }
-
-  }, 2500);
-}
-
-// ==========================
-// STATUS LOOP
-// ==========================
-function startStatusLoop() {
-
-  if (statusLoop) clearInterval(statusLoop);
-
-  statusLoop = setInterval(async () => {
-
-    if (!currentSession) return;
-
-    try {
-
-      const res = await fetch(`${API}/${currentSession}/start-session`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + TOKEN
-        }
-      });
-
-      const data = await res.json();
-
-      document.getElementById("status").innerText =
-        data.status === "CONNECTED"
-          ? "🟢 Conectado"
-          : "🟡 " + data.status;
-
-    } catch (err) {
-      log("❌ STATUS ERROR: " + err.message);
-    }
-
-  }, 3000);
-}
-
-// ==========================
-// MOSTRAR QR
-// ==========================
-function showQR(qr) {
-  const img = document.getElementById("qr");
-  img.src = qr;
-  img.style.display = "block";
-}
-
-// ==========================
-// ENVIAR MENSAGEM
-// ==========================
-async function sendMessage() {
-
-  const phone = document.getElementById("phone").value;
-  const message = document.getElementById("message").value;
-
-  if (!currentSession) {
-    log("❌ Nenhuma sessão ativa");
-    return;
-  }
-
-  try {
-
-    const res = await fetch(`${API}/${currentSession}/send-message`, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ phone, message })
-    });
-
-    await res.json();
-
-    log("📤 Mensagem enviada: " + phone);
-
-  } catch (err) {
-    log("❌ SEND ERROR: " + err.message);
-  }
-}
-
-// ==========================
-// DISPARO EM MASSA
-// ==========================
-async function sendMass() {
-
-  const phones = document.getElementById("phones").value
-    .split("\n")
-    .map(p => p.trim())
-    .filter(Boolean);
-
-  const message = document.getElementById("massMessage").value;
-
-  if (!currentSession) {
-    log("❌ Nenhuma sessão ativa");
-    return;
-  }
-
-  log("🚀 Iniciando disparo em massa...");
-
-  for (let phone of phones) {
-
-    try {
-
-      await fetch(`${API}/${currentSession}/send-message`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + TOKEN,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ phone, message })
-      });
-
-      log("✔ enviado: " + phone);
-
-    } catch (err) {
-      log("❌ erro: " + phone);
-    }
-
-    await new Promise(r => setTimeout(r, 1500));
-  }
-
-  log("✅ disparo finalizado");
-}
-
-  function salvarSessao(session) {
-    const key = "smartzen_session_" + window.USER_ID;
-    localStorage.setItem(key, session);
+/* =========================
+   LOG
+========================= */
+function log(msg) {
+    console.log(msg);
 }
 </script>
 
