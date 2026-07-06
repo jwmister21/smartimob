@@ -27,13 +27,6 @@ import base64
 from pypdf import PdfReader
 import gdown
 import uuid
-from whatsapp_service import (
-    criar_instancia,
-    status_instancia,
-    desconectar,
-    enviar_mensagem
-)
-# Configuração do Banco
 
 
 app = Flask(__name__)
@@ -65,6 +58,10 @@ DB_DIR = "/data"
 os.makedirs(DB_DIR, exist_ok=True)
 
 DB_PATH = os.path.join(DB_DIR, "imobiliaria.db")
+
+from whatsapp_manager import WhatsAppManager
+
+whatsapp = WhatsAppManager(get_db)
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -231,17 +228,50 @@ def whatsapp_page():
     return render_template("whatsapp.html")
 
 
-@app.route("/whatsapp/create", methods=["POST"])
-def whatsapp_create():
-    user_id = session.get("user_id", "user1")
-    return jsonify(criar_instancia(user_id))
+@app.route("/whatsapp/criar", methods=["POST"])
+def whatsapp_criar():
+
+    if "usuario_id" not in session:
+        return jsonify({
+            "success": False,
+            "erro": "Usuário não autenticado."
+        }), 401
+
+    usuario_id = session["usuario_id"]
+
+    resposta = whatsapp.criar_instancia(usuario_id)
+
+    return jsonify(resposta)
 
 
 @app.route("/whatsapp/status")
 def whatsapp_status():
-    user_id = session.get("user_id", "user1")
-    return jsonify({"status": status_instancia(user_id)})
 
+    if "usuario_id" not in session:
+        return jsonify({
+            "success": False
+        }), 401
+
+    usuario_id = session["usuario_id"]
+
+    resposta = whatsapp.buscar_status(usuario_id)
+
+    return jsonify(resposta)
+
+
+@app.route("/whatsapp/qr")
+def whatsapp_qr():
+
+    if "usuario_id" not in session:
+        return jsonify({
+            "success": False
+        }), 401
+
+    usuario_id = session["usuario_id"]
+
+    resposta = whatsapp.buscar_qr(usuario_id)
+
+    return jsonify(resposta)
 
 @app.route("/whatsapp/disconnect")
 def whatsapp_disconnect():
@@ -1815,42 +1845,41 @@ def servir_video_do_volume(filename):
     else:
         abort(404)
 
+@app.route("/whatsapp/logout")
+def whatsapp_logout():
 
-from whatsapp_service import SESSOES_WHATSAPP
+    if "usuario_id" not in session:
+        return jsonify({
+            "success": False
+        }), 401
 
-EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-API_KEY = "smartzen123"
+    resposta = whatsapp.logout(
+        session["usuario_id"]
+    )
 
-
-SESSOES_WHATSAPP = {}
+    return jsonify(resposta)
 
 @app.route("/whatsapp/enviar", methods=["POST"])
 def whatsapp_enviar():
 
-    data = request.json
+    if "usuario_id" not in session:
+        return jsonify({
+            "success": False
+        }), 401
 
-    print("\n================= ROTA ENVIAR =================")
-    print("JSON RECEBIDO:", data)
+    data = request.get_json()
 
-    user_id = data.get("user_id")
     numero = data.get("numero")
     mensagem = data.get("mensagem")
 
-    print("USER_ID:", user_id)
-    print("NÚMERO:", numero)
-    print("MENSAGEM:", mensagem)
-
-    resposta = enviar_mensagem(
-        user_id,
+    resposta = whatsapp.send_text(
+        session["usuario_id"],
         numero,
         mensagem
     )
 
-    print("RESPOSTA FINAL:", resposta)
-    print("===============================================\n")
-
     return jsonify(resposta)
-
+    
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
 @admin_required
