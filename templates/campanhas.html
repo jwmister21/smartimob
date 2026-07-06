@@ -1,256 +1,125 @@
 {% extends 'base.html' %}
-
-{% block title %}Campanhas WhatsApp{% endblock %}
+{% block title %}Envio WhatsApp{% endblock %}
 
 {% block content %}
-<style>
-/* ===== SEU CSS ORIGINAL (mantido) ===== */
 
-.campanha-area {
-    width: 100%;
+<style>
+.container-box {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    gap: 20px;
 }
 
 .card {
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 25px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
 }
 
-h2 { margin-top: 0; color: #1e293b; font-size: 1.5rem; }
-
-label {
-    color: #64748b;
-    display: block;
-    margin-top: 15px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-input, textarea {
+textarea, input {
     width: 100%;
-    box-sizing: border-box;
-    background: #f8fafc;
-    color: #1e293b;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 12px;
+    padding: 10px;
     margin-top: 8px;
-    outline: none;
+    border-radius: 10px;
+    border: 1px solid #ccc;
 }
 
 button {
+    margin-top: 10px;
     width: 100%;
-    padding: 14px;
-    margin-top: 18px;
-    border: 0;
-    border-radius: 12px;
+    padding: 12px;
+    border: none;
     background: #2563eb;
     color: white;
-    font-weight: bold;
+    border-radius: 10px;
     cursor: pointer;
 }
 
 button:hover {
-    background: #1d4ed8;
-}
-
-.lista {
-    height: 520px;
-    overflow-y: auto;
-    margin-top: 15px;
+    background: #1e40af;
 }
 
 .cliente {
-    background: #fff;
-    padding: 18px;
-    margin-bottom: 12px;
-    border-radius: 14px;
     display: flex;
-    align-items: center;
-    gap: 20px;
-    border: 1px solid #e2e8f0;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
 }
 
-.nome-cliente {
-    font-weight: 800;
-    color: #1e293b;
-}
-
-.detalhe-cliente {
-    font-size: 0.85rem;
-    color: #64748b;
-}
-
-.checkCliente {
-    width: 20px;
-    height: 20px;
-    accent-color: #2563eb;
-}
-
-.btn-selecionar {
-    background: #1e293b !important;
-}
-
-.contador {
+.status {
     margin-top: 10px;
-    font-weight: 600;
-    color: #64748b;
-}
-
-#status {
-    margin-top: 10px;
-    color: #059669;
     font-weight: bold;
-}
-
-@media(max-width:900px){
-    .campanha-area { grid-template-columns: 1fr; }
+    color: green;
 }
 </style>
 
-<div class="campanha-area">
+<div class="container-box">
 
-<!-- ================= LEFT ================= -->
+<!-- ================= ESQUERDA ================= -->
 <div class="card">
-    <h2>📢 Disparo WhatsApp</h2>
+    <h2>📤 Disparo WhatsApp</h2>
 
-    <label>📱 Telefones selecionados</label>
-    <textarea id="telefones" rows="6" placeholder="Selecione ou importe contatos"></textarea>
+    <textarea id="telefones" placeholder="Lista gerada automaticamente"></textarea>
 
-    <label>💬 Mensagem (use {name})</label>
-    <textarea id="mensagem" rows="6" placeholder="Ex: Olá {name}, tudo bem?"></textarea>
+    <textarea id="mensagem" placeholder="Mensagem (use {name})"></textarea>
 
-    <label>⏱ Delay entre mensagens (segundos)</label>
-    <input id="delay" type="number" value="3">
+    <input id="delay" type="number" value="3" placeholder="Delay (segundos)">
 
-    <button onclick="iniciarEnvio()">🚀 Enviar Mensagens</button>
+    <button onclick="enviar()">🚀 ENVIAR AGORA</button>
 
-    <div class="contador">
-        Clientes selecionados: <span id="qtd">0</span>
-    </div>
-
-    <div id="status"></div>
+    <div class="status" id="status"></div>
 </div>
 
-<!-- ================= RIGHT ================= -->
+<!-- ================= DIREITA ================= -->
 <div class="card">
     <h2>👥 Clientes</h2>
 
-    <label>🔍 Importar lista (Nome,Telefone)</label>
-    <textarea id="importarLista" rows="6"
-    placeholder="JACKSON,551199999999&#10;MARIA,551188888888"></textarea>
+    <textarea id="importar" placeholder="Nome,Telefone
+JOAO,551199999999
+MARIA,551188888888"></textarea>
 
-    <button onclick="importarPlanilha()">📥 Importar</button>
+    <button onclick="importar()">📥 Importar</button>
+    <button onclick="selecionarTodos()">☑ Selecionar todos</button>
 
-    <button class="btn-selecionar" onclick="selecionarTodos()">
-        ☑ Selecionar Visíveis
-    </button>
-
-    <div class="lista">
-        {% for c in clientes %}
-        <div class="cliente">
-            <input type="checkbox"
-                   class="checkCliente"
-                   data-tel="{{c.telefone}}"
-                   onchange="selecionarCliente(this)">
-
-            <div>
-                <div class="nome-cliente">{{c.nome}}</div>
-                <div class="detalhe-cliente">{{c.telefone}}</div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+    <div id="lista"></div>
 </div>
 
 </div>
 
 <script>
+
 let selecionados = [];
-let currentSession = null;
 
 /* =========================
-   CARREGAR SESSÃO AUTOMÁTICA
+   SESSÃO
 ========================= */
-function carregarSessao() {
-    const key = "smartzen_session_" + window.USER_ID;
-    currentSession = localStorage.getItem(key);
-
-    if (currentSession) {
-        document.getElementById("status").innerText =
-            "🟢 Sessão ativa: " + currentSession;
-    }
+function salvarSessao(session) {
+    localStorage.setItem("smartzen_session", session);
 }
 
-carregarSessao();
-
-/* =========================
-   CONTADOR
-========================= */
-function atualizarContador() {
-    document.getElementById("qtd").innerText = selecionados.length;
+function getSessao() {
+    return localStorage.getItem("smartzen_session");
 }
 
 /* =========================
-   SELEÇÃO CLIENTE
+   IMPORTAR
 ========================= */
-function selecionarCliente(check) {
+function importar() {
 
-    const card = check.closest(".cliente");
+    let texto = document.getElementById("importar").value;
 
-    let name = card.querySelector(".nome-cliente").innerText.trim();
-    let phone = check.dataset.tel.replace(/\D/g, '');
+    let linhas = texto.split("\n");
 
-    if (!phone.startsWith("55")) phone = "55" + phone;
-
-    if (check.checked) {
-        if (!selecionados.find(c => c.phone === phone)) {
-            selecionados.push({ name, phone });
-        }
-    } else {
-        selecionados = selecionados.filter(c => c.phone !== phone);
-    }
-
-    atualizarTextarea();
-    atualizarContador();
-}
-
-/* =========================
-   TEXTAREA AUTO
-========================= */
-function atualizarTextarea() {
-    document.getElementById("telefones").value =
-        selecionados.map(c => `${c.name},${c.phone}`).join("\n");
-}
-
-/* =========================
-   IMPORTAR LISTA
-========================= */
-function importarPlanilha() {
-
-    let texto = document.getElementById("importarLista").value;
-
-    let linhas = texto.split(/\r?\n/)
-        .map(l => l.trim())
-        .filter(l => l.length > 0);
-
-    linhas.forEach(linha => {
-
-        let partes = linha.split(",");
-
-        let name = (partes[0] || "").trim();
-        let phone = (partes[1] || "").replace(/\D/g, "").trim();
+    linhas.forEach(l => {
+        let [name, phone] = l.split(",");
 
         if (!name || !phone) return;
 
+        phone = phone.replace(/\D/g, "");
         if (!phone.startsWith("55")) phone = "55" + phone;
 
         if (!selecionados.find(c => c.phone === phone)) {
@@ -258,55 +127,88 @@ function importarPlanilha() {
         }
     });
 
-    atualizarTextarea();
-    atualizarContador();
+    render();
+}
+
+/* =========================
+   RENDER LISTA
+========================= */
+function render() {
+
+    let div = document.getElementById("lista");
+    div.innerHTML = "";
+
+    selecionados.forEach((c, i) => {
+
+        div.innerHTML += `
+        <div class="cliente">
+            <input type="checkbox" checked onchange="remover(${i})">
+            <div>
+                <b>${c.name}</b><br>
+                ${c.phone}
+            </div>
+        </div>`;
+    });
+
+    document.getElementById("telefones").value =
+        selecionados.map(c => `${c.name},${c.phone}`).join("\n");
+}
+
+/* =========================
+   REMOVER
+========================= */
+function remover(i) {
+    selecionados.splice(i, 1);
+    render();
+}
+
+/* =========================
+   SELECIONAR TODOS
+========================= */
+function selecionarTodos() {
+    document.querySelectorAll("#lista input").forEach(e => e.checked = true);
 }
 
 /* =========================
    TEMPLATE
 ========================= */
-function montarMensagem(template, cliente) {
-    return template
-        .replaceAll("{name}", cliente.name)
-        .replaceAll("{phone}", cliente.phone);
+function montar(msg, c) {
+    return msg
+        .replaceAll("{name}", c.name)
+        .replaceAll("{phone}", c.phone);
 }
 
 /* =========================
-   ENVIO EM MASSA
+   ENVIO
 ========================= */
-async function iniciarEnvio() {
+async function enviar() {
 
-    if (!currentSession) {
-        alert("Selecione uma sessão primeiro");
+    let session = getSessao();
+
+    if (!session) {
+        alert("Nenhuma sessão ativa!");
         return;
     }
 
-    let mensagem = document.getElementById("mensagem").value;
+    let msg = document.getElementById("mensagem").value;
     let delay = parseInt(document.getElementById("delay").value) || 3;
 
     for (let i = 0; i < selecionados.length; i++) {
 
-        let cliente = selecionados[i];
-        let msgFinal = montarMensagem(mensagem, cliente);
+        let c = selecionados[i];
 
         document.getElementById("status").innerText =
-            `📤 ${i + 1}/${selecionados.length} → ${cliente.name}`;
+            `Enviando ${i+1}/${selecionados.length} → ${c.name}`;
 
-        try {
-
-            await fetch("/whatsapp/enviar", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    session: currentSession,
-                    numero: cliente.phone,
-                    mensagem: msgFinal
-                })
-            });
-
-        } catch (e) {
-            console.log("Erro envio:", e);
-        }
+        await fetch("/whatsapp/enviar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                session: session,
+                numero: c.phone,
+                mensagem: montar(msg, c)
+            })
+        });
 
         await new Promise(r => setTimeout(r, delay * 1000));
     }
@@ -315,4 +217,5 @@ async function iniciarEnvio() {
 }
 
 </script>
+
 {% endblock %}
