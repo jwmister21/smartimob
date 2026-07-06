@@ -3,208 +3,638 @@
 
 <div class="container mt-4">
 
-<h2>📲 WhatsApp Multi-Sessão SmartZen</h2>
 
-<!-- CRIAR SESSÃO -->
+<h2>📲 WhatsApp SmartZen</h2>
+
+
+<!-- ==========================
+     CONEXÃO
+========================== -->
+
+<div class="card p-3 mt-3" id="boxCriar">
+
+<h5>🔗 Conectar WhatsApp</h5>
+
+
+<input 
+id="sessionName"
+class="form-control"
+placeholder="Nome da sessão (ex: corretor_joao)">
+
+
+<button 
+class="btn btn-success mt-3"
+onclick="createSession()">
+
+🚀 Criar / Conectar
+
+</button>
+
+
+</div>
+
+
+
+<!-- ==========================
+     STATUS
+========================== -->
+
 <div class="card p-3 mt-3">
 
-  <input id="sessionName" class="form-control" placeholder="Nome da sessão (ex: usuario1, loja1, corretor_joao)">
-  
-  <button class="btn btn-success mt-2" onclick="createSession()">
-    🚀 Criar / Iniciar Sessão
-  </button>
+<h5>Status</h5>
+
+<div id="status">
+🔴 Nenhuma sessão conectada
+</div>
+
 
 </div>
 
-<!-- STATUS -->
+
+
+
+<!-- ==========================
+     QR CODE
+========================== -->
+
+
+<div class="card p-3 mt-3 text-center"
+id="boxQR"
+style="display:none;">
+
+
+<h5>📱 Escaneie o QR Code</h5>
+
+
+<img 
+id="qr"
+style="
+width:280px;
+display:none;
+margin:auto;
+">
+
+
+</div>
+
+
+
+
+
+<!-- ==========================
+     ENVIO
+========================== -->
+
+
+<div class="card p-3 mt-3"
+id="boxEnvio"
+style="display:none;">
+
+
+<h5>
+📤 Enviar mensagem
+</h5>
+
+
+<input 
+id="phone"
+class="form-control mb-2"
+placeholder="5511999999999">
+
+
+<textarea
+id="message"
+class="form-control mb-2"
+placeholder="Digite sua mensagem"></textarea>
+
+
+
+<button
+class="btn btn-primary"
+onclick="sendMessage()">
+
+Enviar WhatsApp
+
+</button>
+
+
+</div>
+
+
+
+
+
+<!-- ==========================
+     LOGS
+========================== -->
+
+
 <div class="card p-3 mt-3">
 
-  <h5>Status da Sessão</h5>
-  <div id="status">🔴 Nenhuma sessão ativa</div>
+<h5>Logs</h5>
+
+<pre id="logs"></pre>
+
 
 </div>
 
-<!-- QR CODE -->
-<div class="card p-3 mt-3 text-center">
-
-  <img id="qr" style="width:250px; display:none;" />
 
 </div>
 
-<!-- ENVIAR MENSAGEM -->
-<div class="card p-3 mt-3">
 
-  <h5>📤 Enviar mensagem</h5>
 
-  <input id="phone" class="form-control mb-2" placeholder="5511999999999">
-  <input id="message" class="form-control mb-2" placeholder="Mensagem">
-
-  <button class="btn btn-primary" onclick="sendMessage()">
-    Enviar
-  </button>
-
-</div>
-
-<!-- LOGS -->
-<div class="card p-3 mt-3">
-
-  <h5>Logs</h5>
-  <pre id="logs" style="height:200px; overflow:auto;"></pre>
-
-</div>
-
-</div>
 <script>
+
+
 const API = "https://zoom-leggings-viability.ngrok-free.dev/api";
+
 const TOKEN = "THISISMYSECURETOKEN";
 
+
 let currentSession = null;
+
 let qrLoop = null;
+
 let statusLoop = null;
 
-/* =========================
-   SALVAR SESSÃO POR USUÁRIO
-========================= */
-function salvarSessao(session) {
-    const key = "smartzen_session_" + window.USER_ID;
-    localStorage.setItem(key, session);
+
+
+
+
+/*
+==============================
+ SALVAR SESSÃO
+==============================
+*/
+
+
+function salvarSessao(session){
+
+    localStorage.setItem(
+        "smartzen_session",
+        session
+    );
+
 }
 
-function carregarSessao() {
-    const key = "smartzen_session_" + window.USER_ID;
-    return localStorage.getItem(key);
+
+
+
+
+function carregarSessao(){
+
+    return localStorage.getItem(
+        "smartzen_session"
+    );
+
 }
 
-/* =========================
-   CRIAR / INICIAR SESSÃO
-========================= */
-async function createSession() {
 
-    const session = document.getElementById("sessionName").value.trim();
 
-    if (!session) {
+
+
+
+
+/*
+==============================
+ AO ABRIR PÁGINA
+==============================
+*/
+
+
+window.onload=function(){
+
+
+    let sessao = carregarSessao();
+
+
+
+    if(sessao){
+
+
+        currentSession = sessao;
+
+
+        document.getElementById("boxCriar")
+        .style.display="none";
+
+
+
+        document.getElementById("boxEnvio")
+        .style.display="block";
+
+
+
+        document.getElementById("status")
+        .innerHTML =
+        "🟢 Sessão ativa: "+sessao;
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+/*
+==============================
+ CRIAR SESSÃO
+==============================
+*/
+
+
+async function createSession(){
+
+
+    const session =
+    document.getElementById("sessionName")
+    .value.trim();
+
+
+
+    if(!session){
+
         alert("Digite o nome da sessão");
+
         return;
+
     }
 
-    currentSession = session;
 
-    try {
 
-        const res = await fetch(`${API}/${session}/start-session`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + TOKEN,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ waitQrCode: true })
-        });
+    currentSession=session;
 
-        const data = await res.json();
 
-        log("STATUS: " + data.status);
+    salvarSessao(session);
 
-        // 🔥 SALVA SESSÃO POR USUÁRIO
-        salvarSessao(session);
 
-        startStatusLoop();
-        startQrLoop();
 
-    } catch (err) {
-        log("ERRO: " + err.message);
-    }
-}
+    document.getElementById("boxQR")
+    .style.display="block";
 
-/* =========================
-   STATUS LOOP
-========================= */
-function startStatusLoop() {
 
-    if (statusLoop) clearInterval(statusLoop);
 
-    statusLoop = setInterval(async () => {
+    log(
+    "Criando sessão: "+session
+    );
 
-        const res = await fetch(`${API}/${currentSession}/start-session`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + TOKEN
-            },
-            body: JSON.stringify({ waitQrCode: true })
-        });
 
-        const data = await res.json();
 
-        document.getElementById("status").innerText =
-            "Status: " + data.status;
+    try{
 
-    }, 3000);
-}
 
-/* =========================
-   QR LOOP
-========================= */
-function startQrLoop() {
+        const res = await fetch(
+        `${API}/${session}/start-session`,
+        {
 
-    if (qrLoop) clearInterval(qrLoop);
+        method:"POST",
 
-    qrLoop = setInterval(async () => {
+        headers:{
 
-        const res = await fetch(`${API}/${currentSession}/start-session`, {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + TOKEN
-            },
-            body: JSON.stringify({ waitQrCode: true })
-        });
+        "Authorization":
+        "Bearer "+TOKEN,
 
-        const data = await res.json();
+        "Content-Type":
+        "application/json"
 
-        if (data.qrcode) {
-            document.getElementById("qr").src = data.qrcode;
-            document.getElementById("qr").style.display = "block";
-        }
+        },
 
-        if (data.status === "CONNECTED") {
-            clearInterval(qrLoop);
-            log("🟢 Conectado!");
-        }
 
-    }, 2500);
-}
+        body:JSON.stringify({
 
-/* =========================
-   ENVIAR MENSAGEM SIMPLES
-========================= */
-async function sendMessage() {
+        waitQrCode:true
 
-    const phone = document.getElementById("phone").value;
-    const message = document.getElementById("message").value;
-
-    if (!currentSession) {
-        alert("Nenhuma sessão ativa");
-        return;
-    }
-
-    const res = await fetch("/whatsapp/enviar", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            session: currentSession,
-            numero: phone,
-            mensagem: message
         })
-    });
 
-    const data = await res.json();
-    log("Mensagem enviada");
+
+        });
+
+
+
+        const data =
+        await res.json();
+
+
+
+        log(
+        "Status: "+data.status
+        );
+
+
+
+        if(data.qrcode){
+
+            mostrarQR(data.qrcode);
+
+        }
+
+
+
+        iniciarLoops();
+
+
+
+    }catch(e){
+
+        log(
+        "Erro: "+e.message
+        );
+
+    }
+
+
 }
 
-/* =========================
-   LOG
-========================= */
-function log(msg) {
-    console.log(msg);
+
+
+
+
+
+
+
+
+/*
+==============================
+ LOOP STATUS
+==============================
+*/
+
+
+function iniciarLoops(){
+
+
+if(statusLoop)
+clearInterval(statusLoop);
+
+
+
+statusLoop=setInterval(async()=>{
+
+
+try{
+
+
+const res =
+await fetch(
+`${API}/${currentSession}/start-session`,
+{
+
+method:"POST",
+
+headers:{
+
+"Authorization":
+"Bearer "+TOKEN
+
+},
+
+body:JSON.stringify({
+
+waitQrCode:true
+
+})
+
+});
+
+
+const data =
+await res.json();
+
+
+
+document.getElementById("status")
+.innerHTML =
+"Status: "+data.status;
+
+
+
+if(data.status==="CONNECTED"){
+
+
+conectado();
+
+
 }
+
+
+
+}catch(e){}
+
+
+
+},3000);
+
+
+
+}
+
+
+
+
+
+/*
+==============================
+ QR
+==============================
+*/
+
+
+function mostrarQR(qr){
+
+
+let img =
+document.getElementById("qr");
+
+
+img.src=qr;
+
+img.style.display="block";
+
+
+}
+
+
+
+
+
+
+
+/*
+==============================
+ QUANDO CONECTAR
+==============================
+*/
+
+
+function conectado(){
+
+
+if(qrLoop)
+clearInterval(qrLoop);
+
+
+
+document.getElementById("boxQR")
+.style.display="none";
+
+
+
+document.getElementById("boxCriar")
+.style.display="none";
+
+
+
+document.getElementById("boxEnvio")
+.style.display="block";
+
+
+
+document.getElementById("status")
+.innerHTML =
+"🟢 WhatsApp conectado: "
++currentSession;
+
+
+
+log(
+"WhatsApp conectado!"
+);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/*
+==============================
+ ENVIAR
+==============================
+*/
+
+
+async function sendMessage(){
+
+
+let phone =
+document.getElementById("phone")
+.value;
+
+
+let message =
+document.getElementById("message")
+.value;
+
+
+
+if(!currentSession){
+
+alert(
+"Nenhuma sessão ativa"
+);
+
+return;
+
+}
+
+
+
+try{
+
+
+const res =
+await fetch(
+"/whatsapp/enviar",
+{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":
+"application/json"
+
+},
+
+
+body:JSON.stringify({
+
+session:currentSession,
+
+numero:phone,
+
+mensagem:message
+
+})
+
+
+});
+
+
+
+const data =
+await res.json();
+
+
+
+log(
+"Mensagem enviada"
+);
+
+
+
+}catch(e){
+
+log(
+"Erro envio: "+e.message
+);
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+/*
+==============================
+ LOG
+==============================
+*/
+
+
+function log(msg){
+
+
+document.getElementById("logs")
+.innerHTML +=
+"➡️ "+msg+"\n";
+
+
+}
+
+
+
 </script>
+
 
 {% endblock %}
