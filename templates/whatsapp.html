@@ -60,16 +60,37 @@ async function startSession() {
   const data = await res.json();
   console.log(data);
 
-  loadQR();
-}
+  document.getElementById("status").innerHTML = "🟡 Gerando QR...";
 
+  loadQR(); // agora sim
+}
 // buscar QR
 async function loadQR() {
-  const res = await fetch(`${API}/qrcode-session`, {
-    headers: {
-      "Authorization": "Bearer " + TOKEN
+  const interval = setInterval(async () => {
+    try {
+      const res = await fetch(`${API}/qrcode-session`, {
+        headers: {
+          "Authorization": "Bearer " + TOKEN
+        }
+      });
+
+      if (!res.ok) return;
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+
+      document.getElementById("qr-img").src = url;
+      document.getElementById("qr-img").style.display = "block";
+
+      document.getElementById("status").innerHTML = "🟡 Escaneie o QR Code";
+
+      clearInterval(interval);
+
+    } catch (err) {
+      console.log("Aguardando QR...");
     }
-  });
+  }, 2000);
+}
 
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
