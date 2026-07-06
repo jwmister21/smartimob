@@ -204,76 +204,14 @@ def get_usuario():
     return cursor.fetchone()
 
 
-@app.route("/whatsapp/conectar", methods=["POST"])
-def conectar_whatsapp():
-
-    usuario = get_usuario()
-
-    if not usuario:
-        return {"erro": "não logado"}
-
-    sessao = usuario["whatsapp_sessao"]
-
-    resposta = requests.post(
-        "https://lucky-analysis-production-e497.up.railway.app/whatsapp/conectar",
-        json={
-            "user_id": usuario["id"],
-            "sessao": sessao
-        }
-    )
-
-    return resposta.json()
 
 
-@app.route("/whatsapp")
-def whatsapp_page():
-    return render_template("whatsapp.html")
 
 
-@app.route("/whatsapp/criar", methods=["POST"])
-def whatsapp_criar():
-
-    if "usuario_id" not in session:
-        return jsonify({
-            "success": False,
-            "erro": "Usuário não autenticado."
-        }), 401
-
-    usuario_id = session["usuario_id"]
-
-    resposta = whatsapp.criar_instancia(usuario_id)
-
-    return jsonify(resposta)
 
 
-@app.route("/whatsapp/status")
-def whatsapp_status():
-
-    if "usuario_id" not in session:
-        return jsonify({
-            "success": False
-        }), 401
-
-    usuario_id = session["usuario_id"]
-
-    resposta = whatsapp.buscar_status(usuario_id)
-
-    return jsonify(resposta)
 
 
-@app.route("/whatsapp/qr")
-def whatsapp_qr():
-
-    if "usuario_id" not in session:
-        return jsonify({
-            "success": False
-        }), 401
-
-    usuario_id = session["usuario_id"]
-
-    resposta = whatsapp.buscar_qr(usuario_id)
-
-    return jsonify(resposta)
 
 
 
@@ -1842,40 +1780,9 @@ def servir_video_do_volume(filename):
     else:
         abort(404)
 
-@app.route("/whatsapp/logout")
-def whatsapp_logout():
 
-    if "usuario_id" not in session:
-        return jsonify({
-            "success": False
-        }), 401
 
-    resposta = whatsapp.logout(
-        session["usuario_id"]
-    )
 
-    return jsonify(resposta)
-
-@app.route("/whatsapp/enviar", methods=["POST"])
-def whatsapp_enviar():
-
-    if "usuario_id" not in session:
-        return jsonify({
-            "success": False
-        }), 401
-
-    data = request.get_json()
-
-    numero = data.get("numero")
-    mensagem = data.get("mensagem")
-
-    resposta = whatsapp.send_text(
-        session["usuario_id"],
-        numero,
-        mensagem
-    )
-
-    return jsonify(resposta)
     
 @app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
 @verificar_sessao
@@ -3521,6 +3428,7 @@ def importar_imoveis_pdf():
 
 
     return redirect("/imoveis")
+
 
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
