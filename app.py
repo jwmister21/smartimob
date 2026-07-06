@@ -2377,10 +2377,8 @@ def campanhas():
     conn.close()
 
 
-    return render_template(
-        "campanhas.html",
-        clientes=clientes
-    )
+    return render_template("campanha.html", user_id=session["user_id"], clientes=clientes)
+     
 
 @app.route("/teste_envio", methods=["POST"])
 def teste_envio():
