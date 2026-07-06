@@ -279,6 +279,11 @@ async function sendMass() {
 
   log("✅ disparo finalizado");
 }
+
+  function salvarSessao(session) {
+    const key = "smartzen_session_" + window.USER_ID;
+    localStorage.setItem(key, session);
+}
 </script>
 
 {% endblock %}
