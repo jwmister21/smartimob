@@ -43,10 +43,11 @@
 
 <script>
 
-const API = "https://zoom-leggings-viability.ngrok-free.dev/api/session";
+const API = "https://zoom-leggings-viability.ngrok-free.dev/api";
+const TOKEN = "THISISMYSECURETOKEN";
+
 let currentSession = null;
 let qrLoop = null;
-let statusLoop = null;
 
 // ==========================
 // CRIAR SESSÃO
@@ -54,49 +55,32 @@ let statusLoop = null;
 async function createSession() {
 
   const session = document.getElementById("sessionName").value;
+  currentSession = session;
 
   log("🚀 Criando sessão: " + session);
 
-  currentSession = session;
-
-  const res = await fetch(`${API}/create`, {
+  const res = await fetch(`${API}/${session}/start-session`, {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ session })
+    headers: {
+      "Authorization": "Bearer " + TOKEN,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ waitQrCode: true })
   });
 
   const data = await res.json();
 
   log("STATUS: " + data.status);
 
-  startStatusLoop();
+  if (data.qrcode) {
+    showQR(data.qrcode);
+  }
+
   startQrLoop();
 }
 
 // ==========================
-// STATUS LOOP
-// ==========================
-function startStatusLoop() {
-
-  if (statusLoop) clearInterval(statusLoop);
-
-  statusLoop = setInterval(async () => {
-
-    const res = await fetch(`${API}/${currentSession}/status`);
-    const data = await res.json();
-
-    log("STATUS: " + data.status);
-
-    document.getElementById("status").innerText =
-      data.status === "CONNECTED"
-        ? "🟢 Conectado"
-        : "🟡 " + data.status;
-
-  }, 3000);
-}
-
-// ==========================
-// QR LOOP INTELIGENTE
+// LOOP QR
 // ==========================
 function startQrLoop() {
 
@@ -104,24 +88,48 @@ function startQrLoop() {
 
   qrLoop = setInterval(async () => {
 
-    const res = await fetch(`${API}/${currentSession}/status`);
+    const res = await fetch(`${API}/${currentSession}/start-session`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + TOKEN,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ waitQrCode: true })
+    });
+
     const data = await res.json();
 
+    log("STATUS: " + data.status);
+
     if (data.qrcode) {
-      document.getElementById("qr").src = data.qrcode;
-      document.getElementById("qr").style.display = "block";
+      showQR(data.qrcode);
     }
 
     if (data.status === "CONNECTED") {
       clearInterval(qrLoop);
-      log("🟢 QR finalizado");
+      log("🟢 CONECTADO");
     }
 
-  }, 2000);
+    if (data.status === "CLOSED" || data.status === "FAILED") {
+      clearInterval(qrLoop);
+      log("🔴 REINICIANDO SESSÃO...");
+      setTimeout(() => createSession(), 3000);
+    }
+
+  }, 3000);
 }
 
 // ==========================
-// LOGS
+// QR
+// ==========================
+function showQR(qr) {
+  const img = document.getElementById("qr");
+  img.src = qr;
+  img.style.display = "block";
+}
+
+// ==========================
+// LOG
 // ==========================
 function log(msg) {
   const el = document.getElementById("logs");
