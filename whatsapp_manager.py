@@ -387,78 +387,78 @@ class WhatsAppManager:
     # ENVIO DE MENSAGENS
     # ==========================================================
 
-    def send_text(self, usuario_id, numero, texto):
+   def send_text(self, usuario_id, numero, texto):
 
-        sessao = self.buscar_sessao(usuario_id)
+    sessao = self.buscar_sessao(usuario_id)
 
-        if not sessao:
-            return {
-                "success": False,
-                "body": "Sessão não encontrada."
-            }
+    if not sessao:
+        return {
+            "success": False,
+            "body": "Sessão não encontrada."
+        }
 
-        instance = sessao["instance_name"]
+    instance = sessao["instance_name"]
 
-       payload = {
-    "number": numero,
-    "textMessage": {
-        "text": texto
+    payload = {
+        "number": numero,
+        "textMessage": {
+            "text": texto
+        }
     }
-}
 
-        resposta = self._request(
-            "POST",
-            f"/message/sendText/{instance}",
-            payload
-        )
+    resposta = self._request(
+        "POST",
+        f"/message/sendText/{instance}",
+        payload
+    )
 
-        if resposta["success"]:
+    if resposta["success"]:
 
-            conn = self.get_db()
+        conn = self.get_db()
 
-            conn.execute("""
+        conn.execute("""
 
-                UPDATE whatsapp_sessoes
+            UPDATE whatsapp_sessoes
 
-                SET
+            SET
 
-                    last_connection=CURRENT_TIMESTAMP,
-                    last_error=NULL,
-                    updated_at=CURRENT_TIMESTAMP
+                last_connection=CURRENT_TIMESTAMP,
+                last_error=NULL,
+                updated_at=CURRENT_TIMESTAMP
 
-                WHERE usuario_id=?
+            WHERE usuario_id=?
 
-            """, (usuario_id,))
+        """, (usuario_id,))
 
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
 
-        else:
+    else:
 
-            conn = self.get_db()
+        conn = self.get_db()
 
-            conn.execute("""
+        conn.execute("""
 
-                UPDATE whatsapp_sessoes
+            UPDATE whatsapp_sessoes
 
-                SET
+            SET
 
-                    last_error=?,
-                    updated_at=CURRENT_TIMESTAMP
+                last_error=?,
+                updated_at=CURRENT_TIMESTAMP
 
-                WHERE usuario_id=?
+            WHERE usuario_id=?
 
-            """, (
+        """, (
 
-                str(resposta["body"]),
-                usuario_id
+            str(resposta["body"]),
+            usuario_id
 
-            ))
+        ))
 
-            conn.commit()
-            conn.close()
+        conn.commit()
+        conn.close()
 
-        return resposta
+    return resposta
 
 
     # ----------------------------------------------------------
