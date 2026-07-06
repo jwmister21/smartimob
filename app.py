@@ -3818,7 +3818,9 @@ def salvar_logo_imobiliaria():
 # 3. PAINEL ADMINISTRATIVO (CONTROLE DO DONO)
 # =========================================
 
-
+@app.route("/teste_whatsapp")
+def teste_whatsapp():
+    return render_template("teste_whatsapp.html")
 
 @app.route("/admin")
 @verificar_sessao
