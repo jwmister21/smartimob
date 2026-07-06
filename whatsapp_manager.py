@@ -85,117 +85,78 @@ class WhatsAppManager:
         conn = self.get_db()
 
         sessao = conn.execute("""
-
             SELECT *
-
             FROM whatsapp_sessoes
-
             WHERE usuario_id=?
-
         """, (usuario_id,)).fetchone()
 
         conn.close()
-
         return sessao
 
-
-    def salvar_sessao(
-        self,
-        usuario_id,
-        instance_name,
-        instance_id=None,
-        status="DISCONNECTED"
-    ):
+    def salvar_sessao(self, usuario_id, instance_name, instance_id=None, status="DISCONNECTED"):
 
         conn = self.get_db()
 
         existe = conn.execute("""
-
             SELECT id
-
             FROM whatsapp_sessoes
-
             WHERE usuario_id=?
-
         """, (usuario_id,)).fetchone()
 
         if existe:
 
             conn.execute("""
-
                 UPDATE whatsapp_sessoes
-
                 SET
-
                     instance_name=?,
                     instance_id=?,
                     status=?,
                     updated_at=CURRENT_TIMESTAMP
-
                 WHERE usuario_id=?
-
             """, (
-
                 instance_name,
                 instance_id,
                 status,
                 usuario_id
-
             ))
 
         else:
 
             conn.execute("""
-
                 INSERT INTO whatsapp_sessoes(
-
                     usuario_id,
                     instance_name,
                     instance_id,
                     status
-
                 )
-
                 VALUES(?,?,?,?)
-
             """, (
-
                 usuario_id,
                 instance_name,
                 instance_id,
                 status
-
             ))
 
         conn.commit()
         conn.close()
-
 
     def atualizar_status(self, usuario_id, status):
 
         conn = self.get_db()
 
         conn.execute("""
-
             UPDATE whatsapp_sessoes
-
             SET
-
                 status=?,
                 updated_at=CURRENT_TIMESTAMP
-
             WHERE usuario_id=?
-
         """, (
-
             status,
             usuario_id
-
         ))
 
         conn.commit()
         conn.close()
-
 
     def obter_instance_name(self, usuario_id):
 
@@ -206,7 +167,7 @@ class WhatsAppManager:
 
         return sessao["instance_name"]
 
-      # ==========================================================
+    # ==========================================================
     # INSTÂNCIAS
     # ==========================================================
 
@@ -232,15 +193,10 @@ class WhatsAppManager:
         instance_id = None
 
         try:
-
             if isinstance(data, dict):
-
                 if "instance" in data:
-
                     if isinstance(data["instance"], dict):
-
                         instance_id = data["instance"].get("instanceId")
-
         except Exception:
             pass
 
@@ -257,23 +213,15 @@ class WhatsAppManager:
 
     def listar_instancias(self):
 
-        return self._request(
-            "GET",
-            "/instance/fetchInstances"
-        )
+        return self._request("GET", "/instance/fetchInstances")
 
     # ----------------------------------------------------------
 
     def buscar_status(self, usuario_id):
-
         sessao = self.buscar_sessao(usuario_id)
 
         if not sessao:
-
-            return {
-                "success": False,
-                "body": "Sessão não encontrada."
-            }
+            return {"success": False, "body": "Sessão não encontrada."}
 
         instance = sessao["instance_name"]
 
@@ -285,37 +233,20 @@ class WhatsAppManager:
         dados = resposta["body"]
 
         if not isinstance(dados, list):
-
-            return {
-                "success": False,
-                "body": "Resposta inválida."
-            }
+            return {"success": False, "body": "Resposta inválida."}
 
         for item in dados:
-
             try:
-
                 if item["instance"]["instanceName"] == instance:
-
                     status = item["instance"]["status"]
 
-                    self.atualizar_status(
-                        usuario_id,
-                        status
-                    )
+                    self.atualizar_status(usuario_id, status)
 
-                    return {
-                        "success": True,
-                        "status": status
-                    }
-
+                    return {"success": True, "status": status}
             except Exception:
                 continue
 
-        return {
-            "success": False,
-            "body": "Instância não localizada."
-        }
+        return {"success": False, "body": "Instância não localizada."}
 
     # ----------------------------------------------------------
 
@@ -324,11 +255,7 @@ class WhatsAppManager:
         sessao = self.buscar_sessao(usuario_id)
 
         if not sessao:
-
-            return {
-                "success": False,
-                "body": "Sessão não encontrada."
-            }
+            return {"success": False, "body": "Sessão não encontrada."}
 
         instance = sessao["instance_name"]
 
@@ -338,17 +265,11 @@ class WhatsAppManager:
         )
 
         if resposta["success"]:
-
             conn = self.get_db()
-
             conn.execute("""
-
                 DELETE FROM whatsapp_sessoes
-
                 WHERE usuario_id=?
-
             """, (usuario_id,))
-
             conn.commit()
             conn.close()
 
@@ -361,11 +282,7 @@ class WhatsAppManager:
         sessao = self.buscar_sessao(usuario_id)
 
         if not sessao:
-
-            return {
-                "success": False,
-                "body": "Sessão não encontrada."
-            }
+            return {"success": False, "body": "Sessão não encontrada."}
 
         instance = sessao["instance_name"]
 
@@ -375,11 +292,7 @@ class WhatsAppManager:
         )
 
         if resposta["success"]:
-
-            self.atualizar_status(
-                usuario_id,
-                "DISCONNECTED"
-            )
+            self.atualizar_status(usuario_id, "DISCONNECTED")
 
         return resposta
 
@@ -387,79 +300,59 @@ class WhatsAppManager:
     # ENVIO DE MENSAGENS
     # ==========================================================
 
-   def send_text(self, usuario_id, numero, texto):
+    def send_text(self, usuario_id, numero, texto):
 
-    sessao = self.buscar_sessao(usuario_id)
+        sessao = self.buscar_sessao(usuario_id)
 
-    if not sessao:
-        return {
-            "success": False,
-            "body": "Sessão não encontrada."
+        if not sessao:
+            return {"success": False, "body": "Sessão não encontrada."}
+
+        instance = sessao["instance_name"]
+
+        payload = {
+            "number": numero,
+            "textMessage": {
+                "text": texto
+            }
         }
 
-    instance = sessao["instance_name"]
+        resposta = self._request(
+            "POST",
+            f"/message/sendText/{instance}",
+            payload
+        )
 
-    payload = {
-        "number": numero,
-        "textMessage": {
-            "text": texto
-        }
-    }
+        if resposta["success"]:
 
-    resposta = self._request(
-        "POST",
-        f"/message/sendText/{instance}",
-        payload
-    )
+            conn = self.get_db()
+            conn.execute("""
+                UPDATE whatsapp_sessoes
+                SET
+                    last_connection=CURRENT_TIMESTAMP,
+                    last_error=NULL,
+                    updated_at=CURRENT_TIMESTAMP
+                WHERE usuario_id=?
+            """, (usuario_id,))
+            conn.commit()
+            conn.close()
 
-    if resposta["success"]:
+        else:
 
-        conn = self.get_db()
+            conn = self.get_db()
+            conn.execute("""
+                UPDATE whatsapp_sessoes
+                SET
+                    last_error=?,
+                    updated_at=CURRENT_TIMESTAMP
+                WHERE usuario_id=?
+            """, (
+                str(resposta["body"]),
+                usuario_id
+            ))
+            conn.commit()
+            conn.close()
 
-        conn.execute("""
-
-            UPDATE whatsapp_sessoes
-
-            SET
-
-                last_connection=CURRENT_TIMESTAMP,
-                last_error=NULL,
-                updated_at=CURRENT_TIMESTAMP
-
-            WHERE usuario_id=?
-
-        """, (usuario_id,))
-
-        conn.commit()
-        conn.close()
-
-    else:
-
-        conn = self.get_db()
-
-        conn.execute("""
-
-            UPDATE whatsapp_sessoes
-
-            SET
-
-                last_error=?,
-                updated_at=CURRENT_TIMESTAMP
-
-            WHERE usuario_id=?
-
-        """, (
-
-            str(resposta["body"]),
-            usuario_id
-
-        ))
-
-        conn.commit()
-        conn.close()
-
-    return resposta
-
+        return resposta
 
     # ----------------------------------------------------------
 
