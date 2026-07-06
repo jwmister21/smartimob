@@ -202,44 +202,81 @@ function carregarSessao(){
 */
 
 
-window.onload=function(){
-
+window.onload = async function(){
 
     let sessao = carregarSessao();
 
-
-
     if(sessao){
-
 
         currentSession = sessao;
 
-
-        document.getElementById("boxCriar")
-        .style.display="none";
-
-
-
-        document.getElementById("boxEnvio")
-        .style.display="block";
-
-
-
-        document.getElementById("status")
-        .innerHTML =
-        "🟢 Sessão ativa: "+sessao;
-
+        verificarStatus();
 
     }
-
 
 }
 
 
 
 
+async function verificarStatus(){
+
+    try{
+
+        const res = await fetch(
+        `${API}/${currentSession}/start-session`,
+        {
+            method:"POST",
+            headers:{
+                "Authorization":"Bearer "+TOKEN,
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                waitQrCode:true
+            })
+        });
 
 
+        const data = await res.json();
+
+
+        console.log("STATUS:", data);
+
+
+        if(data.status === "CONNECTED"){
+
+
+            conectado();
+
+
+        }else{
+
+
+            document.getElementById("status").innerHTML =
+            "🟡 Aguardando conexão: "+currentSession;
+
+
+            document.getElementById("boxQR")
+            .style.display="block";
+
+
+            if(data.qrcode){
+
+                mostrarQR(data.qrcode);
+
+            }
+
+
+        }
+
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
+}
 
 
 
