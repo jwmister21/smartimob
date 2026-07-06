@@ -59,9 +59,6 @@ os.makedirs(DB_DIR, exist_ok=True)
 
 DB_PATH = os.path.join(DB_DIR, "imobiliaria.db")
 
-from whatsapp_manager import WhatsAppManager
-
-whatsapp = WhatsAppManager(get_db)
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -106,6 +103,10 @@ def injetar_lembretes():
     conn.close()
 
     return dict(lembretes=lembretes)
+ 
+ from whatsapp_manager import WhatsAppManager
+
+whatsapp = WhatsAppManager(get_db)
 
 def limpar_prefixo_fotos_func():
 
