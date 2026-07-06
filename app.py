@@ -2724,6 +2724,22 @@ logs = {}
 def get_logs(session):
     return jsonify(logs.get(session, []))
 
+@app.route("/api/session/<session>/qr")
+def get_qr(session):
+
+    url = f"{WPP_URL}/api/{session}/start-session"
+
+    res = requests.post(url, headers={
+        "Authorization": f"Bearer {TOKEN}"
+    }, json={"waitQrCode": True})
+
+    data = res.json()
+
+    return jsonify({
+        "qrcode": data.get("qrcode"),
+        "status": data.get("status")
+    })
+
 @app.route("/atualizar_senha", methods=["POST"])
 def atualizar_senha():
     senha_atual = request.form.get("senha_atual")
