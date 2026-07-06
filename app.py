@@ -1103,6 +1103,21 @@ def super_dashboard():
     return render_template("super_admin.html", empresas=empresas)
 
 
+url_check = f"{WPP_URL}/api/{session}/check-number"
+
+teste = requests.post(
+    url_check,
+    headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "phone": numero
+    }
+)
+
+print("CHECK NUMBER:")
+print(teste.text)
 
 @app.route("/fifit")
 @verificar_sessao
