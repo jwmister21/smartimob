@@ -2377,11 +2377,11 @@ def campanhas():
     conn.close()
 
 
-    user_id = session.get("user_id", None)
+    usuario_id = session.get("usuario_id", None)
 
     return render_template(
-        "campanha.html",
-        user_id=user_id,
+        "campanhas.html",
+        usuario_id=usuario_id,
         clientes=clientes
     )
      
