@@ -2426,6 +2426,77 @@ def teste_envio():
 @app.route('/termos')
 def termos():
     return render_template('termos.html')
+
+
+
+
+
+WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+TOKEN = "THISISMYSECURETOKEN"
+
+
+@app.route("/whatsapp/enviar", methods=["POST"])
+def whatsapp_enviar():
+
+    try:
+
+        data = request.json
+
+        session = data.get("session")
+        numero = data.get("numero")
+        mensagem = data.get("mensagem")
+
+
+        if not session:
+            return jsonify({
+                "success": False,
+                "erro": "Sessão não informada"
+            })
+
+
+        if not numero or not mensagem:
+            return jsonify({
+                "success": False,
+                "erro": "Número ou mensagem vazio"
+            })
+
+
+        print("==============================")
+        print("ENVIO WHATSAPP")
+        print("Sessão:", session)
+        print("Número:", numero)
+        print("Mensagem:", mensagem)
+        print("==============================")
+
+
+        url = f"{WPP_URL}/api/{session}/send-message"
+
+
+        resposta = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {TOKEN}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "phone": numero,
+                "message": mensagem
+            },
+            timeout=30
+        )
+
+
+        return jsonify(resposta.json())
+
+
+    except Exception as e:
+
+        print("ERRO ENVIO:", e)
+
+        return jsonify({
+            "success": False,
+            "erro": str(e)
+        })
      
 @app.route("/enviar_imovel_match", methods=["POST"])
 @verificar_sessao
