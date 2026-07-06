@@ -86,40 +86,92 @@ margin:auto;
 ========================== -->
 
 
+<!-- ==========================
+     ENVIO EM MASSA
+========================== -->
+
 <div class="card p-3 mt-3"
 id="boxEnvio"
 style="display:none;">
 
 
-<h5>
-📤 Enviar mensagem
-</h5>
+<h4>📤 Disparo WhatsApp</h4>
 
 
-<input 
-id="phone"
-class="form-control mb-2"
-placeholder="5511999999999">
+<label class="mt-2">
+📱 Lista de contatos
+</label>
 
 
 <textarea
-id="message"
-class="form-control mb-2"
-placeholder="Digite sua mensagem"></textarea>
+id="listaEnvio"
+class="form-control"
+rows="8"
+placeholder="Jackson,5511920900085
+Maria,5511988887777"></textarea>
+
+
+
+<label class="mt-3">
+💬 Mensagem
+</label>
+
+
+<textarea
+id="mensagemEnvio"
+class="form-control"
+rows="6"
+placeholder="Olá {nome}, tudo bem?
+Seu telefone é {telefone}"></textarea>
+
+
+
+
+<label class="mt-3">
+⏱ Delay entre mensagens (segundos)
+</label>
+
+
+<input
+id="delayEnvio"
+type="number"
+class="form-control"
+value="3">
+
+
 
 
 
 <button
-class="btn btn-primary"
-onclick="sendMessage()">
+class="btn btn-primary mt-3"
+onclick="iniciarDisparo()">
 
-Enviar WhatsApp
+🚀 Iniciar Disparo
 
 </button>
 
 
-</div>
 
+<hr>
+
+
+<h5>
+📊 Logs do envio
+</h5>
+
+
+<pre id="logsEnvio"
+style="
+background:#111;
+color:#00ff88;
+padding:15px;
+border-radius:10px;
+height:250px;
+overflow:auto;">
+</pre>
+
+
+</div>
 
 
 
@@ -671,6 +723,258 @@ document.getElementById("logs")
 
 }
 
+
+     /*
+==============================
+ DISPARO EM MASSA
+==============================
+*/
+
+
+async function iniciarDisparo(){
+
+
+let texto =
+document.getElementById("listaEnvio").value;
+
+
+let mensagem =
+document.getElementById("mensagemEnvio").value;
+
+
+
+let delay =
+parseInt(
+document.getElementById("delayEnvio").value
+);
+
+
+
+if(!texto){
+
+alert("Digite os contatos");
+
+return;
+
+}
+
+
+
+if(!mensagem){
+
+alert("Digite a mensagem");
+
+return;
+
+}
+
+
+
+if(!delay || delay < 1){
+
+delay = 3;
+
+}
+
+
+
+
+let contatos =
+texto.split("\n")
+.map(x=>x.trim())
+.filter(x=>x);
+
+
+
+logEnvio(
+"🚀 Iniciando envio para "+contatos.length+" contatos"
+);
+
+
+
+for(let i=0;i<contatos.length;i++){
+
+
+let linha = contatos[i];
+
+
+let partes =
+linha.split(",");
+
+
+
+let nome =
+(partes[0] || "cliente")
+.trim();
+
+
+
+let telefone =
+(partes[1] || "")
+.replace(/\D/g,'');
+
+
+
+if(!telefone){
+
+logEnvio(
+"❌ "+nome+" sem telefone"
+);
+
+continue;
+
+}
+
+
+
+
+let mensagemFinal =
+mensagem
+.replaceAll(
+"{nome}",
+nome
+)
+.replaceAll(
+"{telefone}",
+telefone
+);
+
+
+
+
+
+try{
+
+
+let resposta =
+await fetch(
+"/whatsapp/enviar",
+{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+
+body:JSON.stringify({
+
+session:currentSession,
+
+numero:telefone,
+
+mensagem:mensagemFinal
+
+})
+
+
+});
+
+
+
+let data =
+await resposta.json();
+
+
+
+if(data.success === false){
+
+
+logEnvio(
+"❌ Falhou: "
++nome+
+" - "+
+telefone
+);
+
+
+}else{
+
+
+logEnvio(
+"✅ Enviado: "
++nome+
+" - "+
+telefone
+);
+
+
+}
+
+
+
+}catch(e){
+
+
+logEnvio(
+"❌ Erro: "
++nome+
+" - "+
+telefone
+);
+
+
+
+}
+
+
+
+
+await esperar(delay);
+
+
+
+}
+
+
+
+logEnvio(
+"🏁 Disparo finalizado"
+);
+
+
+
+}
+
+
+
+
+
+function esperar(segundos){
+
+return new Promise(resolve=>{
+
+setTimeout(
+resolve,
+segundos*1000
+);
+
+});
+
+
+}
+
+
+
+
+
+function logEnvio(msg){
+
+
+let box =
+document.getElementById("logsEnvio");
+
+
+box.innerHTML +=
+msg+"\n";
+
+
+box.scrollTop =
+box.scrollHeight;
+
+
+}
 
 
 </script>
