@@ -2693,7 +2693,36 @@ def verificar_login():
     return "ativo"
 
 
+@app.route("/api/session/create", methods=["POST"])
+def create_session():
+    data = request.json
+    session = data.get("session")
 
+    # chama WPPConnect
+    url = f"{WPP_URL}/api/{session}/start-session"
+
+    res = requests.post(url, headers={
+        "Authorization": f"Bearer {TOKEN}"
+    }, json={"waitQrCode": True})
+
+    return jsonify(res.json())
+
+@app.route("/api/session/<session>/status")
+def session_status(session):
+
+    url = f"{WPP_URL}/api/{session}/start-session"
+
+    res = requests.post(url, headers={
+        "Authorization": f"Bearer {TOKEN}"
+    }, json={})
+
+    return jsonify(res.json())
+
+logs = {}
+
+@app.route("/api/session/<session>/logs")
+def get_logs(session):
+    return jsonify(logs.get(session, []))
 
 @app.route("/atualizar_senha", methods=["POST"])
 def atualizar_senha():
