@@ -1,213 +1,131 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
 
-  <div class="card shadow-lg p-4">
+<div class="container mt-4">
 
-    <h2 class="text-center mb-4">📲 WhatsApp SmartZen</h2>
+<h2>📲 WhatsApp Multi-Sessão SmartZen</h2>
 
-    <div class="text-center">
+<!-- CRIAR SESSÃO -->
+<div class="card p-3 mt-3">
 
-      <div id="status" class="mb-3">
-        🔴 Desconectado
-      </div>
+  <input id="sessionName" class="form-control" placeholder="Nome da sessão (ex: corretor_joao)">
+  <button class="btn btn-success mt-2" onclick="createSession()">
+    Criar Sessão
+  </button>
 
-      <!-- QR CODE -->
-      <div id="qr-box" class="mb-4">
-        <img id="qr-img" style="width: 250px; display:none;" />
-      </div>
+</div>
 
-      <button class="btn btn-success" onclick="startSession()">
-        Iniciar Conexão
-      </button>
+<!-- STATUS -->
+<div class="card p-3 mt-3">
 
-      <button class="btn btn-danger" onclick="logoutSession()">
-        Desconectar
-      </button>
+  <h5>Status</h5>
+  <div id="status">🔴 Nenhuma sessão</div>
 
-      <hr>
+</div>
 
-      <h5>Enviar mensagem teste</h5>
+<!-- QR -->
+<div class="card p-3 mt-3 text-center">
 
-      <input id="phone" class="form-control mb-2" placeholder="5511999999999">
-      <input id="message" class="form-control mb-2" placeholder="Mensagem">
+  <img id="qr" style="width:250px; display:none;" />
 
-      <button class="btn btn-primary" onclick="sendMessage()">
-        Enviar
-      </button>
+</div>
 
-      <hr>
+<!-- LOGS -->
+<div class="card p-3 mt-3">
 
-      <small id="log" style="white-space: pre-wrap; text-align:left; display:block;"></small>
+  <h5>Logs</h5>
+  <pre id="logs" style="height:200px; overflow:auto;"></pre>
 
-    </div>
-  </div>
+</div>
+
 </div>
 
 <script>
 
-const session = "smartzen1"; // depois vira dinâmico
-const API = `https://zoom-leggings-viability.ngrok-free.dev/api/session/${session}`;
-const TOKEN = "THISISMYSECURETOKEN";
+const API = "https://SEU-NGROK-AQUI/api/session";
+let currentSession = null;
+let qrLoop = null;
+let statusLoop = null;
 
-let qrInterval = null;
-let sessionStarted = false;
+// ==========================
+// CRIAR SESSÃO
+// ==========================
+async function createSession() {
 
-function log(msg) {
-  console.log(msg);
-  const el = document.getElementById("log");
-  if (el) el.innerText += "➡️ " + msg + "\n";
+  const session = document.getElementById("sessionName").value;
+
+  log("🚀 Criando sessão: " + session);
+
+  currentSession = session;
+
+  const res = await fetch(`${API}/create`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ session })
+  });
+
+  const data = await res.json();
+
+  log("STATUS: " + data.status);
+
+  startStatusLoop();
+  startQrLoop();
 }
 
-// ======================
-// START SESSION
-// ======================
-async function startSession() {
+// ==========================
+// STATUS LOOP
+// ==========================
+function startStatusLoop() {
 
-  if (sessionStarted) {
-    log("Sessão já iniciada");
-    return;
-  }
+  if (statusLoop) clearInterval(statusLoop);
 
-  sessionStarted = true;
+  statusLoop = setInterval(async () => {
 
-  try {
-
-    log("🚀 Iniciando sessão...");
-
-    const res = await fetch(`${API}/start-session`, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ waitQrCode: true })
-    });
-
+    const res = await fetch(`${API}/${currentSession}/status`);
     const data = await res.json();
 
-    log("Status: " + data.status);
+    log("STATUS: " + data.status);
 
-    if (data.qrcode) {
-      showQR(data.qrcode);
-    }
-
-    startQRLoop();
-
-  } catch (err) {
-    log("❌ ERRO startSession: " + err.message);
-    sessionStarted = false;
-  }
-}
-
-// ======================
-// QR LOOP (AUTO)
-// ======================
-function startQRLoop() {
-
-  if (qrInterval) clearInterval(qrInterval);
-
-  qrInterval = setInterval(async () => {
-
-    try {
-
-      const res = await fetch(`${API}/start-session`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + TOKEN,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ waitQrCode: true })
-      });
-
-      const data = await res.json();
-
-      log("Status: " + data.status);
-
-      if (data.qrcode) {
-        showQR(data.qrcode);
-      }
-
-      if (data.status === "CONNECTED") {
-        log("🟢 Conectado!");
-        clearInterval(qrInterval);
-      }
-
-      if (data.status === "CLOSED" || data.status === "FAILED") {
-        log("🔴 Sessão caiu, reiniciando...");
-
-        clearInterval(qrInterval);
-        sessionStarted = false;
-
-        setTimeout(() => {
-          startSession();
-        }, 3000);
-      }
-
-    } catch (err) {
-      log("❌ QR ERROR: " + err.message);
-    }
+    document.getElementById("status").innerText =
+      data.status === "CONNECTED"
+        ? "🟢 Conectado"
+        : "🟡 " + data.status;
 
   }, 3000);
 }
 
-// ======================
-// SHOW QR
-// ======================
-function showQR(qr) {
-  const img = document.getElementById("qr-img");
-  img.src = qr;
-  img.style.display = "block";
-}
+// ==========================
+// QR LOOP INTELIGENTE
+// ==========================
+function startQrLoop() {
 
-// ======================
-// SEND MESSAGE (FIX)
-// ======================
-async function sendMessage() {
+  if (qrLoop) clearInterval(qrLoop);
 
-  const phone = document.getElementById("phone").value;
-  const message = document.getElementById("message").value;
+  qrLoop = setInterval(async () => {
 
-  try {
-
-    const res = await fetch(`${API}/send-message`, {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ phone, message })
-    });
-
+    const res = await fetch(`${API}/${currentSession}/status`);
     const data = await res.json();
-    log("Mensagem enviada");
 
-  } catch (err) {
-    log("Erro sendMessage: " + err.message);
-  }
+    if (data.qrcode) {
+      document.getElementById("qr").src = data.qrcode;
+      document.getElementById("qr").style.display = "block";
+    }
+
+    if (data.status === "CONNECTED") {
+      clearInterval(qrLoop);
+      log("🟢 QR finalizado");
+    }
+
+  }, 2000);
 }
 
-// ======================
-// LOGOUT
-// ======================
-async function logoutSession() {
-
-  await fetch(`${API}/logout-session`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + TOKEN
-    }
-  });
-
-  sessionStarted = false;
-
-  if (qrInterval) clearInterval(qrInterval);
-
-  document.getElementById("qr-img").style.display = "none";
-  document.getElementById("status").innerText = "🔴 Desconectado";
-
-  log("Sessão encerrada");
+// ==========================
+// LOGS
+// ==========================
+function log(msg) {
+  const el = document.getElementById("logs");
+  el.innerText += "➡️ " + msg + "\n";
 }
 
 </script>
