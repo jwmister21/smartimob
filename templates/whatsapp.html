@@ -1,161 +1,118 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>WhatsApp SmartZen</title>
+{% extends "base.html" %}
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0f172a;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+{% block content %}
+<div class="container mt-5">
 
-    .card {
-      background: #111827;
-      padding: 30px;
-      border-radius: 16px;
-      width: 420px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
+  <div class="card shadow-lg p-4">
 
-    h1 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
+    <h2 class="text-center mb-4">📲 Conexão WhatsApp SmartZen</h2>
 
-    .status {
-      margin: 10px 0;
-      padding: 8px;
-      border-radius: 8px;
-      background: #1f2937;
-    }
+    <div class="text-center">
 
-    .status span {
-      font-weight: bold;
-      color: #22c55e;
-    }
+      <div id="status" class="mb-3">
+        🔴 Desconectado
+      </div>
 
-    img {
-      width: 260px;
-      height: 260px;
-      margin: 20px 0;
-      border-radius: 12px;
-      background: white;
-    }
+      <!-- QR CODE -->
+      <div id="qr-box" class="mb-4">
+        <img id="qr-img" src="" style="width: 250px; display:none;" />
+      </div>
 
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+      <button class="btn btn-success" onclick="startSession()">
+        Iniciar Sessão
+      </button>
 
-    .btn-green {
-      background: #22c55e;
-      color: black;
-    }
+      <button class="btn btn-danger" onclick="logoutSession()">
+        Desconectar
+      </button>
 
-    .btn-blue {
-      background: #3b82f6;
-      color: white;
-    }
+      <hr>
 
-    .btn-red {
-      background: #ef4444;
-      color: white;
-    }
-  </style>
-</head>
+      <h5>Enviar mensagem teste</h5>
 
-<body>
+      <input id="phone" class="form-control mb-2" placeholder="5511999999999">
+      <input id="message" class="form-control mb-2" placeholder="Mensagem">
 
-<div class="card">
+      <button class="btn btn-primary" onclick="sendMessage()">
+        Enviar
+      </button>
 
-  <h1>📲 WhatsApp SmartZen</h1>
-
-  <div class="status">
-    Status: <span id="status">Desconectado</span>
+    </div>
   </div>
-
-  <img id="qr" src="" alt="QR Code">
-
-  <button class="btn-green" onclick="startSession()">
-    Iniciar Sessão
-  </button>
-
-  <button class="btn-blue" onclick="loadQR()">
-    Atualizar QR Code
-  </button>
-
-  <button class="btn-red" onclick="logout()">
-    Desconectar
-  </button>
-
 </div>
 
 <script>
-const session = "smartzen1";
-const token = "THISISMYSECURETOKEN";
 
-// 🔥 inicia sessão
-function startSession() {
-  fetch(`/api/${session}/start-session`, {
+const API = "https://zoom-leggings-viability.ngrok-free.dev/api/smartzen1";
+const TOKEN = "THISISMYSECURETOKEN";
+
+// iniciar sessão e pegar QR
+async function startSession() {
+  const res = await fetch(`${API}/start-session`, {
     method: "POST",
     headers: {
-      "Authorization": "Bearer " + token,
+      "Authorization": "Bearer " + TOKEN,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ waitQrCode: true })
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log(data);
-    loadQR();
   });
+
+  const data = await res.json();
+  console.log(data);
+
+  loadQR();
 }
 
-// 🔥 pega QR Code
-function loadQR() {
-  fetch(`/api/${session}/qrcode-session`, {
+// buscar QR
+async function loadQR() {
+  const res = await fetch(`${API}/qrcode-session`, {
     headers: {
-      "Authorization": "Bearer " + token
+      "Authorization": "Bearer " + TOKEN
     }
-  })
-  .then(res => res.blob())
-  .then(blob => {
-    document.getElementById("qr").src = URL.createObjectURL(blob);
-  })
-  .catch(() => {
-    document.getElementById("status").innerText = "QR não disponível";
   });
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+
+  document.getElementById("qr-img").src = url;
+  document.getElementById("qr-img").style.display = "block";
+
+  document.getElementById("status").innerHTML = "🟡 Aguardando QR...";
 }
 
-// 🔥 logout
-function logout() {
-  fetch(`/api/${session}/logout-session`, {
+// enviar mensagem
+async function sendMessage() {
+  const phone = document.getElementById("phone").value;
+  const message = document.getElementById("message").value;
+
+  const res = await fetch(`${API}/send-message`, {
     method: "POST",
     headers: {
-      "Authorization": "Bearer " + token
-    }
-  })
-  .then(() => {
-    document.getElementById("status").innerText = "Desconectado";
+      "Authorization": "Bearer " + TOKEN,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ phone, message })
   });
+
+  const data = await res.json();
+  console.log(data);
+
+  alert("Mensagem enviada!");
 }
 
-// auto load QR
-loadQR();
+// logout
+async function logoutSession() {
+  await fetch(`${API}/logout-session`, {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + TOKEN
+    }
+  });
+
+  document.getElementById("status").innerHTML = "🔴 Desconectado";
+  document.getElementById("qr-img").style.display = "none";
+}
+
 </script>
 
-</body>
-</html>
+{% endblock %}
