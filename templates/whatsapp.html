@@ -448,18 +448,20 @@ conectado();
 
 function mostrarQR(qr){
 
-
-let img =
-document.getElementById("qr");
+    let img = document.getElementById("qr");
 
 
-img.src=qr;
+    // se vier somente base64
+    if(!qr.startsWith("data:image")){
+        qr = "data:image/png;base64," + qr;
+    }
 
-img.style.display="block";
 
+    img.src = qr;
+
+    img.style.display="block";
 
 }
-
 
 
 
