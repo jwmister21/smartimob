@@ -5,39 +5,44 @@
 
   <div class="card shadow-lg p-4">
 
-    <h2 class="text-center mb-4">📲 Conexão WhatsApp SmartZen</h2>
+    <h2 class="text-center mb-3">📲 WhatsApp SmartZen - Debug</h2>
+
+    <!-- STATUS -->
+    <div id="status" class="text-center mb-3">
+      🔴 Desconectado
+    </div>
+
+    <!-- LOGS -->
+    <div class="alert alert-dark" style="height:150px; overflow:auto; font-size:12px;" id="logs">
+      Logs iniciados...
+    </div>
+
+    <!-- QR CODE -->
+    <div class="text-center mb-3">
+      <img id="qr" style="width:260px; display:none;" />
+    </div>
 
     <div class="text-center">
 
-      <div id="status" class="mb-3">
-        🔴 Desconectado
-      </div>
-
-      <!-- QR CODE -->
-      <div id="qr-box" class="mb-4">
-        <img id="qr-img" src="" style="width: 250px; display:none;" />
-      </div>
-
-      <button class="btn btn-success" onclick="startSession()">
+      <button class="btn btn-success mb-2" onclick="startSession()">
         Iniciar Sessão
       </button>
 
-      <button class="btn btn-danger" onclick="logoutSession()">
+      <button class="btn btn-danger mb-2" onclick="logoutSession()">
         Desconectar
       </button>
 
       <hr>
 
-      <h5>Enviar mensagem teste</h5>
-
       <input id="phone" class="form-control mb-2" placeholder="5511999999999">
       <input id="message" class="form-control mb-2" placeholder="Mensagem">
 
       <button class="btn btn-primary" onclick="sendMessage()">
-        Enviar
+        Enviar Mensagem
       </button>
 
     </div>
+
   </div>
 </div>
 
@@ -46,92 +51,137 @@
 const API = "https://zoom-leggings-viability.ngrok-free.dev/api/smartzen1";
 const TOKEN = "THISISMYSECURETOKEN";
 
-// iniciar sessão e pegar QR
+function log(msg) {
+  console.log(msg);
+  document.getElementById("logs").innerHTML += "<br>➡️ " + msg;
+}
+
+// ======================
+// START SESSION
+// ======================
 async function startSession() {
-  const res = await fetch(`${API}/start-session`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + TOKEN,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ waitQrCode: true })
-  });
+  try {
+    log("Iniciando sessão...");
 
-  const data = await res.json();
-  console.log(data);
+    const res = await fetch(`${API}/start-session`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + TOKEN,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ waitQrCode: true })
+    });
 
-  document.getElementById("status").innerHTML = "🟡 Gerando QR...";
+    const text = await res.text();
+    log("Start response: " + text);
 
-  loadQR(); // agora sim
+    await loadQR();
+
+  } catch (err) {
+    log("ERRO startSession: " + err.message);
+  }
 }
-// buscar QR
+
+// ======================
+// QR CODE (CORRIGIDO)
+// ======================
 async function loadQR() {
-  const interval = setInterval(async () => {
+  try {
+    log("Buscando QR Code...");
+
+    const res = await fetch(`${API}/qrcode-session`, {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + TOKEN
+      }
+    });
+
+    const text = await res.text();
+    log("QR raw response: " + text);
+
+    let data;
     try {
-      const res = await fetch(`${API}/qrcode-session`, {
-        headers: {
-          "Authorization": "Bearer " + TOKEN
-        }
-      });
-
-      if (!res.ok) return;
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-
-      document.getElementById("qr-img").src = url;
-      document.getElementById("qr-img").style.display = "block";
-
-      document.getElementById("status").innerHTML = "🟡 Escaneie o QR Code";
-
-      clearInterval(interval);
-
-    } catch (err) {
-      console.log("Aguardando QR...");
+      data = JSON.parse(text);
+    } catch (e) {
+      log("QR não é JSON puro");
     }
-  }, 2000);
+
+    // CASO 1: base64
+    if (data?.qrcode || data?.qr || data?.base64) {
+      const qr = data.qrcode || data.qr || data.base64;
+      document.getElementById("qr").src = qr.startsWith("data:")
+        ? qr
+        : "data:image/png;base64," + qr;
+
+      document.getElementById("qr").style.display = "block";
+      document.getElementById("status").innerHTML = "🟡 QR Code gerado";
+      return;
+    }
+
+    // CASO 2: string simples
+    if (typeof data === "string") {
+      document.getElementById("qr").src = "data:image/png;base64," + data;
+      document.getElementById("qr").style.display = "block";
+      return;
+    }
+
+    log("QR não encontrado no retorno");
+
+  } catch (err) {
+    log("ERRO loadQR: " + err.message);
+  }
 }
 
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-
-  document.getElementById("qr-img").src = url;
-  document.getElementById("qr-img").style.display = "block";
-
-  document.getElementById("status").innerHTML = "🟡 Aguardando QR...";
-}
-
-// enviar mensagem
+// ======================
+// SEND MESSAGE
+// ======================
 async function sendMessage() {
-  const phone = document.getElementById("phone").value;
-  const message = document.getElementById("message").value;
+  try {
+    const phone = document.getElementById("phone").value;
+    const message = document.getElementById("message").value;
 
-  const res = await fetch(`${API}/send-message`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + TOKEN,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ phone, message })
-  });
+    log("Enviando mensagem...");
 
-  const data = await res.json();
-  console.log(data);
+    const res = await fetch(`${API}/send-message`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + TOKEN,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ phone, message })
+    });
 
-  alert("Mensagem enviada!");
+    const text = await res.text();
+    log("Send response: " + text);
+
+  } catch (err) {
+    log("ERRO sendMessage: " + err.message);
+  }
 }
 
-// logout
+// ======================
+// LOGOUT
+// ======================
 async function logoutSession() {
-  await fetch(`${API}/logout-session`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + TOKEN
-    }
-  });
+  try {
+    log("Desconectando...");
 
-  document.getElementById("status").innerHTML = "🔴 Desconectado";
-  document.getElementById("qr-img").style.display = "none";
+    const res = await fetch(`${API}/logout-session`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + TOKEN
+      }
+    });
+
+    const text = await res.text();
+    log("Logout: " + text);
+
+    document.getElementById("status").innerHTML = "🔴 Desconectado";
+    document.getElementById("qr").style.display = "none";
+
+  } catch (err) {
+    log("ERRO logout: " + err.message);
+  }
 }
 
 </script>
