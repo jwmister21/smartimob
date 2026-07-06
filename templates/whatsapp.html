@@ -55,11 +55,12 @@ let sessionStarted = false;
 
 function log(msg) {
   console.log(msg);
-  document.getElementById("log").innerText += "➡️ " + msg + "\n";
+  const el = document.getElementById("log");
+  if (el) el.innerText += "➡️ " + msg + "\n";
 }
 
 // ======================
-// START SÓ NO CLIQUE
+// START SESSION
 // ======================
 async function startSession() {
 
@@ -70,43 +71,9 @@ async function startSession() {
 
   sessionStarted = true;
 
-  log("🚀 Iniciando sessão manualmente...");
+  try {
 
-  const res = await fetch(`${API}/start-session`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + TOKEN,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ waitQrCode: true })
-  });
-
-  const data = await res.json();
-
-  log("Start response: " + JSON.stringify(data));
-
-  document.getElementById("status").innerText =
-    data.status === "QRCODE"
-      ? "🟡 Escaneie o QR Code"
-      : "🔄 " + data.status;
-
-  if (data.qrcode) {
-    showQR(data.qrcode);
-  }
-
-  startQRLoop(); // só inicia depois do clique
-}
-
-// ======================
-// POLLING CONTROLADO
-// ======================
-function startQRLoop() {
-
-  if (qrInterval) clearInterval(qrInterval);
-
-  qrInterval = setInterval(async () => {
-
-    log("🔎 Buscando QR...");
+    log("🚀 Iniciando sessão...");
 
     const res = await fetch(`${API}/start-session`, {
       method: "POST",
@@ -125,21 +92,104 @@ function startQRLoop() {
       showQR(data.qrcode);
     }
 
-    if (data.status === "CONNECTED") {
-      log("🟢 Conectado!");
-      clearInterval(qrInterval);
+    startQRLoop();
+
+  } catch (err) {
+    log("❌ ERRO startSession: " + err.message);
+    sessionStarted = false;
+  }
+}
+
+// ======================
+// QR LOOP (AUTO)
+// ======================
+function startQRLoop() {
+
+  if (qrInterval) clearInterval(qrInterval);
+
+  qrInterval = setInterval(async () => {
+
+    try {
+
+      const res = await fetch(`${API}/start-session`, {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ waitQrCode: true })
+      });
+
+      const data = await res.json();
+
+      log("Status: " + data.status);
+
+      if (data.qrcode) {
+        showQR(data.qrcode);
+      }
+
+      if (data.status === "CONNECTED") {
+        log("🟢 Conectado!");
+        clearInterval(qrInterval);
+      }
+
+      if (data.status === "CLOSED" || data.status === "FAILED") {
+        log("🔴 Sessão caiu, reiniciando...");
+
+        clearInterval(qrInterval);
+        sessionStarted = false;
+
+        setTimeout(() => {
+          startSession();
+        }, 3000);
+      }
+
+    } catch (err) {
+      log("❌ QR ERROR: " + err.message);
     }
 
   }, 3000);
 }
 
+// ======================
+// SHOW QR
+// ======================
 function showQR(qr) {
   const img = document.getElementById("qr-img");
   img.src = qr;
   img.style.display = "block";
 }
 
-// logout
+// ======================
+// SEND MESSAGE (FIX)
+// ======================
+async function sendMessage() {
+
+  const phone = document.getElementById("phone").value;
+  const message = document.getElementById("message").value;
+
+  try {
+
+    const res = await fetch(`${API}/send-message`, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + TOKEN,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ phone, message })
+    });
+
+    const data = await res.json();
+    log("Mensagem enviada");
+
+  } catch (err) {
+    log("Erro sendMessage: " + err.message);
+  }
+}
+
+// ======================
+// LOGOUT
+// ======================
 async function logoutSession() {
 
   await fetch(`${API}/logout-session`, {
@@ -151,10 +201,10 @@ async function logoutSession() {
 
   sessionStarted = false;
 
-  document.getElementById("status").innerText = "🔴 Desconectado";
-  document.getElementById("qr-img").style.display = "none";
-
   if (qrInterval) clearInterval(qrInterval);
+
+  document.getElementById("qr-img").style.display = "none";
+  document.getElementById("status").innerText = "🔴 Desconectado";
 
   log("Sessão encerrada");
 }
