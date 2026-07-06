@@ -399,10 +399,12 @@ class WhatsAppManager:
 
         instance = sessao["instance_name"]
 
-        payload = {
-            "number": numero,
-            "text": texto
-        }
+       payload = {
+    "number": numero,
+    "textMessage": {
+        "text": texto
+    }
+}
 
         resposta = self._request(
             "POST",
@@ -918,3 +920,114 @@ class WhatsAppManager:
         conn.close()
 
         return True
+
+    # ==========================================================
+    # SINCRONIZAR UMA INSTÂNCIA
+    # ==========================================================
+
+    def sync_instance(self, usuario_id):
+
+        sessao = self.buscar_sessao(usuario_id)
+
+        if not sessao:
+
+            return {
+                "success": False,
+                "body": "Sessão não encontrada."
+            }
+
+        instance_name = sessao["instance_name"]
+
+        resposta = self.listar_instancias()
+
+        if not resposta["success"]:
+            return resposta
+
+        for item in resposta["body"]:
+
+            try:
+
+                instance = item.get("instance", {})
+
+                if instance.get("instanceName") != instance_name:
+                    continue
+
+                status = instance.get("status")
+
+                profile_name = (
+                    instance.get("profileName")
+                    or instance.get("pushName")
+                    or sessao["profile_name"]
+                )
+
+                profile_picture = (
+                    instance.get("profilePicUrl")
+                    or sessao["profile_picture"]
+                )
+
+                phone = (
+                    instance.get("ownerJid")
+                    or instance.get("number")
+                    or sessao["phone"]
+                )
+
+                conn = self.get_db()
+
+                conn.execute("""
+
+                    UPDATE whatsapp_sessoes
+
+                    SET
+
+                        status=?,
+                        profile_name=?,
+                        profile_picture=?,
+                        phone=?,
+                        updated_at=CURRENT_TIMESTAMP
+
+                    WHERE usuario_id=?
+
+                """, (
+
+                    status,
+                    profile_name,
+                    profile_picture,
+                    phone,
+                    usuario_id
+
+                ))
+
+                conn.commit()
+                conn.close()
+
+                return {
+                    "success": True,
+                    "status": status,
+                    "profile_name": profile_name,
+                    "profile_picture": profile_picture,
+                    "phone": phone
+                }
+
+            except Exception as e:
+
+                print("SYNC ERROR:", e)
+
+        return {
+            "success": False,
+            "body": "Instância não localizada."
+        }
+
+    # ==========================================================
+    # DIAGNÓSTICO
+    # ==========================================================
+
+    def diagnostico(self, usuario_id):
+
+        resultado = {}
+
+        resultado["sessao"] = self.buscar_sessao(usuario_id)
+        resultado["status"] = self.buscar_status(usuario_id)
+        resultado["existe"] = self.instancia_existe(usuario_id)
+        resultado["sync"] = self.sync_instance(usuario_id)
+
+        return resultado
