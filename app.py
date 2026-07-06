@@ -275,11 +275,6 @@ def whatsapp_qr():
 
     return jsonify(resposta)
 
-@app.route("/whatsapp/disconnect")
-def whatsapp_disconnect():
-    user_id = session.get("user_id", "user1")
-    desconectar(user_id)
-    return jsonify({"ok": True})
 
 
 @app.route("/limpar_prefixo_fotos")
