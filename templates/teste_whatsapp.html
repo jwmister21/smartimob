@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>Teste Evolution API</h2>
+
+    <hr>
+
+    <div class="mb-3">
+        <button class="btn btn-success" onclick="criarInstancia()">
+            Criar Instância
+        </button>
+
+        <button class="btn btn-primary" onclick="buscarStatus()">
+            Buscar Status
+        </button>
+
+        <button class="btn btn-warning" onclick="buscarQR()">
+            Buscar QR
+        </button>
+
+        <button class="btn btn-danger" onclick="logoutWhatsapp()">
+            Logout
+        </button>
+    </div>
+
+    <div class="card p-3 mb-4">
+
+        <h5>Enviar Mensagem</h5>
+
+        <div class="mb-2">
+            <label>Número</label>
+            <input
+                id="numero"
+                class="form-control"
+                placeholder="5511999999999">
+        </div>
+
+        <div class="mb-2">
+            <label>Mensagem</label>
+            <textarea
+                id="mensagem"
+                class="form-control"
+                rows="4"></textarea>
+        </div>
+
+        <button
+            class="btn btn-success"
+            onclick="enviarMensagem()">
+
+            Enviar
+
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <div class="card-header">
+            Resposta
+        </div>
+
+        <div class="card-body">
+
+            <pre id="resultado"></pre>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function mostrar(data){
+
+    document.getElementById("resultado").textContent =
+        JSON.stringify(data,null,4);
+
+}
+
+async function criarInstancia(){
+
+    let r = await fetch("/whatsapp/criar",{
+
+        method:"POST"
+
+    });
+
+    let j = await r.json();
+
+    mostrar(j);
+
+}
+
+async function buscarStatus(){
+
+    let r = await fetch("/whatsapp/status");
+
+    let j = await r.json();
+
+    mostrar(j);
+
+}
+
+async function buscarQR(){
+
+    let r = await fetch("/whatsapp/qr");
+
+    let j = await r.json();
+
+    mostrar(j);
+
+}
+
+async function logoutWhatsapp(){
+
+    let r = await fetch("/whatsapp/logout");
+
+    let j = await r.json();
+
+    mostrar(j);
+
+}
+
+async function enviarMensagem(){
+
+    let numero = document.getElementById("numero").value;
+
+    let mensagem = document.getElementById("mensagem").value;
+
+    let r = await fetch("/whatsapp/enviar",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+
+            numero:numero,
+
+            mensagem:mensagem
+
+        })
+
+    });
+
+    let j = await r.json();
+
+    mostrar(j);
+
+}
+
+</script>
+
+{% endblock %}
