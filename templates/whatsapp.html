@@ -51,20 +51,63 @@ const API = "https://zoom-leggings-viability.ngrok-free.dev/api/smartzen1";
 const TOKEN = "THISISMYSECURETOKEN";
 
 let qrInterval = null;
+let sessionStarted = false;
 
-// LOGS NA TELA
 function log(msg) {
   console.log(msg);
   document.getElementById("log").innerText += "➡️ " + msg + "\n";
 }
 
 // ======================
-// START SESSION + POLLING
+// START SÓ NO CLIQUE
 // ======================
 async function startSession() {
-  log("Iniciando sessão...");
 
-  try {
+  if (sessionStarted) {
+    log("Sessão já iniciada");
+    return;
+  }
+
+  sessionStarted = true;
+
+  log("🚀 Iniciando sessão manualmente...");
+
+  const res = await fetch(`${API}/start-session`, {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + TOKEN,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ waitQrCode: true })
+  });
+
+  const data = await res.json();
+
+  log("Start response: " + JSON.stringify(data));
+
+  document.getElementById("status").innerText =
+    data.status === "QRCODE"
+      ? "🟡 Escaneie o QR Code"
+      : "🔄 " + data.status;
+
+  if (data.qrcode) {
+    showQR(data.qrcode);
+  }
+
+  startQRLoop(); // só inicia depois do clique
+}
+
+// ======================
+// POLLING CONTROLADO
+// ======================
+function startQRLoop() {
+
+  if (qrInterval) clearInterval(qrInterval);
+
+  qrInterval = setInterval(async () => {
+
+    log("🔎 Buscando QR...");
+
     const res = await fetch(`${API}/start-session`, {
       method: "POST",
       headers: {
@@ -75,103 +118,28 @@ async function startSession() {
     });
 
     const data = await res.json();
-    console.log(data);
-    log("Start response: " + JSON.stringify(data));
 
-    document.getElementById("status").innerText =
-      data.status === "QRCODE"
-        ? "🟡 Escaneie o QR Code"
-        : "🔄 " + data.status;
+    log("Status: " + data.status);
 
-    // se já vier QR direto
     if (data.qrcode) {
       showQR(data.qrcode);
     }
 
-    // começa polling automático
-    startQRLoop();
-
-  } catch (err) {
-    console.error(err);
-    log("ERRO startSession: " + err.message);
-  }
-}
-
-// ======================
-// POLLING AUTOMÁTICO QR
-// ======================
-function startQRLoop() {
-
-  if (qrInterval) clearInterval(qrInterval);
-
-  qrInterval = setInterval(async () => {
-    try {
-      log("Buscando QR Code...");
-
-      const res = await fetch(`${API}/start-session`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + TOKEN,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ waitQrCode: true })
-      });
-
-      const data = await res.json();
-      console.log(data);
-      log("QR response: " + JSON.stringify(data.status));
-
-      if (data.status === "QRCODE" && data.qrcode) {
-        showQR(data.qrcode);
-        document.getElementById("status").innerText = "🟡 Escaneie o QR Code";
-      }
-
-      if (data.status === "CONNECTED") {
-        document.getElementById("status").innerText = "🟢 Conectado!";
-        clearInterval(qrInterval);
-      }
-
-    } catch (err) {
-      log("ERRO loadQR: " + err.message);
+    if (data.status === "CONNECTED") {
+      log("🟢 Conectado!");
+      clearInterval(qrInterval);
     }
+
   }, 3000);
 }
 
-// ======================
-// MOSTRAR QR
-// ======================
 function showQR(qr) {
   const img = document.getElementById("qr-img");
   img.src = qr;
   img.style.display = "block";
 }
 
-// ======================
-// ENVIAR MENSAGEM
-// ======================
-async function sendMessage() {
-
-  const phone = document.getElementById("phone").value;
-  const message = document.getElementById("message").value;
-
-  const res = await fetch(`${API}/send-message`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer " + TOKEN,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ phone, message })
-  });
-
-  const data = await res.json();
-  console.log(data);
-  log("Mensagem enviada");
-  alert("Enviado!");
-}
-
-// ======================
-// LOGOUT
-// ======================
+// logout
 async function logoutSession() {
 
   await fetch(`${API}/logout-session`, {
@@ -181,10 +149,13 @@ async function logoutSession() {
     }
   });
 
+  sessionStarted = false;
+
   document.getElementById("status").innerText = "🔴 Desconectado";
   document.getElementById("qr-img").style.display = "none";
 
   if (qrInterval) clearInterval(qrInterval);
+
   log("Sessão encerrada");
 }
 
