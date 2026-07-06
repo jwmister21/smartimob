@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from google import genai
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from whatsapp_manager import WhatsAppManager
 from moviepy.video.VideoClip import ColorClip 
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 from moviepy.video.VideoClip import TextClip
@@ -104,7 +105,7 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
  
- from whatsapp_manager import WhatsAppManager
+ 
 
 whatsapp = WhatsAppManager(get_db)
 
