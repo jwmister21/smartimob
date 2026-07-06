@@ -2,10 +2,11 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>WhatsApp Smartzen</title>
+  <title>WhatsApp SmartZen</title>
 
   <style>
     body {
+      margin: 0;
       font-family: Arial;
       background: #0f172a;
       color: white;
@@ -15,144 +16,145 @@
       height: 100vh;
     }
 
-    .box {
+    .card {
       background: #111827;
-      padding: 25px;
-      border-radius: 12px;
+      padding: 30px;
+      border-radius: 16px;
       width: 420px;
       text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .status {
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 8px;
+      background: #1f2937;
+    }
+
+    .status span {
+      font-weight: bold;
+      color: #22c55e;
+    }
+
+    img {
+      width: 260px;
+      height: 260px;
+      margin: 20px 0;
+      border-radius: 12px;
+      background: white;
     }
 
     button {
-      padding: 10px;
       width: 100%;
+      padding: 10px;
       margin-top: 10px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
     }
 
-    .connect { background: #22c55e; color: white; }
-    .disconnect { background: #ef4444; color: white; }
-
-    img {
-      margin-top: 15px;
-      width: 250px;
-      border-radius: 10px;
+    .btn-green {
+      background: #22c55e;
+      color: black;
     }
 
-    .status {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #93c5fd;
+    .btn-blue {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .btn-red {
+      background: #ef4444;
+      color: white;
     }
   </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="card">
 
-  <h2>WhatsApp Smartzen</h2>
+  <h1>📲 WhatsApp SmartZen</h1>
 
-  <button class="connect" onclick="criarInstancia()">
-    Conectar WhatsApp
+  <div class="status">
+    Status: <span id="status">Desconectado</span>
+  </div>
+
+  <img id="qr" src="" alt="QR Code">
+
+  <button class="btn-green" onclick="startSession()">
+    Iniciar Sessão
   </button>
 
-  <button class="disconnect" onclick="desconectar()">
+  <button class="btn-blue" onclick="loadQR()">
+    Atualizar QR Code
+  </button>
+
+  <button class="btn-red" onclick="logout()">
     Desconectar
   </button>
-
-  <div class="status" id="status">Aguardando ação...</div>
-
-  <img id="qrcode" style="display:none;" />
 
 </div>
 
 <script>
+const session = "smartzen1";
+const token = "THISISMYSECURETOKEN";
 
-let instanceName = "smartzen_" + Date.now();
-
-// 🔥 CRIAR INSTÂNCIA + PEGAR QR
-async function criarInstancia() {
-
-  document.getElementById("status").innerText = "Criando instância...";
-
-  const res = await fetch("https://zoom-leggings-viability.ngrok-free.dev/instance/create", {
+// 🔥 inicia sessão
+function startSession() {
+  fetch(`/api/${session}/start-session`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "apikey": "smartzen123"
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      instanceName: instanceName,
-      integration: "WHATSAPP-BAILEYS",
-      qrcode: true
-    })
+    body: JSON.stringify({ waitQrCode: true })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log(data);
+    loadQR();
   });
-
-  const data = await res.json();
-
-  console.log(data);
-
-  if (data?.qrcode?.base64) {
-    document.getElementById("qrcode").src = data.qrcode.base64;
-    document.getElementById("qrcode").style.display = "block";
-    document.getElementById("status").innerText = "Escaneie o QR Code";
-  }
-
-  // começar polling de status
-  setTimeout(verificarStatus, 3000);
 }
 
-
-// 🔄 VERIFICAR STATUS DA INSTÂNCIA
-async function verificarStatus() {
-
-  const res = await fetch(`https://zoom-leggings-viability.ngrok-free.dev/instance/fetchInstances`, {
+// 🔥 pega QR Code
+function loadQR() {
+  fetch(`/api/${session}/qrcode-session`, {
     headers: {
-      "apikey": "smartzen123"
+      "Authorization": "Bearer " + token
     }
+  })
+  .then(res => res.blob())
+  .then(blob => {
+    document.getElementById("qr").src = URL.createObjectURL(blob);
+  })
+  .catch(() => {
+    document.getElementById("status").innerText = "QR não disponível";
   });
-
-  const data = await res.json();
-
-  const instancia = data.find(i => i.instance.instanceName === instanceName);
-
-  if (instancia?.instance?.status === "open") {
-    document.getElementById("status").innerText = "✅ Conectado com sucesso!";
-    document.getElementById("qrcode").style.display = "none";
-    return;
-  }
-
-  setTimeout(verificarStatus, 3000);
 }
 
-
-// ❌ DESCONECTAR (DELETAR INSTÂNCIA)
-async function desconectar() {
-
-  document.getElementById("status").innerText = "Desconectando...";
-
-  await fetch(`https://zoom-leggings-viability.ngrok-free.dev/instance/logout/${instanceName}`, {
-    method: "DELETE",
+// 🔥 logout
+function logout() {
+  fetch(`/api/${session}/logout-session`, {
+    method: "POST",
     headers: {
-      "apikey": "smartzen123"
+      "Authorization": "Bearer " + token
     }
+  })
+  .then(() => {
+    document.getElementById("status").innerText = "Desconectado";
   });
-
-  await fetch(`https://zoom-leggings-viability.ngrok-free.dev/instance/delete/${instanceName}`, {
-    method: "DELETE",
-    headers: {
-      "apikey": "smartzen123"
-    }
-  });
-
-  document.getElementById("status").innerText = "❌ Desconectado";
-  document.getElementById("qrcode").style.display = "none";
 }
 
+// auto load QR
+loadQR();
 </script>
 
 </body>
