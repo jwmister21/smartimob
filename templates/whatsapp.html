@@ -109,40 +109,32 @@ async function createSession() {
 // ==========================
 // LOOPS (QR + STATUS)
 // ==========================
-function startLoops() {
+function startQrLoop() {
 
   if (qrLoop) clearInterval(qrLoop);
-  if (statusLoop) clearInterval(statusLoop);
 
-  // STATUS LOOP
-  statusLoop = setInterval(async () => {
+  qrLoop = setInterval(async () => {
 
-    try {
-      const res = await fetch(`${API}/${currentSession}/start-session`, {
-        method: "POST",
-        headers: {
-          "Authorization": "Bearer " + TOKEN,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ waitQrCode: true })
-      });
+    const res = await fetch(`${API}/${currentSession}/qr`);
+    const data = await res.json();
 
-      const data = await res.json();
-
-      document.getElementById("status").innerText =
-        data.status === "CONNECTED"
-          ? "🟢 Conectado"
-          : "🟡 " + data.status;
-
-      if (data.status === "CONNECTED") {
-        log("🟢 Sessão conectada!");
-      }
-
-    } catch (err) {
-      log("❌ STATUS ERROR: " + err.message);
+    if (data.qrcode) {
+      document.getElementById("qr").src = data.qrcode;
+      document.getElementById("qr").style.display = "block";
     }
 
-  }, 3000);
+    if (data.status === "CONNECTED") {
+      clearInterval(qrLoop);
+      log("🟢 Conectado!");
+    }
+
+    if (data.status === "CLOSED" || data.status === "FAILED") {
+      clearInterval(qrLoop);
+      log("🔴 Sessão caiu");
+    }
+
+  }, 2000);
+}
 
   // QR LOOP
   qrLoop = setInterval(async () => {
