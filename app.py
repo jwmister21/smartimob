@@ -2652,7 +2652,7 @@ def whatsapp_enviar():
 
             json={
 
-                "phone": phone_id,
+                "phone": [phone_id],
 
                 "message": mensagem
 
