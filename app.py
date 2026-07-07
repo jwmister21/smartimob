@@ -2435,23 +2435,6 @@ def termos():
 WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 TOKEN = "THISISMYSECURETOKEN"
 
- # Certifique-se de que estas linhas comecem com o mesmo número de espaços
-    # que o restante do código dentro desta mesma função.
-    url_check = f"{WPP_URL}/api/{session}/check-number"
-
-    teste = requests.post(
-        url_check,
-        headers={
-            "Authorization": f"Bearer {TOKEN}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "phone": numero
-        }
-    )
-
-    print("CHECK NUMBER:")
-    print(teste.text)
 
 @app.route("/whatsapp/enviar", methods=["POST"])
 def whatsapp_enviar():
