@@ -1103,21 +1103,7 @@ def super_dashboard():
     return render_template("super_admin.html", empresas=empresas)
 
 
-url_check = f"{WPP_URL}/api/{session}/check-number"
 
-teste = requests.post(
-    url_check,
-    headers={
-        "Authorization": f"Bearer {TOKEN}",
-        "Content-Type": "application/json"
-    },
-    json={
-        "phone": numero
-    }
-)
-
-print("CHECK NUMBER:")
-print(teste.text)
 
 @app.route("/fifit")
 @verificar_sessao
@@ -2449,6 +2435,21 @@ def termos():
 WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 TOKEN = "THISISMYSECURETOKEN"
 
+ url_check = f"{WPP_URL}/api/{session}/check-number"
+
+teste = requests.post(
+    url_check,
+    headers={
+        "Authorization": f"Bearer {TOKEN}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "phone": numero
+    }
+)
+
+print("CHECK NUMBER:")
+print(teste.text)
 
 @app.route("/whatsapp/enviar", methods=["POST"])
 def whatsapp_enviar():
