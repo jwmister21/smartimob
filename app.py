@@ -2448,6 +2448,14 @@ def whatsapp_enviar():
         mensagem = data.get("mensagem")
 
 
+        print("==============================")
+        print("📤 ENVIO WHATSAPP")
+        print("Sessão:", session)
+        print("Número recebido:", numero)
+        print("Mensagem:", mensagem)
+        print("==============================")
+
+
         if not session:
             return jsonify({
                 "success": False,
@@ -2462,41 +2470,116 @@ def whatsapp_enviar():
             })
 
 
-        print("==============================")
-        print("ENVIO WHATSAPP")
-        print("Sessão:", session)
-        print("Número:", numero)
-        print("Mensagem:", mensagem)
-        print("==============================")
+        # ==========================
+        # LIMPAR TELEFONE
+        # ==========================
+
+        numero = numero.replace("@c.us","")
+        numero = numero.replace("+","")
+        numero = numero.replace(" ","")
+
+
+        if not numero.startswith("55"):
+            numero = "55" + numero
+
+
+        print("Número corrigido:", numero)
+
+
+
+        # ==========================
+        # VERIFICAR NÚMERO
+        # ==========================
+
+        check_url = f"{WPP_URL}/api/{session}/check-number"
+
+
+        check = requests.post(
+            check_url,
+            headers={
+                "Authorization": f"Bearer {TOKEN}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "phone": numero
+            },
+            timeout=30
+        )
+
+
+        print("CHECK NUMBER:")
+        print(check.text)
+
+
+
+        # ==========================
+        # ENVIAR
+        # ==========================
 
 
         url = f"{WPP_URL}/api/{session}/send-message"
 
 
         resposta = requests.post(
+
             url,
+
             headers={
                 "Authorization": f"Bearer {TOKEN}",
                 "Content-Type": "application/json"
             },
+
+
             json={
-                "phone": numero,
+
+                "phone": numero + "@c.us",
+
                 "message": mensagem
+
             },
+
+
             timeout=30
+
         )
 
 
-        return jsonify(resposta.json())
+        print("==============================")
+        print("RETORNO WPPCONNECT:")
+        print(resposta.text)
+        print("==============================")
+
+
+        try:
+
+            retorno = resposta.json()
+
+        except:
+
+            retorno = {
+                "raw": resposta.text
+            }
+
+
+        return jsonify(retorno)
+
 
 
     except Exception as e:
 
-        print("ERRO ENVIO:", e)
+
+        print("==============================")
+        print("ERRO ENVIO:")
+        print(e)
+        print("==============================")
+
 
         return jsonify({
+
             "success": False,
+
             "erro": str(e)
+
         })
      
 @app.route("/enviar_imovel_match", methods=["POST"])
