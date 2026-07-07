@@ -319,6 +319,193 @@ font-size:16px;
 
 }
 
+   /* ==========================
+   POPUP AVISO
+========================== */
+
+
+.popup-overlay{
+
+position:fixed;
+
+top:0;
+left:0;
+
+width:100%;
+height:100%;
+
+background:
+rgba(15,23,42,.75);
+
+display:flex;
+
+align-items:center;
+justify-content:center;
+
+z-index:99999;
+
+animation:fade .3s ease;
+
+}
+
+
+
+.popup-box{
+
+width:450px;
+
+max-width:90%;
+
+background:white;
+
+border-radius:30px;
+
+padding:35px;
+
+text-align:center;
+
+box-shadow:
+0 25px 70px rgba(0,0,0,.3);
+
+animation:
+popup .4s ease;
+
+}
+
+
+
+.popup-icon{
+
+font-size:55px;
+
+margin-bottom:15px;
+
+}
+
+
+
+.popup-box h3{
+
+font-size:28px;
+
+font-weight:900;
+
+color:#0f172a;
+
+margin-bottom:15px;
+
+}
+
+
+
+.popup-box p{
+
+font-size:16px;
+
+line-height:1.6;
+
+color:#475569;
+
+}
+
+
+
+.extensao{
+
+margin-top:20px;
+
+font-weight:700;
+
+}
+
+
+
+.btn-extensao{
+
+
+display:block;
+
+margin-top:25px;
+
+padding:16px;
+
+border-radius:18px;
+
+
+background:
+linear-gradient(
+135deg,
+#2563eb,
+#1d4ed8
+);
+
+
+color:white;
+
+font-weight:800;
+
+text-decoration:none;
+
+transition:.3s;
+
+
+}
+
+
+
+.btn-extensao:hover{
+
+transform:translateY(-3px);
+
+}
+
+
+
+.btn-fechar{
+
+
+margin-top:15px;
+
+width:100%;
+
+padding:14px;
+
+border-radius:16px;
+
+border:none;
+
+background:#e2e8f0;
+
+color:#334155;
+
+font-weight:800;
+
+cursor:pointer;
+
+}
+
+
+
+@keyframes popup{
+
+from{
+
+transform:scale(.8);
+
+opacity:0;
+
+}
+
+to{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+} 
+
 </style>
 <div class="container mt-4">
 
@@ -353,7 +540,56 @@ onclick="createSession()">
 </div>
 
 
+<!-- ==========================
+     POPUP AVISO ENVIO
+========================== -->
 
+<div id="avisoPopup" class="popup-overlay">
+
+    <div class="popup-box">
+
+        <div class="popup-icon">
+            ⚠️
+        </div>
+
+        <h3>Atenção</h3>
+
+        <p>
+            Estamos enfrentando um problema temporário de envio.
+            <br><br>
+            Pedimos sua compreensão. Nossa equipe já está trabalhando
+            para resolver o problema o mais rápido possível.
+        </p>
+
+
+        <p class="extensao">
+            Enquanto isso, baixe uma de nossas extensões para continuar
+            utilizando nossos serviços.
+        </p>
+
+
+        <a 
+        href="https://www.free.com"
+        target="_blank"
+        class="btn-extensao">
+
+            🚀 Baixar Extensão
+
+        </a>
+
+
+        <button 
+        onclick="fecharAviso()"
+        class="btn-fechar">
+
+            Entendi, obrigado
+
+        </button>
+
+
+    </div>
+
+</div>
 <!-- ==========================
      STATUS
 ========================== -->
@@ -1297,6 +1533,13 @@ box.scrollHeight;
 
 }
 
+
+   function fecharAviso(){
+
+    document.getElementById("avisoPopup")
+    .style.display="none";
+
+} 
 
 </script>
 
