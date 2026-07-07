@@ -2443,6 +2443,7 @@ def whatsapp_enviar():
 
         data = request.json
 
+
         session = data.get("session")
         numero = data.get("numero")
         mensagem = data.get("mensagem")
@@ -2457,30 +2458,48 @@ def whatsapp_enviar():
 
 
         if not session:
+
             return jsonify({
+
                 "success": False,
+
                 "erro": "Sessão não informada"
+
             })
 
 
         if not numero or not mensagem:
+
             return jsonify({
+
                 "success": False,
+
                 "erro": "Número ou mensagem vazio"
+
             })
+
 
 
         # ==========================
         # LIMPAR TELEFONE
         # ==========================
 
-        numero = numero.replace("@c.us","")
-        numero = numero.replace("+","")
-        numero = numero.replace(" ","")
+
+        numero = (
+            numero
+            .replace("@c.us","")
+            .replace("@lid","")
+            .replace("+","")
+            .replace(" ","")
+            .replace("-","")
+            .strip()
+        )
 
 
         if not numero.startswith("55"):
+
             numero = "55" + numero
+
 
 
         print("Número corrigido:", numero)
@@ -2488,36 +2507,138 @@ def whatsapp_enviar():
 
 
         # ==========================
-        # VERIFICAR NÚMERO
+        # CHECK NUMBER
         # ==========================
+
 
         check_url = f"{WPP_URL}/api/{session}/check-number"
 
 
+
         check = requests.post(
+
             check_url,
+
             headers={
+
                 "Authorization": f"Bearer {TOKEN}",
-                "Content-Type": "application/json"
+
+                "Content-Type":"application/json"
+
             },
+
             json={
+
                 "phone": numero
+
             },
+
             timeout=30
+
         )
 
 
+
+        print("==============================")
         print("CHECK NUMBER:")
         print(check.text)
+        print("==============================")
+
+
+
+        try:
+
+            dados_check = check.json()
+
+        except:
+
+            dados_check = {}
+
 
 
 
         # ==========================
-        # ENVIAR
+        # VALIDAR WHATSAPP
         # ==========================
 
 
-        url = f"{WPP_URL}/api/{session}/send-message"
+        if dados_check.get("numberExists") == False:
+
+
+            return jsonify({
+
+                "success":False,
+
+                "erro":"Esse número não possui WhatsApp",
+
+                "check":dados_check
+
+            })
+
+
+
+
+
+        # ==========================
+        # PEGAR ID CORRETO
+        # ==========================
+
+
+        phone_id = None
+
+
+
+        if dados_check.get("id"):
+
+
+            if isinstance(
+                dados_check["id"],
+                dict
+            ):
+
+
+                phone_id = (
+                    dados_check["id"]
+                    .get("_serialized")
+                )
+
+
+            else:
+
+
+                phone_id = dados_check["id"]
+
+
+
+
+
+        # fallback
+
+        if not phone_id:
+
+            phone_id = numero + "@c.us"
+
+
+
+
+        print("==============================")
+        print("ID FINAL ENVIO:")
+        print(phone_id)
+        print("==============================")
+
+
+
+
+
+        # ==========================
+        # ENVIO WPPCONNECT
+        # ==========================
+
+
+        url = (
+            f"{WPP_URL}/api/{session}/send-message"
+        )
+
 
 
         resposta = requests.post(
@@ -2525,14 +2646,19 @@ def whatsapp_enviar():
             url,
 
             headers={
-                "Authorization": f"Bearer {TOKEN}",
-                "Content-Type": "application/json"
+
+                "Authorization":
+                f"Bearer {TOKEN}",
+
+                "Content-Type":
+                "application/json"
+
             },
 
 
             json={
 
-                "phone": numero + "@c.us",
+                "phone": phone_id,
 
                 "message": mensagem
 
@@ -2544,24 +2670,38 @@ def whatsapp_enviar():
         )
 
 
+
+
+
         print("==============================")
         print("RETORNO WPPCONNECT:")
         print(resposta.text)
         print("==============================")
 
 
+
+
+
         try:
 
             retorno = resposta.json()
 
+
         except:
 
+
             retorno = {
+
                 "raw": resposta.text
+
             }
 
 
+
+
         return jsonify(retorno)
+
+
 
 
 
@@ -2576,12 +2716,11 @@ def whatsapp_enviar():
 
         return jsonify({
 
-            "success": False,
+            "success":False,
 
-            "erro": str(e)
+            "erro":str(e)
 
         })
-     
 @app.route("/enviar_imovel_match", methods=["POST"])
 @verificar_sessao
 def enviar_imovel_match():
