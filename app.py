@@ -2462,7 +2462,6 @@ def whatsapp_enviar():
             return jsonify({
 
                 "success": False,
-
                 "erro": "Sessão não informada"
 
             })
@@ -2473,7 +2472,6 @@ def whatsapp_enviar():
             return jsonify({
 
                 "success": False,
-
                 "erro": "Número ou mensagem vazio"
 
             })
@@ -2487,11 +2485,11 @@ def whatsapp_enviar():
 
         numero = (
             numero
-            .replace("@c.us","")
-            .replace("@lid","")
-            .replace("+","")
-            .replace(" ","")
-            .replace("-","")
+            .replace("@c.us", "")
+            .replace("@lid", "")
+            .replace("+", "")
+            .replace(" ", "")
+            .replace("-", "")
             .strip()
         )
 
@@ -2507,29 +2505,25 @@ def whatsapp_enviar():
 
 
         # ==========================
-        # CHECK NUMBER
+        # CHECK NUMBER STATUS
         # ==========================
 
 
-        check_url = f"{WPP_URL}/api/{session}/check-number"
+        check_url = (
+            f"{WPP_URL}/api/"
+            f"{session}/check-number-status/"
+            f"{numero}"
+        )
 
 
-
-        check = requests.post(
+        check = requests.get(
 
             check_url,
 
             headers={
 
-                "Authorization": f"Bearer {TOKEN}",
-
-                "Content-Type":"application/json"
-
-            },
-
-            json={
-
-                "phone": numero
+                "Authorization":
+                f"Bearer {TOKEN}"
 
             },
 
@@ -2556,26 +2550,28 @@ def whatsapp_enviar():
 
 
 
-
         # ==========================
-        # VALIDAR WHATSAPP
+        # VALIDAR NÚMERO
         # ==========================
 
 
-        if dados_check.get("numberExists") == False:
-
+        if (
+            dados_check.get("status") == 404
+            or
+            dados_check.get("numberExists") == False
+        ):
 
             return jsonify({
 
                 "success":False,
 
-                "erro":"Esse número não possui WhatsApp",
+                "erro":
+                "Número não possui WhatsApp",
 
-                "check":dados_check
+                "check":
+                dados_check
 
             })
-
-
 
 
 
@@ -2605,9 +2601,7 @@ def whatsapp_enviar():
 
             else:
 
-
                 phone_id = dados_check["id"]
-
 
 
 
@@ -2617,7 +2611,6 @@ def whatsapp_enviar():
         if not phone_id:
 
             phone_id = numero + "@c.us"
-
 
 
 
@@ -2631,19 +2624,20 @@ def whatsapp_enviar():
 
 
         # ==========================
-        # ENVIO WPPCONNECT
+        # ENVIAR MENSAGEM
         # ==========================
 
 
-        url = (
-            f"{WPP_URL}/api/{session}/send-message"
+        send_url = (
+            f"{WPP_URL}/api/"
+            f"{session}/send-message"
         )
 
 
 
         resposta = requests.post(
 
-            url,
+            send_url,
 
             headers={
 
@@ -2671,8 +2665,6 @@ def whatsapp_enviar():
 
 
 
-
-
         print("==============================")
         print("RETORNO WPPCONNECT:")
         print(resposta.text)
@@ -2692,10 +2684,10 @@ def whatsapp_enviar():
 
             retorno = {
 
-                "raw": resposta.text
+                "raw":
+                resposta.text
 
             }
-
 
 
 
@@ -2703,13 +2695,11 @@ def whatsapp_enviar():
 
 
 
-
-
     except Exception as e:
 
 
         print("==============================")
-        print("ERRO ENVIO:")
+        print("❌ ERRO ENVIO WHATSAPP")
         print(e)
         print("==============================")
 
@@ -2721,6 +2711,7 @@ def whatsapp_enviar():
             "erro":str(e)
 
         })
+     
 @app.route("/enviar_imovel_match", methods=["POST"])
 @verificar_sessao
 def enviar_imovel_match():
