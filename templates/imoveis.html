@@ -116,6 +116,72 @@ style="flex:1; padding:12px; border:1px solid #e2e8f0; border-radius:10px; outli
             <div>🚗 {{ imovel.vaga_garagem }} Vagas</div>
             <div>📐 {{ imovel.area }} m²</div>
         </div>
+            <!-- REFERÊNCIAS DO IMÓVEL -->
+
+{% if imovel.referencias %}
+
+<div style="
+    margin-top:15px;
+    background:#f8fafc;
+    border-radius:12px;
+    padding:12px;
+">
+
+    <div style="
+        font-weight:700;
+        color:#1e293b;
+        margin-bottom:10px;
+    ">
+        📍 Pontos próximos
+    </div>
+
+
+    {% for ref in imovel.referencias %}
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-size:13px;
+        color:#475569;
+        margin-bottom:8px;
+    ">
+
+        <span>
+            {% if ref.categoria == "Mercado" %}
+                🛒
+            {% elif ref.categoria == "Farmácia" %}
+                💊
+            {% elif ref.categoria == "Hospital" %}
+                🏥
+            {% elif ref.categoria == "Escola" %}
+                🏫
+            {% elif ref.categoria == "Posto de combustível" %}
+                ⛽
+            {% elif ref.categoria == "Praia" %}
+                🏖️
+            {% else %}
+                📍
+            {% endif %}
+
+            {{ ref.nome }}
+        </span>
+
+
+       {% if r.distancia >= 1000 %}
+    {{ "%.1f"|format(r.distancia / 1000) }} km
+{% else %}
+    {{ r.distancia }} metros
+{% endif %}
+
+    </div>
+
+
+    {% endfor %}
+
+</div>
+
+{% endif %}
     </div>
 </a>
 
