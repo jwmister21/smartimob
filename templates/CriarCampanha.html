@@ -1065,6 +1065,20 @@ Total gerado
 
 class="btn btn-success"
 
+id="copiarResultado">
+
+<i class="bi bi-copy"></i>
+
+Copiar Resultado
+
+</button>
+
+
+
+<button
+
+class="btn btn-success"
+
 id="exportar">
 
 <i class="bi bi-download"></i>
@@ -1266,6 +1280,51 @@ atualizarResultado();
 
 
 }
+
+
+
+});
+    // =============================
+// COPIAR RESULTADO FINAL
+// =============================
+
+
+document
+.getElementById("copiarResultado")
+.addEventListener("click",()=>{
+
+
+let texto =
+document
+.getElementById("resultado")
+.value;
+
+
+
+if(!texto){
+
+
+alert(
+"Nenhum contato gerado"
+);
+
+
+return;
+
+
+}
+
+
+
+navigator
+.clipboard
+.writeText(texto);
+
+
+
+alert(
+"Resultado copiado com sucesso!"
+);
 
 
 
