@@ -35,9 +35,7 @@ app = Flask(__name__)
 app.register_blueprint(whatsapp_v2)
 socketio = SocketIO(app, cors_allowed_origins="*")
 DB_DIR = "/data"
-HEADERS = {
-    "User-Agent": "SMARTZEN IMOB"
-}
+HEADERS = {"User-Agent": "SMARTZEN IMOB"}
 UPLOAD_FOLDER_IMOVEIS = "/data/uploads/imoveis"
  
 os.makedirs(UPLOAD_FOLDER_IMOVEIS, exist_ok=True)
