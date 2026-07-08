@@ -3601,12 +3601,40 @@ def dashboard_v2():
 @app.route("/CriarCampanha")
 def criar_campanha():
 
-    clientes = Clientes.query.all()
+    import sqlite3
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT
+            id,
+            nome,
+            telefone,
+            faixa_preco
+        FROM clientes
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+    """,
+    (
+        session.get("empresa_id"),
+    ))
+
+
+    clientes = cursor.fetchall()
+
+
+    conn.close()
+
 
     return render_template(
         "CriarCampanha.html",
         clientes=clientes
     )
+ 
 @app.route("/importar_imoveis_pdf", methods=["POST"])
 @verificar_sessao
 def importar_imoveis_pdf():
