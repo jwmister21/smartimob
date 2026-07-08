@@ -35,7 +35,9 @@ app = Flask(__name__)
 app.register_blueprint(whatsapp_v2)
 socketio = SocketIO(app, cors_allowed_origins="*")
 DB_DIR = "/data"
-
+HEADERS = {
+    "User-Agent": "SMARTZEN IMOB"
+}
 UPLOAD_FOLDER_IMOVEIS = "/data/uploads/imoveis"
  
 os.makedirs(UPLOAD_FOLDER_IMOVEIS, exist_ok=True)
@@ -106,9 +108,62 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
  
- 
+ HEADERS = {
+    "User-Agent": "SMARTZEN IMOB"
+}
 
-whatsapp = WhatsAppManager(get_db)
+def buscar_coordenadas(cep):
+
+    cep = str(cep).replace("-", "").strip()
+
+    try:
+
+        r = requests.get(
+            f"https://viacep.com.br/ws/{cep}/json/",
+            timeout=10
+        )
+
+        if r.status_code != 200:
+            return None
+
+        endereco = r.json()
+
+        if "erro" in endereco:
+            return None
+
+        consulta = (
+            f"{endereco.get('logradouro','')}, "
+            f"{endereco.get('bairro','')}, "
+            f"{endereco.get('localidade','')}, "
+            f"{endereco.get('uf','')}, Brasil"
+        )
+
+        geo = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={
+                "q": consulta,
+                "format": "json",
+                "limit": 1
+            },
+            headers=HEADERS,
+            timeout=20
+        )
+
+        resultado = geo.json()
+
+        if not resultado:
+            return None
+
+        return (
+            float(resultado[0]["lat"]),
+            float(resultado[0]["lon"])
+        )
+
+    except Exception as erro:
+        print("Erro:", erro)
+        return None
+
+
 
 def limpar_prefixo_fotos_func():
 
@@ -2848,6 +2903,7 @@ Estou aqui para esclarecer duvidas !
 @app.route("/cadastrar_imovel", methods=["GET", "POST"])
 @verificar_sessao
 def cadastrar_imovel():
+
     if request.method == "POST":
 
         empresa_id = session.get("empresa_id")
@@ -2859,92 +2915,161 @@ def cadastrar_imovel():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
+
+        # ==========================
+        # CADASTRAR IMÓVEL
+        # ==========================
+
         cursor.execute("""
             INSERT INTO imoveis (
                 titulo, tipo, valor, cidade, bairro,
                 quartos, banheiros, area, status, descricao,
                 rua, iptu, condominio, link, cep,
-                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada,
+                vaga_garagem, lazer, sacada, lavabo,
+                prazo, parcela, anuais, entrada,
                 banheiros21, proprietario1, telefone2, mobilia,
                 usuario_id, empresa_id, data_criacao
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
+
             request.form.get("titulo"),
             request.form.get("tipo"),
             valor,
             request.form.get("cidade"),
             request.form.get("bairro"),
+
             request.form.get("quartos"),
             request.form.get("banheiros"),
             request.form.get("area"),
             request.form.get("status"),
             request.form.get("descricao"),
+
             request.form.get("rua"),
             request.form.get("iptu"),
             request.form.get("condominio"),
             request.form.get("link"),
             request.form.get("cep"),
+
             request.form.get("vaga_garagem"),
             request.form.get("lazer"),
             request.form.get("sacada"),
             request.form.get("lavabo"),
+
             request.form.get("prazo"),
             request.form.get("parcela"),
             request.form.get("anuais"),
             request.form.get("entrada"),
+
             request.form.get("banheiros21"),
             request.form.get("proprietario1"),
             request.form.get("telefone2"),
             request.form.get("mobilia"),
+
             user_id,
             empresa_id,
             data_criacao
         ))
 
+
         imovel_id = cursor.lastrowid
+
+
+
+        # ==========================
+        # BUSCAR COORDENADAS PELO CEP
+        # ==========================
+
+        try:
+
+            coordenadas = buscar_coordenadas(
+                request.form.get("cep")
+            )
+
+
+            if coordenadas:
+
+                latitude = coordenadas[0]
+                longitude = coordenadas[1]
+
+
+                print("========================")
+                print("COORDENADAS DO IMÓVEL")
+                print("Latitude:", latitude)
+                print("Longitude:", longitude)
+                print("========================")
+
+
+        except Exception as erro:
+
+            print(
+                "Erro ao buscar coordenadas:",
+                erro
+            )
+
+
+
+        # ==========================
+        # SALVAR FOTOS
+        # ==========================
 
         arquivos = request.files.getlist("fotos[]")
 
+
         for file in arquivos:
+
             if file and file.filename != "":
-                nome_seguro = secure_filename(file.filename)
-                nome_foto = f"{imovel_id}_{int(datetime.now().timestamp())}_{nome_seguro}"
+
+                nome_seguro = secure_filename(
+                    file.filename
+                )
+
+
+                nome_foto = (
+                    f"{imovel_id}_"
+                    f"{int(datetime.now().timestamp())}_"
+                    f"{nome_seguro}"
+                )
+
 
                 caminho_salvamento = os.path.join(
                     app.config['UPLOAD_FOLDER_IMOVEIS'],
                     nome_foto
                 )
 
+
                 file.save(caminho_salvamento)
 
+
+
                 cursor.execute("""
-                    INSERT INTO fotos_imoveis (imovel_id, nome_arquivo)
+                    INSERT INTO fotos_imoveis
+                    (
+                        imovel_id,
+                        nome_arquivo
+                    )
                     VALUES (?, ?)
-                """, (imovel_id, nome_foto))
+                """, (
+                    imovel_id,
+                    nome_foto
+                ))
 
-        # ======================================
-        # BUSCAR REFERÊNCIAS AUTOMATICAMENTE
-        # ======================================
 
-        try:
-            atualizar_referencias_imovel(
-                cursor,
-                imovel_id,
-                request.form.get("rua"),
-                request.form.get("bairro"),
-                request.form.get("cidade"),
-                request.form.get("cep")
-            )
-        except Exception as e:
-            print("Erro ao buscar referências:", e)
+
+        # ==========================
+        # FINALIZAR
+        # ==========================
 
         conn.commit()
         conn.close()
 
+
         return redirect("/imoveis")
 
-    return render_template("cadastrar_imovel.html")
+
+    return render_template(
+        "cadastrar_imovel.html"
+    )
 # (Mantenha o restante das suas outras rotas abaixo aqui...)
 
 
