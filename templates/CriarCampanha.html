@@ -16,12 +16,10 @@
     --radius:22px;
 }
 
-body{
-    background:var(--bg);
-}
+body{ background:var(--bg); }
 
 .campanha{
-    max-width:1200px;
+    max-width:1400px;
     margin:auto;
     padding:30px;
 }
@@ -33,12 +31,6 @@ body{
     border:1px solid var(--border);
     box-shadow:0 10px 35px rgba(0,0,0,.05);
     margin-bottom:25px;
-    transition:.3s;
-}
-
-.card-smart:hover{
-    transform:translateY(-3px);
-    box-shadow:0 18px 45px rgba(0,0,0,.08);
 }
 
 .card-title{
@@ -58,20 +50,6 @@ body{
     font-weight:700;
 }
 
-.form-control{
-    border-radius:15px;
-    min-height:50px;
-}
-
-textarea.form-control{
-    min-height:300px;
-    resize:vertical;
-}
-
-.btn{
-    border-radius:14px;
-}
-
 .grid2{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -79,21 +57,129 @@ textarea.form-control{
 }
 
 @media(max-width:900px){
-    .grid2{
-        grid-template-columns:1fr;
-    }
+    .grid2{ grid-template-columns:1fr; }
+}
+
+.form-control{
+    border-radius:16px;
+    border:1px solid #dbe3ef;
+    min-height:54px;
+    padding:14px 16px;
+    background:#fbfdff;
+}
+
+textarea.form-control{
+    min-height:240px;
+    resize:vertical;
+}
+
+.form-control:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.btn{
+    border-radius:15px;
+    padding:12px 18px;
+    font-weight:600;
+}
+
+.btn-primary{
+    background:var(--primary);
+    border-color:var(--primary);
+}
+
+.btn-primary:hover{
+    background:var(--primary-hover);
 }
 
 .resultado-box{
-    min-height:260px !important;
+    min-height:320px;
+    font-family:monospace;
+    font-size:15px;
+    background:#0f172a;
+    color:#d1fae5;
+    border:none;
 }
 
 .info-box{
-    background:#f8fbff;
-    border:1px dashed var(--border);
-    border-radius:18px;
-    padding:15px;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-top:20px;
+}
+
+.info-item{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:15px 20px;
+    min-width:160px;
+}
+
+.info-item strong{
+    display:block;
+    font-size:24px;
+    color:var(--primary);
+}
+
+.info-item span{
     color:var(--muted);
+    font-size:14px;
+}
+
+.clientes-box{
+    max-height:430px;
+    overflow-y:auto;
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:12px;
+    background:#f8fafc;
+}
+
+.cliente-item{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:10px;
+    transition:.2s;
+}
+
+.cliente-item:hover{
+    border-color:var(--primary);
+    box-shadow:0 8px 20px rgba(37,99,235,.08);
+}
+
+.cliente-item input[type="checkbox"]{
+    width:20px;
+    height:20px;
+    accent-color:var(--primary);
+}
+
+.cliente-info{
+    flex:1;
+}
+
+.cliente-info strong{
+    display:block;
+    color:var(--title);
+}
+
+.cliente-info small{
+    color:var(--muted);
+}
+
+.badge-preco{
+    background:#eef2ff;
+    color:#2563eb;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
 }
 </style>
 
@@ -102,94 +188,91 @@ textarea.form-control{
     <div class="mb-4">
         <h2>
             <i class="bi bi-database-fill-add text-primary"></i>
-            Gerador de Lista Nome e Telefone
+            Gerador de Base
         </h2>
         <p class="text-muted">
-            Cole os nomes em uma coluna, os telefones em outra, e gere a lista pronta no formato:
-            <strong>nome,telefone</strong>
+            Gere contatos manualmente ou selecione clientes cadastrados pela faixa de preço.
         </p>
     </div>
 
     <div class="card-smart">
-
         <div class="card-title">
-            <i class="bi bi-sliders"></i>
-            <h4>Importação em Massa</h4>
-        </div>
-
-        <div class="info-box mb-4">
-            Exemplo: a linha 1 dos nomes será juntada com a linha 1 dos telefones.
-            O resultado ficará assim: <strong>João,5511999999999</strong>
+            <i class="bi bi-pencil-square"></i>
+            <h4>Inserir Manualmente</h4>
         </div>
 
         <div class="grid2">
-
             <div>
                 <label class="mb-2">Nomes</label>
-                <textarea
-                    id="listaNomes"
-                    class="form-control"
-                    placeholder="João Silva&#10;Maria Santos&#10;Carlos Oliveira"></textarea>
+                <textarea id="listaNomes" class="form-control" placeholder="João Silva&#10;Maria Santos&#10;Carlos Oliveira"></textarea>
             </div>
 
             <div>
                 <label class="mb-2">Telefones</label>
-                <textarea
-                    id="listaTelefones"
-                    class="form-control"
-                    placeholder="5511999999999&#10;5511988888888&#10;5511977777777"></textarea>
+                <textarea id="listaTelefones" class="form-control" placeholder="5511999999999&#10;5511988888888&#10;5511977777777"></textarea>
             </div>
-
         </div>
 
         <div class="mt-4 d-flex gap-2 flex-wrap">
-
             <button class="btn btn-primary" id="btnGerarLista">
-                <i class="bi bi-magic"></i>
-                Gerar Lista
+                <i class="bi bi-magic"></i> Gerar Manual
             </button>
 
             <button class="btn btn-success" id="btnCopiarResultado">
-                <i class="bi bi-copy"></i>
-                Copiar Resultado
+                <i class="bi bi-copy"></i> Copiar Resultado
             </button>
 
             <button class="btn btn-outline-danger" id="btnLimpar">
-                <i class="bi bi-trash"></i>
-                Limpar
+                <i class="bi bi-trash"></i> Limpar Tudo
             </button>
-
         </div>
-
     </div>
 
-    <div class="card-smart">
+    <div class="grid2">
 
-        <div class="card-title">
-            <i class="bi bi-check2-circle"></i>
-            <h4>Resultado Pronto</h4>
+        <div class="card-smart">
+            <div class="card-title">
+                <i class="bi bi-people-fill"></i>
+                <h4>Clientes Cadastrados</h4>
+            </div>
+
+            <label class="mb-2">Filtrar por faixa de preço</label>
+            <input
+                type="number"
+                id="filtroPreco"
+                class="form-control mb-3"
+                placeholder="Ex: 500000">
+
+            <div class="clientes-box" id="clientesBox"></div>
         </div>
 
-        <textarea
-            id="resultado"
-            readonly
-            class="form-control resultado-box"
-            placeholder="Aqui vai aparecer a lista pronta:&#10;João Silva,5511999999999&#10;Maria Santos,5511988888888"></textarea>
-
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <strong>Total gerado:</strong>
-                <span id="totalGerado">0</span>
+        <div class="card-smart">
+            <div class="card-title">
+                <i class="bi bi-file-earmark-text"></i>
+                <h4>Resultado Final</h4>
             </div>
 
-            <div class="col-md-4">
-                <strong>Nomes:</strong>
-                <span id="totalNomes">0</span>
-            </div>
+            <textarea
+                id="resultado"
+                readonly
+                class="form-control resultado-box"
+                placeholder="João Silva,5511999999999"></textarea>
 
-            <div class="col-md-4">
-                <strong>Telefones:</strong>
-                <span id="totalTelefones">0</span>
+            <div class="info-box">
+                <div class="info-item">
+                    <strong id="totalManual">0</strong>
+                    <span>Manual</span>
+                </div>
+
+                <div class="info-item">
+                    <strong id="totalSelecionados">0</strong>
+                    <span>Selecionados</span>
+                </div>
+
+                <div class="info-item">
+                    <strong id="totalGerados">0</strong>
+                    <span>Total</span>
+                </div>
             </div>
         </div>
 
@@ -198,66 +281,198 @@ textarea.form-control{
 </div>
 
 <script>
-function limparTelefone(telefone){
-    return telefone.replace(/\D/g, "");
+const clientes = [
+    {
+        nome: "João Silva",
+        telefone: "5511999999999",
+        faixa_preco: 500000
+    },
+    {
+        nome: "Maria Santos",
+        telefone: "5511988888888",
+        faixa_preco: 750000
+    },
+    {
+        nome: "Carlos Oliveira",
+        telefone: "5511977777777",
+        faixa_preco: 350000
+    },
+    {
+        nome: "Ana Costa",
+        telefone: "5511966666666",
+        faixa_preco: 900000
+    }
+];
+
+/*
+No seu sistema, você pode trocar o array acima por algo assim:
+
+const clientes = [
+    {% for cliente in clientes %}
+    {
+        nome: "{{ cliente.nome }}",
+        telefone: "{{ cliente.telefone }}",
+        faixa_preco: {{ cliente.faixa_preco|default:0 }}
+    },
+    {% endfor %}
+];
+*/
+
+let contatosManuais = [];
+let contatosSelecionados = [];
+
+function limparTelefone(telefone) {
+    return String(telefone).replace(/\D/g, "");
 }
 
-function obterLinhas(id){
-    return document
-        .getElementById(id)
+function montarLinha(nome, telefone) {
+    return `${nome},${limparTelefone(telefone)}`;
+}
+
+function renderizarClientes() {
+    const box = document.getElementById("clientesBox");
+    const filtro = Number(document.getElementById("filtroPreco").value);
+
+    box.innerHTML = "";
+
+    clientes
+        .filter(cliente => {
+            if (!filtro) return true;
+            return Number(cliente.faixa_preco) <= filtro;
+        })
+        .forEach((cliente, index) => {
+            const id = `cliente_${index}`;
+            const checked = contatosSelecionados.some(c => c.telefone === limparTelefone(cliente.telefone));
+
+            box.insertAdjacentHTML("beforeend", `
+                <label class="cliente-item" for="${id}">
+                    <input
+                        type="checkbox"
+                        id="${id}"
+                        class="check-cliente"
+                        data-nome="${cliente.nome}"
+                        data-telefone="${cliente.telefone}"
+                        ${checked ? "checked" : ""}>
+
+                    <div class="cliente-info">
+                        <strong>${cliente.nome}</strong>
+                        <small>${limparTelefone(cliente.telefone)}</small>
+                    </div>
+
+                    <span class="badge-preco">
+                        R$ ${Number(cliente.faixa_preco).toLocaleString("pt-BR")}
+                    </span>
+                </label>
+            `);
+        });
+}
+
+function gerarManual() {
+    const nomes = document
+        .getElementById("listaNomes")
         .value
         .split("\n")
-        .map(item => item.trim())
-        .filter(item => item !== "");
-}
+        .map(nome => nome.trim())
+        .filter(nome => nome !== "");
 
-function gerarLista(){
-    const nomes = obterLinhas("listaNomes");
-
-    const telefones = obterLinhas("listaTelefones")
-        .map(tel => limparTelefone(tel))
-        .filter(tel => tel !== "");
+    const telefones = document
+        .getElementById("listaTelefones")
+        .value
+        .split("\n")
+        .map(limparTelefone)
+        .filter(telefone => telefone !== "");
 
     const total = Math.min(nomes.length, telefones.length);
 
-    let resultado = [];
+    contatosManuais = [];
 
-    for(let i = 0; i < total; i++){
-        resultado.push(`${nomes[i]},${telefones[i]}`);
+    for (let i = 0; i < total; i++) {
+        contatosManuais.push({
+            nome: nomes[i],
+            telefone: telefones[i]
+        });
     }
 
-    document.getElementById("resultado").value = resultado.join("\n");
-
-    document.getElementById("totalGerado").innerText = total;
-    document.getElementById("totalNomes").innerText = nomes.length;
-    document.getElementById("totalTelefones").innerText = telefones.length;
+    atualizarResultado();
 }
 
-function copiarResultado(){
+function atualizarSelecionados() {
+    contatosSelecionados = [];
+
+    document.querySelectorAll(".check-cliente:checked").forEach(check => {
+        contatosSelecionados.push({
+            nome: check.dataset.nome,
+            telefone: limparTelefone(check.dataset.telefone)
+        });
+    });
+
+    atualizarResultado();
+}
+
+function atualizarResultado() {
+    const todos = [...contatosManuais, ...contatosSelecionados];
+
+    const unicos = [];
+    const telefonesUsados = new Set();
+
+    todos.forEach(contato => {
+        const telefone = limparTelefone(contato.telefone);
+
+        if (!telefonesUsados.has(telefone)) {
+            telefonesUsados.add(telefone);
+
+            unicos.push({
+                nome: contato.nome,
+                telefone: telefone
+            });
+        }
+    });
+
+    document.getElementById("resultado").value = unicos
+        .map(contato => montarLinha(contato.nome, contato.telefone))
+        .join("\n");
+
+    document.getElementById("totalManual").innerText = contatosManuais.length;
+    document.getElementById("totalSelecionados").innerText = contatosSelecionados.length;
+    document.getElementById("totalGerados").innerText = unicos.length;
+}
+
+document.getElementById("btnGerarLista").addEventListener("click", gerarManual);
+
+document.getElementById("clientesBox").addEventListener("change", function(e) {
+    if (e.target.classList.contains("check-cliente")) {
+        atualizarSelecionados();
+    }
+});
+
+document.getElementById("filtroPreco").addEventListener("input", renderizarClientes);
+
+document.getElementById("btnCopiarResultado").addEventListener("click", function() {
     const resultado = document.getElementById("resultado").value;
 
-    if(resultado.trim() === ""){
-        alert("Gere uma lista antes de copiar.");
+    if (!resultado.trim()) {
+        alert("Nenhum contato gerado.");
         return;
     }
 
     navigator.clipboard.writeText(resultado);
-    alert("Lista copiada com sucesso!");
-}
+    alert("Resultado copiado com sucesso!");
+});
 
-function limparTudo(){
+document.getElementById("btnLimpar").addEventListener("click", function() {
     document.getElementById("listaNomes").value = "";
     document.getElementById("listaTelefones").value = "";
     document.getElementById("resultado").value = "";
+    document.getElementById("filtroPreco").value = "";
 
-    document.getElementById("totalGerado").innerText = "0";
-    document.getElementById("totalNomes").innerText = "0";
-    document.getElementById("totalTelefones").innerText = "0";
-}
+    contatosManuais = [];
+    contatosSelecionados = [];
 
-document.getElementById("btnGerarLista").addEventListener("click", gerarLista);
-document.getElementById("btnCopiarResultado").addEventListener("click", copiarResultado);
-document.getElementById("btnLimpar").addEventListener("click", limparTudo);
+    renderizarClientes();
+    atualizarResultado();
+});
+
+renderizarClientes();
 </script>
 
 {% endblock %}
