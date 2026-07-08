@@ -193,14 +193,14 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
         [out:json][timeout:25];
 
         (
-          node(around:1000,{latitude},{longitude})["shop"="supermarket"];
-          node(around:1000,{latitude},{longitude})["amenity"="pharmacy"];
-          node(around:1000,{latitude},{longitude})["amenity"="school"];
-          node(around:1000,{latitude},{longitude})["amenity"="hospital"];
-          node(around:1000,{latitude},{longitude})["amenity"="restaurant"];
-          node(around:1000,{latitude},{longitude})["amenity"="cafe"];
-          node(around:1000,{latitude},{longitude})["amenity"="fuel"];
-          node(around:1000,{latitude},{longitude})["leisure"="park"];
+          nwr(around:1000,{latitude},{longitude})["shop"="supermarket"];
+          nwr(around:1000,{latitude},{longitude})["amenity"="pharmacy"];
+          nwr(around:1000,{latitude},{longitude})["amenity"="school"];
+          nwr(around:1000,{latitude},{longitude})["amenity"="hospital"];
+          nwr(around:1000,{latitude},{longitude})["amenity"="restaurant"];
+          nwr(around:1000,{latitude},{longitude})["amenity"="cafe"];
+          nwr(around:1000,{latitude},{longitude})["amenity"="fuel"];
+          nwr(around:1000,{latitude},{longitude})["leisure"="park"];
         );
 
         out center;
