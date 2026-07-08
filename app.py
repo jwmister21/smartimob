@@ -2419,6 +2419,105 @@ def importar_clientes():
 
     return render_template("importar_clientes.html")
 
+
+@app.route('/site/<subdominio>')
+def exibir_site(subdominio):
+
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    empresa = cursor.execute(
+        """
+        SELECT *
+        FROM configuracoes_site
+        WHERE subdominio = ?
+        """,
+        (subdominio,)
+    ).fetchone()
+
+    if not empresa:
+        conn.close()
+        return "Site não encontrado", 404
+
+    rows = cursor.execute(
+        """
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+        """,
+        (empresa['empresa_id'],)
+    ).fetchall()
+
+    imoveis = []
+
+    for row in rows:
+
+        imovel = dict(row)
+
+        fotos = cursor.execute(
+            """
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id ASC
+            """,
+            (imovel["id"],)
+        ).fetchall()
+
+        imovel["fotos"] = [
+            foto["nome_arquivo"]
+            for foto in fotos
+        ]
+
+
+        # ==========================
+        # BUSCAR REFERÊNCIAS
+        # ==========================
+
+        referencias = cursor.execute(
+            """
+            SELECT
+                nome,
+                categoria,
+                distancia
+            FROM referencias_imovel
+            WHERE imovel_id = ?
+            ORDER BY distancia ASC
+            """,
+            (imovel["id"],)
+        ).fetchall()
+
+
+        imovel["referencias"] = [
+            {
+                "nome": ref["nome"],
+                "categoria": ref["categoria"],
+                "distancia": ref["distancia"]
+            }
+            for ref in referencias
+        ]
+
+
+        print(
+            "IMOVEL",
+            imovel["id"],
+            "REFERENCIAS:",
+            imovel["referencias"]
+        )
+
+
+        imoveis.append(imovel)
+
+    conn.close()
+
+    return render_template(
+        "template_site.html",
+        empresa=empresa,
+        imoveis=imoveis
+    )
+
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
 @super_admin_required
 def gerenciar_usuarios_empresa(empresa_id):
