@@ -159,6 +159,138 @@ def buscar_coordenadas(cep):
         return None
 
 
+def calcular_distancia(lat1, lon1, lat2, lon2):
+
+    R = 6371000  # metros
+
+    lat1 = math.radians(lat1)
+    lat2 = math.radians(lat2)
+
+    diferenca_lat = math.radians(lat2 - math.degrees(lat1))
+    diferenca_lon = math.radians(lon2 - math.degrees(lon1))
+
+    a = (
+        math.sin(diferenca_lat / 2) ** 2
+        +
+        math.cos(lat1)
+        *
+        math.cos(lat2)
+        *
+        math.sin(diferenca_lon / 2) ** 2
+    )
+
+    distancia = 2 * R * math.asin(math.sqrt(a))
+
+    return int(distancia)
+
+
+
+def buscar_referencias(imovel_id, latitude, longitude, cursor):
+
+    try:
+
+        consulta = f"""
+        [out:json];
+
+        (
+          node(around:2000,{latitude},{longitude})
+          ["amenity"];
+
+          node(around:2000,{latitude},{longitude})
+          ["shop"];
+
+          node(around:2000,{latitude},{longitude})
+          ["tourism"];
+
+          node(around:2000,{latitude},{longitude})
+          ["leisure"];
+
+        );
+
+        out;
+        """
+
+        resposta = requests.post(
+            "https://overpass-api.de/api/interpreter",
+            data=consulta,
+            timeout=40
+        )
+
+
+        dados = resposta.json()
+
+
+        for local in dados.get("elements", []):
+
+            tags = local.get("tags", {})
+
+
+            nome = (
+                tags.get("name")
+                or
+                "Local sem nome"
+            )
+
+
+            categoria = (
+                tags.get("amenity")
+                or
+                tags.get("shop")
+                or
+                tags.get("tourism")
+                or
+                tags.get("leisure")
+                or
+                "outro"
+            )
+
+
+            lat_local = local.get("lat")
+            lon_local = local.get("lon")
+
+
+            if lat_local and lon_local:
+
+
+                distancia = calcular_distancia(
+                    latitude,
+                    longitude,
+                    lat_local,
+                    lon_local
+                )
+
+
+                cursor.execute("""
+                    INSERT INTO referencias_imovel
+                    (
+                        imovel_id,
+                        nome,
+                        categoria,
+                        distancia,
+                        latitude,
+                        longitude
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    imovel_id,
+                    nome,
+                    categoria,
+                    distancia,
+                    lat_local,
+                    lon_local
+                ))
+
+
+        print("Referências cadastradas com sucesso")
+
+
+    except Exception as erro:
+
+        print(
+            "Erro ao buscar referências:",
+            erro
+        )
 
 def limpar_prefixo_fotos_func():
 
