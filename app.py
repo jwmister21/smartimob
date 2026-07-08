@@ -2145,6 +2145,199 @@ def analisar_pdf():
         links=links
     )
 
+
+@app.route("/site/<slug>")
+def site_publico(slug):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    try:
+
+
+        # ==========================
+        # BUSCAR CONFIGURAÇÃO DO SITE
+        # ==========================
+
+        cursor.execute("""
+            SELECT *
+            FROM configuracoes_site
+            WHERE subdominio = ?
+        """, (slug,))
+
+
+        empresa = cursor.fetchone()
+
+
+        if not empresa:
+
+            return "Site não encontrado"
+
+
+
+        # ==========================
+        # BUSCAR IMÓVEIS DA EMPRESA
+        # ==========================
+
+        cursor.execute("""
+            SELECT *
+            FROM imoveis
+            WHERE empresa_id = ?
+            ORDER BY id DESC
+        """, (empresa["empresa_id"],))
+
+
+        rows = cursor.fetchall()
+
+
+        imoveis = []
+
+
+
+        for row in rows:
+
+
+            imovel = dict(row)
+
+
+
+            # ==========================
+            # BUSCAR FOTOS
+            # ==========================
+
+            cursor.execute("""
+                SELECT nome_arquivo
+                FROM fotos_imoveis
+                WHERE imovel_id = ?
+                ORDER BY id ASC
+            """, (imovel["id"],))
+
+
+            fotos = cursor.fetchall()
+
+
+
+            imovel["fotos"] = []
+
+
+
+            for foto in fotos:
+
+
+                url_foto = (
+                    "/data/uploads/imoveis/"
+                    + foto["nome_arquivo"]
+                )
+
+
+                imovel["fotos"].append(
+                    url_foto
+                )
+
+
+
+            # FOTO CAPA
+
+            if imovel["fotos"]:
+
+                imovel["foto_capa"] = (
+                    imovel["fotos"][0]
+                )
+
+            else:
+
+                imovel["foto_capa"] = None
+
+
+
+
+            # ==========================
+            # BUSCAR REFERÊNCIAS
+            # ==========================
+
+            cursor.execute("""
+                SELECT
+                    nome,
+                    categoria,
+                    distancia
+                FROM referencias_imovel
+                WHERE imovel_id = ?
+                ORDER BY distancia ASC
+            """, (
+                imovel["id"],
+            ))
+
+
+
+            referencias = cursor.fetchall()
+            print(
+                "REFERENCIAS DO IMOVEL",
+                imovel["id"],
+                referencias
+            )
+
+
+            imovel["referencias"] = []
+
+
+
+            for ref in referencias:
+
+
+                imovel["referencias"].append({
+
+                    "nome": ref["nome"],
+
+                    "categoria": ref["categoria"],
+
+                    "distancia": ref["distancia"]
+
+                })
+
+
+
+            print(
+                f"IMÓVEL {imovel['id']} -> "
+                f"{len(imovel['fotos'])} fotos | "
+                f"{len(imovel['referencias'])} referências"
+            )
+
+
+
+            imoveis.append(
+                imovel
+            )
+
+
+
+        return render_template(
+            "site_publico.html",
+            empresa=empresa,
+            imoveis=imoveis
+        )
+
+
+
+    except Exception as erro:
+
+
+        print(
+            "ERRO SITE PUBLICO:",
+            erro
+        )
+
+
+        return "Erro ao carregar site"
+
+
+
+    finally:
+
+
+        conn.close()
+
 @app.route("/admin/ativar-usuario", methods=["POST"])
 @verificar_sessao
 def ativar_usuario():
