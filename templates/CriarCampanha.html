@@ -906,7 +906,7 @@ data-status="{{ cliente.status_funil or 'Novo Contato' }}"
 
 R$ 
 
-{{ "{:,.0f}".format((cliente.faixa_preco or "0")|float).replace(",", ".") }}
+{{ cliente.faixa_preco or "Não informado" }}
 
 
 
@@ -1229,7 +1229,39 @@ atualizarResultado();
 
 
 
+function converterPreco(valor){
 
+    if(!valor){
+        return 0;
+    }
+
+
+    valor = String(valor)
+        .replace("R$","")
+        .replace(/\s/g,"")
+        .trim();
+
+
+
+    // formato brasileiro:
+    // 700.000,00
+    if(valor.includes(",")){
+
+        valor = valor
+        .replace(/\./g,"")
+        .replace(",", ".");
+
+    }
+
+
+    // remove qualquer coisa que não seja número
+    valor = valor.replace(/[^\d.]/g,"");
+
+
+
+    return Number(valor) || 0;
+
+}
 
 
 
@@ -1462,12 +1494,11 @@ card.innerText
 
 
 let preco =
-Number(
+converterPreco(
 card
 .querySelector(".cliente-check")
 .dataset.preco
 );
-
 
 
 let aparece =
