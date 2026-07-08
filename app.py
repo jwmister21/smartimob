@@ -164,25 +164,37 @@ def calcular_distancia(lat1, lon1, lat2, lon2):
     R = 6371000  # metros
 
     lat1 = math.radians(lat1)
-    lat2 = math.radians(lat2)
+    lon1 = math.radians(lon1)
 
-    diferenca_lat = math.radians(lat2 - math.degrees(lat1))
-    diferenca_lon = math.radians(lon2 - math.degrees(lon1))
+    lat2 = math.radians(lat2)
+    lon2 = math.radians(lon2)
+
+
+    delta_lat = lat2 - lat1
+    delta_lon = lon2 - lon1
+
 
     a = (
-        math.sin(diferenca_lat / 2) ** 2
+        math.sin(delta_lat / 2) ** 2
         +
         math.cos(lat1)
         *
         math.cos(lat2)
         *
-        math.sin(diferenca_lon / 2) ** 2
+        math.sin(delta_lon / 2) ** 2
     )
 
-    distancia = 2 * R * math.asin(math.sqrt(a))
+
+    c = 2 * math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a)
+    )
+
+
+    distancia = R * c
+
 
     return int(distancia)
-
 
 
 def buscar_referencias(imovel_id, latitude, longitude, cursor):
