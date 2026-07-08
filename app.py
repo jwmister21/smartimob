@@ -190,63 +190,94 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
     try:
 
         consulta = f"""
-        [out:json];
+        [out:json][timeout:25];
 
         (
-          node(around:2000,{latitude},{longitude})
-          ["amenity"];
-
-          node(around:2000,{latitude},{longitude})
-          ["shop"];
-
-          node(around:2000,{latitude},{longitude})
-          ["tourism"];
-
-          node(around:2000,{latitude},{longitude})
-          ["leisure"];
-
+          node(around:1500,{latitude},{longitude})["shop"="supermarket"];
+          node(around:1500,{latitude},{longitude})["amenity"="pharmacy"];
+          node(around:1500,{latitude},{longitude})["amenity"="school"];
+          node(around:1500,{latitude},{longitude})["amenity"="hospital"];
+          node(around:1500,{latitude},{longitude})["amenity"="restaurant"];
+          node(around:1500,{latitude},{longitude})["amenity"="cafe"];
+          node(around:1500,{latitude},{longitude})["amenity"="fuel"];
+          node(around:1500,{latitude},{longitude})["leisure"="park"];
         );
 
-        out;
+        out center;
         """
 
+
         resposta = requests.post(
-            "https://overpass-api.de/api/interpreter",
+            "https://overpass.kumi.systems/api/interpreter",
             data=consulta,
-            timeout=40
+            headers={
+                "User-Agent": "SMARTZEN IMOB"
+            },
+            timeout=60
         )
+
+
+        print("STATUS OVERPASS:", resposta.status_code)
+
+
+        if resposta.status_code != 200:
+
+            print(
+                "Resposta da API:",
+                resposta.text[:500]
+            )
+
+            return
+
 
 
         dados = resposta.json()
 
 
+
+        quantidade = 0
+
+
         for local in dados.get("elements", []):
+
 
             tags = local.get("tags", {})
 
 
-            nome = (
-                tags.get("name")
-                or
+            nome = tags.get(
+                "name",
                 "Local sem nome"
             )
 
 
-            categoria = (
-                tags.get("amenity")
-                or
-                tags.get("shop")
-                or
-                tags.get("tourism")
-                or
-                tags.get("leisure")
-                or
-                "outro"
-            )
+            categoria = "Outro"
+
+
+            if "shop" in tags:
+                categoria = tags["shop"]
+
+            elif "amenity" in tags:
+                categoria = tags["amenity"]
+
+            elif "leisure" in tags:
+                categoria = tags["leisure"]
+
 
 
             lat_local = local.get("lat")
+
             lon_local = local.get("lon")
+
+
+            if not lat_local:
+
+                centro = local.get("center")
+
+                if centro:
+
+                    lat_local = centro.get("lat")
+                    lon_local = centro.get("lon")
+
 
 
             if lat_local and lon_local:
@@ -282,7 +313,14 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
                 ))
 
 
-        print("Referências cadastradas com sucesso")
+                quantidade += 1
+
+
+
+        print(
+            "REFERÊNCIAS SALVAS:",
+            quantidade
+        )
 
 
     except Exception as erro:
@@ -291,7 +329,6 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
             "Erro ao buscar referências:",
             erro
         )
-
 def limpar_prefixo_fotos_func():
 
     import os
