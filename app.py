@@ -2619,7 +2619,7 @@ def exibir_site(subdominio):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
+    print("ENTROU NA ROTA NOVA DO SITE")
 
     # ==========================
     # BUSCAR CONFIGURAÇÃO DO SITE
