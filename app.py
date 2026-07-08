@@ -211,7 +211,7 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
             "https://overpass-api.de/api/interpreter",
             data=consulta,
             headers={
-                "User-Agent": "SMARTZEN IMOB"
+                "User-Agent": "SMARTZEN IMOB",
                 "Accept": "application/json"
             },
             timeout=60
