@@ -193,14 +193,14 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
         [out:json][timeout:25];
 
         (
-          node(around:1500,{latitude},{longitude})["shop"="supermarket"];
-          node(around:1500,{latitude},{longitude})["amenity"="pharmacy"];
-          node(around:1500,{latitude},{longitude})["amenity"="school"];
-          node(around:1500,{latitude},{longitude})["amenity"="hospital"];
-          node(around:1500,{latitude},{longitude})["amenity"="restaurant"];
-          node(around:1500,{latitude},{longitude})["amenity"="cafe"];
-          node(around:1500,{latitude},{longitude})["amenity"="fuel"];
-          node(around:1500,{latitude},{longitude})["leisure"="park"];
+          node(around:500,{latitude},{longitude})["shop"="supermarket"];
+          node(around:500,{latitude},{longitude})["amenity"="pharmacy"];
+          node(around:500,{latitude},{longitude})["amenity"="school"];
+          node(around:500,{latitude},{longitude})["amenity"="hospital"];
+          node(around:500,{latitude},{longitude})["amenity"="restaurant"];
+          node(around:500,{latitude},{longitude})["amenity"="cafe"];
+          node(around:500,{latitude},{longitude})["amenity"="fuel"];
+          node(around:500,{latitude},{longitude})["leisure"="park"];
         );
 
         out center;
@@ -208,7 +208,7 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
 
 
         resposta = requests.post(
-            "https://overpass.kumi.systems/api/interpreter",
+            "https://overpass-api.de/api/interpreter",
             data=consulta,
             headers={
                 "User-Agent": "SMARTZEN IMOB"
