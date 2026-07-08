@@ -207,197 +207,6 @@ def get_usuario():
 
 
 
-
-
-
-
-
-# ===========================================
-# REFERÊNCIAS DO IMÓVEL
-# ===========================================
-
-HEADERS = {
-    "User-Agent": "SMARTZEN IMOB/1.0"
-}
-
-
-def calcular_distancia(lat1, lon1, lat2, lon2):
-    """
-    Retorna distância em metros
-    """
-
-    R = 6371000
-
-    phi1 = math.radians(lat1)
-    phi2 = math.radians(lat2)
-
-    dphi = math.radians(lat2 - lat1)
-    dlambda = math.radians(lon2 - lon1)
-
-    a = (
-        math.sin(dphi / 2) ** 2
-        + math.cos(phi1)
-        * math.cos(phi2)
-        * math.sin(dlambda / 2) ** 2
-    )
-
-    return int(R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a)))
-
-
-def buscar_coordenadas(rua, bairro, cidade, cep):
-
-    endereco = f"{rua}, {bairro}, {cidade}, {cep}, Brasil"
-
-    url = "https://nominatim.openstreetmap.org/search"
-
-    r = requests.get(
-        url,
-        params={
-            "q": endereco,
-            "format": "jsonv2",
-            "limit": 1
-        },
-        headers=HEADERS,
-        timeout=15
-    )
-
-    dados = r.json()
-
-    if not dados:
-        return None
-
-    return (
-        float(dados[0]["lat"]),
-        float(dados[0]["lon"])
-    )
- def buscar_referencias(lat, lon):
-
-    overpass = """
-    [out:json];
-
-    (
-
-      node(around:800,%f,%f)["shop"="supermarket"];
-
-      node(around:800,%f,%f)["amenity"="school"];
-
-      node(around:800,%f,%f)["amenity"="hospital"];
-
-      node(around:800,%f,%f)["amenity"="pharmacy"];
-
-      node(around:800,%f,%f)["leisure"="fitness_centre"];
-
-      node(around:800,%f,%f)["shop"="mall"];
-
-      node(around:800,%f,%f)["amenity"="restaurant"];
-
-      node(around:800,%f,%f)["amenity"="cafe"];
-
-      node(around:800,%f,%f)["amenity"="bank"];
-
-      node(around:800,%f,%f)["amenity"="fuel"];
-
-      node(around:800,%f,%f)["highway"="bus_stop"];
-
-      node(around:800,%f,%f)["natural"="beach"];
-
-    );
-
-    out body;
-    """ % (
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon,
-        lat, lon
-    )
-
-    resposta = requests.post(
-        "https://overpass-api.de/api/interpreter",
-        data=overpass,
-        headers=HEADERS,
-        timeout=30
-    )
-
-    resultado = resposta.json()
-
-    referencias = []
-
-    categorias = {
-        "supermarket": "Mercado",
-        "school": "Escola",
-        "hospital": "Hospital",
-        "pharmacy": "Farmácia",
-        "fitness_centre": "Academia",
-        "mall": "Shopping",
-        "restaurant": "Restaurante",
-        "cafe": "Café",
-        "bank": "Banco",
-        "fuel": "Posto",
-        "bus_stop": "Ponto de Ônibus",
-        "beach": "Praia"
-    }
-
-    for item in resultado["elements"]:
-
-        tags = item.get("tags", {})
-
-        nome = tags.get("name")
-
-        if not nome:
-            continue
-
-        categoria = None
-
-        if "shop" in tags:
-            categoria = categorias.get(tags["shop"])
-
-        elif "amenity" in tags:
-            categoria = categorias.get(tags["amenity"])
-
-        elif "highway" in tags:
-            categoria = categorias.get(tags["highway"])
-
-        elif "natural" in tags:
-            categoria = categorias.get(tags["natural"])
-
-        if not categoria:
-            continue
-
-        distancia = calcular_distancia(
-            lat,
-            lon,
-            item["lat"],
-            item["lon"]
-        )
-
-        referencias.append({
-
-            "nome": nome,
-
-            "categoria": categoria,
-
-            "distancia": distancia,
-
-            "latitude": item["lat"],
-
-            "longitude": item["lon"]
-
-        })
-
-    referencias.sort(key=lambda x: x["distancia"])
-
-    return referencias[:20]
-
-
-
 @app.route("/limpar_prefixo_fotos")
 def limpar_prefixo_fotos_rota():
 
@@ -3055,7 +2864,8 @@ def cadastrar_imovel():
                 titulo, tipo, valor, cidade, bairro,
                 quartos, banheiros, area, status, descricao,
                 rua, iptu, condominio, link, cep,
-                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada, banheiros21, proprietario1, telefone2, mobilia,
+                vaga_garagem, lazer, sacada, lavabo, prazo, parcela, anuais, entrada,
+                banheiros21, proprietario1, telefone2, mobilia,
                 usuario_id, empresa_id, data_criacao
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -3087,7 +2897,6 @@ def cadastrar_imovel():
             request.form.get("proprietario1"),
             request.form.get("telefone2"),
             request.form.get("mobilia"),
-
             user_id,
             empresa_id,
             data_criacao
@@ -3113,6 +2922,22 @@ def cadastrar_imovel():
                     INSERT INTO fotos_imoveis (imovel_id, nome_arquivo)
                     VALUES (?, ?)
                 """, (imovel_id, nome_foto))
+
+        # ======================================
+        # BUSCAR REFERÊNCIAS AUTOMATICAMENTE
+        # ======================================
+
+        try:
+            atualizar_referencias_imovel(
+                cursor,
+                imovel_id,
+                request.form.get("rua"),
+                request.form.get("bairro"),
+                request.form.get("cidade"),
+                request.form.get("cep")
+            )
+        except Exception as e:
+            print("Erro ao buscar referências:", e)
 
         conn.commit()
         conn.close()
