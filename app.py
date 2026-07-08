@@ -2620,7 +2620,7 @@ def exibir_site(subdominio):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-
+    # Busca configuração do site pelo subdomínio
     empresa = cursor.execute(
         """
         SELECT *
@@ -2630,13 +2630,12 @@ def exibir_site(subdominio):
         (subdominio,)
     ).fetchone()
 
-
     if not empresa:
         conn.close()
         return "Site não encontrado", 404
 
 
-
+    # Busca imóveis da empresa
     rows = cursor.execute(
         """
         SELECT *
@@ -2644,26 +2643,17 @@ def exibir_site(subdominio):
         WHERE empresa_id = ?
         ORDER BY id DESC
         """,
-        (empresa['empresa_id'],)
+        (empresa["empresa_id"],)
     ).fetchall()
-
 
 
     imoveis = []
 
-
-
     for row in rows:
-
 
         imovel = dict(row)
 
-
-
-        # ==========================
-        # FOTOS (MANTIDO IGUAL)
-        # ==========================
-
+        # Busca fotos do imóvel
         fotos = cursor.execute(
             """
             SELECT nome_arquivo
@@ -2675,61 +2665,15 @@ def exibir_site(subdominio):
         ).fetchall()
 
 
-
         imovel["fotos"] = [
             foto["nome_arquivo"]
             for foto in fotos
         ]
 
-
-
-        # ==========================
-        # REFERÊNCIAS DO IMÓVEL
-        # ==========================
-
-        referencias = cursor.execute(
-            """
-            SELECT
-                nome,
-                categoria,
-                distancia
-            FROM referencias_imovel
-            WHERE imovel_id = ?
-            ORDER BY distancia ASC
-            """,
-            (imovel["id"],)
-        ).fetchall()
-
-
-
-        imovel["referencias"] = [
-            {
-                "nome": ref["nome"],
-                "categoria": ref["categoria"],
-                "distancia": ref["distancia"]
-            }
-            for ref in referencias
-        ]
-
-
-
-        print(
-            "IMOVEL:",
-            imovel["id"],
-            "FOTOS:",
-            len(imovel["fotos"]),
-            "REFERENCIAS:",
-            len(imovel["referencias"])
-        )
-
-
-
         imoveis.append(imovel)
 
 
-
     conn.close()
-
 
 
     return render_template(
