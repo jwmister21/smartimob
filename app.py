@@ -2313,7 +2313,7 @@ def site_publico(slug):
 
 
         return render_template(
-            "site_publico.html",
+            "template_site.html",
             empresa=empresa,
             imoveis=imoveis
         )
