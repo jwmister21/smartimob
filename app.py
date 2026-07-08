@@ -190,17 +190,16 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
     try:
 
         consulta = f"""
-        [out:json][timeout:25];
+        [out:json][timeout:20];
 
         (
-          nwr(around:1000,{latitude},{longitude})["shop"="supermarket"];
-          nwr(around:1000,{latitude},{longitude})["amenity"="pharmacy"];
-          nwr(around:1000,{latitude},{longitude})["amenity"="school"];
-          nwr(around:1000,{latitude},{longitude})["amenity"="hospital"];
-          nwr(around:1000,{latitude},{longitude})["amenity"="restaurant"];
-          nwr(around:1000,{latitude},{longitude})["amenity"="cafe"];
-          nwr(around:1000,{latitude},{longitude})["amenity"="fuel"];
-          nwr(around:1000,{latitude},{longitude})["leisure"="park"];
+          nwr(around:2000,{latitude},{longitude})["natural"="beach"];
+          nwr(around:2000,{latitude},{longitude})["shop"="supermarket"];
+          nwr(around:2000,{latitude},{longitude})["shop"="convenience"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="pharmacy"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="fuel"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="hospital"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="school"];
         );
 
         out center;
@@ -209,7 +208,9 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
 
         resposta = requests.post(
             "https://overpass-api.de/api/interpreter",
-            data=consulta,
+            data={
+                "data": consulta
+            },
             headers={
                 "User-Agent": "SMARTZEN IMOB",
                 "Accept": "application/json"
@@ -218,56 +219,83 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
         )
 
 
-        print("STATUS OVERPASS:", resposta.status_code)
-
-
         if resposta.status_code != 200:
-
-            print(
-                "Resposta da API:",
-                resposta.text[:500]
-            )
-
+            print("Erro Overpass:", resposta.text[:300])
             return
-
 
 
         dados = resposta.json()
 
 
-
-        quantidade = 0
+        referencias = []
 
 
         for local in dados.get("elements", []):
-
 
             tags = local.get("tags", {})
 
 
             nome = tags.get(
                 "name",
-                "Local sem nome"
+                None
             )
 
 
-            categoria = "Outro"
+            if not nome:
+                continue
 
 
-            if "shop" in tags:
-                categoria = tags["shop"]
 
-            elif "amenity" in tags:
-                categoria = tags["amenity"]
+            categoria = None
 
-            elif "leisure" in tags:
-                categoria = tags["leisure"]
+
+
+            if tags.get("natural") == "beach":
+
+                categoria = "Praia"
+
+
+            elif tags.get("shop") in [
+                "supermarket",
+                "convenience"
+            ]:
+
+                categoria = "Mercado"
+
+
+
+            elif tags.get("amenity") == "pharmacy":
+
+                categoria = "Farmácia"
+
+
+
+            elif tags.get("amenity") == "fuel":
+
+                categoria = "Posto de combustível"
+
+
+
+            elif tags.get("amenity") == "hospital":
+
+                categoria = "Hospital"
+
+
+
+            elif tags.get("amenity") == "school":
+
+                categoria = "Escola"
+
+
+
+            if not categoria:
+                continue
 
 
 
             lat_local = local.get("lat")
-
             lon_local = local.get("lon")
+
 
 
             if not lat_local:
@@ -292,36 +320,70 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
                 )
 
 
-                cursor.execute("""
-                    INSERT INTO referencias_imovel
-                    (
-                        imovel_id,
-                        nome,
-                        categoria,
-                        distancia,
-                        latitude,
-                        longitude
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """,
+                referencias.append({
+
+                    "nome": nome,
+                    "categoria": categoria,
+                    "distancia": distancia,
+                    "latitude": lat_local,
+                    "longitude": lon_local
+
+                })
+
+
+
+        # pega somente o mais próximo de cada categoria
+
+        categorias_salvas = set()
+
+
+        referencias.sort(
+            key=lambda x: x["distancia"]
+        )
+
+
+
+        for ref in referencias:
+
+
+            if ref["categoria"] in categorias_salvas:
+                continue
+
+
+
+            cursor.execute("""
+                INSERT INTO referencias_imovel
                 (
                     imovel_id,
                     nome,
                     categoria,
                     distancia,
-                    lat_local,
-                    lon_local
-                ))
+                    latitude,
+                    longitude
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                imovel_id,
+                ref["nome"],
+                ref["categoria"],
+                ref["distancia"],
+                ref["latitude"],
+                ref["longitude"]
+            ))
 
 
-                quantidade += 1
+            categorias_salvas.add(
+                ref["categoria"]
+            )
 
 
 
         print(
             "REFERÊNCIAS SALVAS:",
-            quantidade
+            len(categorias_salvas)
         )
+
 
 
     except Exception as erro:
