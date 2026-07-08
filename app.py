@@ -2629,9 +2629,12 @@ def exibir_site(subdominio):
         (subdominio,)
     ).fetchone()
 
+
     if not empresa:
         conn.close()
         return "Site não encontrado", 404
+
+
 
     rows = cursor.execute(
         """
@@ -2643,11 +2646,22 @@ def exibir_site(subdominio):
         (empresa['empresa_id'],)
     ).fetchall()
 
+
+
     imoveis = []
+
+
 
     for row in rows:
 
+
         imovel = dict(row)
+
+
+
+        # ==========================
+        # BUSCAR FOTOS
+        # ==========================
 
         fotos = cursor.execute(
             """
@@ -2659,10 +2673,26 @@ def exibir_site(subdominio):
             (imovel["id"],)
         ).fetchall()
 
-        imovel["fotos"] = [
-            foto["nome_arquivo"]
-            for foto in fotos
-        ]
+
+
+        imovel["fotos"] = []
+
+
+
+        for foto in fotos:
+
+
+            url_foto = (
+                "/data/uploads/imoveis/"
+                + foto["nome_arquivo"]
+            )
+
+
+            imovel["fotos"].append(
+                url_foto
+            )
+
+
 
 
         # ==========================
@@ -2683,34 +2713,50 @@ def exibir_site(subdominio):
         ).fetchall()
 
 
-        imovel["referencias"] = [
-            {
+
+        imovel["referencias"] = []
+
+
+
+        for ref in referencias:
+
+
+            imovel["referencias"].append({
+
                 "nome": ref["nome"],
+
                 "categoria": ref["categoria"],
+
                 "distancia": ref["distancia"]
-            }
-            for ref in referencias
-        ]
+
+            })
+
 
 
         print(
-            "IMOVEL",
+            "IMOVEL:",
             imovel["id"],
-            "REFERENCIAS:",
-            imovel["referencias"]
+            "| FOTOS:",
+            len(imovel["fotos"]),
+            "| REFERENCIAS:",
+            len(imovel["referencias"])
         )
+
 
 
         imoveis.append(imovel)
 
+
+
     conn.close()
+
+
 
     return render_template(
         "template_site.html",
         empresa=empresa,
         imoveis=imoveis
     )
-
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
 @super_admin_required
 def gerenciar_usuarios_empresa(empresa_id):
