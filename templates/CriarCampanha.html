@@ -549,7 +549,7 @@ data-preco="{{ cliente.faixa_preco or 0 }}">
 
 <span class="badge">
 
-R$ {{ "{:,.0f}".format(cliente.faixa_preco or 0) }}
+R$ {{ "{:,.0f}".format((cliente.faixa_preco or "0")|float) }}
 
 </span>
 
