@@ -106,9 +106,6 @@ def injetar_lembretes():
 
     return dict(lembretes=lembretes)
  
- HEADERS = {
-    "User-Agent": "SMARTZEN IMOB"
-}
 
 def buscar_coordenadas(cep):
 
