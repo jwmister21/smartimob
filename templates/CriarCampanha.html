@@ -1137,11 +1137,24 @@ let contatosSelecionados = [];
 
 function limparTelefone(numero){
 
-    return String(numero)
-    .replace(/\D/g,"");
+    let telefone = String(numero)
+        .replace(/\D/g,"");
+
+
+    // se não tiver código do Brasil, adiciona 55
+    if(
+        telefone.length === 10 ||
+        telefone.length === 11
+    ){
+
+        telefone = "55" + telefone;
+
+    }
+
+
+    return telefone;
 
 }
-
 
 
 
