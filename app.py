@@ -3599,7 +3599,6 @@ def dashboard_v2():
 
 
 @app.route("/CriarCampanha")
-@login_required
 def campanha():
 
     conn = sqlite3.connect(DB_PATH)
