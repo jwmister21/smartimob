@@ -3039,75 +3039,79 @@ def cadastrar_imovel():
 
         valor = request.form.get("valor", "")
 
+
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
 
-        # ==========================
-        # CADASTRAR IMÓVEL
-        # ==========================
-
-        cursor.execute("""
-            INSERT INTO imoveis (
-                titulo, tipo, valor, cidade, bairro,
-                quartos, banheiros, area, status, descricao,
-                rua, iptu, condominio, link, cep,
-                vaga_garagem, lazer, sacada, lavabo,
-                prazo, parcela, anuais, entrada,
-                banheiros21, proprietario1, telefone2, mobilia,
-                usuario_id, empresa_id, data_criacao
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-
-            request.form.get("titulo"),
-            request.form.get("tipo"),
-            valor,
-            request.form.get("cidade"),
-            request.form.get("bairro"),
-
-            request.form.get("quartos"),
-            request.form.get("banheiros"),
-            request.form.get("area"),
-            request.form.get("status"),
-            request.form.get("descricao"),
-
-            request.form.get("rua"),
-            request.form.get("iptu"),
-            request.form.get("condominio"),
-            request.form.get("link"),
-            request.form.get("cep"),
-
-            request.form.get("vaga_garagem"),
-            request.form.get("lazer"),
-            request.form.get("sacada"),
-            request.form.get("lavabo"),
-
-            request.form.get("prazo"),
-            request.form.get("parcela"),
-            request.form.get("anuais"),
-            request.form.get("entrada"),
-
-            request.form.get("banheiros21"),
-            request.form.get("proprietario1"),
-            request.form.get("telefone2"),
-            request.form.get("mobilia"),
-
-            user_id,
-            empresa_id,
-            data_criacao
-        ))
-
-
-        imovel_id = cursor.lastrowid
-
-
-
-        # ==========================
-        # BUSCAR COORDENADAS PELO CEP
-        # ==========================
-
         try:
+
+            # ==========================
+            # CADASTRAR IMÓVEL
+            # ==========================
+
+            cursor.execute("""
+                INSERT INTO imoveis (
+                    titulo, tipo, valor, cidade, bairro,
+                    quartos, banheiros, area, status, descricao,
+                    rua, iptu, condominio, link, cep,
+                    vaga_garagem, lazer, sacada, lavabo,
+                    prazo, parcela, anuais, entrada,
+                    banheiros21, proprietario1, telefone2, mobilia,
+                    usuario_id, empresa_id, data_criacao
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?)
+            """, (
+
+                request.form.get("titulo"),
+                request.form.get("tipo"),
+                valor,
+                request.form.get("cidade"),
+                request.form.get("bairro"),
+
+                request.form.get("quartos"),
+                request.form.get("banheiros"),
+                request.form.get("area"),
+                request.form.get("status"),
+                request.form.get("descricao"),
+
+                request.form.get("rua"),
+                request.form.get("iptu"),
+                request.form.get("condominio"),
+                request.form.get("link"),
+                request.form.get("cep"),
+
+                request.form.get("vaga_garagem"),
+                request.form.get("lazer"),
+                request.form.get("sacada"),
+                request.form.get("lavabo"),
+
+                request.form.get("prazo"),
+                request.form.get("parcela"),
+                request.form.get("anuais"),
+                request.form.get("entrada"),
+
+                request.form.get("banheiros21"),
+                request.form.get("proprietario1"),
+                request.form.get("telefone2"),
+                request.form.get("mobilia"),
+
+                user_id,
+                empresa_id,
+                data_criacao
+            ))
+
+
+            imovel_id = cursor.lastrowid
+
+
+
+            # ==========================
+            # BUSCAR COORDENADAS PELO CEP
+            # ==========================
 
             coordenadas = buscar_coordenadas(
                 request.form.get("cep")
@@ -3120,75 +3124,98 @@ def cadastrar_imovel():
                 longitude = coordenadas[1]
 
 
-                print("========================")
-                print("COORDENADAS DO IMÓVEL")
+                print("==========================")
+                print("LOCALIZAÇÃO ENCONTRADA")
                 print("Latitude:", latitude)
                 print("Longitude:", longitude)
-                print("========================")
+                print("==========================")
+
+
+                # ==========================
+                # BUSCAR REFERÊNCIAS
+                # ==========================
+
+                buscar_referencias(
+                    imovel_id,
+                    latitude,
+                    longitude,
+                    cursor
+                )
+
+
+            else:
+
+                print("Não foi possível localizar o CEP")
+
+
+
+            # ==========================
+            # SALVAR FOTOS
+            # ==========================
+
+            arquivos = request.files.getlist("fotos[]")
+
+
+            for file in arquivos:
+
+                if file and file.filename != "":
+
+                    nome_seguro = secure_filename(
+                        file.filename
+                    )
+
+
+                    nome_foto = (
+                        f"{imovel_id}_"
+                        f"{int(datetime.now().timestamp())}_"
+                        f"{nome_seguro}"
+                    )
+
+
+                    caminho_salvamento = os.path.join(
+                        app.config['UPLOAD_FOLDER_IMOVEIS'],
+                        nome_foto
+                    )
+
+
+                    file.save(caminho_salvamento)
+
+
+                    cursor.execute("""
+                        INSERT INTO fotos_imoveis
+                        (
+                            imovel_id,
+                            nome_arquivo
+                        )
+                        VALUES (?, ?)
+                    """, (
+                        imovel_id,
+                        nome_foto
+                    ))
+
+
+
+            # ==========================
+            # FINALIZAR BANCO
+            # ==========================
+
+            conn.commit()
 
 
         except Exception as erro:
 
+            conn.rollback()
+
             print(
-                "Erro ao buscar coordenadas:",
+                "ERRO AO CADASTRAR IMÓVEL:",
                 erro
             )
 
 
+        finally:
 
-        # ==========================
-        # SALVAR FOTOS
-        # ==========================
+            conn.close()
 
-        arquivos = request.files.getlist("fotos[]")
-
-
-        for file in arquivos:
-
-            if file and file.filename != "":
-
-                nome_seguro = secure_filename(
-                    file.filename
-                )
-
-
-                nome_foto = (
-                    f"{imovel_id}_"
-                    f"{int(datetime.now().timestamp())}_"
-                    f"{nome_seguro}"
-                )
-
-
-                caminho_salvamento = os.path.join(
-                    app.config['UPLOAD_FOLDER_IMOVEIS'],
-                    nome_foto
-                )
-
-
-                file.save(caminho_salvamento)
-
-
-
-                cursor.execute("""
-                    INSERT INTO fotos_imoveis
-                    (
-                        imovel_id,
-                        nome_arquivo
-                    )
-                    VALUES (?, ?)
-                """, (
-                    imovel_id,
-                    nome_foto
-                ))
-
-
-
-        # ==========================
-        # FINALIZAR
-        # ==========================
-
-        conn.commit()
-        conn.close()
 
 
         return redirect("/imoveis")
@@ -3197,6 +3224,7 @@ def cadastrar_imovel():
     return render_template(
         "cadastrar_imovel.html"
     )
+    
 # (Mantenha o restante das suas outras rotas abaixo aqui...)
 
 
