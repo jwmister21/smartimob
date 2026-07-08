@@ -2620,6 +2620,7 @@ def exibir_site(subdominio):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+
     empresa = cursor.execute(
         """
         SELECT *
@@ -2660,7 +2661,7 @@ def exibir_site(subdominio):
 
 
         # ==========================
-        # BUSCAR FOTOS
+        # FOTOS (MANTIDO IGUAL)
         # ==========================
 
         fotos = cursor.execute(
@@ -2675,28 +2676,15 @@ def exibir_site(subdominio):
 
 
 
-        imovel["fotos"] = []
-
-
-
-        for foto in fotos:
-
-
-            url_foto = (
-                "/data/uploads/imoveis/"
-                + foto["nome_arquivo"]
-            )
-
-
-            imovel["fotos"].append(
-                url_foto
-            )
-
+        imovel["fotos"] = [
+            foto["nome_arquivo"]
+            for foto in fotos
+        ]
 
 
 
         # ==========================
-        # BUSCAR REFERÊNCIAS
+        # REFERÊNCIAS DO IMÓVEL
         # ==========================
 
         referencias = cursor.execute(
@@ -2714,31 +2702,23 @@ def exibir_site(subdominio):
 
 
 
-        imovel["referencias"] = []
-
-
-
-        for ref in referencias:
-
-
-            imovel["referencias"].append({
-
+        imovel["referencias"] = [
+            {
                 "nome": ref["nome"],
-
                 "categoria": ref["categoria"],
-
                 "distancia": ref["distancia"]
-
-            })
+            }
+            for ref in referencias
+        ]
 
 
 
         print(
             "IMOVEL:",
             imovel["id"],
-            "| FOTOS:",
+            "FOTOS:",
             len(imovel["fotos"]),
-            "| REFERENCIAS:",
+            "REFERENCIAS:",
             len(imovel["referencias"])
         )
 
@@ -2757,6 +2737,7 @@ def exibir_site(subdominio):
         empresa=empresa,
         imoveis=imoveis
     )
+ 
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
 @super_admin_required
 def gerenciar_usuarios_empresa(empresa_id):
