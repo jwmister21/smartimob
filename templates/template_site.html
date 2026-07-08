@@ -696,8 +696,18 @@ height:45px;
 
 
         <strong>
-            {{ r.distancia }}m
-        </strong>
+
+{% if r.distancia >= 1000 %}
+
+    {{ "%.1f"|format(r.distancia / 1000) }} km
+
+{% else %}
+
+    {{ r.distancia|int }} metros
+
+{% endif %}
+
+</strong>
 
 
     </div>
