@@ -1,478 +1,1055 @@
+
 {% extends "base.html" %}
 {% block content %}
 
 <style>
+
 :root{
     --primary:#2563eb;
     --primary-hover:#1d4ed8;
     --success:#16a34a;
     --danger:#ef4444;
+
     --bg:#f4f7fb;
     --card:#ffffff;
+
     --title:#111827;
     --text:#374151;
     --muted:#6b7280;
+
     --border:#e5e7eb;
-    --radius:22px;
 }
 
-body{ background:var(--bg); }
 
-.campanha{
-    max-width:1400px;
+body{
+    background:var(--bg);
+}
+
+
+.campanha-container{
+
+    max-width:1450px;
     margin:auto;
     padding:30px;
+
 }
 
-.card-smart{
+
+/* CARD PRINCIPAL */
+
+.smart-card{
+
     background:white;
-    border-radius:22px;
-    padding:25px;
     border:1px solid var(--border);
-    box-shadow:0 10px 35px rgba(0,0,0,.05);
+    border-radius:24px;
+    padding:25px;
     margin-bottom:25px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.05);
+
 }
 
-.card-title{
+
+.titulo-card{
+
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:12px;
+
     margin-bottom:20px;
+
 }
 
-.card-title i{
+
+.titulo-card i{
+
+    font-size:25px;
     color:var(--primary);
-    font-size:22px;
+
 }
 
-.card-title h4{
+
+.titulo-card h4{
+
     margin:0;
     font-weight:700;
+
 }
 
-.grid2{
+
+/* GRID */
+
+.grid{
+
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:20px;
+    gap:25px;
+
 }
+
 
 @media(max-width:900px){
-    .grid2{ grid-template-columns:1fr; }
+
+.grid{
+    grid-template-columns:1fr;
 }
+
+}
+
+
+
+/* INPUTS */
+
 
 .form-control{
+
+    min-height:52px;
+
     border-radius:16px;
+
     border:1px solid #dbe3ef;
-    min-height:54px;
-    padding:14px 16px;
+
     background:#fbfdff;
+
 }
+
 
 textarea.form-control{
-    min-height:240px;
-    resize:vertical;
+
+    min-height:220px;
+
 }
+
+
 
 .form-control:focus{
+
     border-color:var(--primary);
-    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+
+    box-shadow:
+    0 0 0 4px rgba(37,99,235,.12);
+
 }
+
+
+
+/* BOTÕES */
+
 
 .btn{
+
     border-radius:15px;
-    padding:12px 18px;
+
+    padding:12px 20px;
+
     font-weight:600;
+
 }
+
 
 .btn-primary{
+
     background:var(--primary);
+
     border-color:var(--primary);
+
 }
+
+
 
 .btn-primary:hover{
+
     background:var(--primary-hover);
+
 }
 
-.resultado-box{
-    min-height:320px;
-    font-family:monospace;
-    font-size:15px;
-    background:#0f172a;
-    color:#d1fae5;
-    border:none;
-}
 
-.info-box{
-    display:flex;
-    gap:15px;
-    flex-wrap:wrap;
-    margin-top:20px;
-}
 
-.info-item{
-    background:#f8fafc;
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:15px 20px;
-    min-width:160px;
-}
 
-.info-item strong{
-    display:block;
-    font-size:24px;
-    color:var(--primary);
-}
+/* LISTA CLIENTES */
 
-.info-item span{
-    color:var(--muted);
-    font-size:14px;
-}
 
-.clientes-box{
-    max-height:430px;
+.lista-clientes{
+
+    max-height:450px;
+
     overflow-y:auto;
-    border:1px solid var(--border);
-    border-radius:20px;
-    padding:12px;
+
     background:#f8fafc;
+
+    padding:12px;
+
+    border-radius:20px;
+
+    border:1px solid var(--border);
+
 }
 
-.cliente-item{
+
+
+.cliente{
+
     display:flex;
+
     align-items:center;
+
     gap:15px;
-    background:white;
-    border:1px solid #e5e7eb;
-    border-radius:16px;
-    padding:14px;
+
+    padding:15px;
+
     margin-bottom:10px;
-    transition:.2s;
+
+    background:white;
+
+    border-radius:18px;
+
+    border:1px solid #e5e7eb;
+
+    cursor:pointer;
+
 }
 
-.cliente-item:hover{
+
+
+.cliente:hover{
+
     border-color:var(--primary);
-    box-shadow:0 8px 20px rgba(37,99,235,.08);
+
 }
 
-.cliente-item input[type="checkbox"]{
+
+
+.cliente input{
+
     width:20px;
     height:20px;
-    accent-color:var(--primary);
+
 }
+
+
 
 .cliente-info{
+
     flex:1;
+
 }
+
 
 .cliente-info strong{
+
     display:block;
+
     color:var(--title);
+
 }
+
+
 
 .cliente-info small{
+
     color:var(--muted);
+
 }
 
-.badge-preco{
+
+
+
+.badge{
+
     background:#eef2ff;
+
     color:#2563eb;
+
     padding:7px 12px;
-    border-radius:999px;
-    font-size:13px;
+
+    border-radius:20px;
+
     font-weight:700;
+
 }
+
+
+
+/* RESULTADO */
+
+
+.resultado{
+
+    min-height:300px;
+
+    background:#0f172a;
+
+    color:#d1fae5;
+
+    font-family:monospace;
+
+}
+
+
+
+.estatisticas{
+
+    display:flex;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+    margin-top:20px;
+
+}
+
+
+
+.stat{
+
+    background:#f8fafc;
+
+    border-radius:18px;
+
+    padding:15px 25px;
+
+    border:1px solid var(--border);
+
+}
+
+
+
+.stat strong{
+
+    display:block;
+
+    color:var(--primary);
+
+    font-size:25px;
+
+}
+
+
+
+.stat span{
+
+    color:var(--muted);
+
+}
+
+
 </style>
 
-<div class="campanha">
 
-    <div class="mb-4">
-        <h2>
-            <i class="bi bi-database-fill-add text-primary"></i>
-            Gerador de Base
-        </h2>
-        <p class="text-muted">
-            Gere contatos manualmente ou selecione clientes cadastrados pela faixa de preço.
-        </p>
-    </div>
 
-    <div class="card-smart">
-        <div class="card-title">
-            <i class="bi bi-pencil-square"></i>
-            <h4>Inserir Manualmente</h4>
-        </div>
+<div class="campanha-container">
 
-        <div class="grid2">
-            <div>
-                <label class="mb-2">Nomes</label>
-                <textarea id="listaNomes" class="form-control" placeholder="João Silva&#10;Maria Santos&#10;Carlos Oliveira"></textarea>
-            </div>
 
-            <div>
-                <label class="mb-2">Telefones</label>
-                <textarea id="listaTelefones" class="form-control" placeholder="5511999999999&#10;5511988888888&#10;5511977777777"></textarea>
-            </div>
-        </div>
+<div class="mb-4">
 
-        <div class="mt-4 d-flex gap-2 flex-wrap">
-            <button class="btn btn-primary" id="btnGerarLista">
-                <i class="bi bi-magic"></i> Gerar Manual
-            </button>
+<h2>
 
-            <button class="btn btn-success" id="btnCopiarResultado">
-                <i class="bi bi-copy"></i> Copiar Resultado
-            </button>
+<i class="bi bi-people-fill text-primary"></i>
 
-            <button class="btn btn-outline-danger" id="btnLimpar">
-                <i class="bi bi-trash"></i> Limpar Tudo
-            </button>
-        </div>
-    </div>
+Gerador de Base de Clientes
 
-    <div class="grid2">
+</h2>
 
-        <div class="card-smart">
-            <div class="card-title">
-                <i class="bi bi-people-fill"></i>
-                <h4>Clientes Cadastrados</h4>
-            </div>
 
-            <label class="mb-2">Filtrar por faixa de preço</label>
-            <input
-                type="number"
-                id="filtroPreco"
-                class="form-control mb-3"
-                placeholder="Ex: 500000">
+<p class="text-muted">
 
-            <div class="clientes-box" id="clientesBox"></div>
-        </div>
+Monte listas de contatos para campanhas do WhatsApp.
 
-        <div class="card-smart">
-            <div class="card-title">
-                <i class="bi bi-file-earmark-text"></i>
-                <h4>Resultado Final</h4>
-            </div>
+</p>
 
-            <textarea
-                id="resultado"
-                readonly
-                class="form-control resultado-box"
-                placeholder="João Silva,5511999999999"></textarea>
-
-            <div class="info-box">
-                <div class="info-item">
-                    <strong id="totalManual">0</strong>
-                    <span>Manual</span>
-                </div>
-
-                <div class="info-item">
-                    <strong id="totalSelecionados">0</strong>
-                    <span>Selecionados</span>
-                </div>
-
-                <div class="info-item">
-                    <strong id="totalGerados">0</strong>
-                    <span>Total</span>
-                </div>
-            </div>
-        </div>
-
-    </div>
 
 </div>
 
+
+
+
+<!-- INSERÇÃO MANUAL -->
+
+<div class="smart-card">
+
+
+<div class="titulo-card">
+
+<i class="bi bi-pencil-square"></i>
+
+<h4>Adicionar contatos manualmente</h4>
+
+
+</div>
+
+
+
+<div class="grid">
+
+
+<div>
+
+<label>Nomes</label>
+
+<textarea
+
+id="nomes"
+
+class="form-control"
+
+placeholder="João Silva&#10;Maria Santos">
+
+</textarea>
+
+
+</div>
+
+
+
+<div>
+
+<label>Telefones</label>
+
+<textarea
+
+id="telefones"
+
+class="form-control"
+
+placeholder="5511999999999">
+
+</textarea>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="mt-4">
+
+
+<button
+
+class="btn btn-primary"
+
+id="gerarManual">
+
+<i class="bi bi-magic"></i>
+
+Gerar Lista
+
+</button>
+
+
+
+<button
+
+class="btn btn-success"
+
+id="copiar">
+
+<i class="bi bi-copy"></i>
+
+Copiar
+
+</button>
+
+
+
+<button
+
+class="btn btn-danger"
+
+id="limpar">
+
+<i class="bi bi-trash"></i>
+
+Limpar
+
+</button>
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+<div class="grid">
+
+
+
+<!-- CLIENTES -->
+
+<div class="smart-card">
+
+
+<div class="titulo-card">
+
+<i class="bi bi-database"></i>
+
+<h4>Clientes cadastrados</h4>
+
+</div>
+
+
+<input
+
+id="filtro"
+
+class="form-control mb-3"
+
+placeholder="Filtrar cliente...">
+
+
+<div class="lista-clientes" id="listaClientes">
+
+
+{% for cliente in clientes %}
+
+
+<label class="cliente">
+
+
+<input
+
+type="checkbox"
+
+class="cliente-check"
+
+data-nome="{{ cliente.nome }}"
+
+data-telefone="{{ cliente.telefone }}"
+
+data-preco="{{ cliente.faixa_preco or 0 }}">
+
+
+
+<div class="cliente-info">
+
+<strong>
+{{ cliente.nome }}
+</strong>
+
+
+<small>
+
+{{ cliente.telefone }}
+
+</small>
+
+
+</div>
+
+
+
+<span class="badge">
+
+R$ {{ "{:,.0f}".format(cliente.faixa_preco or 0) }}
+
+</span>
+
+
+
+</label>
+
+
+{% endfor %}
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- RESULTADO -->
+
+
+<div class="smart-card">
+
+
+<div class="titulo-card">
+
+<i class="bi bi-file-text"></i>
+
+<h4>Resultado</h4>
+
+</div>
+
+
+
+<textarea
+
+id="resultado"
+
+readonly
+
+class="form-control resultado"
+
+placeholder="Nome,telefone">
+
+</textarea>
+
+
+
+
+<div class="estatisticas">
+
+
+<div class="stat">
+
+<strong id="totalManual">0</strong>
+
+<span>Manual</span>
+
+</div>
+
+
+
+<div class="stat">
+
+<strong id="totalSelecionados">0</strong>
+
+<span>Selecionados</span>
+
+</div>
+
+
+
+<div class="stat">
+
+<strong id="total">0</strong>
+
+<span>Total</span>
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
+```html
 <script>
-const clientes = [
-    {
-        nome: "João Silva",
-        telefone: "5511999999999",
-        faixa_preco: 500000
-    },
-    {
-        nome: "Maria Santos",
-        telefone: "5511988888888",
-        faixa_preco: 750000
-    },
-    {
-        nome: "Carlos Oliveira",
-        telefone: "5511977777777",
-        faixa_preco: 350000
-    },
-    {
-        nome: "Ana Costa",
-        telefone: "5511966666666",
-        faixa_preco: 900000
-    }
-];
-
-/*
-No seu sistema, você pode trocar o array acima por algo assim:
-
-const clientes = [
-    {% for cliente in clientes %}
-    {
-        nome: "{{ cliente.nome }}",
-        telefone: "{{ cliente.telefone }}",
-        faixa_preco: {{ cliente.faixa_preco|default:0 }}
-    },
-    {% endfor %}
-];
-*/
 
 let contatosManuais = [];
 let contatosSelecionados = [];
 
-function limparTelefone(telefone) {
-    return String(telefone).replace(/\D/g, "");
+
+
+// LIMPA TELEFONE
+
+function limparTelefone(numero){
+
+    return String(numero)
+    .replace(/\D/g,"");
+
 }
 
-function montarLinha(nome, telefone) {
+
+
+// MONTA LINHA
+
+function montarLinha(nome, telefone){
+
     return `${nome},${limparTelefone(telefone)}`;
+
 }
 
-function renderizarClientes() {
-    const box = document.getElementById("clientesBox");
-    const filtro = Number(document.getElementById("filtroPreco").value);
 
-    box.innerHTML = "";
 
-    clientes
-        .filter(cliente => {
-            if (!filtro) return true;
-            return Number(cliente.faixa_preco) <= filtro;
-        })
-        .forEach((cliente, index) => {
-            const id = `cliente_${index}`;
-            const checked = contatosSelecionados.some(c => c.telefone === limparTelefone(cliente.telefone));
+// GERAR CONTATOS MANUAIS
 
-            box.insertAdjacentHTML("beforeend", `
-                <label class="cliente-item" for="${id}">
-                    <input
-                        type="checkbox"
-                        id="${id}"
-                        class="check-cliente"
-                        data-nome="${cliente.nome}"
-                        data-telefone="${cliente.telefone}"
-                        ${checked ? "checked" : ""}>
+document
+.getElementById("gerarManual")
+.addEventListener("click",function(){
 
-                    <div class="cliente-info">
-                        <strong>${cliente.nome}</strong>
-                        <small>${limparTelefone(cliente.telefone)}</small>
-                    </div>
 
-                    <span class="badge-preco">
-                        R$ ${Number(cliente.faixa_preco).toLocaleString("pt-BR")}
-                    </span>
-                </label>
-            `);
-        });
-}
 
-function gerarManual() {
-    const nomes = document
-        .getElementById("listaNomes")
-        .value
-        .split("\n")
-        .map(nome => nome.trim())
-        .filter(nome => nome !== "");
+    let nomes =
+    document
+    .getElementById("nomes")
+    .value
+    .split("\n")
+    .map(x=>x.trim())
+    .filter(x=>x);
 
-    const telefones = document
-        .getElementById("listaTelefones")
-        .value
-        .split("\n")
-        .map(limparTelefone)
-        .filter(telefone => telefone !== "");
 
-    const total = Math.min(nomes.length, telefones.length);
 
-    contatosManuais = [];
+    let telefones =
+    document
+    .getElementById("telefones")
+    .value
+    .split("\n")
+    .map(x=>limparTelefone(x))
+    .filter(x=>x);
 
-    for (let i = 0; i < total; i++) {
+
+
+    contatosManuais=[];
+
+
+
+    let total =
+    Math.min(
+        nomes.length,
+        telefones.length
+    );
+
+
+
+    for(let i=0;i<total;i++){
+
+
         contatosManuais.push({
-            nome: nomes[i],
-            telefone: telefones[i]
+
+            nome:nome = nomes[i],
+
+            telefone:telefones[i]
+
         });
+
+
     }
 
+
+
     atualizarResultado();
-}
 
-function atualizarSelecionados() {
-    contatosSelecionados = [];
 
-    document.querySelectorAll(".check-cliente:checked").forEach(check => {
+});
+
+
+
+
+
+// CLIENTES SELECIONADOS
+
+
+document
+.querySelectorAll(".cliente-check")
+.forEach(check=>{
+
+
+check.addEventListener("change",function(){
+
+
+    contatosSelecionados=[];
+
+
+
+    document
+    .querySelectorAll(".cliente-check:checked")
+    .forEach(item=>{
+
+
         contatosSelecionados.push({
-            nome: check.dataset.nome,
-            telefone: limparTelefone(check.dataset.telefone)
+
+            nome:item.dataset.nome,
+
+            telefone:
+            limparTelefone(
+                item.dataset.telefone
+            )
+
+
         });
+
+
     });
 
+
+
     atualizarResultado();
+
+
+
+});
+
+
+});
+
+
+
+
+
+// FILTRO DE CLIENTES
+
+
+document
+.getElementById("filtro")
+.addEventListener("input",function(){
+
+
+let busca =
+this.value.toLowerCase();
+
+
+
+document
+.querySelectorAll(".cliente")
+.forEach(cliente=>{
+
+
+let texto =
+cliente.innerText.toLowerCase();
+
+
+
+if(texto.includes(busca)){
+
+
+    cliente.style.display="flex";
+
+
+}else{
+
+
+    cliente.style.display="none";
+
+
 }
 
-function atualizarResultado() {
-    const todos = [...contatosManuais, ...contatosSelecionados];
 
-    const unicos = [];
-    const telefonesUsados = new Set();
+});
 
-    todos.forEach(contato => {
-        const telefone = limparTelefone(contato.telefone);
 
-        if (!telefonesUsados.has(telefone)) {
-            telefonesUsados.add(telefone);
+});
 
-            unicos.push({
-                nome: contato.nome,
-                telefone: telefone
-            });
-        }
+
+
+
+
+
+// ATUALIZA RESULTADO
+
+
+function atualizarResultado(){
+
+
+let todos=[
+
+    ...contatosManuais,
+
+    ...contatosSelecionados
+
+];
+
+
+
+let usados = new Set();
+
+
+let lista=[];
+
+
+
+todos.forEach(contato=>{
+
+
+let telefone =
+limparTelefone(
+    contato.telefone
+);
+
+
+
+if(!usados.has(telefone)){
+
+
+    usados.add(telefone);
+
+
+
+    lista.push({
+
+        nome:contato.nome,
+
+        telefone:telefone
+
     });
 
-    document.getElementById("resultado").value = unicos
-        .map(contato => montarLinha(contato.nome, contato.telefone))
-        .join("\n");
 
-    document.getElementById("totalManual").innerText = contatosManuais.length;
-    document.getElementById("totalSelecionados").innerText = contatosSelecionados.length;
-    document.getElementById("totalGerados").innerText = unicos.length;
 }
 
-document.getElementById("btnGerarLista").addEventListener("click", gerarManual);
 
-document.getElementById("clientesBox").addEventListener("change", function(e) {
-    if (e.target.classList.contains("check-cliente")) {
-        atualizarSelecionados();
-    }
+
 });
 
-document.getElementById("filtroPreco").addEventListener("input", renderizarClientes);
 
-document.getElementById("btnCopiarResultado").addEventListener("click", function() {
-    const resultado = document.getElementById("resultado").value;
 
-    if (!resultado.trim()) {
-        alert("Nenhum contato gerado.");
-        return;
-    }
 
-    navigator.clipboard.writeText(resultado);
-    alert("Resultado copiado com sucesso!");
+
+document
+.getElementById("resultado")
+.value =
+
+lista
+.map(c=>
+montarLinha(
+    c.nome,
+    c.telefone
+)
+)
+.join("\n");
+
+
+
+
+
+document
+.getElementById("totalManual")
+.innerText =
+contatosManuais.length;
+
+
+
+
+document
+.getElementById("totalSelecionados")
+.innerText =
+contatosSelecionados.length;
+
+
+
+
+document
+.getElementById("total")
+.innerText =
+lista.length;
+
+
+
+}
+
+
+
+
+
+
+
+// COPIAR
+
+
+document
+.getElementById("copiar")
+.addEventListener("click",function(){
+
+
+let texto =
+document
+.getElementById("resultado")
+.value;
+
+
+
+if(!texto){
+
+
+alert(
+"Não existe nenhum contato gerado."
+);
+
+
+return;
+
+
+}
+
+
+
+navigator
+.clipboard
+.writeText(texto);
+
+
+
+alert(
+"Lista copiada com sucesso!"
+);
+
+
+
 });
 
-document.getElementById("btnLimpar").addEventListener("click", function() {
-    document.getElementById("listaNomes").value = "";
-    document.getElementById("listaTelefones").value = "";
-    document.getElementById("resultado").value = "";
-    document.getElementById("filtroPreco").value = "";
 
-    contatosManuais = [];
-    contatosSelecionados = [];
 
-    renderizarClientes();
-    atualizarResultado();
+
+
+
+
+// LIMPAR
+
+
+document
+.getElementById("limpar")
+.addEventListener("click",function(){
+
+
+
+document
+.getElementById("nomes")
+.value="";
+
+
+
+document
+.getElementById("telefones")
+.value="";
+
+
+
+document
+.getElementById("resultado")
+.value="";
+
+
+
+document
+.querySelectorAll(".cliente-check")
+.forEach(c=>{
+
+
+c.checked=false;
+
+
 });
 
-renderizarClientes();
+
+
+contatosManuais=[];
+
+contatosSelecionados=[];
+
+
+
+atualizarResultado();
+
+
+
+});
+
+
+
 </script>
 
+
 {% endblock %}
+
