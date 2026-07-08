@@ -3708,7 +3708,11 @@ def site_publico(slug):
 
 
             referencias = cursor.fetchall()
-
+            print(
+                "REFERENCIAS DO IMOVEL",
+                imovel["id"],
+                referencias
+            )
 
 
             imovel["referencias"] = []
