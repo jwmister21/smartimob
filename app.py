@@ -4483,28 +4483,90 @@ def converter_lead(lead_id):
 @app.route("/imoveis")
 @verificar_sessao
 def imoveis():
+
     empresa_id = session.get("empresa_id")
 
+
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row 
+
+    conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
 
-    # 1. Busca apenas os imóveis desta empresa específica
-    cursor.execute("SELECT * FROM imoveis WHERE empresa_id = ?", (empresa_id,))
+
+
+    # Busca imóveis da empresa
+    # Mais novos aparecem primeiro
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+    """,
+    (
+        empresa_id,
+    ))
+
+
+
     imoveis_db = cursor.fetchall()
 
+
+
     lista_final = []
+
+
+
     for row in imoveis_db:
+
+
         imovel = dict(row)
-        # 2. Busca as fotos vinculadas ao imóvel (o imovel_id já é único/seguro)
-        cursor.execute("SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ?", (imovel['id'],))
-        fotos = [r['nome_arquivo'] for r in cursor.fetchall()]
-        imovel['fotos'] = fotos
+
+
+
+        # Busca fotos do imóvel
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+        """,
+        (
+            imovel["id"],
+        ))
+
+
+
+        fotos = [
+            foto["nome_arquivo"]
+            for foto in cursor.fetchall()
+        ]
+
+
+
+        imovel["fotos"] = fotos
+
+
+
         lista_final.append(imovel)
 
-    conn.close()
-    return render_template("imoveis.html", imoveis=lista_final)
 
+
+
+    total_imoveis = len(lista_final)
+
+
+
+    conn.close()
+
+
+
+    return render_template(
+        "imoveis.html",
+        imoveis=lista_final,
+        total_imoveis=total_imoveis
+    )
 
 @app.route("/excluir_imovel/<int:id>")
 @verificar_sessao
