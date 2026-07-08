@@ -212,6 +212,7 @@ def buscar_referencias(imovel_id, latitude, longitude, cursor):
             data=consulta,
             headers={
                 "User-Agent": "SMARTZEN IMOB"
+                "Accept": "application/json"
             },
             timeout=60
         )
