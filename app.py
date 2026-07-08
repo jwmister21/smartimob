@@ -2617,14 +2617,13 @@ def importar_clientes():
 def exibir_site(subdominio):
 
     conn = sqlite3.connect(DB_PATH)
-
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
 
 
-
-    # Buscar configuração do site
+    # ==========================
+    # BUSCAR CONFIGURAÇÃO DO SITE
+    # ==========================
 
     cursor.execute("""
         SELECT *
@@ -2639,7 +2638,6 @@ def exibir_site(subdominio):
     empresa = cursor.fetchone()
 
 
-
     if not empresa:
 
         conn.close()
@@ -2648,8 +2646,9 @@ def exibir_site(subdominio):
 
 
 
-
-    # Buscar imóveis da empresa
+    # ==========================
+    # BUSCAR IMÓVEIS DA EMPRESA
+    # ==========================
 
     cursor.execute("""
         SELECT *
@@ -2692,15 +2691,29 @@ def exibir_site(subdominio):
         ))
 
 
+        fotos_db = cursor.fetchall()
 
-        fotos = [
-            foto["nome_arquivo"]
-            for foto in cursor.fetchall()
-        ]
+
+        fotos = []
+
+
+        for foto in fotos_db:
+
+            caminho = foto["nome_arquivo"]
+
+
+            # Remove caminhos antigos:
+            # /data/uploads/imoveis/
+            # /uploads/imoveis/
+
+            nome = os.path.basename(caminho)
+
+
+            fotos.append(nome)
+
 
 
         imovel["fotos"] = fotos
-
 
 
 
@@ -2722,32 +2735,34 @@ def exibir_site(subdominio):
         ))
 
 
-
         referencias = cursor.fetchall()
 
 
 
         imovel["referencias"] = [
+
             {
-                "nome": ref["nome"],
-                "categoria": ref["categoria"],
-                "distancia": ref["distancia"]
+                "nome": r["nome"],
+                "categoria": r["categoria"],
+                "distancia": r["distancia"]
             }
-            for ref in referencias
+
+            for r in referencias
+
         ]
 
 
 
         print(
-            "SITE IMOVEL",
+            "SITE IMOVEL:",
             imovel["id"],
             "FOTOS:",
             imovel["fotos"]
         )
 
 
-        lista_final.append(imovel)
 
+        lista_final.append(imovel)
 
 
 
