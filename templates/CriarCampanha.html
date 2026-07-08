@@ -2,1924 +2,1197 @@
 {% block content %}
 
 <style>
-
 /* =====================================================
    SMARTZEN GERADOR DE LEADS
-   CSS ISOLADO
+   Layout premium isolado
 ===================================================== */
 
+:root{
+    --sz-primary:#2563eb;
+    --sz-primary-dark:#1d4ed8;
+    --sz-success:#16a34a;
+    --sz-danger:#dc2626;
+    --sz-warning:#f59e0b;
+    --sz-dark:#0f172a;
+    --sz-muted:#64748b;
+    --sz-border:#e2e8f0;
+    --sz-bg:#f4f7fb;
+    --sz-card:#ffffff;
+}
 
 .campanha-container{
-
     width:100%;
-
     max-width:1500px;
-
-    margin:auto;
-
-    padding:30px;
-
-    background:#f4f7fb;
-
+    margin:0 auto;
+    padding:34px;
     min-height:100vh;
-
+    background:
+        radial-gradient(circle at top left, rgba(37,99,235,.14), transparent 32%),
+        radial-gradient(circle at top right, rgba(22,163,74,.10), transparent 30%),
+        var(--sz-bg);
 }
 
-
-
-/* HEADER */
-
-.campanha-header{
-
+.campanha-hero{
     display:flex;
-
-    justify-content:space-between;
-
     align-items:center;
-
-    flex-wrap:wrap;
-
-    gap:20px;
-
-    margin-bottom:30px;
-
+    justify-content:space-between;
+    gap:22px;
+    padding:28px;
+    margin-bottom:26px;
+    border-radius:30px;
+    background:
+        linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #2563eb 100%);
+    color:#fff;
+    box-shadow:0 24px 70px rgba(15,23,42,.20);
+    overflow:hidden;
+    position:relative;
 }
 
+.campanha-hero::after{
+    content:"";
+    width:260px;
+    height:260px;
+    border-radius:50%;
+    background:rgba(255,255,255,.10);
+    position:absolute;
+    right:-80px;
+    top:-90px;
+}
 
+.campanha-hero-info{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    position:relative;
+    z-index:1;
+}
 
-.campanha-header h2{
+.campanha-hero-icon{
+    width:64px;
+    height:64px;
+    min-width:64px;
+    border-radius:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.20);
+    font-size:32px;
+}
 
+.campanha-hero h2{
     margin:0;
+    font-size:30px;
+    font-weight:900;
+    letter-spacing:-.5px;
+}
 
-    font-size:28px;
+.campanha-hero p{
+    margin:8px 0 0;
+    color:rgba(255,255,255,.78);
+    font-size:15px;
+}
 
+.campanha-hero-badge{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 16px;
+    border-radius:999px;
+    background:rgba(255,255,255,.14);
+    border:1px solid rgba(255,255,255,.22);
     font-weight:800;
-
-    color:#111827;
-
+    white-space:nowrap;
 }
-
-
-
-.campanha-header p{
-
-    margin-top:8px;
-
-    color:#6b7280;
-
-}
-
-
-
-
-/* CARDS */
-
 
 .campanha-card{
-
-    background:#ffffff;
-
-    border-radius:26px;
-
-    padding:25px;
-
-    border:1px solid #e5e7eb;
-
-    box-shadow:
-    0 15px 40px rgba(0,0,0,.06);
-
-    margin-bottom:25px;
-
+    background:rgba(255,255,255,.94);
+    border:1px solid rgba(226,232,240,.90);
+    border-radius:28px;
+    padding:24px;
+    box-shadow:0 18px 50px rgba(15,23,42,.07);
+    backdrop-filter: blur(10px);
+    margin-bottom:24px;
 }
-
-
-
-
-/* TITULO CARD */
-
 
 .campanha-card-title{
-
     display:flex;
-
     align-items:center;
-
-    gap:12px;
-
-    margin-bottom:25px;
-
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:20px;
 }
 
-
+.campanha-title-left{
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
 
 .campanha-card-title i{
-
-    width:45px;
-
-    height:45px;
-
-    border-radius:14px;
-
-    background:#eff6ff;
-
-    color:#2563eb;
-
+    width:46px;
+    height:46px;
+    min-width:46px;
+    border-radius:16px;
+    background:linear-gradient(135deg, rgba(37,99,235,.12), rgba(37,99,235,.04));
+    color:var(--sz-primary);
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
     font-size:22px;
-
 }
-
-
 
 .campanha-card-title h4{
-
     margin:0;
-
-    font-weight:800;
-
-    color:#111827;
-
+    color:#0f172a;
+    font-weight:900;
+    font-size:18px;
 }
 
-
-
-
-/* GRID */
-
+.campanha-card-title p{
+    margin:3px 0 0;
+    color:var(--sz-muted);
+    font-size:13px;
+}
 
 .campanha-grid{
-
     display:grid;
-
     grid-template-columns:1fr 1fr;
-
-    gap:25px;
-
+    gap:24px;
 }
 
-
-
-@media(max-width:1000px){
-
-    .campanha-grid{
-
-        grid-template-columns:1fr;
-
-    }
-
+.campanha-main-grid{
+    display:grid;
+    grid-template-columns:minmax(380px, .92fr) minmax(420px, 1.08fr);
+    gap:24px;
+    align-items:start;
 }
 
-
-
-
-/* INPUTS */
-
+.campanha-field label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#334155;
+    font-size:13px;
+    font-weight:800;
+    margin-bottom:9px;
+}
 
 .campanha-input{
-
     width:100%;
-
-    height:52px;
-
-    padding:14px 18px;
-
-    border-radius:16px;
-
-    border:1px solid #dbe3ef;
-
+    height:54px;
+    padding:14px 17px;
+    border-radius:17px;
+    border:1px solid #dbe4f0;
     background:#fbfdff;
-
-    color:#111827;
-
+    color:#0f172a;
     outline:none;
-
+    transition:.18s ease;
+    font-size:14px;
 }
-
-
 
 textarea.campanha-input{
-
-    height:220px;
-
-    resize:none;
-
+    min-height:210px;
+    height:210px;
+    resize:vertical;
+    line-height:1.55;
 }
-
-
 
 .campanha-input:focus{
-
-    border-color:#2563eb;
-
-    box-shadow:
-
-    0 0 0 4px rgba(37,99,235,.12);
-
+    border-color:var(--sz-primary);
+    background:#fff;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
 
-
-
-
-/* BOTÕES */
-
+.campanha-actions{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:20px;
+}
 
 .campanha-btn{
-
     border:none;
-
     border-radius:16px;
-
-    padding:13px 22px;
-
-    font-weight:700;
-
+    padding:13px 18px;
+    font-weight:900;
     cursor:pointer;
-
-    transition:.2s;
-
+    transition:.18s ease;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:46px;
+    box-shadow:0 10px 26px rgba(15,23,42,.08);
 }
-
-
 
 .campanha-btn:hover{
-
     transform:translateY(-2px);
-
+    filter:brightness(.98);
 }
 
-
+.campanha-btn:active{
+    transform:translateY(0);
+}
 
 .campanha-btn-primary{
-
-    background:#2563eb;
-
+    background:linear-gradient(135deg, var(--sz-primary), var(--sz-primary-dark));
     color:white;
-
 }
-
-
 
 .campanha-btn-success{
-
-    background:#16a34a;
-
+    background:linear-gradient(135deg, #22c55e, var(--sz-success));
     color:white;
-
 }
-
-
 
 .campanha-btn-danger{
-
-    background:#dc2626;
-
+    background:linear-gradient(135deg, #ef4444, var(--sz-danger));
     color:white;
-
 }
 
-
-
-.campanha-btn-warning{
-
-    background:#f59e0b;
-
-    color:white;
-
+.campanha-btn-soft{
+    background:#eef6ff;
+    color:#1d4ed8;
+    box-shadow:none;
 }
 
-
-
-
-/* FILTRO */
-
-
-.campanha-filtros{
-
+.campanha-filter-panel{
     display:grid;
-
-    grid-template-columns:1fr;
-
+    grid-template-columns:1fr 1fr;
     gap:12px;
-
-    margin-bottom:20px;
-
+    padding:14px;
+    border-radius:22px;
+    background:#f8fafc;
+    border:1px solid #e8eef7;
+    margin-bottom:16px;
 }
 
+.campanha-filter-panel .campanha-search{
+    grid-column:1 / -1;
+}
 
+.campanha-list-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:14px;
+}
 
+.campanha-counter{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    color:#64748b;
+    font-size:13px;
+    font-weight:700;
+}
 
-/* LISTA */
-
+.campanha-counter strong{
+    color:#0f172a;
+}
 
 .campanha-lista-clientes{
-
-    max-height:550px;
-
+    max-height:620px;
     overflow-y:auto;
-
     padding:10px;
-
     background:#f8fafc;
-
-    border-radius:22px;
-
+    border-radius:24px;
+    border:1px solid #e8eef7;
+    scrollbar-width:thin;
 }
 
+.campanha-lista-clientes::-webkit-scrollbar{
+    width:8px;
+}
 
-
-
-/* CLIENTE */
-
+.campanha-lista-clientes::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:999px;
+}
 
 .campanha-cliente{
-
     display:flex;
-
     align-items:center;
-
-    gap:15px;
-
-    padding:16px;
-
-    background:white;
-
-    border-radius:20px;
-
-    border:1px solid #e5e7eb;
-
+    gap:14px;
+    padding:15px;
+    background:#fff;
+    border-radius:22px;
+    border:1px solid #e5eaf2;
     margin-bottom:12px;
-
     cursor:pointer;
-
-    transition:.2s;
-
+    transition:.18s ease;
 }
-
-
 
 .campanha-cliente:hover{
-
-    border-color:#2563eb;
-
-    box-shadow:
-
-    0 8px 25px rgba(37,99,235,.10);
-
+    border-color:rgba(37,99,235,.55);
+    box-shadow:0 12px 28px rgba(37,99,235,.10);
+    transform:translateY(-1px);
 }
-
-
 
 .campanha-cliente input{
-
-    width:22px;
-
-    height:22px;
-
-    accent-color:#2563eb;
-
+    width:21px;
+    height:21px;
+    min-width:21px;
+    accent-color:var(--sz-primary);
 }
-
-
-
-
-/* AVATAR */
-
 
 .campanha-avatar{
-
-    width:50px;
-
-    height:50px;
-
-    border-radius:50%;
-
-    background:
-
-    linear-gradient(
-        135deg,
-        #2563eb,
-        #60a5fa
-    );
-
+    width:52px;
+    height:52px;
+    min-width:52px;
+    border-radius:19px;
+    background:linear-gradient(135deg,#2563eb,#38bdf8);
     color:white;
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
-    font-weight:800;
-
+    font-weight:900;
     font-size:18px;
-
+    box-shadow:0 12px 22px rgba(37,99,235,.22);
 }
-
-
 
 .campanha-info{
-
     flex:1;
-
+    min-width:0;
 }
-
-
 
 .campanha-info strong{
-
     display:block;
-
-    color:#111827;
-
-    font-size:16px;
-
+    color:#0f172a;
+    font-size:15px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
-
-
 
 .campanha-info small{
-
-    color:#6b7280;
-
+    color:#64748b;
+    font-size:12px;
 }
-
-
-
-
-/* STATUS */
-
 
 .campanha-status{
-
-    display:inline-block;
-
-    margin-top:6px;
-
-    padding:5px 12px;
-
-    border-radius:20px;
-
+    display:inline-flex;
+    align-items:center;
+    margin-top:7px;
+    padding:5px 10px;
+    border-radius:999px;
     background:#dcfce7;
-
     color:#166534;
-
-    font-size:12px;
-
-    font-weight:700;
-
+    font-size:11px;
+    font-weight:900;
 }
-
-
-
-
-
-/* PREÇO */
-
 
 .campanha-preco{
-
+    display:flex;
+    align-items:center;
+    gap:6px;
     background:#eff6ff;
-
-    color:#2563eb;
-
-    padding:10px 15px;
-
+    color:#1d4ed8;
+    padding:10px 12px;
     border-radius:16px;
-
-    font-weight:800;
-
+    font-size:12px;
+    font-weight:900;
+    max-width:140px;
+    text-align:right;
 }
-
-
-
-
-/* RESULTADO */
-
 
 .campanha-resultado{
-
-    min-height:350px;
-
-    background:#0f172a;
-
-    color:#d1fae5;
-
-    font-family:monospace;
-
+    min-height:360px !important;
+    background:
+        linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,1)) !important;
+    color:#bbf7d0 !important;
+    border-color:#1e293b !important;
+    font-family:Consolas, Monaco, "Courier New", monospace;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.04);
 }
-
-
-
-
-/* ESTATISTICAS */
-
 
 .campanha-stats{
-
-    display:flex;
-
-    gap:15px;
-
-    flex-wrap:wrap;
-
-    margin-top:20px;
-
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:13px;
+    margin-top:18px;
 }
-
-
 
 .campanha-stat{
-
-    flex:1;
-
-    min-width:150px;
-
-    padding:18px;
-
+    padding:17px;
     background:#f8fafc;
-
-    border-radius:20px;
-
-    border:1px solid #e5e7eb;
-
+    border-radius:21px;
+    border:1px solid #e5eaf2;
+    position:relative;
+    overflow:hidden;
 }
 
-
+.campanha-stat::after{
+    content:"";
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    background:rgba(37,99,235,.08);
+    position:absolute;
+    right:-22px;
+    top:-22px;
+}
 
 .campanha-stat strong{
-
     display:block;
-
-    font-size:28px;
-
-    color:#2563eb;
-
+    font-size:29px;
+    line-height:1;
+    color:var(--sz-primary);
+    font-weight:950;
 }
-
-
 
 .campanha-stat span{
-
-    color:#6b7280;
-
+    display:block;
+    margin-top:7px;
+    color:#64748b;
+    font-size:12px;
+    font-weight:800;
 }
 
-
-
-
-
-/* MOBILE */
-
-
-@media(max-width:700px){
-
-
-.campanha-container{
-
-    padding:15px;
-
+.campanha-empty-note{
+    margin-top:12px;
+    padding:12px 14px;
+    border-radius:16px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    font-size:13px;
+    font-weight:700;
 }
 
-
-
-.campanha-header h2{
-
-    font-size:22px;
-
+@media(max-width:1100px){
+    .campanha-grid,
+    .campanha-main-grid{
+        grid-template-columns:1fr;
+    }
 }
 
+@media(max-width:720px){
+    .campanha-container{
+        padding:16px;
+    }
 
+    .campanha-hero{
+        padding:22px;
+        align-items:flex-start;
+    }
 
-.campanha-btn{
+    .campanha-hero,
+    .campanha-hero-info,
+    .campanha-list-top{
+        flex-direction:column;
+    }
 
-    width:100%;
+    .campanha-hero h2{
+        font-size:23px;
+    }
 
+    .campanha-hero-badge{
+        width:100%;
+        justify-content:center;
+    }
+
+    .campanha-card{
+        padding:18px;
+        border-radius:24px;
+    }
+
+    .campanha-filter-panel,
+    .campanha-stats{
+        grid-template-columns:1fr;
+    }
+
+    .campanha-actions,
+    .campanha-btn{
+        width:100%;
+    }
+
+    .campanha-preco{
+        display:none;
+    }
 }
-
-
-}
-
-
-
 </style>
-
-
 
 <div class="campanha-container">
 
-
-<div class="page-header">
-
-<div>
-
-<h2>
-
-<i class="bi bi-whatsapp text-success"></i>
-
-Gerador Inteligente de Leads
-
-</h2>
-
-
-<p>
-
-Crie listas segmentadas de clientes para campanhas no WhatsApp.
-
-</p>
-
-
-</div>
-
-
-</div>
-
-
-
-<!-- INSERÇÃO MANUAL -->
-
-<div class="smart-card">
-
-
-<div class="card-title">
-
-<i class="bi bi-pencil-square"></i>
-
-<h4>
-
-Adicionar contatos manualmente
-
-</h4>
-
-
-</div>
-
-
-
-<div class="grid">
-
-
-<div>
-
-<label>Nomes</label>
-
-<textarea
-
-id="nomes"
-
-class="form-control"
-
-placeholder="João Silva&#10;Maria Santos">
-
-</textarea>
-
-</div>
-
-
-
-<div>
-
-<label>Telefones</label>
-
-<textarea
-
-id="telefones"
-
-class="form-control"
-
-placeholder="5511999999999">
-
-</textarea>
-
-</div>
-
-
-</div>
-
-
-
-<div class="mt-4 d-flex gap-2 flex-wrap">
-
-
-<button
-
-class="btn btn-primary"
-
-id="gerarManual">
-
-<i class="bi bi-magic"></i>
-
-Gerar Lista
-
-</button>
-
-
-<button
-
-class="btn btn-success"
-
-id="copiar">
-
-<i class="bi bi-copy"></i>
-
-Copiar WhatsApp
-
-</button>
-
-
-
-<button
-
-class="btn btn-danger"
-
-id="limpar">
-
-<i class="bi bi-trash"></i>
-
-Limpar
-
-</button>
-
-
-</div>
-
-
-</div>
-
-<div class="grid">
-
-
-<!-- =========================
-     CLIENTES CADASTRADOS
-========================== -->
-
-
-<div class="smart-card">
-
-
-<div class="card-title">
-
-<i class="bi bi-people-fill"></i>
-
-<h4>
-Clientes cadastrados
-</h4>
-
-</div>
-
-
-
-
-<div class="filtros">
-
-
-<input
-
-id="filtro"
-
-class="form-control"
-
-placeholder="🔎 Valor ">
-
-
-
-
-
-
-
-<div class="mb-3 d-flex justify-content-between align-items-center">
-
-
-<button
-
-class="btn btn-primary btn-sm"
-
-id="selecionarTodos">
-
-<i class="bi bi-check-all"></i>
-
-Selecionar todos
-
-</button>
-
-
-
-<span class="text-muted">
-
-Clientes encontrados:
-<strong id="contadorClientes">
-
-{{ clientes|length }}
-
-</strong>
-
-</span>
-
-
-</div>
-
-
-
-
-
-<div class="lista-clientes" id="listaClientes">
-
-
-
-
-
-{% for cliente in clientes %}
-
-
-
-<label class="cliente-card">
-
-
-<input
-
-type="checkbox"
-
-class="cliente-check"
-
-
-
-data-nome="{{ cliente.nome }}"
-
-
-
-data-telefone="{{ cliente.telefone }}"
-
-
-
-data-preco="{{ cliente.faixa_preco or 0 }}"
-
-
-
-data-bairro="{{ cliente.bairro or '' }}"
-
-
-
-data-status="{{ cliente.status_funil or 'Novo Contato' }}"
-
->
-
-
-
-
-
-<div class="avatar">
-
-
-{{ cliente.nome[0]|upper }}
-
-</div>
-
-
-
-
-
-
-<div class="cliente-info">
-
-
-<strong>
-
-{{ cliente.nome }}
-
-</strong>
-
-
-
-<small>
-
-<i class="bi bi-phone"></i>
-
-{{ cliente.telefone }}
-
-</small>
-
-
-
-<br>
-
-
-
-<span class="status">
-
-{{ cliente.status_funil or "Novo Contato" }}
-
-</span>
-
-
-</div>
-
-
-
-
-
-
-<div class="preco-box">
-
-
-<i class="bi bi-cash-stack"></i>
-
-
-
-{{ cliente.faixa_preco or "Não informado" }}
-
-
-
-</div>
-
-
-
-
-</label>
-
-
-
-{% endfor %}
-
-
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-<!-- =========================
-        RESULTADO
-========================== -->
-
-
-<div class="smart-card">
-
-
-
-<div class="card-title">
-
-
-<i class="bi bi-file-earmark-text"></i>
-
-
-<h4>
-
-Base gerada
-
-</h4>
-
-
-</div>
-
-
-
-
-
-<textarea
-
-id="resultado"
-
-readonly
-
-class="form-control resultado-box"
-
-placeholder="Nome,telefone">
-
-</textarea>
-
-
-
-
-
-
-<div class="stats">
-
-
-
-<div class="stat">
-
-
-<strong id="totalManual">
-
-0
-
-</strong>
-
-
-<span>
-
-Contatos manuais
-
-</span>
-
-
-</div>
-
-
-
-
-<div class="stat">
-
-
-<strong id="totalSelecionados">
-
-0
-
-</strong>
-
-
-<span>
-
-Selecionados
-
-</span>
-
-
-</div>
-
-
-
-
-<div class="stat">
-
-
-<strong id="total">
-
-0
-
-</strong>
-
-
-<span>
-
-Total gerado
-
-</span>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-<div class="mt-4 d-flex gap-2 flex-wrap">
-
-
-<button
-
-class="btn btn-success"
-
-id="copiarResultado">
-
-<i class="bi bi-copy"></i>
-
-Copiar Resultado
-
-</button>
-
-
-
-<button
-
-class="btn btn-success"
-
-id="exportar">
-
-<i class="bi bi-download"></i>
-
-Exportar TXT
-
-</button>
-
-
-
-
-<button
-
-class="btn btn-primary"
-
-id="criarCampanha">
-
-<i class="bi bi-whatsapp"></i>
-
-Criar Campanha
-
-</button>
-
-
-
-</div>
-
-
-
-
-</div>
-
-
-
-
-</div>
-
-
-
+    <div class="campanha-hero">
+        <div class="campanha-hero-info">
+            <div class="campanha-hero-icon">
+                <i class="bi bi-whatsapp"></i>
+            </div>
+            <div>
+                <h2>Gerador Inteligente de Leads</h2>
+                <p>Crie listas segmentadas de clientes para campanhas no WhatsApp.</p>
+            </div>
+        </div>
+
+        <div class="campanha-hero-badge">
+            <i class="bi bi-stars"></i>
+            Base pronta para campanha
+        </div>
+    </div>
+
+    <!-- INSERÇÃO MANUAL -->
+    <div class="campanha-card">
+        <div class="campanha-card-title">
+            <div class="campanha-title-left">
+                <i class="bi bi-pencil-square"></i>
+                <div>
+                    <h4>Adicionar contatos manualmente</h4>
+                    <p>Cole os nomes e telefones na mesma ordem, um por linha.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="campanha-grid">
+            <div class="campanha-field">
+                <label for="nomes"><i class="bi bi-person-lines-fill"></i> Nomes</label>
+                <textarea
+                    id="nomes"
+                    class="campanha-input"
+                    placeholder="João Silva&#10;Maria Santos"></textarea>
+            </div>
+
+            <div class="campanha-field">
+                <label for="telefones"><i class="bi bi-phone"></i> Telefones</label>
+                <textarea
+                    id="telefones"
+                    class="campanha-input"
+                    placeholder="5511999999999&#10;11988887777"></textarea>
+            </div>
+        </div>
+
+        <div class="campanha-actions">
+            <button class="campanha-btn campanha-btn-primary" id="gerarManual">
+                <i class="bi bi-magic"></i>
+                Gerar Lista
+            </button>
+
+            <button class="campanha-btn campanha-btn-success" id="copiar">
+                <i class="bi bi-copy"></i>
+                Copiar WhatsApp
+            </button>
+
+            <button class="campanha-btn campanha-btn-danger" id="limpar">
+                <i class="bi bi-trash"></i>
+                Limpar
+            </button>
+        </div>
+    </div>
+
+    <div class="campanha-main-grid">
+
+        <!-- CLIENTES CADASTRADOS -->
+        <div class="campanha-card">
+            <div class="campanha-card-title">
+                <div class="campanha-title-left">
+                    <i class="bi bi-people-fill"></i>
+                    <div>
+                        <h4>Clientes cadastrados</h4>
+                        <p>Filtre, selecione e gere sua base automaticamente.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="campanha-filter-panel">
+                <div class="campanha-field campanha-search">
+                    <label for="filtro"><i class="bi bi-search"></i> Buscar cliente</label>
+                    <input
+                        id="filtro"
+                        class="campanha-input"
+                        placeholder="Buscar por nome, telefone, bairro, status ou valor">
+                </div>
+
+                <div class="campanha-field">
+                    <label for="valorMin"><i class="bi bi-arrow-down-circle"></i> Valor mínimo</label>
+                    <input
+                        id="valorMin"
+                        type="number"
+                        class="campanha-input"
+                        placeholder="Ex: 300000">
+                </div>
+
+                <div class="campanha-field">
+                    <label for="valorMax"><i class="bi bi-arrow-up-circle"></i> Valor máximo</label>
+                    <input
+                        id="valorMax"
+                        type="number"
+                        class="campanha-input"
+                        placeholder="Ex: 900000">
+                </div>
+            </div>
+
+            <div class="campanha-list-top">
+                <button class="campanha-btn campanha-btn-soft" id="selecionarTodos">
+                    <i class="bi bi-check-all"></i>
+                    Selecionar todos
+                </button>
+
+                <span class="campanha-counter">
+                    <i class="bi bi-collection"></i>
+                    Clientes encontrados:
+                    <strong id="contadorClientes">{{ clientes|length }}</strong>
+                </span>
+            </div>
+
+            <div class="campanha-lista-clientes" id="listaClientes">
+                {% for cliente in clientes %}
+                <label class="campanha-cliente cliente-card">
+                    <input
+                        type="checkbox"
+                        class="cliente-check"
+                        data-nome="{{ cliente.nome }}"
+                        data-telefone="{{ cliente.telefone }}"
+                        data-preco="{{ cliente.faixa_preco or 0 }}"
+                        data-bairro="{{ cliente.bairro or '' }}"
+                        data-status="{{ cliente.status_funil or 'Novo Contato' }}">
+
+                    <div class="campanha-avatar avatar">
+                        {{ cliente.nome[0]|upper }}
+                    </div>
+
+                    <div class="campanha-info cliente-info">
+                        <strong>{{ cliente.nome }}</strong>
+
+                        <small>
+                            <i class="bi bi-phone"></i>
+                            {{ cliente.telefone }}
+                            {% if cliente.bairro %}
+                                • {{ cliente.bairro }}
+                            {% endif %}
+                        </small>
+
+                        <br>
+
+                        <span class="campanha-status status">
+                            {{ cliente.status_funil or "Novo Contato" }}
+                        </span>
+                    </div>
+
+                    <div class="campanha-preco preco-box">
+                        <i class="bi bi-cash-stack"></i>
+                        {{ cliente.faixa_preco or "Não informado" }}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+
+            <div class="campanha-empty-note">
+                <i class="bi bi-info-circle"></i>
+                Dica: use o filtro de valor para montar campanhas mais segmentadas.
+            </div>
+        </div>
+
+        <!-- RESULTADO -->
+        <div class="campanha-card">
+            <div class="campanha-card-title">
+                <div class="campanha-title-left">
+                    <i class="bi bi-file-earmark-text"></i>
+                    <div>
+                        <h4>Base gerada</h4>
+                        <p>Formato final: Nome,telefone. Telefones duplicados são removidos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <textarea
+                id="resultado"
+                readonly
+                class="campanha-input campanha-resultado resultado-box"
+                placeholder="Nome,telefone"></textarea>
+
+            <div class="campanha-stats stats">
+                <div class="campanha-stat stat">
+                    <strong id="totalManual">0</strong>
+                    <span>Contatos manuais</span>
+                </div>
+
+                <div class="campanha-stat stat">
+                    <strong id="totalSelecionados">0</strong>
+                    <span>Selecionados</span>
+                </div>
+
+                <div class="campanha-stat stat">
+                    <strong id="total">0</strong>
+                    <span>Total gerado</span>
+                </div>
+            </div>
+
+            <div class="campanha-actions">
+                <button class="campanha-btn campanha-btn-success" id="copiarResultado">
+                    <i class="bi bi-copy"></i>
+                    Copiar Resultado
+                </button>
+
+                <button class="campanha-btn campanha-btn-success" id="exportar">
+                    <i class="bi bi-download"></i>
+                    Exportar TXT
+                </button>
+
+                <button class="campanha-btn campanha-btn-primary" id="criarCampanha">
+                    <i class="bi bi-whatsapp"></i>
+                    Criar Campanha
+                </button>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
-
-
 let contatosManuais = [];
-
 let contatosSelecionados = [];
-
-
-
-
 
 // =============================
 // LIMPAR TELEFONE
 // =============================
-
-
 function limparTelefone(numero){
-
-    let telefone = String(numero)
-        .replace(/\D/g,"");
-
+    let telefone = String(numero).replace(/\D/g,"");
 
     // se não tiver código do Brasil, adiciona 55
     if(
         telefone.length === 10 ||
         telefone.length === 11
     ){
-
         telefone = "55" + telefone;
-
     }
 
-
     return telefone;
-
 }
-
-
-
-
 
 // =============================
 // FORMATAR LINHA
 // =============================
-
-
 function montarLinha(nome,telefone){
-
     return `${nome},${limparTelefone(telefone)}`;
-
 }
-
-
-
-
-
 
 // =============================
 // GERAR MANUAL
 // =============================
-
-
 document
 .getElementById("gerarManual")
 .addEventListener("click",()=>{
 
+    let nomes =
+    document
+    .getElementById("nomes")
+    .value
+    .split("\n")
+    .map(x=>x.trim())
+    .filter(Boolean);
 
-let nomes = 
-document
-.getElementById("nomes")
-.value
-.split("\n")
-.map(x=>x.trim())
-.filter(Boolean);
+    let telefones =
+    document
+    .getElementById("telefones")
+    .value
+    .split("\n")
+    .map(x=>limparTelefone(x))
+    .filter(Boolean);
 
+    contatosManuais=[];
 
+    let total =
+    Math.min(
+        nomes.length,
+        telefones.length
+    );
 
-let telefones = 
-document
-.getElementById("telefones")
-.value
-.split("\n")
-.map(x=>limparTelefone(x))
-.filter(Boolean);
+    for(let i=0;i<total;i++){
+        contatosManuais.push({
+            nome:nomes[i],
+            telefone:telefones[i]
+        });
+    }
 
-
-
-contatosManuais=[];
-
-
-
-let total =
-Math.min(
-    nomes.length,
-    telefones.length
-);
-
-
-
-for(let i=0;i<total;i++){
-
-
-    contatosManuais.push({
-
-        nome:nome=nomes[i],
-
-        telefone:telefones[i]
-
-    });
-
-
-}
-
-
-
-atualizarResultado();
-
-
+    atualizarResultado();
 });
 
-
-
 function converterPreco(valor){
-
     if(!valor){
         return 0;
     }
-
 
     valor = String(valor)
         .replace("R$","")
         .replace(/\s/g,"")
         .trim();
 
-
-
     // formato brasileiro:
     // 700.000,00
     if(valor.includes(",")){
-
         valor = valor
         .replace(/\./g,"")
         .replace(",", ".");
-
     }
-
 
     // remove qualquer coisa que não seja número
     valor = valor.replace(/[^\d.]/g,"");
 
-
-
     return Number(valor) || 0;
-
 }
-
-
 
 // =============================
 // CLIENTES SELECIONADOS
 // =============================
-
-
 document
 .addEventListener("change",function(e){
 
+    if(
+        e.target.classList.contains("cliente-check")
+    ){
 
-if(
-e.target.classList.contains("cliente-check")
-){
+        contatosSelecionados=[];
 
+        document
+        .querySelectorAll(".cliente-check:checked")
+        .forEach(cliente=>{
 
+            contatosSelecionados.push({
+                nome: cliente.dataset.nome,
+                telefone: limparTelefone(cliente.dataset.telefone)
+            });
 
-contatosSelecionados=[];
+        });
 
-
-
-document
-.querySelectorAll(".cliente-check:checked")
-.forEach(cliente=>{
-
-
-contatosSelecionados.push({
-
-nome:
-cliente.dataset.nome,
-
-
-telefone:
-limparTelefone(
-cliente.dataset.telefone
-)
-
-
+        atualizarResultado();
+    }
 });
 
-
-});
-
-
-
-atualizarResultado();
-
-
-}
-
-
-
-});
-    // =============================
+// =============================
 // COPIAR RESULTADO FINAL
 // =============================
-
-
 document
 .getElementById("copiarResultado")
 .addEventListener("click",()=>{
 
+    let texto =
+    document
+    .getElementById("resultado")
+    .value;
 
-let texto =
-document
-.getElementById("resultado")
-.value;
+    if(!texto){
+        alert("Nenhum contato gerado");
+        return;
+    }
 
+    navigator
+    .clipboard
+    .writeText(texto);
 
-
-if(!texto){
-
-
-alert(
-"Nenhum contato gerado"
-);
-
-
-return;
-
-
-}
-
-
-
-navigator
-.clipboard
-.writeText(texto);
-
-
-
-alert(
-"Resultado copiado com sucesso!"
-);
-
-
-
+    alert("Resultado copiado com sucesso!");
 });
-
-
-
-
-
-
-
-
 
 // =============================
 // SELECIONAR TODOS
 // =============================
-
-
 document
 .getElementById("selecionarTodos")
 .addEventListener("click",()=>{
 
+    let checks =
+    document
+    .querySelectorAll(".cliente-check");
 
+    let todosMarcados =
+    [...checks]
+    .every(c=>c.checked);
 
-let checks =
-document
-.querySelectorAll(
-".cliente-check"
-);
+    checks.forEach(c=>{
+        if(c.closest(".cliente-card").style.display !== "none"){
+            c.checked=!todosMarcados;
+        }
+    });
 
+    contatosSelecionados=[];
 
+    document
+    .querySelectorAll(".cliente-check:checked")
+    .forEach(cliente=>{
 
-let todosMarcados =
-[...checks]
-.every(c=>c.checked);
+        contatosSelecionados.push({
+            nome:cliente.dataset.nome,
+            telefone: limparTelefone(cliente.dataset.telefone)
+        });
 
+    });
 
-
-checks.forEach(c=>{
-
-
-c.checked=!todosMarcados;
-
-
+    atualizarResultado();
 });
-
-
-
-contatosSelecionados=[];
-
-
-
-document
-.querySelectorAll(".cliente-check:checked")
-.forEach(cliente=>{
-
-
-contatosSelecionados.push({
-
-nome:cliente.dataset.nome,
-
-telefone:
-limparTelefone(
-cliente.dataset.telefone
-)
-
-});
-
-
-});
-
-
-
-atualizarResultado();
-
-
-});
-
-
-
-
-
-
-
-
 
 // =============================
 // FILTROS
 // =============================
-
-
 function aplicarFiltros(){
 
+    let busca =
+    document
+    .getElementById("filtro")
+    .value
+    .toLowerCase();
 
-let busca =
-document
-.getElementById("filtro")
-.value
-.toLowerCase();
+    let minimo =
+    Number(
+        document
+        .getElementById("valorMin")
+        .value
+    );
 
+    let maximo =
+    Number(
+        document
+        .getElementById("valorMax")
+        .value
+    );
 
+    let contador=0;
 
-let minimo =
-Number(
-document
-.getElementById("valorMin")
-.value
-);
+    document
+    .querySelectorAll(".cliente-card")
+    .forEach(card=>{
 
+        let texto =
+        card
+        .innerText
+        .toLowerCase();
 
+        let preco =
+        converterPreco(
+            card
+            .querySelector(".cliente-check")
+            .dataset.preco
+        );
 
-let maximo =
-Number(
-document
-.getElementById("valorMax")
-.value
-);
+        let aparece =
+        texto.includes(busca);
 
+        let dentroMin =
+        !minimo ||
+        preco >= minimo;
 
+        let dentroMax =
+        !maximo ||
+        preco <= maximo;
 
-let contador=0;
+        if(
+            aparece &&
+            dentroMin &&
+            dentroMax
+        ){
+            card.style.display="flex";
+            contador++;
+        }else{
+            card.style.display="none";
+        }
 
+    });
 
-
-
-document
-.querySelectorAll(".cliente-card")
-.forEach(card=>{
-
-
-let texto =
-card.innerText
-.toLowerCase();
-
-
-
-let preco =
-converterPreco(
-card
-.querySelector(".cliente-check")
-.dataset.preco
-);
-
-
-let aparece =
-texto.includes(busca);
-
-
-
-let dentroMin =
-!minimo ||
-preco >= minimo;
-
-
-
-let dentroMax =
-!maximo ||
-preco <= maximo;
-
-
-
-if(
-aparece &&
-dentroMin &&
-dentroMax
-){
-
-
-card.style.display="flex";
-
-contador++;
-
-
-}else{
-
-
-card.style.display="none";
-
-
+    document
+    .getElementById("contadorClientes")
+    .innerText =
+    contador;
 }
-
-
-});
-
-
-
-document
-.getElementById("contadorClientes")
-.innerText =
-contador;
-
-
-
-}
-
-
-
-
-
 
 document
 .getElementById("filtro")
 .addEventListener(
-"input",
-aplicarFiltros
+    "input",
+    aplicarFiltros
 );
-
-
 
 document
 .getElementById("valorMin")
 .addEventListener(
-"input",
-aplicarFiltros
+    "input",
+    aplicarFiltros
 );
-
-
 
 document
 .getElementById("valorMax")
 .addEventListener(
-"input",
-aplicarFiltros
+    "input",
+    aplicarFiltros
 );
-
-
-
-
-
-
-
-
 
 // =============================
 // RESULTADO
 // =============================
-
-
 function atualizarResultado(){
 
+    let todos=[
+        ...contatosManuais,
+        ...contatosSelecionados
+    ];
 
+    let usados=new Set();
+    let lista=[];
 
-let todos=[
+    todos.forEach(contato=>{
 
-...contatosManuais,
+        let telefone =
+        limparTelefone(
+            contato.telefone
+        );
 
-...contatosSelecionados
+        if(
+            telefone &&
+            !usados.has(telefone)
+        ){
+            usados.add(telefone);
 
-];
+            lista.push({
+                nome:contato.nome,
+                telefone
+            });
+        }
 
+    });
 
+    document
+    .getElementById("resultado")
+    .value =
+    lista
+    .map(c=>
+        montarLinha(
+            c.nome,
+            c.telefone
+        )
+    )
+    .join("\n");
 
-let usados=new Set();
+    document
+    .getElementById("totalManual")
+    .innerText =
+    contatosManuais.length;
 
-let lista=[];
+    document
+    .getElementById("totalSelecionados")
+    .innerText =
+    contatosSelecionados.length;
 
-
-
-todos.forEach(contato=>{
-
-
-let telefone =
-limparTelefone(
-contato.telefone
-);
-
-
-
-if(
-telefone &&
-!usados.has(telefone)
-){
-
-
-usados.add(telefone);
-
-
-
-lista.push({
-
-nome:contato.nome,
-
-telefone
-
-});
-
-
+    document
+    .getElementById("total")
+    .innerText =
+    lista.length;
 }
-
-
-
-});
-
-
-
-
-
-
-document
-.getElementById("resultado")
-.value =
-
-lista
-.map(c=>
-
-montarLinha(
-c.nome,
-c.telefone
-)
-
-)
-.join("\n");
-
-
-
-
-
-
-document
-.getElementById("totalManual")
-.innerText =
-contatosManuais.length;
-
-
-
-
-document
-.getElementById("totalSelecionados")
-.innerText =
-contatosSelecionados.length;
-
-
-
-
-document
-.getElementById("total")
-.innerText =
-lista.length;
-
-
-
-}
-
-
-
-
-
-
-
-
 
 // =============================
 // COPIAR
 // =============================
-
-
 document
 .getElementById("copiar")
 .addEventListener("click",()=>{
 
+    let texto =
+    document
+    .getElementById("resultado")
+    .value;
 
-let texto =
-document
-.getElementById("resultado")
-.value;
+    if(!texto){
+        alert("Nenhum contato gerado");
+        return;
+    }
 
+    navigator
+    .clipboard
+    .writeText(texto);
 
-
-if(!texto){
-
-
-alert(
-"Nenhum contato gerado"
-);
-
-
-return;
-
-
-}
-
-
-
-navigator
-.clipboard
-.writeText(texto);
-
-
-
-alert(
-"Lista copiada!"
-);
-
-
-
+    alert("Lista copiada!");
 });
 
+// =============================
+// LIMPAR
+// =============================
+document
+.getElementById("limpar")
+.addEventListener("click",()=>{
 
+    document
+    .getElementById("nomes")
+    .value = "";
 
+    document
+    .getElementById("telefones")
+    .value = "";
 
+    document
+    .querySelectorAll(".cliente-check")
+    .forEach(c=>c.checked=false);
 
+    contatosManuais = [];
+    contatosSelecionados = [];
 
-
-
+    atualizarResultado();
+});
 
 // =============================
 // EXPORTAR TXT
 // =============================
-
-
 document
 .getElementById("exportar")
 .addEventListener("click",()=>{
 
+    let texto =
+    document
+    .getElementById("resultado")
+    .value;
 
-let texto =
-document
-.getElementById("resultado")
-.value;
+    if(!texto){
+        alert("Nenhuma lista para exportar");
+        return;
+    }
 
+    let arquivo =
+    new Blob(
+        [texto],
+        {
+            type:"text/plain"
+        }
+    );
 
+    let link =
+    document.createElement("a");
 
-if(!texto){
+    link.href =
+    URL.createObjectURL(
+        arquivo
+    );
 
-alert(
-"Nenhuma lista para exportar"
-);
+    link.download =
+    "lista_clientes.txt";
 
-return;
-
-}
-
-
-
-let arquivo =
-new Blob(
-[texto],
-{
-type:"text/plain"
-}
-);
-
-
-
-let link =
-document.createElement("a");
-
-
-
-link.href =
-URL.createObjectURL(
-arquivo
-);
-
-
-
-link.download =
-"lista_clientes.txt";
-
-
-
-link.click();
-
-
-
+    link.click();
 });
-
-
-
-
-
-
-
-
 
 // =============================
 // CRIAR CAMPANHA
 // =============================
-
-
 document
 .getElementById("criarCampanha")
 .addEventListener("click",()=>{
 
+    let total =
+    document
+    .getElementById("total")
+    .innerText;
 
-let total =
-document
-.getElementById("total")
-.innerText;
+    if(total=="0"){
+        alert("Selecione clientes primeiro");
+        return;
+    }
 
+    alert("Base pronta para campanha WhatsApp!");
 
-
-if(total=="0"){
-
-
-alert(
-"Selecione clientes primeiro"
-);
-
-
-return;
-
-
-}
-
-
-
-
-alert(
-"Base pronta para campanha WhatsApp!"
-);
-
-
-
-// Aqui depois podemos ligar:
-// window.location.href="/campanhas";
-
-
+    // Aqui depois podemos ligar:
+    // window.location.href="/campanhas";
 });
 
-
-
-
-
+aplicarFiltros();
 </script>
 
-
 {% endblock %}
-
-
