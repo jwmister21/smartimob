@@ -2,600 +2,262 @@
 {% block content %}
 
 <style>
-
 :root{
-
     --primary:#2563eb;
     --primary-hover:#1d4ed8;
-
     --success:#16a34a;
-    --warning:#f59e0b;
     --danger:#ef4444;
-
     --bg:#f4f7fb;
     --card:#ffffff;
-
     --title:#111827;
     --text:#374151;
     --muted:#6b7280;
-
     --border:#e5e7eb;
-
     --radius:22px;
-
 }
 
 body{
-
     background:var(--bg);
-
 }
 
 .campanha{
-
-    max-width:1700px;
+    max-width:1200px;
     margin:auto;
     padding:30px;
-
 }
 
 .card-smart{
-
     background:white;
-
     border-radius:22px;
-
     padding:25px;
-
     border:1px solid var(--border);
-
     box-shadow:0 10px 35px rgba(0,0,0,.05);
-
     margin-bottom:25px;
-
     transition:.3s;
-
 }
 
 .card-smart:hover{
-
     transform:translateY(-3px);
-
     box-shadow:0 18px 45px rgba(0,0,0,.08);
-
 }
 
 .card-title{
-
     display:flex;
-
     align-items:center;
-
     gap:10px;
-
     margin-bottom:20px;
-
 }
 
 .card-title i{
-
     color:var(--primary);
-
     font-size:22px;
-
 }
 
 .card-title h4{
-
     margin:0;
-
     font-weight:700;
-
 }
 
-.form-control,
-.form-select{
-
+.form-control{
     border-radius:15px;
-
     min-height:50px;
-
 }
 
 textarea.form-control{
-
-    min-height:260px;
-
+    min-height:300px;
     resize:vertical;
-
 }
 
 .btn{
-
     border-radius:14px;
-
 }
 
 .grid2{
-
     display:grid;
-
     grid-template-columns:1fr 1fr;
-
     gap:20px;
-
 }
 
 @media(max-width:900px){
-
-.grid2{
-
-grid-template-columns:1fr;
-
+    .grid2{
+        grid-template-columns:1fr;
+    }
 }
 
-}
-    .status-ok{
-
-    color:#16a34a;
-
-    font-weight:bold;
-
+.resultado-box{
+    min-height:260px !important;
 }
 
-.status-erro{
-
-    color:#ef4444;
-
-    font-weight:bold;
-
-}
-
-#tabelaClientes td{
-
-    vertical-align:middle;
-
-}
-
-#tabelaClientes input{
-
-    border-radius:12px;
-
-}
-
-.table tbody tr:hover{
-
+.info-box{
     background:#f8fbff;
-
+    border:1px dashed var(--border);
+    border-radius:18px;
+    padding:15px;
+    color:var(--muted);
 }
 </style>
 
 <div class="campanha">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="mb-4">
+        <h2>
+            <i class="bi bi-database-fill-add text-primary"></i>
+            Gerador de Lista Nome e Telefone
+        </h2>
+        <p class="text-muted">
+            Cole os nomes em uma coluna, os telefones em outra, e gere a lista pronta no formato:
+            <strong>nome,telefone</strong>
+        </p>
+    </div>
 
-<div>
-
-<h2>
-
-<i class="bi bi-megaphone-fill text-primary"></i>
-
-Campanhas WhatsApp
-
-</h2>
-
-<p class="text-muted">
-
-Crie campanhas, importe contatos e gere mensagens inteligentes.
-
-</p>
-
-</div>
-
-</div>
     <div class="card-smart">
 
-<div class="card-title">
-
-<i class="bi bi-sliders"></i>
-
-<h4>Dados da Campanha</h4>
-
-</div>
-
-<div class="row">
-
-<div class="col-md-6">
-
-<label>Nome da Campanha</label>
-
-<input
-id="nomeCampanha"
-class="form-control"
-placeholder="Ex.: Casas Alto Padrão">
-
-</div>
-
-<div class="col-md-3">
-
-<label>Tipo</label>
-
-<select class="form-select">
-
-<option>Marketing</option>
-
-<option>Captação</option>
-
-<option>Promoção</option>
-
-</select>
-
-</div>
-
-<div class="col-md-3">
-
-<label>Imóvel</label>
-
-<select
-id="imovelSelect"
-class="form-select">
-
-<option>Selecione...</option>
-
-</select>
-
-</div>
-
-</div>
-
-</div>
-    <div class="card-smart">
-
-<div class="card-title">
-
-<i class="bi bi-database-fill-add"></i>
-
-<h4>Importação em Massa</h4>
-
-</div>
-
-<p class="text-muted">
-
-Cole um nome por linha e um telefone por linha.
-O sistema irá juntar automaticamente.
-
-</p>
-
-<div class="grid2">
-
-<div>
-
-<label>Nomes</label>
-
-<textarea
-id="listaNomes"
-class="form-control"
-placeholder="João
-
-Maria
-
-Carlos"></textarea>
-
-</div>
-
-<div>
-
-<label>Telefones</label>
-
-<textarea
-id="listaTelefones"
-class="form-control"
-placeholder="5511999999999
-
-5511988888888
-
-5511977777777"></textarea>
-
-</div>
-
-</div>
-
-<div class="mt-4 d-flex gap-2 flex-wrap">
-
-<button
-class="btn btn-primary"
-id="btnGerarLista">
-
-<i class="bi bi-magic"></i>
-
-Gerar Lista
-
-</button>
-
-<button
-class="btn btn-success"
-id="btnCopiarResultado">
-
-<i class="bi bi-copy"></i>
-
-Copiar Resultado
-
-</button>
-
-<button
-class="btn btn-outline-danger"
-id="btnLimparImportacao">
-
-<i class="bi bi-trash"></i>
-
-Limpar
-
-</button>
-
-</div>
-
-<div class="mt-4">
-
-<label>Resultado</label>
-
-<textarea
-
-id="resultado"
-
-readonly
-
-class="form-control"
-
-placeholder="João,5511999999999"></textarea>
-
-</div>
-
-</div>
-    
-<div class="card-smart">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <div>
-
-            <h4 class="mb-1">
-
-                <i class="bi bi-people-fill text-primary"></i>
-
-                Clientes da Campanha
-
-            </h4>
-
-            <small class="text-muted">
-
-                Os clientes gerados aparecerão aqui automaticamente.
-
-            </small>
+        <div class="card-title">
+            <i class="bi bi-sliders"></i>
+            <h4>Importação em Massa</h4>
+        </div>
+
+        <div class="info-box mb-4">
+            Exemplo: a linha 1 dos nomes será juntada com a linha 1 dos telefones.
+            O resultado ficará assim: <strong>João,5511999999999</strong>
+        </div>
+
+        <div class="grid2">
+
+            <div>
+                <label class="mb-2">Nomes</label>
+                <textarea
+                    id="listaNomes"
+                    class="form-control"
+                    placeholder="João Silva&#10;Maria Santos&#10;Carlos Oliveira"></textarea>
+            </div>
+
+            <div>
+                <label class="mb-2">Telefones</label>
+                <textarea
+                    id="listaTelefones"
+                    class="form-control"
+                    placeholder="5511999999999&#10;5511988888888&#10;5511977777777"></textarea>
+            </div>
 
         </div>
 
-        <div>
+        <div class="mt-4 d-flex gap-2 flex-wrap">
 
-            <button class="btn btn-success" id="btnAdicionarLinha">
+            <button class="btn btn-primary" id="btnGerarLista">
+                <i class="bi bi-magic"></i>
+                Gerar Lista
+            </button>
 
-                <i class="bi bi-plus-circle"></i>
+            <button class="btn btn-success" id="btnCopiarResultado">
+                <i class="bi bi-copy"></i>
+                Copiar Resultado
+            </button>
 
-                Adicionar Manualmente
-
+            <button class="btn btn-outline-danger" id="btnLimpar">
+                <i class="bi bi-trash"></i>
+                Limpar
             </button>
 
         </div>
 
     </div>
 
-    <div class="table-responsive">
+    <div class="card-smart">
 
-        <table class="table align-middle table-hover" id="tabelaClientes">
+        <div class="card-title">
+            <i class="bi bi-check2-circle"></i>
+            <h4>Resultado Pronto</h4>
+        </div>
 
-            <thead class="table-light">
+        <textarea
+            id="resultado"
+            readonly
+            class="form-control resultado-box"
+            placeholder="Aqui vai aparecer a lista pronta:&#10;João Silva,5511999999999&#10;Maria Santos,5511988888888"></textarea>
 
-                <tr>
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <strong>Total gerado:</strong>
+                <span id="totalGerado">0</span>
+            </div>
 
-                    <th width="40%">Nome</th>
+            <div class="col-md-4">
+                <strong>Nomes:</strong>
+                <span id="totalNomes">0</span>
+            </div>
 
-                    <th width="30%">Telefone</th>
-
-                    <th width="15%">Status</th>
-
-                    <th width="15%">Ação</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-            </tbody>
-
-        </table>
+            <div class="col-md-4">
+                <strong>Telefones:</strong>
+                <span id="totalTelefones">0</span>
+            </div>
+        </div>
 
     </div>
 
 </div>
+
 <script>
-    function adicionarLinha(nome="",telefone=""){
-
-    let tbody=document.querySelector("#tabelaClientes tbody");
-
-    tbody.insertAdjacentHTML("beforeend",`
-
-<tr>
-
-<td>
-
-<input
-class="form-control nome"
-value="${nome}">
-
-</td>
-
-<td>
-
-<input
-class="form-control telefone"
-value="${telefone}">
-
-</td>
-
-<td class="status text-center">
-
--
-
-</td>
-
-<td class="text-center">
-
-<button class="btn btn-danger btn-sm remover">
-
-<i class="bi bi-trash"></i>
-
-</button>
-
-</td>
-
-</tr>
-
-`);
-
+function limparTelefone(telefone){
+    return telefone.replace(/\D/g, "");
 }
-    document.getElementById("btnGerarLista").onclick=function(){
 
-    let nomes=document.getElementById("listaNomes")
-    .value
-    .split("\n")
-    .map(x=>x.trim())
-    .filter(x=>x!="");
+function obterLinhas(id){
+    return document
+        .getElementById(id)
+        .value
+        .split("\n")
+        .map(item => item.trim())
+        .filter(item => item !== "");
+}
 
-    let telefones=document.getElementById("listaTelefones")
-    .value
-    .split("\n")
-    .map(x=>x.replace(/\D/g,""))
-    .filter(x=>x!="");
+function gerarLista(){
+    const nomes = obterLinhas("listaNomes");
 
-    let total=Math.min(nomes.length,telefones.length);
+    const telefones = obterLinhas("listaTelefones")
+        .map(tel => limparTelefone(tel))
+        .filter(tel => tel !== "");
 
-    document.querySelector("#tabelaClientes tbody").innerHTML="";
+    const total = Math.min(nomes.length, telefones.length);
 
-    let resultado=[];
+    let resultado = [];
 
-    for(let i=0;i<total;i++){
-
-        adicionarLinha(
-
-            nomes[i],
-
-            telefones[i]
-
-        );
-
-        resultado.push(
-
-            nomes[i]+","+telefones[i]
-
-        );
-
+    for(let i = 0; i < total; i++){
+        resultado.push(`${nomes[i]},${telefones[i]}`);
     }
 
-    document.getElementById("resultado").value=resultado.join("\n");
+    document.getElementById("resultado").value = resultado.join("\n");
 
-    atualizarTabela();
-
+    document.getElementById("totalGerado").innerText = total;
+    document.getElementById("totalNomes").innerText = nomes.length;
+    document.getElementById("totalTelefones").innerText = telefones.length;
 }
-    document.getElementById("btnAdicionarLinha").onclick=function(){
 
-    adicionarLinha();
+function copiarResultado(){
+    const resultado = document.getElementById("resultado").value;
 
-}
-    document.addEventListener("click",function(e){
-
-    if(e.target.closest(".remover")){
-
-        e.target.closest("tr").remove();
-
-        atualizarTabela();
-
+    if(resultado.trim() === ""){
+        alert("Gere uma lista antes de copiar.");
+        return;
     }
 
-});
-    function atualizarTabela(){
-
-    let total=0;
-
-    let validos=0;
-
-    let invalidos=0;
-
-    let resultado=[];
-
-    document.querySelectorAll("#tabelaClientes tbody tr").forEach(function(linha){
-
-        let nome=linha.querySelector(".nome").value.trim();
-
-        let telefone=linha.querySelector(".telefone").value.replace(/\D/g,'');
-
-        let status=linha.querySelector(".status");
-
-        if(nome=="" && telefone=="")
-            return;
-
-        total++;
-
-        if(telefone.length>=10){
-
-            validos++;
-
-            status.innerHTML="<span class='status-ok'>✔ Válido</span>";
-
-        }else{
-
-            invalidos++;
-
-            status.innerHTML="<span class='status-erro'>✖ Inválido</span>";
-
-        }
-
-        resultado.push(nome+","+telefone);
-
-    });
-
-    document.getElementById("resultado").value=resultado.join("\n");
-
-    document.getElementById("totalClientes").innerHTML=total;
-
-    document.getElementById("totalValidos").innerHTML=validos;
-
-    document.getElementById("totalInvalidos").innerHTML=invalidos;
-
+    navigator.clipboard.writeText(resultado);
+    alert("Lista copiada com sucesso!");
 }
-    document.addEventListener("input",function(e){
 
-    if(
+function limparTudo(){
+    document.getElementById("listaNomes").value = "";
+    document.getElementById("listaTelefones").value = "";
+    document.getElementById("resultado").value = "";
 
-        e.target.classList.contains("nome") ||
-
-        e.target.classList.contains("telefone")
-
-    ){
-
-        atualizarTabela();
-
-    }
-
-});
-    document.getElementById("btnCopiarResultado").onclick=function(){
-
-    navigator.clipboard.writeText(
-
-        document.getElementById("resultado").value
-
-    );
-
-    mostrarToast("Lista copiada com sucesso!");
-
+    document.getElementById("totalGerado").innerText = "0";
+    document.getElementById("totalNomes").innerText = "0";
+    document.getElementById("totalTelefones").innerText = "0";
 }
+
+document.getElementById("btnGerarLista").addEventListener("click", gerarLista);
+document.getElementById("btnCopiarResultado").addEventListener("click", copiarResultado);
+document.getElementById("btnLimpar").addEventListener("click", limparTudo);
 </script>
+
+{% endblock %}
