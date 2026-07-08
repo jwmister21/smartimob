@@ -116,7 +116,7 @@ style="flex:1; padding:12px; border:1px solid #e2e8f0; border-radius:10px; outli
             <div>🚗 {{ imovel.vaga_garagem }} Vagas</div>
             <div>📐 {{ imovel.area }} m²</div>
         </div>
-            <!-- REFERÊNCIAS DO IMÓVEL -->
+           <!-- REFERÊNCIAS DO IMÓVEL -->
 
 {% if imovel.referencias %}
 
@@ -127,57 +127,76 @@ style="flex:1; padding:12px; border:1px solid #e2e8f0; border-radius:10px; outli
     padding:12px;
 ">
 
-    <div style="
-        font-weight:700;
-        color:#1e293b;
-        margin-bottom:10px;
-    ">
-        📍 Pontos próximos
-    </div>
+<div style="
+    font-weight:700;
+    color:#1e293b;
+    margin-bottom:10px;
+">
+📍 Pontos próximos
+</div>
 
 
-    {% for ref in imovel.referencias %}
+{% for r in imovel.referencias %}
 
-    <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        font-size:13px;
-        color:#475569;
-        margin-bottom:8px;
-    ">
+<div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    color:#475569;
+    margin-bottom:8px;
+">
 
-        <span>
-            {% if ref.categoria == "Mercado" %}
-                🛒
-            {% elif ref.categoria == "Farmácia" %}
-                💊
-            {% elif ref.categoria == "Hospital" %}
-                🏥
-            {% elif ref.categoria == "Escola" %}
-                🏫
-            {% elif ref.categoria == "Posto de combustível" %}
-                ⛽
-            {% elif ref.categoria == "Praia" %}
-                🏖️
-            {% else %}
-                📍
-            {% endif %}
+<span>
 
-            {{ ref.nome }}
-        </span>
+{% if r.categoria == "Mercado" %}
+🛒
 
+{% elif r.categoria == "Farmácia" %}
+💊
 
-       {% if r.distancia >= 1000 %}
-    {{ "%.1f"|format(r.distancia / 1000) }} km
+{% elif r.categoria == "Hospital" %}
+🏥
+
+{% elif r.categoria == "Escola" %}
+🏫
+
+{% elif r.categoria == "Posto de combustível" %}
+⛽
+
+{% elif r.categoria == "Praia" %}
+🏖️
+
 {% else %}
-    {{ r.distancia }} metros
+📍
+
 {% endif %}
 
-    </div>
+{{ r.nome }}
+
+</span>
 
 
-    {% endfor %}
+<strong>
+
+{% if r.distancia >= 1000 %}
+
+{{ "%.1f"|format(r.distancia / 1000) }} km
+
+{% else %}
+
+{{ r.distancia }} metros
+
+{% endif %}
+
+</strong>
+
+
+</div>
+
+
+{% endfor %}
+
 
 </div>
 
