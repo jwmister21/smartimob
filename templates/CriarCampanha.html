@@ -3,42 +3,15 @@
 
 <style>
 
-:root{
+/* =====================================================
+   SMARTZEN GERADOR DE LEADS
+   CSS ISOLADO
+===================================================== */
 
-    --primary:#2563eb;
-    --primary-dark:#1d4ed8;
-
-    --success:#16a34a;
-    --danger:#dc2626;
-
-    --bg:#f4f7fb;
-    --card:#ffffff;
-
-    --title:#111827;
-    --text:#374151;
-    --muted:#6b7280;
-
-    --border:#e5e7eb;
-
-    --shadow:
-    0 15px 40px rgba(0,0,0,.06);
-
-}
-
-
-/* FUNDO */
-
-body{
-
-    background:var(--bg);
-
-}
-
-
-
-/* CONTAINER */
 
 .campanha-container{
+
+    width:100%;
 
     max-width:1500px;
 
@@ -46,14 +19,17 @@ body{
 
     padding:30px;
 
+    background:#f4f7fb;
+
+    min-height:100vh;
+
 }
 
 
 
 /* HEADER */
 
-
-.page-header{
+.campanha-header{
 
     display:flex;
 
@@ -61,46 +37,56 @@ body{
 
     align-items:center;
 
-    margin-bottom:30px;
-
     flex-wrap:wrap;
+
+    gap:20px;
+
+    margin-bottom:30px;
 
 }
 
 
 
-.page-header h2{
+.campanha-header h2{
+
+    margin:0;
+
+    font-size:28px;
 
     font-weight:800;
 
-    color:var(--title);
+    color:#111827;
 
 }
 
 
 
-.page-header p{
+.campanha-header p{
 
-    color:var(--muted);
+    margin-top:8px;
+
+    color:#6b7280;
 
 }
+
 
 
 
 /* CARDS */
 
 
-.smart-card{
+.campanha-card{
 
-    background:white;
+    background:#ffffff;
 
     border-radius:26px;
 
     padding:25px;
 
-    border:1px solid var(--border);
+    border:1px solid #e5e7eb;
 
-    box-shadow:var(--shadow);
+    box-shadow:
+    0 15px 40px rgba(0,0,0,.06);
 
     margin-bottom:25px;
 
@@ -108,7 +94,11 @@ body{
 
 
 
-.card-title{
+
+/* TITULO CARD */
+
+
+.campanha-card-title{
 
     display:flex;
 
@@ -122,11 +112,17 @@ body{
 
 
 
-.card-title i{
+.campanha-card-title i{
 
     width:45px;
 
     height:45px;
+
+    border-radius:14px;
+
+    background:#eff6ff;
+
+    color:#2563eb;
 
     display:flex;
 
@@ -134,34 +130,29 @@ body{
 
     justify-content:center;
 
-    border-radius:14px;
-
-    background:#eff6ff;
-
-    color:var(--primary);
-
     font-size:22px;
 
 }
 
 
 
-.card-title h4{
+.campanha-card-title h4{
 
     margin:0;
 
     font-weight:800;
 
-    color:var(--title);
+    color:#111827;
 
 }
+
 
 
 
 /* GRID */
 
 
-.grid{
+.campanha-grid{
 
     display:grid;
 
@@ -175,22 +166,27 @@ body{
 
 @media(max-width:1000px){
 
-.grid{
+    .campanha-grid{
 
-    grid-template-columns:1fr;
+        grid-template-columns:1fr;
+
+    }
 
 }
 
-}
 
 
 
-/* INPUT */
+/* INPUTS */
 
 
-.form-control{
+.campanha-input{
+
+    width:100%;
 
     height:52px;
+
+    padding:14px 18px;
 
     border-radius:16px;
 
@@ -198,13 +194,15 @@ body{
 
     background:#fbfdff;
 
-    padding:14px 18px;
+    color:#111827;
+
+    outline:none;
 
 }
 
 
 
-textarea.form-control{
+textarea.campanha-input{
 
     height:220px;
 
@@ -214,21 +212,25 @@ textarea.form-control{
 
 
 
-.form-control:focus{
+.campanha-input:focus{
 
-    border-color:var(--primary);
+    border-color:#2563eb;
 
     box-shadow:
+
     0 0 0 4px rgba(37,99,235,.12);
 
 }
 
 
 
+
 /* BOTÕES */
 
 
-.btn{
+.campanha-btn{
+
+    border:none;
 
     border-radius:16px;
 
@@ -236,47 +238,71 @@ textarea.form-control{
 
     font-weight:700;
 
-}
+    cursor:pointer;
 
-
-
-.btn-primary{
-
-    background:var(--primary);
-
-    border:none;
+    transition:.2s;
 
 }
 
 
 
-.btn-primary:hover{
+.campanha-btn:hover{
 
-    background:var(--primary-dark);
-
-}
-
-
-
-.btn-success{
-
-    background:var(--success);
-
-    border:none;
+    transform:translateY(-2px);
 
 }
 
 
 
-/* FILTROS */
+.campanha-btn-primary{
+
+    background:#2563eb;
+
+    color:white;
+
+}
 
 
-.filtros{
+
+.campanha-btn-success{
+
+    background:#16a34a;
+
+    color:white;
+
+}
+
+
+
+.campanha-btn-danger{
+
+    background:#dc2626;
+
+    color:white;
+
+}
+
+
+
+.campanha-btn-warning{
+
+    background:#f59e0b;
+
+    color:white;
+
+}
+
+
+
+
+/* FILTRO */
+
+
+.campanha-filtros{
 
     display:grid;
 
-    grid-template-columns:
-    1fr 180px 180px;
+    grid-template-columns:1fr;
 
     gap:12px;
 
@@ -286,22 +312,11 @@ textarea.form-control{
 
 
 
-@media(max-width:800px){
-
-.filtros{
-
-    grid-template-columns:1fr;
-
-}
-
-}
-
-
 
 /* LISTA */
 
 
-.lista-clientes{
+.campanha-lista-clientes{
 
     max-height:550px;
 
@@ -317,10 +332,11 @@ textarea.form-control{
 
 
 
-/* CLIENTE CARD */
+
+/* CLIENTE */
 
 
-.cliente-card{
+.campanha-cliente{
 
     display:flex;
 
@@ -334,47 +350,47 @@ textarea.form-control{
 
     border-radius:20px;
 
-    border:1px solid var(--border);
+    border:1px solid #e5e7eb;
 
     margin-bottom:12px;
 
-    transition:.2s;
-
     cursor:pointer;
+
+    transition:.2s;
 
 }
 
 
 
-.cliente-card:hover{
+.campanha-cliente:hover{
 
-    transform:translateY(-2px);
-
-    border-color:var(--primary);
+    border-color:#2563eb;
 
     box-shadow:
+
     0 8px 25px rgba(37,99,235,.10);
 
 }
 
 
 
-.cliente-card input{
+.campanha-cliente input{
 
     width:22px;
 
     height:22px;
 
-    accent-color:var(--primary);
+    accent-color:#2563eb;
 
 }
+
 
 
 
 /* AVATAR */
 
 
-.avatar{
+.campanha-avatar{
 
     width:50px;
 
@@ -383,10 +399,11 @@ textarea.form-control{
     border-radius:50%;
 
     background:
+
     linear-gradient(
-    135deg,
-    #2563eb,
-    #60a5fa
+        135deg,
+        #2563eb,
+        #60a5fa
     );
 
     color:white;
@@ -405,8 +422,7 @@ textarea.form-control{
 
 
 
-
-.cliente-info{
+.campanha-info{
 
     flex:1;
 
@@ -414,65 +430,37 @@ textarea.form-control{
 
 
 
-.cliente-info strong{
+.campanha-info strong{
 
     display:block;
 
+    color:#111827;
+
     font-size:16px;
 
-    color:var(--title);
-
 }
 
 
 
-.cliente-info small{
+.campanha-info small{
 
-    color:var(--muted);
-
-}
-
-
-
-/* PREÇO */
-
-
-.preco-box{
-
-    background:#eff6ff;
-
-    color:#2563eb;
-
-    padding:10px 15px;
-
-    border-radius:16px;
-
-    font-weight:800;
-
-    white-space:nowrap;
+    color:#6b7280;
 
 }
 
-
-
-.preco-box i{
-
-    margin-right:5px;
-
-}
 
 
 
 /* STATUS */
 
 
-.status{
+.campanha-status{
 
     display:inline-block;
 
-    margin-top:5px;
+    margin-top:6px;
 
-    padding:5px 10px;
+    padding:5px 12px;
 
     border-radius:20px;
 
@@ -489,16 +477,37 @@ textarea.form-control{
 
 
 
+
+/* PREÇO */
+
+
+.campanha-preco{
+
+    background:#eff6ff;
+
+    color:#2563eb;
+
+    padding:10px 15px;
+
+    border-radius:16px;
+
+    font-weight:800;
+
+}
+
+
+
+
 /* RESULTADO */
 
 
-.resultado-box{
+.campanha-resultado{
+
+    min-height:350px;
 
     background:#0f172a;
 
     color:#d1fae5;
-
-    min-height:350px;
 
     font-family:monospace;
 
@@ -506,10 +515,11 @@ textarea.form-control{
 
 
 
+
 /* ESTATISTICAS */
 
 
-.stats{
+.campanha-stats{
 
     display:flex;
 
@@ -523,7 +533,7 @@ textarea.form-control{
 
 
 
-.stat{
+.campanha-stat{
 
     flex:1;
 
@@ -531,33 +541,69 @@ textarea.form-control{
 
     padding:18px;
 
-    border-radius:20px;
-
     background:#f8fafc;
 
-    border:1px solid var(--border);
+    border-radius:20px;
+
+    border:1px solid #e5e7eb;
 
 }
 
 
 
-.stat strong{
+.campanha-stat strong{
 
     display:block;
 
     font-size:28px;
 
-    color:var(--primary);
+    color:#2563eb;
 
 }
 
 
 
-.stat span{
+.campanha-stat span{
 
-    color:var(--muted);
+    color:#6b7280;
 
 }
+
+
+
+
+
+/* MOBILE */
+
+
+@media(max-width:700px){
+
+
+.campanha-container{
+
+    padding:15px;
+
+}
+
+
+
+.campanha-header h2{
+
+    font-size:22px;
+
+}
+
+
+
+.campanha-btn{
+
+    width:100%;
+
+}
+
+
+}
+
 
 
 </style>
