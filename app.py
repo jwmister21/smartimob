@@ -5101,6 +5101,46 @@ def imoveis():
 
 
 
+        # ==========================
+        # BUSCAR REFERÊNCIAS DO IMÓVEL
+        # ==========================
+
+        cursor.execute("""
+            SELECT
+                nome,
+                categoria,
+                distancia
+            FROM referencias_imovel
+            WHERE imovel_id = ?
+            ORDER BY distancia ASC
+        """,
+        (
+            imovel["id"],
+        ))
+
+
+        referencias = cursor.fetchall()
+
+
+        imovel["referencias"] = [
+            {
+                "nome": ref["nome"],
+                "categoria": ref["categoria"],
+                "distancia": ref["distancia"]
+            }
+            for ref in referencias
+        ]
+
+
+        print(
+            "IMOVEL",
+            imovel["id"],
+            "REFERENCIAS:",
+            imovel["referencias"]
+        )
+
+
+
         lista_final.append(imovel)
 
 
