@@ -1,0 +1,2126 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+
+:root{
+
+    --primary:#2563eb;
+    --primary-hover:#1d4ed8;
+    --success:#16a34a;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+
+    --bg:#f4f7fb;
+    --card:#ffffff;
+
+    --border:#e5e7eb;
+
+    --title:#111827;
+    --text:#374151;
+    --muted:#6b7280;
+
+    --radius:20px;
+
+}
+
+body{
+
+    background:var(--bg);
+
+}
+
+.campanha{
+
+    max-width:1700px;
+
+    margin:auto;
+
+    padding:30px;
+
+}
+
+.topo{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+}
+
+.topo h2{
+
+    font-size:32px;
+
+    font-weight:700;
+
+    color:var(--title);
+
+    margin-bottom:5px;
+
+}
+
+.topo p{
+
+    color:var(--muted);
+
+    margin:0;
+
+}
+
+.grid-top{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr;
+
+    gap:25px;
+
+    margin-bottom:25px;
+
+}
+
+.card-smart{
+
+    background:white;
+
+    border-radius:22px;
+
+    padding:25px;
+
+    border:1px solid var(--border);
+
+    box-shadow:0 10px 30px rgba(0,0,0,.05);
+
+    transition:.3s;
+
+}
+
+.card-smart:hover{
+
+    transform:translateY(-4px);
+
+    box-shadow:0 18px 40px rgba(0,0,0,.08);
+
+}
+
+.card-title{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:20px;
+
+}
+
+.card-title i{
+
+    color:var(--primary);
+
+    font-size:22px;
+
+}
+
+.card-title h5{
+
+    margin:0;
+
+    font-weight:700;
+
+}
+
+label{
+
+    font-weight:600;
+
+    color:var(--text);
+
+    margin-bottom:8px;
+
+}
+
+.form-control,
+.form-select{
+
+    min-height:48px;
+
+    border-radius:14px;
+
+    border:1px solid #dbe2ea;
+
+}
+
+.form-control:focus,
+.form-select:focus{
+
+    border-color:var(--primary);
+
+    box-shadow:0 0 0 .15rem rgba(37,99,235,.15);
+
+}
+
+.preview-imovel{
+
+    margin-top:25px;
+
+    display:flex;
+
+    gap:18px;
+
+    border:2px dashed #dbe2ea;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    align-items:center;
+
+    background:#fafcff;
+
+}
+
+.preview-imovel img{
+
+    width:170px;
+
+    height:120px;
+
+    object-fit:cover;
+
+    border-radius:15px;
+
+}
+
+.preview-info h4{
+
+    margin-bottom:8px;
+
+    font-weight:700;
+
+}
+
+.preview-info p{
+
+    margin:3px 0;
+
+    color:var(--muted);
+
+}
+
+.valor{
+
+    color:var(--success);
+
+    font-size:22px;
+
+    font-weight:bold;
+
+}
+
+.cards-resumo{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:15px;
+
+}
+
+.resumo-item{
+
+    background:#f8fafc;
+
+    border-radius:18px;
+
+    padding:22px;
+
+    text-align:center;
+
+}
+
+.resumo-item h2{
+
+    margin:0;
+
+    font-size:34px;
+
+    color:var(--primary);
+
+}
+
+.resumo-item span{
+
+    color:var(--muted);
+
+}
+
+.status-campanha{
+
+    margin-top:20px;
+
+    padding:18px;
+
+    border-radius:18px;
+
+    background:#eef6ff;
+
+}
+
+.status-campanha h6{
+
+    margin:0;
+
+    font-weight:700;
+
+}
+
+.progress{
+
+    height:12px;
+
+    border-radius:30px;
+
+    margin-top:15px;
+
+}
+
+.progress-bar{
+
+    background:linear-gradient(90deg,#2563eb,#60a5fa);
+
+}
+
+@media(max-width:992px){
+
+.grid-top{
+
+grid-template-columns:1fr;
+
+}
+
+.preview-imovel{
+
+flex-direction:column;
+
+text-align:center;
+
+}
+
+.cards-resumo{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:600px){
+
+.cards-resumo{
+
+grid-template-columns:1fr;
+
+}
+
+.topo{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+gap:10px;
+
+}
+
+}
+
+</style>
+
+<div class="campanha">
+
+<div class="topo">
+
+<div>
+
+<h2>
+
+<i class="bi bi-megaphone-fill text-primary"></i>
+
+Criar Campanha Inteligente
+
+</h2>
+
+<p>
+
+Monte sua campanha, organize seus contatos e gere mensagens utilizando IA.
+
+</p>
+
+</div>
+
+</div>
+
+<div class="grid-top">
+
+<div class="card-smart">
+
+<div class="card-title">
+
+<i class="bi bi-sliders"></i>
+
+<h5>
+
+Dados da Campanha
+
+</h5>
+
+</div>
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+
+<label>
+
+Nome da Campanha
+
+</label>
+
+<input
+
+type="text"
+
+class="form-control"
+
+id="nomeCampanha"
+
+placeholder="Ex.: Casas Alto Padrão">
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>
+
+Tipo
+
+</label>
+
+<select class="form-select">
+
+<option>Marketing</option>
+
+<option>Promoção</option>
+
+<option>Lançamento</option>
+
+<option>Captação</option>
+
+</select>
+
+</div>
+
+<div class="col-md-3 mb-3">
+
+<label>
+
+Imóvel
+
+</label>
+
+<select
+
+class="form-select"
+
+id="imovelSelect">
+
+<option>
+
+Selecione...
+
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+<div class="preview-imovel">
+
+<img
+
+id="fotoImovel"
+
+src="https://placehold.co/600x400?text=SMARTZEN">
+
+<div class="preview-info">
+
+<h4 id="tituloImovel">
+
+Nenhum imóvel selecionado
+
+</h4>
+
+<p id="bairroImovel">
+
+Selecione um imóvel para visualizar.
+
+</p>
+
+<div class="valor"
+
+id="valorImovel">
+
+--
+
+</div>
+
+<p>
+
+🛏️ Quartos:
+<span id="quartosImovel">--</span>
+
+&nbsp;&nbsp;
+
+🚗 Vagas:
+<span id="garagemImovel">--</span>
+
+</p>
+
+<p>
+
+🛁 Banheiros:
+<span id="banheirosImovel">--</span>
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="card-smart">
+
+<div class="card-title">
+
+<i class="bi bi-bar-chart-fill"></i>
+
+<h5>
+
+Resumo
+
+</h5>
+
+</div>
+
+<div class="cards-resumo">
+
+<div class="resumo-item">
+
+<h2 id="totalClientes">
+
+0
+
+</h2>
+
+<span>
+
+Clientes
+
+</span>
+
+</div>
+
+<div class="resumo-item">
+
+<h2 id="totalValidos">
+
+0
+
+</h2>
+
+<span>
+
+Válidos
+
+</span>
+
+</div>
+
+<div class="resumo-item">
+
+<h2 id="totalInvalidos">
+
+0
+
+</h2>
+
+<span>
+
+Inválidos
+
+</span>
+
+</div>
+
+<div class="resumo-item">
+
+<h2 id="totalMensagem">
+
+0
+
+</h2>
+
+<span>
+
+Mensagem
+
+</span>
+
+</div>
+
+</div>
+
+<div class="status-campanha">
+
+<h6>
+
+Progresso da Campanha
+
+</h6>
+
+<div class="progress">
+
+<div
+
+class="progress-bar"
+
+id="barraProgresso"
+
+style="width:0%">
+
+</div>
+
+</div>
+
+<div class="mt-2">
+
+<strong id="textoProgresso">
+
+0%
+
+</strong>
+
+concluído
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- PARTE 2 COMEÇA AQUI -->
+<!-- ========================= -->
+  <div class="card-smart mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h4 class="mb-1">
+                <i class="bi bi-people-fill text-primary"></i>
+                Contatos da Campanha
+            </h4>
+
+            <small class="text-muted">
+                Importe seus clientes ou digite manualmente.
+            </small>
+
+        </div>
+
+        <div>
+
+            <button class="btn btn-success me-2" id="btnImportarExcel">
+                <i class="bi bi-file-earmark-excel"></i>
+                Importar Excel
+            </button>
+
+            <button class="btn btn-outline-primary me-2" id="btnImportarCSV">
+                <i class="bi bi-filetype-csv"></i>
+                Importar CSV
+            </button>
+
+            <button class="btn btn-outline-danger" id="btnLimparTabela">
+                <i class="bi bi-trash"></i>
+                Limpar
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle" id="tabelaClientes">
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th width="45%">Nome</th>
+
+                    <th width="35%">Telefone</th>
+
+                    <th width="10%">Status</th>
+
+                    <th width="10%" class="text-center">Ação</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>
+                        <input class="form-control nome">
+                    </td>
+
+                    <td>
+                        <input class="form-control telefone">
+                    </td>
+
+                    <td class="status text-center">
+
+                        -
+
+                    </td>
+
+                    <td class="text-center">
+
+                        <button class="btn btn-sm btn-danger remover">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <div class="mt-3">
+
+        <button class="btn btn-primary" id="btnAdicionarLinha">
+
+            <i class="bi bi-plus-circle"></i>
+
+            Adicionar Cliente
+
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<div class="card-smart mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+
+            <h4>
+
+                <i class="bi bi-list-check text-success"></i>
+
+                Resultado
+
+            </h4>
+
+            <small class="text-muted">
+
+                Lista pronta para copiar.
+
+            </small>
+
+        </div>
+
+        <div>
+
+            <button class="btn btn-success me-2" id="btnGerarResultado">
+
+                <i class="bi bi-magic"></i>
+
+                Gerar Resultado
+
+            </button>
+
+            <button class="btn btn-primary" id="btnCopiarResultado">
+
+                <i class="bi bi-clipboard"></i>
+
+                Copiar
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <textarea
+
+        id="resultado"
+
+        class="form-control"
+
+        rows="12"
+
+        readonly
+
+        placeholder="João,5511999999999"></textarea>
+
+</div>
+
+<style>
+
+#tabelaClientes input{
+
+    border-radius:10px;
+
+}
+
+#resultado{
+
+    font-family:Consolas;
+
+    background:#f8fafc;
+
+    border-radius:15px;
+
+}
+
+.status-ok{
+
+    color:#16a34a;
+
+    font-weight:bold;
+
+}
+
+.status-erro{
+
+    color:#ef4444;
+
+    font-weight:bold;
+
+}
+
+</style>
+
+<script>
+
+function atualizarTabela(){
+
+    let linhas=document.querySelectorAll("#tabelaClientes tbody tr");
+
+    let total=0;
+
+    let validos=0;
+
+    let invalidos=0;
+
+    linhas.forEach(function(linha){
+
+        let nome=linha.querySelector(".nome").value.trim();
+
+        let tel=linha.querySelector(".telefone").value.replace(/\D/g,'');
+
+        let status=linha.querySelector(".status");
+
+        if(nome=="" && tel=="")
+            return;
+
+        total++;
+
+        if(tel.length>=10){
+
+            status.innerHTML="<span class='status-ok'>✔</span>";
+
+            validos++;
+
+        }else{
+
+            status.innerHTML="<span class='status-erro'>✖</span>";
+
+            invalidos++;
+
+        }
+
+    });
+
+    document.getElementById("totalClientes").innerHTML=total;
+    document.getElementById("totalValidos").innerHTML=validos;
+    document.getElementById("totalInvalidos").innerHTML=invalidos;
+
+}
+
+document.getElementById("btnAdicionarLinha").onclick=function(){
+
+    let tbody=document.querySelector("#tabelaClientes tbody");
+
+    tbody.insertAdjacentHTML("beforeend",`
+
+<tr>
+
+<td><input class="form-control nome"></td>
+
+<td><input class="form-control telefone"></td>
+
+<td class="status text-center">-</td>
+
+<td class="text-center">
+
+<button class="btn btn-sm btn-danger remover">
+
+<i class="bi bi-trash"></i>
+
+</button>
+
+</td>
+
+</tr>
+
+`);
+
+};
+
+document.addEventListener("input",function(e){
+
+    if(e.target.classList.contains("nome") || e.target.classList.contains("telefone"))
+
+        atualizarTabela();
+
+});
+
+document.addEventListener("click",function(e){
+
+    if(e.target.closest(".remover")){
+
+        e.target.closest("tr").remove();
+
+        atualizarTabela();
+
+    }
+
+});
+
+document.getElementById("btnGerarResultado").onclick=function(){
+
+    let texto="";
+
+    document.querySelectorAll("#tabelaClientes tbody tr").forEach(function(linha){
+
+        let nome=linha.querySelector(".nome").value.trim();
+
+        let tel=linha.querySelector(".telefone").value.replace(/\D/g,'');
+
+        if(nome!="" || tel!=""){
+
+            texto+=nome+","+tel+"\n";
+
+        }
+
+    });
+
+    document.getElementById("resultado").value=texto;
+
+};
+
+document.getElementById("btnCopiarResultado").onclick=function(){
+
+    navigator.clipboard.writeText(
+
+        document.getElementById("resultado").value
+
+    );
+
+};
+
+</script>
+<!-- ========================= -->
+<!-- PARTE 3 -->
+<!-- ========================= -->
+
+<div class="card-smart mt-4">
+
+    <div class="row">
+
+        <!-- LADO ESQUERDO -->
+
+        <div class="col-lg-8">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+
+                <div>
+
+                    <h4 class="mb-1">
+                        <i class="bi bi-stars text-warning"></i>
+                        Mensagem da Campanha
+                    </h4>
+
+                    <small class="text-muted">
+                        Utilize a IA para gerar uma mensagem personalizada.
+                    </small>
+
+                </div>
+
+                <button class="btn btn-warning" id="btnGerarIA">
+
+                    <i class="bi bi-stars"></i>
+
+                    Gerar Mensagem IA
+
+                </button>
+
+            </div>
+
+            <!-- Variáveis -->
+
+            <div class="mb-3">
+
+                <label class="mb-2">
+
+                    Variáveis
+
+                </label>
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button class="btn btn-outline-primary variavel">{nome}</button>
+
+                    <button class="btn btn-outline-primary variavel">{imovel}</button>
+
+                    <button class="btn btn-outline-primary variavel">{bairro}</button>
+
+                    <button class="btn btn-outline-primary variavel">{cidade}</button>
+
+                    <button class="btn btn-outline-primary variavel">{valor}</button>
+
+                    <button class="btn btn-outline-primary variavel">{quartos}</button>
+
+                    <button class="btn btn-outline-primary variavel">{banheiros}</button>
+
+                    <button class="btn btn-outline-primary variavel">{garagem}</button>
+
+                    <button class="btn btn-outline-primary variavel">{link}</button>
+
+                </div>
+
+            </div>
+
+            <!-- Mensagem -->
+
+            <textarea
+
+                id="mensagem"
+
+                class="form-control"
+
+                rows="16"
+
+                placeholder="Digite ou gere uma mensagem..."></textarea>
+
+            <div class="mt-3 d-flex flex-wrap gap-2">
+
+                <button class="btn btn-primary" id="btnCopiarMensagem">
+
+                    <i class="bi bi-clipboard"></i>
+
+                    Copiar Mensagem
+
+                </button>
+
+                <button class="btn btn-success" id="btnAtualizarPreview">
+
+                    <i class="bi bi-phone"></i>
+
+                    Atualizar Prévia
+
+                </button>
+
+                <button class="btn btn-info text-white" id="btnMelhorar">
+
+                    ✨ Melhorar Texto
+
+                </button>
+
+                <button class="btn btn-secondary" id="btnLimparMensagem">
+
+                    <i class="bi bi-trash"></i>
+
+                    Limpar
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- LADO DIREITO -->
+
+        <div class="col-lg-4">
+
+            <div class="phone">
+
+                <div class="phone-top">
+
+                    <strong>João Silva</strong>
+
+                    <small>online</small>
+
+                </div>
+
+                <div class="phone-body">
+
+                    <div class="msg" id="preview">
+
+Olá João 👋
+
+Sua mensagem aparecerá aqui.
+
+                    </div>
+
+                    <div class="hora">
+
+09:30 ✔✔
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+.phone{
+
+background:white;
+
+border-radius:35px;
+
+overflow:hidden;
+
+border:8px solid #202124;
+
+max-width:340px;
+
+margin:auto;
+
+box-shadow:0 15px 40px rgba(0,0,0,.2);
+
+}
+
+.phone-top{
+
+background:#22c55e;
+
+color:white;
+
+padding:15px;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+.phone-body{
+
+background:#ece5dd;
+
+padding:20px;
+
+min-height:550px;
+
+}
+
+.msg{
+
+background:white;
+
+padding:15px;
+
+border-radius:15px;
+
+white-space:pre-wrap;
+
+box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+}
+
+.hora{
+
+text-align:right;
+
+font-size:12px;
+
+margin-top:10px;
+
+color:#555;
+
+}
+
+.variavel{
+
+border-radius:30px;
+
+}
+
+#mensagem{
+
+font-family:Consolas;
+
+border-radius:15px;
+
+}
+
+</style>
+
+<script>
+
+document.querySelectorAll(".variavel").forEach(function(botao){
+
+botao.onclick=function(){
+
+let campo=document.getElementById("mensagem");
+
+campo.value+=this.innerText;
+
+}
+
+});
+
+document.getElementById("btnAtualizarPreview").onclick=function(){
+
+let texto=document.getElementById("mensagem").value;
+
+texto=texto.replaceAll("{nome}","João");
+
+texto=texto.replaceAll("{imovel}","Apartamento Alto Padrão");
+
+texto=texto.replaceAll("{bairro}","Centro");
+
+texto=texto.replaceAll("{cidade}","Campinas");
+
+texto=texto.replaceAll("{valor}","R$ 780.000");
+
+texto=texto.replaceAll("{quartos}","3");
+
+texto=texto.replaceAll("{banheiros}","2");
+
+texto=texto.replaceAll("{garagem}","2");
+
+texto=texto.replaceAll("{link}","https://smartzen.com.br");
+
+document.getElementById("preview").innerHTML=texto;
+
+}
+
+document.getElementById("btnCopiarMensagem").onclick=function(){
+
+navigator.clipboard.writeText(
+
+document.getElementById("mensagem").value
+
+);
+
+this.innerHTML="<i class='bi bi-check-lg'></i> Copiado";
+
+let b=this;
+
+setTimeout(function(){
+
+b.innerHTML="<i class='bi bi-clipboard'></i> Copiar Mensagem";
+
+},2000);
+
+}
+
+document.getElementById("btnLimparMensagem").onclick=function(){
+
+document.getElementById("mensagem").value="";
+
+document.getElementById("preview").innerHTML="Sua mensagem aparecerá aqui.";
+
+}
+
+document.getElementById("btnGerarIA").onclick=function(){
+
+document.getElementById("mensagem").value=`Olá {nome}! 👋
+
+Tenho uma excelente oportunidade para você!
+
+🏡 {imovel}
+
+📍 {bairro}
+
+💰 {valor}
+
+🛏 {quartos} quartos
+
+🚗 {garagem} vagas
+
+🛁 {banheiros} banheiros
+
+Caso tenha interesse, posso enviar mais fotos, informações e agendar uma visita.
+
+{link}`;
+
+document.getElementById("btnAtualizarPreview").click();
+
+}
+
+document.getElementById("btnMelhorar").onclick=function(){
+
+let txt=document.getElementById("mensagem");
+
+txt.value=txt.value+"\n\n✨ Aproveite esta oportunidade exclusiva!";
+
+document.getElementById("btnAtualizarPreview").click();
+
+}
+  <!-- ================================================= -->
+<!-- PARTE 4 - DASHBOARD DA CAMPANHA -->
+<!-- ================================================= -->
+
+<div class="row mt-4">
+
+    <div class="col-lg-8">
+
+        <div class="card-smart">
+
+            <h4 class="mb-4">
+
+                <i class="bi bi-speedometer2 text-primary"></i>
+
+                Progresso da Campanha
+
+            </h4>
+
+            <div class="progress" style="height:15px;border-radius:30px;">
+
+                <div
+                    class="progress-bar progress-bar-striped progress-bar-animated"
+                    id="barraCampanha"
+                    style="width:0%">
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+
+                <strong id="textoBarra">
+
+                    0%
+
+                </strong>
+
+                da campanha concluída.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card-smart">
+
+            <h4 class="mb-4">
+
+                <i class="bi bi-lightning-charge-fill text-warning"></i>
+
+                Ações Rápidas
+
+            </h4>
+
+            <div class="d-grid gap-2">
+
+                <button class="btn btn-primary" id="btnCopiarTudo">
+
+                    <i class="bi bi-copy"></i>
+
+                    Copiar Tudo
+
+                </button>
+
+                <button class="btn btn-success" id="btnNovaMensagem">
+
+                    <i class="bi bi-stars"></i>
+
+                    Nova Mensagem IA
+
+                </button>
+
+                <button class="btn btn-outline-secondary" id="btnLimparTudo">
+
+                    <i class="bi bi-trash"></i>
+
+                    Limpar Tudo
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row mt-4">
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardClientes">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Clientes
+
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardCaracteres">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Caracteres
+
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardLinhas">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Linhas
+
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardVariaveis">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Variáveis
+
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div
+id="toastSmart"
+class="toast align-items-center text-white bg-success border-0 position-fixed"
+style="bottom:30px;right:30px;z-index:9999;"
+role="alert">
+
+<div class="d-flex">
+
+<div class="toast-body" id="toastTexto">
+
+Copiado com sucesso.
+
+</div>
+
+<button
+type="button"
+class="btn-close btn-close-white me-2 m-auto"
+data-bs-dismiss="toast"></button>
+
+</div>
+
+</div>
+
+<script>
+
+function mostrarToast(texto){
+
+document.getElementById("toastTexto").innerHTML=texto;
+
+let toast=new bootstrap.Toast(document.getElementById("toastSmart"));
+
+toast.show();
+
+}
+
+function atualizarDashboard(){
+
+let mensagem=document.getElementById("mensagem").value;
+
+document.getElementById("cardCaracteres").innerHTML=mensagem.length;
+
+document.getElementById("cardLinhas").innerHTML=mensagem.split("\n").length;
+
+let vars=(mensagem.match(/{/g)||[]).length;
+
+document.getElementById("cardVariaveis").innerHTML=vars;
+
+let clientes=document.querySelectorAll("#tabelaClientes tbody tr").length;
+
+document.getElementById("cardClientes").innerHTML=clientes;
+
+let progresso=0;
+
+if(document.getElementById("nomeCampanha").value!="")
+progresso+=20;
+
+if(document.getElementById("resultado").value!="")
+progresso+=20;
+
+if(document.getElementById("mensagem").value!="")
+progresso+=20;
+
+if(document.getElementById("imovelSelect").value!="Selecione...")
+progresso+=20;
+
+if(clientes>0)
+progresso+=20;
+
+document.getElementById("barraCampanha").style.width=progresso+"%";
+
+document.getElementById("textoBarra").innerHTML=progresso+"%";
+
+}
+
+setInterval(atualizarDashboard,700);
+
+document.getElementById("btnCopiarTudo").onclick=function(){
+
+let texto=document.getElementById("resultado").value;
+
+texto+="\n\n====================\n\n";
+
+texto+=document.getElementById("mensagem").value;
+
+navigator.clipboard.writeText(texto);
+
+mostrarToast("Tudo copiado.");
+
+}
+
+document.getElementById("btnNovaMensagem").onclick=function(){
+
+document.getElementById("btnGerarIA").click();
+
+mostrarToast("Nova mensagem criada.");
+
+}
+
+document.getElementById("btnLimparTudo").onclick=function(){
+
+document.querySelectorAll("input").forEach(function(c){
+
+c.value="";
+
+});
+
+document.querySelectorAll("textarea").forEach(function(c){
+
+c.value="";
+
+});
+
+document.getElementById("preview").innerHTML="Sua mensagem aparecerá aqui.";
+
+mostrarToast("Tela limpa.");
+
+}
+
+</script>
+
+<!-- ====================================== -->
+<!-- PARTE 5 COMEÇA AQUI -->
+<!-- ====================================== --><!-- ================================================= -->
+<!-- PARTE 4 - DASHBOARD DA CAMPANHA -->
+<!-- ================================================= -->
+
+<div class="row mt-4">
+
+    <div class="col-lg-8">
+
+        <div class="card-smart">
+
+            <h4 class="mb-4">
+
+                <i class="bi bi-speedometer2 text-primary"></i>
+
+                Progresso da Campanha
+
+            </h4>
+
+            <div class="progress" style="height:15px;border-radius:30px;">
+
+                <div
+                    class="progress-bar progress-bar-striped progress-bar-animated"
+                    id="barraCampanha"
+                    style="width:0%">
+                </div>
+
+            </div>
+
+            <div class="mt-3">
+
+                <strong id="textoBarra">
+
+                    0%
+
+                </strong>
+
+                da campanha concluída.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-4">
+
+        <div class="card-smart">
+
+            <h4 class="mb-4">
+
+                <i class="bi bi-lightning-charge-fill text-warning"></i>
+
+                Ações Rápidas
+
+            </h4>
+
+            <div class="d-grid gap-2">
+
+                <button class="btn btn-primary" id="btnCopiarTudo">
+
+                    <i class="bi bi-copy"></i>
+
+                    Copiar Tudo
+
+                </button>
+
+                <button class="btn btn-success" id="btnNovaMensagem">
+
+                    <i class="bi bi-stars"></i>
+
+                    Nova Mensagem IA
+
+                </button>
+
+                <button class="btn btn-outline-secondary" id="btnLimparTudo">
+
+                    <i class="bi bi-trash"></i>
+
+                    Limpar Tudo
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row mt-4">
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardClientes">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Clientes
+
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardCaracteres">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Caracteres
+
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardLinhas">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Linhas
+
+            </small>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3">
+
+        <div class="card-smart text-center">
+
+            <h2 id="cardVariaveis">
+
+                0
+
+            </h2>
+
+            <small>
+
+                Variáveis
+
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div
+id="toastSmart"
+class="toast align-items-center text-white bg-success border-0 position-fixed"
+style="bottom:30px;right:30px;z-index:9999;"
+role="alert">
+
+<div class="d-flex">
+
+<div class="toast-body" id="toastTexto">
+
+Copiado com sucesso.
+
+</div>
+
+<button
+type="button"
+class="btn-close btn-close-white me-2 m-auto"
+data-bs-dismiss="toast"></button>
+
+</div>
+
+</div>
+
+<script>
+
+function mostrarToast(texto){
+
+document.getElementById("toastTexto").innerHTML=texto;
+
+let toast=new bootstrap.Toast(document.getElementById("toastSmart"));
+
+toast.show();
+
+}
+
+function atualizarDashboard(){
+
+let mensagem=document.getElementById("mensagem").value;
+
+document.getElementById("cardCaracteres").innerHTML=mensagem.length;
+
+document.getElementById("cardLinhas").innerHTML=mensagem.split("\n").length;
+
+let vars=(mensagem.match(/{/g)||[]).length;
+
+document.getElementById("cardVariaveis").innerHTML=vars;
+
+let clientes=document.querySelectorAll("#tabelaClientes tbody tr").length;
+
+document.getElementById("cardClientes").innerHTML=clientes;
+
+let progresso=0;
+
+if(document.getElementById("nomeCampanha").value!="")
+progresso+=20;
+
+if(document.getElementById("resultado").value!="")
+progresso+=20;
+
+if(document.getElementById("mensagem").value!="")
+progresso+=20;
+
+if(document.getElementById("imovelSelect").value!="Selecione...")
+progresso+=20;
+
+if(clientes>0)
+progresso+=20;
+
+document.getElementById("barraCampanha").style.width=progresso+"%";
+
+document.getElementById("textoBarra").innerHTML=progresso+"%";
+
+}
+
+setInterval(atualizarDashboard,700);
+
+document.getElementById("btnCopiarTudo").onclick=function(){
+
+let texto=document.getElementById("resultado").value;
+
+texto+="\n\n====================\n\n";
+
+texto+=document.getElementById("mensagem").value;
+
+navigator.clipboard.writeText(texto);
+
+mostrarToast("Tudo copiado.");
+
+}
+
+document.getElementById("btnNovaMensagem").onclick=function(){
+
+document.getElementById("btnGerarIA").click();
+
+mostrarToast("Nova mensagem criada.");
+
+}
+
+document.getElementById("btnLimparTudo").onclick=function(){
+
+document.querySelectorAll("input").forEach(function(c){
+
+c.value="";
+
+});
+
+document.querySelectorAll("textarea").forEach(function(c){
+
+c.value="";
+
+});
+
+document.getElementById("preview").innerHTML="Sua mensagem aparecerá aqui.";
+
+mostrarToast("Tela limpa.");
+
+}
+
+</script>
+
+<!-- ====================================== -->
+<!-- PARTE 5 COMEÇA AQUI -->
+<!-- ====================================== -->
+  
+
+<!-- ===================================================== -->
+<!-- PARTE 5 - ACABAMENTO FINAL -->
+<!-- ===================================================== -->
+
+<div class="card-smart mt-4">
+
+    <div class="row align-items-center">
+
+        <div class="col-lg-8">
+
+            <h4 class="mb-2">
+
+                <i class="bi bi-check2-circle text-success"></i>
+
+                Campanha pronta!
+
+            </h4>
+
+            <p class="text-muted mb-0">
+
+                Agora basta copiar sua lista de contatos e a mensagem para utilizar
+                na extensão de envio que preferir.
+
+            </p>
+
+        </div>
+
+        <div class="col-lg-4 text-end">
+
+            <button class="btn btn-success btn-lg" id="btnCopiarCampanha">
+
+                <i class="bi bi-copy"></i>
+
+                Copiar Campanha Completa
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer class="mt-5 text-center text-muted">
+
+SMARTZEN IMOB © 2026
+
+</footer>
+
+
+<style>
+
+.card-smart{
+
+animation:fade .35s;
+
+}
+
+@keyframes fade{
+
+from{
+
+opacity:0;
+
+transform:translateY(15px);
+
+}
+
+to{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+}
+
+.btn{
+
+border-radius:14px;
+
+transition:.25s;
+
+}
+
+.btn:hover{
+
+transform:translateY(-2px);
+
+}
+
+.table tbody tr:hover{
+
+background:#f8fbff;
+
+}
+
+textarea{
+
+transition:.25s;
+
+}
+
+textarea:focus{
+
+transform:scale(1.01);
+
+}
+
+.form-control:focus{
+
+transform:scale(1.01);
+
+}
+
+.card-smart h2{
+
+font-weight:bold;
+
+}
+
+.card-smart h4{
+
+font-weight:700;
+
+}
+
+.preview-imovel{
+
+background:linear-gradient(135deg,#ffffff,#f8fbff);
+
+}
+
+.phone{
+
+transition:.3s;
+
+}
+
+.phone:hover{
+
+transform:scale(1.02);
+
+}
+
+.badge-smart{
+
+background:#2563eb;
+
+color:white;
+
+padding:6px 12px;
+
+border-radius:30px;
+
+font-size:13px;
+
+}
+
+</style>
+
+<script>
+
+document.getElementById("btnCopiarCampanha").onclick=function(){
+
+let resultado=document.getElementById("resultado").value;
+
+let mensagem=document.getElementById("mensagem").value;
+
+let texto="========== CONTATOS ==========\n\n";
+
+texto+=resultado;
+
+texto+="\n\n";
+
+texto+="========== MENSAGEM ==========\n\n";
+
+texto+=mensagem;
+
+navigator.clipboard.writeText(texto);
+
+mostrarToast("Campanha copiada com sucesso!");
+
+};
+
+document.querySelectorAll("textarea").forEach(function(c){
+
+c.addEventListener("keyup",atualizarDashboard);
+
+});
+
+document.querySelectorAll("input").forEach(function(c){
+
+c.addEventListener("keyup",atualizarDashboard);
+
+});
+
+document.querySelectorAll("select").forEach(function(c){
+
+c.addEventListener("change",atualizarDashboard);
+
+});
+
+atualizarDashboard();
+
+</script>
+
+{% endblock %}
+  
