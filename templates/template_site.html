@@ -634,7 +634,81 @@ height:45px;
         <span>📐 {{ i.area }} m²</span>
         {% endif %}
     </div>
+<!-- REFERÊNCIAS DO IMÓVEL -->
 
+{% if i.referencias %}
+
+<div style="
+    margin-top:15px;
+    background:#f8fafc;
+    border-radius:12px;
+    padding:12px;
+">
+
+    <div style="
+        font-size:16px;
+        font-weight:700;
+        margin-bottom:10px;
+        color:#111827;
+    ">
+        📍 Localização privilegiada
+    </div>
+
+
+    {% for r in i.referencias %}
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        font-size:14px;
+        margin-bottom:8px;
+        color:#374151;
+    ">
+
+
+        <span>
+
+            {% if r.categoria == "Praia" %}
+                🏖️
+
+            {% elif r.categoria == "Mercado" %}
+                🛒
+
+            {% elif r.categoria == "Farmácia" %}
+                💊
+
+            {% elif r.categoria == "Posto de combustível" %}
+                ⛽
+
+            {% elif r.categoria == "Hospital" %}
+                🏥
+
+            {% elif r.categoria == "Escola" %}
+                🏫
+
+            {% endif %}
+
+
+            {{ r.nome }}
+
+        </span>
+
+
+        <strong>
+            {{ r.distancia }}m
+        </strong>
+
+
+    </div>
+
+
+    {% endfor %}
+
+
+</div>
+
+{% endif %}
     <div class="valor" style="color: var(--texto); font-size: 24px; font-weight: 800;">
    
     {% set valor_str = i.valor|string %}
@@ -658,7 +732,7 @@ height:45px;
         {% if i.condominio %} 🏢 Cond. R$ {{ i.condominio }} {% endif %}
         {% if i.iptu %} | 💰 IPTU R$ {{ i.iptu }} {% endif %}
     </div>
-
+    
     <a class="btn" href="/informa-imovel/{{ i.id }}">Ver detalhes</a>
 
             </div>
