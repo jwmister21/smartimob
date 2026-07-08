@@ -2634,7 +2634,6 @@ def exibir_site(subdominio):
         subdominio,
     ))
 
-
     empresa = cursor.fetchone()
 
 
@@ -2647,7 +2646,7 @@ def exibir_site(subdominio):
 
 
     # ==========================
-    # BUSCAR IMÓVEIS DA EMPRESA
+    # BUSCAR IMÓVEIS
     # ==========================
 
     cursor.execute("""
@@ -2659,7 +2658,6 @@ def exibir_site(subdominio):
     (
         empresa["empresa_id"],
     ))
-
 
     imoveis_db = cursor.fetchall()
 
@@ -2699,14 +2697,17 @@ def exibir_site(subdominio):
 
         for foto in fotos_db:
 
+
             caminho = foto["nome_arquivo"]
 
 
-            # Remove caminhos antigos:
-            # /data/uploads/imoveis/
-            # /uploads/imoveis/
+            # Corrige caminhos antigos:
+            # /data/uploads/imoveis/foto.jpg
+            # /uploads/imoveis/foto.jpg
 
-            nome = os.path.basename(caminho)
+            nome = caminho.replace("\\", "/")
+
+            nome = nome.split("/")[-1]
 
 
             fotos.append(nome)
@@ -2721,35 +2722,42 @@ def exibir_site(subdominio):
         # BUSCAR REFERÊNCIAS
         # ==========================
 
-        cursor.execute("""
-            SELECT
-                nome,
-                categoria,
-                distancia
-            FROM referencias_imovel
-            WHERE imovel_id = ?
-            ORDER BY distancia ASC
-        """,
-        (
-            imovel["id"],
-        ))
+        try:
+
+            cursor.execute("""
+                SELECT
+                    nome,
+                    categoria,
+                    distancia
+                FROM referencias_imovel
+                WHERE imovel_id = ?
+                ORDER BY distancia ASC
+            """,
+            (
+                imovel["id"],
+            ))
 
 
-        referencias = cursor.fetchall()
+            referencias = cursor.fetchall()
 
 
 
-        imovel["referencias"] = [
+            imovel["referencias"] = [
 
-            {
-                "nome": r["nome"],
-                "categoria": r["categoria"],
-                "distancia": r["distancia"]
-            }
+                {
+                    "nome": r["nome"],
+                    "categoria": r["categoria"],
+                    "distancia": r["distancia"]
+                }
 
-            for r in referencias
+                for r in referencias
 
-        ]
+            ]
+
+        except Exception:
+
+            imovel["referencias"] = []
+
 
 
 
