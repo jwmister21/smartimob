@@ -2153,9 +2153,7 @@ def site_publico(slug):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-
     try:
-
 
         # ==========================
         # BUSCAR CONFIGURAÇÃO DO SITE
@@ -2167,18 +2165,16 @@ def site_publico(slug):
             WHERE subdominio = ?
         """, (slug,))
 
-
         empresa = cursor.fetchone()
 
 
         if not empresa:
-
-            return "Site não encontrado"
+            return "Site não encontrado", 404
 
 
 
         # ==========================
-        # BUSCAR IMÓVEIS DA EMPRESA
+        # BUSCAR IMÓVEIS
         # ==========================
 
         cursor.execute("""
@@ -2186,7 +2182,8 @@ def site_publico(slug):
             FROM imoveis
             WHERE empresa_id = ?
             ORDER BY id DESC
-        """, (empresa["empresa_id"],))
+        """,
+        (empresa["empresa_id"],))
 
 
         rows = cursor.fetchall()
@@ -2197,7 +2194,6 @@ def site_publico(slug):
 
 
         for row in rows:
-
 
             imovel = dict(row)
 
@@ -2212,11 +2208,11 @@ def site_publico(slug):
                 FROM fotos_imoveis
                 WHERE imovel_id = ?
                 ORDER BY id ASC
-            """, (imovel["id"],))
+            """,
+            (imovel["id"],))
 
 
             fotos = cursor.fetchall()
-
 
 
             imovel["fotos"] = []
@@ -2226,25 +2222,25 @@ def site_publico(slug):
             for foto in fotos:
 
 
-                url_foto = (
-                    "/data/uploads/imoveis/"
-                    + foto["nome_arquivo"]
-                )
+                caminho = foto["nome_arquivo"]
+
+
+                # remove caminhos antigos
+                caminho = caminho.replace("\\","/")
+
+
+                nome_foto = caminho.split("/")[-1]
 
 
                 imovel["fotos"].append(
-                    url_foto
+                    nome_foto
                 )
 
 
-
-            # FOTO CAPA
 
             if imovel["fotos"]:
 
-                imovel["foto_capa"] = (
-                    imovel["fotos"][0]
-                )
+                imovel["foto_capa"] = imovel["fotos"][0]
 
             else:
 
@@ -2254,61 +2250,56 @@ def site_publico(slug):
 
 
             # ==========================
-            # BUSCAR REFERÊNCIAS
+            # REFERÊNCIAS
             # ==========================
 
-            cursor.execute("""
-                SELECT
-                    nome,
-                    categoria,
-                    distancia
-                FROM referencias_imovel
-                WHERE imovel_id = ?
-                ORDER BY distancia ASC
-            """, (
-                imovel["id"],
-            ))
+            try:
+
+                cursor.execute("""
+                    SELECT
+                        nome,
+                        categoria,
+                        distancia
+                    FROM referencias_imovel
+                    WHERE imovel_id = ?
+                    ORDER BY distancia ASC
+                """,
+                (imovel["id"],))
+
+
+                referencias = cursor.fetchall()
 
 
 
-            referencias = cursor.fetchall()
-            print(
-                "REFERENCIAS DO IMOVEL",
-                imovel["id"],
-                referencias
-            )
+                imovel["referencias"] = [
 
+                    {
+                        "nome": ref["nome"],
+                        "categoria": ref["categoria"],
+                        "distancia": ref["distancia"]
+                    }
 
-            imovel["referencias"] = []
+                    for ref in referencias
 
+                ]
 
+            except:
 
-            for ref in referencias:
-
-
-                imovel["referencias"].append({
-
-                    "nome": ref["nome"],
-
-                    "categoria": ref["categoria"],
-
-                    "distancia": ref["distancia"]
-
-                })
+                imovel["referencias"] = []
 
 
 
             print(
-                f"IMÓVEL {imovel['id']} -> "
-                f"{len(imovel['fotos'])} fotos | "
-                f"{len(imovel['referencias'])} referências"
+                "IMÓVEL",
+                imovel["id"],
+                "FOTOS:",
+                imovel["fotos"]
             )
 
 
 
-            imoveis.append(
-                imovel
-            )
+            imoveis.append(imovel)
+
 
 
 
@@ -2319,25 +2310,20 @@ def site_publico(slug):
         )
 
 
-
     except Exception as erro:
-
 
         print(
             "ERRO SITE PUBLICO:",
             erro
         )
 
-
         return "Erro ao carregar site"
-
 
 
     finally:
 
-
         conn.close()
-
+     
 @app.route("/admin/ativar-usuario", methods=["POST"])
 @verificar_sessao
 def ativar_usuario():
