@@ -1,14 +1,15 @@
-
 {% extends "base.html" %}
 {% block content %}
 
 <style>
 
 :root{
+
     --primary:#2563eb;
-    --primary-hover:#1d4ed8;
+    --primary-dark:#1d4ed8;
+
     --success:#16a34a;
-    --danger:#ef4444;
+    --danger:#dc2626;
 
     --bg:#f4f7fb;
     --card:#ffffff;
@@ -18,93 +19,178 @@
     --muted:#6b7280;
 
     --border:#e5e7eb;
+
+    --shadow:
+    0 15px 40px rgba(0,0,0,.06);
+
 }
 
+
+/* FUNDO */
 
 body{
+
     background:var(--bg);
+
 }
 
+
+
+/* CONTAINER */
 
 .campanha-container{
 
-    max-width:1450px;
+    max-width:1500px;
+
     margin:auto;
+
     padding:30px;
 
 }
 
 
-/* CARD PRINCIPAL */
+
+/* HEADER */
+
+
+.page-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:30px;
+
+    flex-wrap:wrap;
+
+}
+
+
+
+.page-header h2{
+
+    font-weight:800;
+
+    color:var(--title);
+
+}
+
+
+
+.page-header p{
+
+    color:var(--muted);
+
+}
+
+
+
+/* CARDS */
+
 
 .smart-card{
 
     background:white;
-    border:1px solid var(--border);
-    border-radius:24px;
+
+    border-radius:26px;
+
     padding:25px;
+
+    border:1px solid var(--border);
+
+    box-shadow:var(--shadow);
+
     margin-bottom:25px;
 
-    box-shadow:
-    0 10px 30px rgba(0,0,0,.05);
-
 }
 
 
-.titulo-card{
+
+.card-title{
 
     display:flex;
+
     align-items:center;
+
     gap:12px;
 
-    margin-bottom:20px;
+    margin-bottom:25px;
 
 }
 
 
-.titulo-card i{
 
-    font-size:25px;
+.card-title i{
+
+    width:45px;
+
+    height:45px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:14px;
+
+    background:#eff6ff;
+
     color:var(--primary);
 
+    font-size:22px;
+
 }
 
 
-.titulo-card h4{
+
+.card-title h4{
 
     margin:0;
-    font-weight:700;
+
+    font-weight:800;
+
+    color:var(--title);
 
 }
+
 
 
 /* GRID */
 
+
 .grid{
 
     display:grid;
+
     grid-template-columns:1fr 1fr;
+
     gap:25px;
 
 }
 
 
-@media(max-width:900px){
+
+@media(max-width:1000px){
 
 .grid{
+
     grid-template-columns:1fr;
-}
 
 }
 
+}
 
 
-/* INPUTS */
+
+/* INPUT */
 
 
 .form-control{
 
-    min-height:52px;
+    height:52px;
 
     border-radius:16px;
 
@@ -112,12 +198,17 @@ body{
 
     background:#fbfdff;
 
+    padding:14px 18px;
+
 }
+
 
 
 textarea.form-control{
 
-    min-height:220px;
+    height:220px;
+
+    resize:none;
 
 }
 
@@ -139,20 +230,21 @@ textarea.form-control{
 
 .btn{
 
-    border-radius:15px;
+    border-radius:16px;
 
-    padding:12px 20px;
+    padding:13px 22px;
 
-    font-weight:600;
+    font-weight:700;
 
 }
+
 
 
 .btn-primary{
 
     background:var(--primary);
 
-    border-color:var(--primary);
+    border:none;
 
 }
 
@@ -160,35 +252,75 @@ textarea.form-control{
 
 .btn-primary:hover{
 
-    background:var(--primary-hover);
+    background:var(--primary-dark);
 
 }
 
 
 
+.btn-success{
 
-/* LISTA CLIENTES */
+    background:var(--success);
+
+    border:none;
+
+}
+
+
+
+/* FILTROS */
+
+
+.filtros{
+
+    display:grid;
+
+    grid-template-columns:
+    1fr 180px 180px;
+
+    gap:12px;
+
+    margin-bottom:20px;
+
+}
+
+
+
+@media(max-width:800px){
+
+.filtros{
+
+    grid-template-columns:1fr;
+
+}
+
+}
+
+
+
+/* LISTA */
 
 
 .lista-clientes{
 
-    max-height:450px;
+    max-height:550px;
 
     overflow-y:auto;
 
+    padding:10px;
+
     background:#f8fafc;
 
-    padding:12px;
-
-    border-radius:20px;
-
-    border:1px solid var(--border);
+    border-radius:22px;
 
 }
 
 
 
-.cliente{
+/* CLIENTE CARD */
+
+
+.cliente-card{
 
     display:flex;
 
@@ -196,15 +328,17 @@ textarea.form-control{
 
     gap:15px;
 
-    padding:15px;
-
-    margin-bottom:10px;
+    padding:16px;
 
     background:white;
 
-    border-radius:18px;
+    border-radius:20px;
 
-    border:1px solid #e5e7eb;
+    border:1px solid var(--border);
+
+    margin-bottom:12px;
+
+    transition:.2s;
 
     cursor:pointer;
 
@@ -212,20 +346,63 @@ textarea.form-control{
 
 
 
-.cliente:hover{
+.cliente-card:hover{
+
+    transform:translateY(-2px);
 
     border-color:var(--primary);
 
+    box-shadow:
+    0 8px 25px rgba(37,99,235,.10);
+
+}
+
+
+
+.cliente-card input{
+
+    width:22px;
+
+    height:22px;
+
+    accent-color:var(--primary);
+
 }
 
 
 
-.cliente input{
+/* AVATAR */
 
-    width:20px;
-    height:20px;
+
+.avatar{
+
+    width:50px;
+
+    height:50px;
+
+    border-radius:50%;
+
+    background:
+    linear-gradient(
+    135deg,
+    #2563eb,
+    #60a5fa
+    );
+
+    color:white;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-weight:800;
+
+    font-size:18px;
 
 }
+
 
 
 
@@ -236,9 +413,12 @@ textarea.form-control{
 }
 
 
+
 .cliente-info strong{
 
     display:block;
+
+    font-size:16px;
 
     color:var(--title);
 
@@ -254,16 +434,53 @@ textarea.form-control{
 
 
 
+/* PREÇO */
 
-.badge{
 
-    background:#eef2ff;
+.preco-box{
+
+    background:#eff6ff;
 
     color:#2563eb;
 
-    padding:7px 12px;
+    padding:10px 15px;
+
+    border-radius:16px;
+
+    font-weight:800;
+
+    white-space:nowrap;
+
+}
+
+
+
+.preco-box i{
+
+    margin-right:5px;
+
+}
+
+
+
+/* STATUS */
+
+
+.status{
+
+    display:inline-block;
+
+    margin-top:5px;
+
+    padding:5px 10px;
 
     border-radius:20px;
+
+    background:#dcfce7;
+
+    color:#166534;
+
+    font-size:12px;
 
     font-weight:700;
 
@@ -271,16 +488,17 @@ textarea.form-control{
 
 
 
+
 /* RESULTADO */
 
 
-.resultado{
-
-    min-height:300px;
+.resultado-box{
 
     background:#0f172a;
 
     color:#d1fae5;
+
+    min-height:350px;
 
     font-family:monospace;
 
@@ -288,7 +506,10 @@ textarea.form-control{
 
 
 
-.estatisticas{
+/* ESTATISTICAS */
+
+
+.stats{
 
     display:flex;
 
@@ -304,11 +525,15 @@ textarea.form-control{
 
 .stat{
 
+    flex:1;
+
+    min-width:150px;
+
+    padding:18px;
+
+    border-radius:20px;
+
     background:#f8fafc;
-
-    border-radius:18px;
-
-    padding:15px 25px;
 
     border:1px solid var(--border);
 
@@ -320,9 +545,9 @@ textarea.form-control{
 
     display:block;
 
-    color:var(--primary);
+    font-size:28px;
 
-    font-size:25px;
+    color:var(--primary);
 
 }
 
@@ -342,26 +567,30 @@ textarea.form-control{
 <div class="campanha-container">
 
 
-<div class="mb-4">
+<div class="page-header">
+
+<div>
 
 <h2>
 
-<i class="bi bi-people-fill text-primary"></i>
+<i class="bi bi-whatsapp text-success"></i>
 
-Gerador de Base de Clientes
+Gerador Inteligente de Leads
 
 </h2>
 
 
-<p class="text-muted">
+<p>
 
-Monte listas de contatos para campanhas do WhatsApp.
+Crie listas segmentadas de clientes para campanhas no WhatsApp.
 
 </p>
 
 
 </div>
 
+
+</div>
 
 
 
@@ -370,11 +599,15 @@ Monte listas de contatos para campanhas do WhatsApp.
 <div class="smart-card">
 
 
-<div class="titulo-card">
+<div class="card-title">
 
 <i class="bi bi-pencil-square"></i>
 
-<h4>Adicionar contatos manualmente</h4>
+<h4>
+
+Adicionar contatos manualmente
+
+</h4>
 
 
 </div>
@@ -398,7 +631,6 @@ placeholder="João Silva&#10;Maria Santos">
 
 </textarea>
 
-
 </div>
 
 
@@ -417,7 +649,6 @@ placeholder="5511999999999">
 
 </textarea>
 
-
 </div>
 
 
@@ -425,7 +656,7 @@ placeholder="5511999999999">
 
 
 
-<div class="mt-4">
+<div class="mt-4 d-flex gap-2 flex-wrap">
 
 
 <button
@@ -441,7 +672,6 @@ Gerar Lista
 </button>
 
 
-
 <button
 
 class="btn btn-success"
@@ -450,7 +680,7 @@ id="copiar">
 
 <i class="bi bi-copy"></i>
 
-Copiar
+Copiar WhatsApp
 
 </button>
 
@@ -472,47 +702,117 @@ Limpar
 </div>
 
 
-
 </div>
-
-
-
-
 
 <div class="grid">
 
 
+<!-- =========================
+     CLIENTES CADASTRADOS
+========================== -->
 
-<!-- CLIENTES -->
 
 <div class="smart-card">
 
 
-<div class="titulo-card">
+<div class="card-title">
 
-<i class="bi bi-database"></i>
+<i class="bi bi-people-fill"></i>
 
-<h4>Clientes cadastrados</h4>
+<h4>
+Clientes cadastrados
+</h4>
 
 </div>
+
+
+
+
+<div class="filtros">
 
 
 <input
 
 id="filtro"
 
-class="form-control mb-3"
+class="form-control"
 
-placeholder="Filtrar cliente...">
+placeholder="🔎 Buscar nome ou telefone">
+
+
+<input
+
+type="number"
+
+id="valorMin"
+
+class="form-control"
+
+placeholder="Valor mínimo">
+
+
+<input
+
+type="number"
+
+id="valorMax"
+
+class="form-control"
+
+placeholder="Valor máximo">
+
+
+</div>
+
+
+
+
+<div class="mb-3 d-flex justify-content-between align-items-center">
+
+
+<button
+
+class="btn btn-primary btn-sm"
+
+id="selecionarTodos">
+
+<i class="bi bi-check-all"></i>
+
+Selecionar todos
+
+</button>
+
+
+
+<span class="text-muted">
+
+Clientes encontrados:
+<strong id="contadorClientes">
+
+{{ clientes|length }}
+
+</strong>
+
+</span>
+
+
+</div>
+
+
+
 
 
 <div class="lista-clientes" id="listaClientes">
 
 
+
+
+
 {% for cliente in clientes %}
 
 
-<label class="cliente">
+
+<label class="cliente-card">
 
 
 <input
@@ -521,68 +821,147 @@ type="checkbox"
 
 class="cliente-check"
 
+
+
 data-nome="{{ cliente.nome }}"
+
+
 
 data-telefone="{{ cliente.telefone }}"
 
-data-preco="{{ cliente.faixa_preco or 0 }}">
+
+
+data-preco="{{ cliente.faixa_preco or 0 }}"
+
+
+
+data-bairro="{{ cliente.bairro or '' }}"
+
+
+
+data-status="{{ cliente.status_funil or 'Novo Contato' }}"
+
+>
+
+
+
+
+
+<div class="avatar">
+
+
+{{ cliente.nome[0]|upper }}
+
+</div>
+
+
+
 
 
 
 <div class="cliente-info">
 
+
 <strong>
+
 {{ cliente.nome }}
+
 </strong>
 
 
+
 <small>
+
+<i class="bi bi-phone"></i>
 
 {{ cliente.telefone }}
 
 </small>
 
 
+
+<br>
+
+
+
+<span class="status">
+
+{{ cliente.status_funil or "Novo Contato" }}
+
+</span>
+
+
 </div>
 
 
 
-<span class="badge">
 
-R$ {{ "{:,.0f}".format((cliente.faixa_preco or "0")|float) }}
 
-</span>
+
+<div class="preco-box">
+
+
+<i class="bi bi-cash-stack"></i>
+
+
+R$ 
+
+{{ "{:,.0f}".format((cliente.faixa_preco or "0")|float).replace(",", ".") }}
+
+
+
+</div>
+
 
 
 
 </label>
 
 
+
 {% endfor %}
 
 
+
+
+
 </div>
 
 
+
 </div>
 
 
 
 
 
-<!-- RESULTADO -->
+
+
+<!-- =========================
+        RESULTADO
+========================== -->
 
 
 <div class="smart-card">
 
 
-<div class="titulo-card">
 
-<i class="bi bi-file-text"></i>
+<div class="card-title">
 
-<h4>Resultado</h4>
+
+<i class="bi bi-file-earmark-text"></i>
+
+
+<h4>
+
+Base gerada
+
+</h4>
+
 
 </div>
+
+
 
 
 
@@ -592,7 +971,7 @@ id="resultado"
 
 readonly
 
-class="form-control resultado"
+class="form-control resultado-box"
 
 placeholder="Nome,telefone">
 
@@ -601,60 +980,147 @@ placeholder="Nome,telefone">
 
 
 
-<div class="estatisticas">
 
 
-<div class="stat">
-
-<strong id="totalManual">0</strong>
-
-<span>Manual</span>
-
-</div>
+<div class="stats">
 
 
 
 <div class="stat">
 
-<strong id="totalSelecionados">0</strong>
 
-<span>Selecionados</span>
+<strong id="totalManual">
+
+0
+
+</strong>
+
+
+<span>
+
+Contatos manuais
+
+</span>
+
 
 </div>
+
 
 
 
 <div class="stat">
 
-<strong id="total">0</strong>
 
-<span>Total</span>
+<strong id="totalSelecionados">
+
+0
+
+</strong>
+
+
+<span>
+
+Selecionados
+
+</span>
+
+
+</div>
+
+
+
+
+<div class="stat">
+
+
+<strong id="total">
+
+0
+
+</strong>
+
+
+<span>
+
+Total gerado
+
+</span>
+
 
 </div>
 
 
+
+</div>
+
+
+
+
+
+
+<div class="mt-4 d-flex gap-2 flex-wrap">
+
+
+<button
+
+class="btn btn-success"
+
+id="exportar">
+
+<i class="bi bi-download"></i>
+
+Exportar TXT
+
+</button>
+
+
+
+
+<button
+
+class="btn btn-primary"
+
+id="criarCampanha">
+
+<i class="bi bi-whatsapp"></i>
+
+Criar Campanha
+
+</button>
+
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
 </div>
 
 
 
 </div>
 
-
-
-</div>
-
-
-
-</div>
-```html
 <script>
 
+
 let contatosManuais = [];
+
 let contatosSelecionados = [];
 
 
 
-// LIMPA TELEFONE
+
+
+// =============================
+// LIMPAR TELEFONE
+// =============================
+
 
 function limparTelefone(numero){
 
@@ -665,9 +1131,15 @@ function limparTelefone(numero){
 
 
 
-// MONTA LINHA
 
-function montarLinha(nome, telefone){
+
+
+// =============================
+// FORMATAR LINHA
+// =============================
+
+
+function montarLinha(nome,telefone){
 
     return `${nome},${limparTelefone(telefone)}`;
 
@@ -675,154 +1147,303 @@ function montarLinha(nome, telefone){
 
 
 
-// GERAR CONTATOS MANUAIS
+
+
+
+// =============================
+// GERAR MANUAL
+// =============================
+
 
 document
 .getElementById("gerarManual")
-.addEventListener("click",function(){
+.addEventListener("click",()=>{
 
 
-
-    let nomes =
-    document
-    .getElementById("nomes")
-    .value
-    .split("\n")
-    .map(x=>x.trim())
-    .filter(x=>x);
-
-
-
-    let telefones =
-    document
-    .getElementById("telefones")
-    .value
-    .split("\n")
-    .map(x=>limparTelefone(x))
-    .filter(x=>x);
-
-
-
-    contatosManuais=[];
-
-
-
-    let total =
-    Math.min(
-        nomes.length,
-        telefones.length
-    );
-
-
-
-    for(let i=0;i<total;i++){
-
-
-        contatosManuais.push({
-
-            nome:nome = nomes[i],
-
-            telefone:telefones[i]
-
-        });
-
-
-    }
-
-
-
-    atualizarResultado();
-
-
-});
-
-
-
-
-
-// CLIENTES SELECIONADOS
-
-
+let nomes = 
 document
-.querySelectorAll(".cliente-check")
-.forEach(check=>{
-
-
-check.addEventListener("change",function(){
-
-
-    contatosSelecionados=[];
+.getElementById("nomes")
+.value
+.split("\n")
+.map(x=>x.trim())
+.filter(Boolean);
 
 
 
-    document
-    .querySelectorAll(".cliente-check:checked")
-    .forEach(item=>{
+let telefones = 
+document
+.getElementById("telefones")
+.value
+.split("\n")
+.map(x=>limparTelefone(x))
+.filter(Boolean);
 
 
-        contatosSelecionados.push({
 
-            nome:item.dataset.nome,
-
-            telefone:
-            limparTelefone(
-                item.dataset.telefone
-            )
+contatosManuais=[];
 
 
-        });
 
+let total =
+Math.min(
+    nomes.length,
+    telefones.length
+);
+
+
+
+for(let i=0;i<total;i++){
+
+
+    contatosManuais.push({
+
+        nome:nome=nomes[i],
+
+        telefone:telefones[i]
 
     });
 
 
+}
 
-    atualizarResultado();
 
+
+atualizarResultado();
 
 
 });
 
 
-});
 
 
 
 
 
-// FILTRO DE CLIENTES
-
-
-document
-.getElementById("filtro")
-.addEventListener("input",function(){
-
-
-let busca =
-this.value.toLowerCase();
-
+// =============================
+// CLIENTES SELECIONADOS
+// =============================
 
 
 document
-.querySelectorAll(".cliente")
+.addEventListener("change",function(e){
+
+
+if(
+e.target.classList.contains("cliente-check")
+){
+
+
+
+contatosSelecionados=[];
+
+
+
+document
+.querySelectorAll(".cliente-check:checked")
 .forEach(cliente=>{
 
 
+contatosSelecionados.push({
+
+nome:
+cliente.dataset.nome,
+
+
+telefone:
+limparTelefone(
+cliente.dataset.telefone
+)
+
+
+});
+
+
+});
+
+
+
+atualizarResultado();
+
+
+}
+
+
+
+});
+
+
+
+
+
+
+
+
+
+// =============================
+// SELECIONAR TODOS
+// =============================
+
+
+document
+.getElementById("selecionarTodos")
+.addEventListener("click",()=>{
+
+
+
+let checks =
+document
+.querySelectorAll(
+".cliente-check"
+);
+
+
+
+let todosMarcados =
+[...checks]
+.every(c=>c.checked);
+
+
+
+checks.forEach(c=>{
+
+
+c.checked=!todosMarcados;
+
+
+});
+
+
+
+contatosSelecionados=[];
+
+
+
+document
+.querySelectorAll(".cliente-check:checked")
+.forEach(cliente=>{
+
+
+contatosSelecionados.push({
+
+nome:cliente.dataset.nome,
+
+telefone:
+limparTelefone(
+cliente.dataset.telefone
+)
+
+});
+
+
+});
+
+
+
+atualizarResultado();
+
+
+});
+
+
+
+
+
+
+
+
+
+// =============================
+// FILTROS
+// =============================
+
+
+function aplicarFiltros(){
+
+
+let busca =
+document
+.getElementById("filtro")
+.value
+.toLowerCase();
+
+
+
+let minimo =
+Number(
+document
+.getElementById("valorMin")
+.value
+);
+
+
+
+let maximo =
+Number(
+document
+.getElementById("valorMax")
+.value
+);
+
+
+
+let contador=0;
+
+
+
+
+document
+.querySelectorAll(".cliente-card")
+.forEach(card=>{
+
+
 let texto =
-cliente.innerText.toLowerCase();
+card.innerText
+.toLowerCase();
 
 
 
-if(texto.includes(busca)){
+let preco =
+Number(
+card
+.querySelector(".cliente-check")
+.dataset.preco
+);
 
 
-    cliente.style.display="flex";
+
+let aparece =
+texto.includes(busca);
+
+
+
+let dentroMin =
+!minimo ||
+preco >= minimo;
+
+
+
+let dentroMax =
+!maximo ||
+preco <= maximo;
+
+
+
+if(
+aparece &&
+dentroMin &&
+dentroMax
+){
+
+
+card.style.display="flex";
+
+contador++;
 
 
 }else{
 
 
-    cliente.style.display="none";
+card.style.display="none";
 
 
 }
@@ -831,31 +1452,74 @@ if(texto.includes(busca)){
 });
 
 
-});
+
+document
+.getElementById("contadorClientes")
+.innerText =
+contador;
+
+
+
+}
 
 
 
 
 
 
-// ATUALIZA RESULTADO
+document
+.getElementById("filtro")
+.addEventListener(
+"input",
+aplicarFiltros
+);
+
+
+
+document
+.getElementById("valorMin")
+.addEventListener(
+"input",
+aplicarFiltros
+);
+
+
+
+document
+.getElementById("valorMax")
+.addEventListener(
+"input",
+aplicarFiltros
+);
+
+
+
+
+
+
+
+
+
+// =============================
+// RESULTADO
+// =============================
 
 
 function atualizarResultado(){
 
 
+
 let todos=[
 
-    ...contatosManuais,
+...contatosManuais,
 
-    ...contatosSelecionados
+...contatosSelecionados
 
 ];
 
 
 
-let usados = new Set();
-
+let usados=new Set();
 
 let lista=[];
 
@@ -866,25 +1530,28 @@ todos.forEach(contato=>{
 
 let telefone =
 limparTelefone(
-    contato.telefone
+contato.telefone
 );
 
 
 
-if(!usados.has(telefone)){
+if(
+telefone &&
+!usados.has(telefone)
+){
 
 
-    usados.add(telefone);
+usados.add(telefone);
 
 
 
-    lista.push({
+lista.push({
 
-        nome:contato.nome,
+nome:contato.nome,
 
-        telefone:telefone
+telefone
 
-    });
+});
 
 
 }
@@ -892,6 +1559,7 @@ if(!usados.has(telefone)){
 
 
 });
+
 
 
 
@@ -903,12 +1571,15 @@ document
 
 lista
 .map(c=>
+
 montarLinha(
-    c.nome,
-    c.telefone
+c.nome,
+c.telefone
 )
+
 )
 .join("\n");
+
 
 
 
@@ -945,12 +1616,16 @@ lista.length;
 
 
 
+
+
+// =============================
 // COPIAR
+// =============================
 
 
 document
 .getElementById("copiar")
-.addEventListener("click",function(){
+.addEventListener("click",()=>{
 
 
 let texto =
@@ -964,7 +1639,7 @@ if(!texto){
 
 
 alert(
-"Não existe nenhum contato gerado."
+"Nenhum contato gerado"
 );
 
 
@@ -982,7 +1657,7 @@ navigator
 
 
 alert(
-"Lista copiada com sucesso!"
+"Lista copiada!"
 );
 
 
@@ -995,56 +1670,124 @@ alert(
 
 
 
-// LIMPAR
+
+
+// =============================
+// EXPORTAR TXT
+// =============================
 
 
 document
-.getElementById("limpar")
-.addEventListener("click",function(){
+.getElementById("exportar")
+.addEventListener("click",()=>{
 
 
-
-document
-.getElementById("nomes")
-.value="";
-
-
-
-document
-.getElementById("telefones")
-.value="";
-
-
-
+let texto =
 document
 .getElementById("resultado")
-.value="";
+.value;
 
+
+
+if(!texto){
+
+alert(
+"Nenhuma lista para exportar"
+);
+
+return;
+
+}
+
+
+
+let arquivo =
+new Blob(
+[texto],
+{
+type:"text/plain"
+}
+);
+
+
+
+let link =
+document.createElement("a");
+
+
+
+link.href =
+URL.createObjectURL(
+arquivo
+);
+
+
+
+link.download =
+"lista_clientes.txt";
+
+
+
+link.click();
+
+
+
+});
+
+
+
+
+
+
+
+
+
+// =============================
+// CRIAR CAMPANHA
+// =============================
 
 
 document
-.querySelectorAll(".cliente-check")
-.forEach(c=>{
+.getElementById("criarCampanha")
+.addEventListener("click",()=>{
 
 
-c.checked=false;
+let total =
+document
+.getElementById("total")
+.innerText;
+
+
+
+if(total=="0"){
+
+
+alert(
+"Selecione clientes primeiro"
+);
+
+
+return;
+
+
+}
+
+
+
+
+alert(
+"Base pronta para campanha WhatsApp!"
+);
+
+
+
+// Aqui depois podemos ligar:
+// window.location.href="/campanhas";
 
 
 });
 
 
-
-contatosManuais=[];
-
-contatosSelecionados=[];
-
-
-
-atualizarResultado();
-
-
-
-});
 
 
 
@@ -1052,4 +1795,5 @@ atualizarResultado();
 
 
 {% endblock %}
+
 
