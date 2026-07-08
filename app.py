@@ -3599,38 +3599,14 @@ def dashboard_v2():
 
 
 @app.route("/CriarCampanha")
-def campanha():
+def criar_campanha():
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    # Carrega os imóveis da empresa do usuário
-    cursor.execute("""
-        SELECT
-            id,
-            titulo,
-            bairro,
-            cidade,
-            valor,
-            foto,
-            quartos,
-            banheiros,
-            vaga_garagem
-        FROM imoveis
-        WHERE empresa_id = ?
-        ORDER BY titulo
-    """, (session["empresa_id"],))
-
-    imoveis = cursor.fetchall()
-
-    conn.close()
+    clientes = Clientes.query.all()
 
     return render_template(
         "CriarCampanha.html",
-        imoveis=imoveis
+        clientes=clientes
     )
-
 @app.route("/importar_imoveis_pdf", methods=["POST"])
 @verificar_sessao
 def importar_imoveis_pdf():
