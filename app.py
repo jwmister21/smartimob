@@ -2616,70 +2616,149 @@ def importar_clientes():
 @app.route('/site/<subdominio>')
 def exibir_site(subdominio):
 
-    conn = sqlite3.connect('/data/imobiliaria.db')
+    conn = sqlite3.connect(DB_PATH)
+
     conn.row_factory = sqlite3.Row
+
     cursor = conn.cursor()
 
-    # Busca configuração do site pelo subdomínio
-    empresa = cursor.execute(
-        """
+
+
+    # Buscar configuração do site
+
+    cursor.execute("""
         SELECT *
         FROM configuracoes_site
         WHERE subdominio = ?
-        """,
-        (subdominio,)
-    ).fetchone()
+    """,
+    (
+        subdominio,
+    ))
+
+
+    empresa = cursor.fetchone()
+
+
 
     if not empresa:
+
         conn.close()
+
         return "Site não encontrado", 404
 
 
-    # Busca imóveis da empresa
-    rows = cursor.execute(
-        """
+
+
+    # Buscar imóveis da empresa
+
+    cursor.execute("""
         SELECT *
         FROM imoveis
         WHERE empresa_id = ?
         ORDER BY id DESC
-        """,
-        (empresa["empresa_id"],)
-    ).fetchall()
+    """,
+    (
+        empresa["empresa_id"],
+    ))
 
 
-    imoveis = []
+    imoveis_db = cursor.fetchall()
 
-    for row in rows:
+
+
+    lista_final = []
+
+
+
+    for row in imoveis_db:
+
 
         imovel = dict(row)
 
-        # Busca fotos do imóvel
-        fotos = cursor.execute(
-            """
+
+
+        # ==========================
+        # BUSCAR FOTOS
+        # ==========================
+
+        cursor.execute("""
             SELECT nome_arquivo
             FROM fotos_imoveis
             WHERE imovel_id = ?
             ORDER BY id ASC
-            """,
-            (imovel["id"],)
-        ).fetchall()
+        """,
+        (
+            imovel["id"],
+        ))
 
 
-        imovel["fotos"] = [
+
+        fotos = [
             foto["nome_arquivo"]
-            for foto in fotos
+            for foto in cursor.fetchall()
         ]
 
-        imoveis.append(imovel)
+
+        imovel["fotos"] = fotos
+
+
+
+
+        # ==========================
+        # BUSCAR REFERÊNCIAS
+        # ==========================
+
+        cursor.execute("""
+            SELECT
+                nome,
+                categoria,
+                distancia
+            FROM referencias_imovel
+            WHERE imovel_id = ?
+            ORDER BY distancia ASC
+        """,
+        (
+            imovel["id"],
+        ))
+
+
+
+        referencias = cursor.fetchall()
+
+
+
+        imovel["referencias"] = [
+            {
+                "nome": ref["nome"],
+                "categoria": ref["categoria"],
+                "distancia": ref["distancia"]
+            }
+            for ref in referencias
+        ]
+
+
+
+        print(
+            "SITE IMOVEL",
+            imovel["id"],
+            "FOTOS:",
+            imovel["fotos"]
+        )
+
+
+        lista_final.append(imovel)
+
+
 
 
     conn.close()
 
 
+
     return render_template(
         "template_site.html",
         empresa=empresa,
-        imoveis=imoveis
+        imoveis=lista_final
     )
  
 @app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
