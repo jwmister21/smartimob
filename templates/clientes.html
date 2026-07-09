@@ -5,11 +5,6 @@
 
 {% block content %}
 <style>
-/* =====================================================
-   SMARTZEN - CLIENTES PREMIUM
-   Mantém lógica, rotas, IDs e estrutura cliente[]
-===================================================== */
-
 .clientes-page{
     width:100%;
     max-width:100%;
@@ -19,8 +14,8 @@
 .clientes-hero{
     background:linear-gradient(135deg,#0f172a,#1e293b 55%,#2563eb);
     color:white;
-    border-radius:26px;
-    padding:26px;
+    border-radius:24px;
+    padding:24px;
     margin-bottom:22px;
     box-shadow:0 18px 45px rgba(15,23,42,.18);
     display:flex;
@@ -32,9 +27,8 @@
 
 .clientes-hero h2{
     margin:0;
-    font-size:30px;
-    font-weight:800;
-    letter-spacing:-.03em;
+    font-size:28px;
+    font-weight:900;
 }
 
 .clientes-hero p{
@@ -44,11 +38,11 @@
 }
 
 .clientes-count-card{
-    min-width:190px;
-    background:rgba(255,255,255,.12);
+    min-width:180px;
+    background:rgba(255,255,255,.13);
     border:1px solid rgba(255,255,255,.18);
     border-radius:20px;
-    padding:18px 22px;
+    padding:17px 22px;
     backdrop-filter:blur(12px);
     text-align:center;
 }
@@ -64,19 +58,19 @@
     margin-top:7px;
     color:#dbeafe;
     font-size:13px;
-    font-weight:600;
+    font-weight:700;
 }
 
 .clientes-panel{
     background:#fff;
     border:1px solid #e5e7eb;
-    border-radius:24px;
+    border-radius:22px;
     box-shadow:0 16px 40px rgba(15,23,42,.06);
     overflow:hidden;
 }
 
 .clientes-toolbar{
-    padding:20px;
+    padding:18px;
     display:flex;
     justify-content:space-between;
     align-items:end;
@@ -97,7 +91,7 @@
     display:block;
     margin-bottom:6px;
     font-size:12px;
-    font-weight:800;
+    font-weight:900;
     color:#64748b;
     text-transform:uppercase;
     letter-spacing:.06em;
@@ -105,7 +99,7 @@
 
 .pesquisa{
     width:100%;
-    min-width:170px;
+    min-width:165px;
     height:46px;
     padding:0 14px;
     border-radius:14px;
@@ -130,7 +124,7 @@
 }
 
 .busca-clientes{
-    width:310px;
+    width:330px;
     max-width:100%;
 }
 
@@ -145,7 +139,7 @@
     border:none;
     border-radius:14px;
     text-decoration:none;
-    font-weight:800;
+    font-weight:900;
     font-size:14px;
     cursor:pointer;
     transition:.2s;
@@ -171,32 +165,19 @@
 .tabela-wrap{
     width:100%;
     max-width:100%;
-    overflow-x:auto;
-}
-
-.tabela-wrap::-webkit-scrollbar{
-    height:8px;
-}
-
-.tabela-wrap::-webkit-scrollbar-thumb{
-    background:#cbd5e1;
-    border-radius:999px;
+    overflow-x:hidden;
 }
 
 .clientes-table{
     width:100%;
-    min-width:980px;
     border-collapse:separate;
     border-spacing:0;
     table-layout:fixed;
 }
 
 .clientes-table th{
-    position:sticky;
-    top:0;
-    z-index:2;
     background:#f8fafc;
-    padding:16px 18px;
+    padding:15px 16px;
     text-align:left;
     color:#64748b;
     font-size:12px;
@@ -207,7 +188,7 @@
 }
 
 .clientes-table td{
-    padding:18px;
+    padding:16px;
     border-bottom:1px solid #edf2f7;
     color:#334155;
     vertical-align:middle;
@@ -218,14 +199,12 @@
     background:#f8fafc;
 }
 
-.col-nome{width:260px;}
-.col-telefone{width:150px;}
-.col-interesse{width:150px;}
-.col-bairro{width:150px;}
-.col-captacao{width:130px;}
-.col-predio{width:160px;}
-.col-criado{width:150px;}
-.col-acoes{width:190px;}
+.col-nome{width:30%;}
+.col-telefone{width:17%;}
+.col-captacao{width:16%;}
+.col-predio{width:20%;}
+.col-criado{width:12%;}
+.col-acoes{width:120px;}
 
 .cliente-identidade{
     display:flex;
@@ -273,9 +252,7 @@
     font-weight:700;
 }
 
-.badge-info,
-.badge-green,
-.badge-gray{
+.badge-green{
     display:inline-flex;
     max-width:100%;
     align-items:center;
@@ -286,21 +263,23 @@
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
-}
-
-.badge-info{
-    background:#eff6ff;
-    color:#2563eb;
-}
-
-.badge-green{
     background:#dcfce7;
     color:#047857;
 }
 
-.badge-gray{
-    background:#f1f5f9;
-    color:#64748b;
+.badge-blue{
+    display:inline-flex;
+    max-width:100%;
+    align-items:center;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    background:#eff6ff;
+    color:#2563eb;
 }
 
 .texto-celula{
@@ -425,6 +404,14 @@
     .btn-secondary{
         width:100%;
     }
+
+    .tabela-wrap{
+        overflow-x:auto;
+    }
+
+    .clientes-table{
+        min-width:760px;
+    }
 }
 </style>
 
@@ -433,7 +420,7 @@
     <div class="clientes-hero">
         <div>
             <h2>Clientes</h2>
-            <p>Visualize perfil, origem, empreendimento e contato sem sair do fluxo do CRM.</p>
+            <p>Visualize origem, empreendimento e contato dos seus clientes de forma rápida.</p>
         </div>
 
         <div class="clientes-count-card">
@@ -477,7 +464,7 @@
                     class="pesquisa busca-clientes"
                     type="text"
                     id="filtroClientes"
-                    placeholder="Pesquisar cliente, telefone, bairro..."
+                    placeholder="Pesquisar cliente, telefone, captação..."
                     onkeyup="filtrarTabela()">
             </div>
 
@@ -489,10 +476,8 @@
                     <tr>
                         <th class="col-nome">Nome</th>
                         <th class="col-telefone">Telefone</th>
-                        <th class="col-interesse">Interesse</th>
-                        <th class="col-bairro">Bairro</th>
                         <th class="col-captacao">Captação</th>
-                        <th class="col-predio">Prédio</th>
+                        <th class="col-predio">Empreendimento</th>
                         <th class="col-criado">Criado Por</th>
                         <th class="col-acoes">Ações</th>
                     </tr>
@@ -521,23 +506,15 @@
                         </td>
 
                         <td>
-                            <span class="badge-info">{{ cliente[5] }}</span>
+                            <span class="badge-blue">{{ cliente.origem }}</span>
                         </td>
 
                         <td>
-                            <span class="badge-gray">{{ cliente[7] }}</span>
+                            <span class="badge-green">{{ cliente.empreendimento }}</span>
                         </td>
 
                         <td>
-                            <span class="texto-celula">{{ cliente.origem }}</span>
-                        </td>
-
-                        <td>
-                            <span class="badge-green">{{ cliente.construtora }}</span>
-                        </td>
-
-                        <td>
-                            <span class="texto-celula">{{ cliente.empreendimento }}</span>
+                            <span class="texto-celula">{{ cliente.construtora }}</span>
                         </td>
 
                         <td>
@@ -561,7 +538,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="sem-clientes">
+                        <td colspan="6" class="sem-clientes">
                             Nenhum cliente encontrado.
                         </td>
                     </tr>
@@ -574,7 +551,6 @@
 
 </div>
 
-<!-- Modal -->
 <div id="modalDetalhes" class="modal-overlay">
     <div class="modal-content">
         <h3 id="modalNome">Detalhes do Cliente</h3>
