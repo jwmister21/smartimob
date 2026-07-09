@@ -5,615 +5,620 @@
 
 {% block content %}
 <style>
-    :root{
-        --sz-primary:#2563eb;
-        --sz-primary-dark:#1d4ed8;
-        --sz-success:#16a34a;
-        --sz-success-soft:#dcfce7;
-        --sz-bg:#f4f7fb;
-        --sz-card:#ffffff;
-        --sz-text:#0f172a;
-        --sz-muted:#64748b;
-        --sz-border:#e2e8f0;
-        --sz-soft:#f8fafc;
-        --sz-danger:#ef4444;
-        --sz-shadow:0 18px 45px rgba(15,23,42,.08);
-    }
+/* =====================================================
+   SMARTZEN - CLIENTES PREMIUM
+   Mantém lógica, rotas, IDs e estrutura cliente[]
+===================================================== */
 
-    .clientes-page{
-        display:flex;
-        flex-direction:column;
-        gap:22px;
-    }
+.clientes-page{
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+}
 
+.clientes-hero{
+    background:linear-gradient(135deg,#0f172a,#1e293b 55%,#2563eb);
+    color:white;
+    border-radius:26px;
+    padding:26px;
+    margin-bottom:22px;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.clientes-hero h2{
+    margin:0;
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-.03em;
+}
+
+.clientes-hero p{
+    margin:8px 0 0;
+    color:#cbd5e1;
+    font-size:14px;
+}
+
+.clientes-count-card{
+    min-width:190px;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:20px;
+    padding:18px 22px;
+    backdrop-filter:blur(12px);
+    text-align:center;
+}
+
+.clientes-count-card strong{
+    display:block;
+    font-size:34px;
+    line-height:1;
+}
+
+.clientes-count-card span{
+    display:block;
+    margin-top:7px;
+    color:#dbeafe;
+    font-size:13px;
+    font-weight:600;
+}
+
+.clientes-panel{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:24px;
+    box-shadow:0 16px 40px rgba(15,23,42,.06);
+    overflow:hidden;
+}
+
+.clientes-toolbar{
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    gap:16px;
+    flex-wrap:wrap;
+    background:linear-gradient(180deg,#ffffff,#f8fafc);
+    border-bottom:1px solid #e5e7eb;
+}
+
+.filtros-data{
+    display:flex;
+    gap:10px;
+    align-items:end;
+    flex-wrap:wrap;
+}
+
+.campo-grupo label{
+    display:block;
+    margin-bottom:6px;
+    font-size:12px;
+    font-weight:800;
+    color:#64748b;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+}
+
+.pesquisa{
+    width:100%;
+    min-width:170px;
+    height:46px;
+    padding:0 14px;
+    border-radius:14px;
+    border:1px solid #dbe3ef;
+    background:#fff;
+    color:#0f172a;
+    outline:none;
+    font-size:14px;
+    transition:.2s;
+}
+
+.pesquisa:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.busca-wrap{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.busca-clientes{
+    width:310px;
+    max-width:100%;
+}
+
+.btn-primary,
+.btn-secondary{
+    height:46px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:0 20px;
+    border:none;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:800;
+    font-size:14px;
+    cursor:pointer;
+    transition:.2s;
+    white-space:nowrap;
+}
+
+.btn-primary{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    box-shadow:0 10px 22px rgba(37,99,235,.22);
+}
+
+.btn-secondary{
+    background:#f1f5f9;
+    color:#475569;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover{
+    transform:translateY(-2px);
+}
+
+.tabela-wrap{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+}
+
+.tabela-wrap::-webkit-scrollbar{
+    height:8px;
+}
+
+.tabela-wrap::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:999px;
+}
+
+.clientes-table{
+    width:100%;
+    min-width:980px;
+    border-collapse:separate;
+    border-spacing:0;
+    table-layout:fixed;
+}
+
+.clientes-table th{
+    position:sticky;
+    top:0;
+    z-index:2;
+    background:#f8fafc;
+    padding:16px 18px;
+    text-align:left;
+    color:#64748b;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.clientes-table td{
+    padding:18px;
+    border-bottom:1px solid #edf2f7;
+    color:#334155;
+    vertical-align:middle;
+    font-size:14px;
+}
+
+.clientes-table tr:hover td{
+    background:#f8fafc;
+}
+
+.col-nome{width:260px;}
+.col-telefone{width:150px;}
+.col-interesse{width:150px;}
+.col-bairro{width:150px;}
+.col-captacao{width:130px;}
+.col-predio{width:160px;}
+.col-criado{width:150px;}
+.col-acoes{width:190px;}
+
+.cliente-identidade{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+
+.avatar-cliente{
+    width:44px;
+    height:44px;
+    min-width:44px;
+    border-radius:15px;
+    background:linear-gradient(135deg,#2563eb,#22c55e);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    box-shadow:0 10px 22px rgba(37,99,235,.18);
+}
+
+.cliente-texto{
+    min-width:0;
+}
+
+.nome-link{
+    display:block;
+    color:#0f172a;
+    font-weight:900;
+    text-decoration:none;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.nome-link:hover{
+    color:#2563eb;
+}
+
+.cliente-id{
+    margin-top:4px;
+    color:#94a3b8;
+    font-size:12px;
+    font-weight:700;
+}
+
+.badge-info,
+.badge-green,
+.badge-gray{
+    display:inline-flex;
+    max-width:100%;
+    align-items:center;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.badge-info{
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+.badge-green{
+    background:#dcfce7;
+    color:#047857;
+}
+
+.badge-gray{
+    background:#f1f5f9;
+    color:#64748b;
+}
+
+.texto-celula{
+    display:block;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.acoes-cell{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:nowrap;
+}
+
+.btn-dados,
+.btn-whats{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    border:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    text-decoration:none;
+    cursor:pointer;
+    font-size:17px;
+    transition:.2s;
+}
+
+.btn-dados{
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+.btn-whats{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.btn-dados:hover,
+.btn-whats:hover{
+    transform:translateY(-2px);
+    filter:brightness(.97);
+}
+
+.sem-clientes{
+    padding:40px;
+    text-align:center;
+    color:#64748b;
+    font-weight:700;
+}
+
+.modal-overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.45);
+    z-index:1000;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    backdrop-filter:blur(6px);
+}
+
+.modal-content{
+    background:#fff;
+    padding:28px;
+    border-radius:22px;
+    width:420px;
+    max-width:100%;
+    border:1px solid #e5e7eb;
+    box-shadow:0 25px 70px rgba(15,23,42,.25);
+}
+
+.modal-content h3{
+    margin:0 0 18px;
+    color:#0f172a;
+    font-size:22px;
+}
+
+.modal-content p{
+    color:#64748b;
+    margin:10px 0;
+}
+
+.btn-fechar{
+    width:100%;
+    margin-top:20px;
+    height:44px;
+    border:none;
+    border-radius:14px;
+    background:#f1f5f9;
+    color:#475569;
+    cursor:pointer;
+    font-weight:800;
+}
+
+@media(max-width:900px){
     .clientes-hero{
-        position:relative;
-        overflow:hidden;
-        border-radius:28px;
-        padding:28px;
-        background:
-            radial-gradient(circle at top right,rgba(37,99,235,.24),transparent 35%),
-            linear-gradient(135deg,#0f172a,#1e293b 55%,#2563eb);
-        color:#fff;
-        box-shadow:var(--sz-shadow);
-    }
-
-    .clientes-hero::after{
-        content:"";
-        position:absolute;
-        width:230px;
-        height:230px;
-        right:-80px;
-        bottom:-110px;
-        border-radius:50%;
-        background:rgba(255,255,255,.09);
-    }
-
-    .clientes-hero-content{
-        position:relative;
-        z-index:2;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:20px;
-        flex-wrap:wrap;
+        padding:22px;
     }
 
     .clientes-hero h2{
-        margin:0;
-        font-size:30px;
-        font-weight:800;
-        letter-spacing:-.03em;
-    }
-
-    .clientes-hero p{
-        margin:8px 0 0;
-        color:#cbd5e1;
-        font-size:14px;
-    }
-
-    .hero-counter{
-        min-width:220px;
-        background:rgba(255,255,255,.12);
-        border:1px solid rgba(255,255,255,.2);
-        backdrop-filter:blur(12px);
-        border-radius:22px;
-        padding:18px 20px;
-    }
-
-    .hero-counter span{
-        display:block;
-        color:#cbd5e1;
-        font-size:13px;
-        font-weight:600;
-    }
-
-    .hero-counter strong{
-        display:block;
-        margin-top:4px;
-        font-size:34px;
-        line-height:1;
-        font-weight:900;
+        font-size:24px;
     }
 
     .clientes-toolbar{
-        background:var(--sz-card);
-        border:1px solid var(--sz-border);
-        border-radius:24px;
-        padding:20px;
-        box-shadow:0 12px 30px rgba(15,23,42,.05);
-        display:flex;
-        justify-content:space-between;
-        gap:18px;
-        align-items:flex-end;
-        flex-wrap:wrap;
+        align-items:stretch;
     }
 
-    .filtros-data{
-        display:flex;
-        gap:12px;
-        align-items:flex-end;
-        flex-wrap:wrap;
+    .filtros-data,
+    .busca-wrap{
+        width:100%;
     }
 
-    .campo-grupo label{
-        display:block;
-        margin-bottom:7px;
-        font-size:12px;
-        color:var(--sz-muted);
-        font-weight:700;
-        text-transform:uppercase;
-        letter-spacing:.04em;
-    }
-
-    .pesquisa{
-        height:46px;
-        width:300px;
-        padding:0 15px;
-        border-radius:14px;
-        border:1px solid var(--sz-border);
-        background:#fff;
-        color:var(--sz-text);
-        outline:none;
-        font-size:14px;
-        transition:.2s;
-    }
-
-    .pesquisa:focus{
-        border-color:var(--sz-primary);
-        box-shadow:0 0 0 4px rgba(37,99,235,.12);
-    }
-
-    .input-date{
-        width:170px;
-    }
-
-    .acoes{
-        display:flex;
-        gap:12px;
-        align-items:center;
-        flex-wrap:wrap;
-    }
-
+    .campo-grupo,
+    .campo-grupo .pesquisa,
+    .busca-clientes,
     .btn-primary,
     .btn-secondary{
-        min-height:46px;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        gap:8px;
-        border:none;
-        border-radius:14px;
-        padding:0 20px;
-        text-decoration:none;
-        font-weight:700;
-        font-size:14px;
-        cursor:pointer;
-        transition:.2s;
-        white-space:nowrap;
-    }
-
-    .btn-primary{
-        background:linear-gradient(135deg,var(--sz-primary),#3b82f6);
-        color:#fff;
-        box-shadow:0 12px 24px rgba(37,99,235,.2);
-    }
-
-    .btn-secondary{
-        background:#f1f5f9;
-        color:#475569;
-    }
-
-    .btn-primary:hover,
-    .btn-secondary:hover{
-        transform:translateY(-2px);
-    }
-
-    .clientes-card{
-        background:var(--sz-card);
-        border:1px solid var(--sz-border);
-        border-radius:26px;
-        box-shadow:var(--sz-shadow);
-        overflow:hidden;
-    }
-
-    .clientes-card-header{
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:15px;
-        flex-wrap:wrap;
-        padding:22px 24px;
-        border-bottom:1px solid var(--sz-border);
-        background:linear-gradient(180deg,#fff,#f8fafc);
-    }
-
-    .clientes-card-header h3{
-        margin:0;
-        color:var(--sz-text);
-        font-size:20px;
-        font-weight:800;
-    }
-
-    .clientes-card-header p{
-        margin:4px 0 0;
-        color:var(--sz-muted);
-        font-size:13px;
-    }
-
-    .table-wrap{
         width:100%;
-        overflow-x:auto;
     }
-
-    table{
-        width:100%;
-        border-collapse:separate;
-        border-spacing:0;
-        min-width:980px;
-    }
-
-    th{
-        background:#f8fafc;
-        padding:15px 18px;
-        text-align:left;
-        color:#64748b;
-        font-size:12px;
-        font-weight:800;
-        text-transform:uppercase;
-        letter-spacing:.04em;
-        border-bottom:1px solid var(--sz-border);
-    }
-
-    td{
-        padding:17px 18px;
-        border-bottom:1px solid #eef2f7;
-        color:#334155;
-        font-size:14px;
-        vertical-align:middle;
-    }
-
-    tbody tr{
-        transition:.2s;
-    }
-
-    tbody tr:hover{
-        background:#f8fbff;
-    }
-
-    tbody tr:last-child td{
-        border-bottom:none;
-    }
-
-    .cliente-nome-cell{
-        display:flex;
-        align-items:center;
-        gap:12px;
-    }
-
-    .cliente-avatar{
-        width:42px;
-        height:42px;
-        border-radius:14px;
-        background:linear-gradient(135deg,#2563eb,#22c55e);
-        color:#fff;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-weight:900;
-        box-shadow:0 8px 18px rgba(37,99,235,.2);
-        flex-shrink:0;
-    }
-
-    .nome-link{
-        color:#0f172a;
-        font-weight:800;
-        text-decoration:none;
-    }
-
-    .nome-link:hover{
-        color:var(--sz-primary);
-    }
-
-    .cliente-sub{
-        margin-top:3px;
-        color:#94a3b8;
-        font-size:12px;
-    }
-
-    .tag-info{
-        display:inline-flex;
-        align-items:center;
-        max-width:180px;
-        padding:7px 11px;
-        border-radius:999px;
-        background:#f1f5f9;
-        color:#475569;
-        font-size:12px;
-        font-weight:700;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-    }
-
-    .tag-blue{
-        background:#eff6ff;
-        color:#2563eb;
-    }
-
-    .tag-green{
-        background:#ecfdf5;
-        color:#047857;
-    }
-
-    .acoes-row{
-        display:flex;
-        gap:8px;
-        align-items:center;
-        flex-wrap:wrap;
-    }
-
-    .btn-whats,
-    .btn-dados{
-        min-height:36px;
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        gap:6px;
-        padding:0 12px;
-        border-radius:11px;
-        text-decoration:none;
-        font-size:12px;
-        font-weight:800;
-        cursor:pointer;
-        border:none;
-        transition:.2s;
-    }
-
-    .btn-whats{
-        background:var(--sz-success-soft);
-        color:#166534;
-    }
-
-    .btn-dados{
-        background:#eff6ff;
-        color:#1d4ed8;
-    }
-
-    .btn-whats:hover,
-    .btn-dados:hover{
-        transform:translateY(-2px);
-        filter:brightness(.98);
-    }
-
-    .empty-state{
-        padding:45px 20px;
-        text-align:center;
-        color:#64748b;
-    }
-
-    .empty-state strong{
-        display:block;
-        margin-bottom:6px;
-        color:#0f172a;
-        font-size:18px;
-    }
-
-    .modal-overlay{
-        display:none;
-        position:fixed;
-        inset:0;
-        background:rgba(15,23,42,.55);
-        z-index:1000;
-        justify-content:center;
-        align-items:center;
-        padding:20px;
-        backdrop-filter:blur(4px);
-    }
-
-    .modal-content{
-        width:420px;
-        max-width:100%;
-        background:#ffffff;
-        padding:28px;
-        border-radius:24px;
-        border:1px solid var(--sz-border);
-        box-shadow:0 30px 80px rgba(15,23,42,.24);
-    }
-
-    .modal-content h3{
-        margin:0 0 16px;
-        color:#0f172a;
-        font-size:22px;
-        font-weight:800;
-    }
-
-    .modal-content p{
-        color:#64748b;
-        margin:12px 0;
-        line-height:1.5;
-    }
-
-    .modal-close{
-        width:100%;
-        min-height:44px;
-        margin-top:18px;
-        background:#f1f5f9;
-        color:#475569;
-        border:none;
-        padding:10px 20px;
-        border-radius:14px;
-        cursor:pointer;
-        font-weight:800;
-    }
-
-    @media(max-width:900px){
-        .clientes-hero,
-        .clientes-toolbar,
-        .clientes-card-header{
-            padding:20px;
-        }
-
-        .clientes-hero h2{
-            font-size:24px;
-        }
-
-        .hero-counter{
-            width:100%;
-        }
-
-        .pesquisa,
-        .input-date,
-        .acoes,
-        .filtros-data,
-        .btn-primary,
-        .btn-secondary{
-            width:100%;
-        }
-
-        .filtros-data form,
-        form.filtros-data{
-            width:100%;
-        }
-
-        .campo-grupo{
-            width:100%;
-        }
-    }
+}
 </style>
 
 <div class="clientes-page">
 
     <div class="clientes-hero">
-        <div class="clientes-hero-content">
-            <div>
-                <h2>Clientes</h2>
-                <p>Gerencie sua base, acompanhe interesses e fale rápido pelo WhatsApp.</p>
-            </div>
+        <div>
+            <h2>Clientes</h2>
+            <p>Visualize perfil, origem, empreendimento e contato sem sair do fluxo do CRM.</p>
+        </div>
 
-            <div class="hero-counter">
-                <span>Clientes filtrados</span>
-                <strong id="clientesVisiveis">{{ clientes|length }}</strong>
-            </div>
+        <div class="clientes-count-card">
+            <strong id="clientesVisiveis">{{ clientes|length }}</strong>
+            <span>Clientes filtrados</span>
         </div>
     </div>
 
-    <div class="clientes-toolbar">
-        <form method="GET" class="filtros-data">
-            <div class="campo-grupo">
-                <label>De</label>
+    <div class="clientes-panel">
+
+        <div class="clientes-toolbar">
+
+            <form method="GET" class="filtros-data">
+                <div class="campo-grupo">
+                    <label>De</label>
+                    <input
+                        type="date"
+                        name="data_inicio"
+                        value="{{ data_inicio or '' }}"
+                        class="pesquisa">
+                </div>
+
+                <div class="campo-grupo">
+                    <label>Até</label>
+                    <input
+                        type="date"
+                        name="data_fim"
+                        value="{{ data_fim or '' }}"
+                        class="pesquisa">
+                </div>
+
+                <button class="btn-primary" type="submit">🔎 Filtrar</button>
+
+                <a href="/clientes" class="btn-secondary">Limpar</a>
+            </form>
+
+            <div class="busca-wrap">
+                <a href="/cadastrar_cliente" class="btn-primary">+ Novo Cliente</a>
+
                 <input
-                    type="date"
-                    name="data_inicio"
-                    value="{{ data_inicio or '' }}"
-                    class="pesquisa input-date">
+                    class="pesquisa busca-clientes"
+                    type="text"
+                    id="filtroClientes"
+                    placeholder="Pesquisar cliente, telefone, bairro..."
+                    onkeyup="filtrarTabela()">
             </div>
 
-            <div class="campo-grupo">
-                <label>Até</label>
-                <input
-                    type="date"
-                    name="data_fim"
-                    value="{{ data_fim or '' }}"
-                    class="pesquisa input-date">
-            </div>
-
-            <button class="btn-primary" type="submit">
-                🔎 Filtrar
-            </button>
-
-            <a href="/clientes" class="btn-secondary">
-                Limpar
-            </a>
-        </form>
-
-        <div class="acoes">
-            <a href="/cadastrar_cliente" class="btn-primary">+ Novo Cliente</a>
-            <input class="pesquisa" type="text" id="filtroClientes" placeholder="Pesquisar cliente..." onkeyup="filtrarTabela()">
-        </div>
-    </div>
-
-    <div class="clientes-card">
-        <div class="clientes-card-header">
-            <div>
-                <h3>Lista de clientes</h3>
-                <p>Visualize perfil, origem, empreendimento e contato.</p>
-            </div>
         </div>
 
-        <div class="table-wrap">
-            <table>
+        <div class="tabela-wrap">
+            <table class="clientes-table">
                 <thead>
                     <tr>
-                        <th>Nome</th>
-                        <th>Telefone</th>
-                        <th>Interesse</th>
-                        <th>Bairro</th>
-                        <th>Captação</th>
-                        <th>Prédio</th>
-                        <th>Criado Por</th>
-                        <th>Ações</th>
+                        <th class="col-nome">Nome</th>
+                        <th class="col-telefone">Telefone</th>
+                        <th class="col-interesse">Interesse</th>
+                        <th class="col-bairro">Bairro</th>
+                        <th class="col-captacao">Captação</th>
+                        <th class="col-predio">Prédio</th>
+                        <th class="col-criado">Criado Por</th>
+                        <th class="col-acoes">Ações</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {% for cliente in clientes %}
                     <tr>
                         <td>
-                            <div class="cliente-nome-cell">
-                                <div class="cliente-avatar">
+                            <div class="cliente-identidade">
+                                <div class="avatar-cliente">
                                     {{ cliente[1][0]|upper }}
                                 </div>
-                                <div>
-                                    <a href="/cliente/{{ cliente[0] }}" class="nome-link">{{ cliente[1] }}</a>
-                                    <div class="cliente-sub">ID #{{ cliente[0] }}</div>
+
+                                <div class="cliente-texto">
+                                    <a href="/cliente/{{ cliente[0] }}" class="nome-link">
+                                        {{ cliente[1] }}
+                                    </a>
+                                    <div class="cliente-id">ID #{{ cliente[0] }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td>{{ cliente[2] }}</td>
-                        <td><span class="tag-info tag-blue">{{ cliente[5] }}</span></td>
-                        <td><span class="tag-info">{{ cliente[7] }}</span></td>
-                        <td>{{ cliente.origem }}</td>
-                        <td><span class="tag-info tag-green">{{ cliente.construtora }}</span></td>
-                        <td>{{ cliente.empreendimento }}</td>
+
                         <td>
-                            <div class="acoes-row">
-                                <button class="btn-dados" onclick="window.location.href='/cliente/{{ cliente[0] }}'">👤 Perfil</button>
-                                <a class="btn-whats" target="_blank" href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">WhatsApp</a>
+                            <span class="texto-celula">{{ cliente[2] }}</span>
+                        </td>
+
+                        <td>
+                            <span class="badge-info">{{ cliente[5] }}</span>
+                        </td>
+
+                        <td>
+                            <span class="badge-gray">{{ cliente[7] }}</span>
+                        </td>
+
+                        <td>
+                            <span class="texto-celula">{{ cliente.origem }}</span>
+                        </td>
+
+                        <td>
+                            <span class="badge-green">{{ cliente.construtora }}</span>
+                        </td>
+
+                        <td>
+                            <span class="texto-celula">{{ cliente.empreendimento }}</span>
+                        </td>
+
+                        <td>
+                            <div class="acoes-cell">
+                                <button
+                                    class="btn-dados"
+                                    title="Perfil"
+                                    onclick="window.location.href='/cliente/{{ cliente[0] }}'">
+                                    👤
+                                </button>
+
+                                <a
+                                    class="btn-whats"
+                                    title="WhatsApp"
+                                    target="_blank"
+                                    href="https://wa.me/55{{ cliente[2] | replace('(','') | replace(')','') | replace('-','') | replace(' ','') }}">
+                                    🟢
+                                </a>
                             </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8">
-                            <div class="empty-state">
-                                <strong>Nenhum cliente encontrado</strong>
-                                Cadastre um novo cliente para começar.
-                            </div>
+                        <td colspan="8" class="sem-clientes">
+                            Nenhum cliente encontrado.
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
     </div>
 
 </div>
 
+<!-- Modal -->
 <div id="modalDetalhes" class="modal-overlay">
     <div class="modal-content">
         <h3 id="modalNome">Detalhes do Cliente</h3>
+
         <p><strong>E-mail:</strong> <span id="modalEmail"></span></p>
         <p><strong>CPF:</strong> <span id="modalCpf"></span></p>
         <p><strong>Endereço:</strong> <span id="modalEndereco"></span></p>
-        <button onclick="document.getElementById('modalDetalhes').style.display='none'" class="modal-close">Fechar</button>
+
+        <button
+            class="btn-fechar"
+            onclick="document.getElementById('modalDetalhes').style.display='none'">
+            Fechar
+        </button>
     </div>
 </div>
 
 <script>
-    function filtrarTabela() {
+function filtrarTabela() {
 
-        let input = document.getElementById("filtroClientes");
-        let filtro = input.value.toLowerCase();
+    let input = document.getElementById("filtroClientes");
+    let filtro = input.value.toLowerCase();
 
-        let tabela = document.querySelector("table tbody");
-        let linhas = tabela.getElementsByTagName("tr");
+    let tabela = document.querySelector("table tbody");
+    let linhas = tabela.getElementsByTagName("tr");
 
-        let totalVisiveis = 0;
+    let totalVisiveis = 0;
 
-        for (let i = 0; i < linhas.length; i++) {
+    for (let i = 0; i < linhas.length; i++) {
 
-            let textoLinha = linhas[i].textContent || linhas[i].innerText;
+        let textoLinha = linhas[i].textContent || linhas[i].innerText;
 
-            if (textoLinha.toLowerCase().includes(filtro)) {
-                linhas[i].style.display = "";
+        if (textoLinha.toLowerCase().includes(filtro)) {
+            linhas[i].style.display = "";
+
+            if (!linhas[i].querySelector(".sem-clientes")) {
                 totalVisiveis++;
-            } else {
-                linhas[i].style.display = "none";
             }
+        } else {
+            linhas[i].style.display = "none";
         }
-
-        document.getElementById("clientesVisiveis").innerText = totalVisiveis;
     }
+
+    document.getElementById("clientesVisiveis").innerText = totalVisiveis;
+}
 </script>
 
 {% endblock %}
