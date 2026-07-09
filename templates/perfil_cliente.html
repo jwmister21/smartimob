@@ -5,264 +5,202 @@
 
 {% block content %}
 
-<style> 
-    /*=========================================
-MODAL EDITAR CLIENTE
-=========================================*/
+<style>
+.perfil-wrapper{
+    width:100%;
+    max-width:100%;
+}
 
-.modal-editar{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(15,23,42,.55);
-    backdrop-filter:blur(6px);
-    justify-content:center;
+.perfil-hero{
+    background:linear-gradient(135deg,#0f172a,#1e293b 55%,#2563eb);
+    border-radius:26px;
+    padding:26px;
+    margin-bottom:24px;
+    color:#fff;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+    display:flex;
+    justify-content:space-between;
     align-items:center;
-    z-index:999999;
+    gap:20px;
+    flex-wrap:wrap;
 }
 
-.modal-editar-content{
+.perfil-hero h1{
+    margin:0;
+    font-size:30px;
+    font-weight:900;
+    letter-spacing:-.03em;
+}
 
-    width:900px;
-    max-width:95%;
-    max-height:90vh;
+.perfil-hero p{
+    margin:8px 0 0;
+    color:#cbd5e1;
+    font-size:14px;
+}
 
-    overflow-y:auto;
-
-    background:#fff;
-
+.status-card{
+    background:rgba(255,255,255,.13);
+    border:1px solid rgba(255,255,255,.18);
+    backdrop-filter:blur(12px);
     border-radius:20px;
-
-    padding:30px;
-
-    box-shadow:0 25px 70px rgba(0,0,0,.25);
-
+    padding:16px 20px;
+    min-width:220px;
 }
 
-.modal-editar h2{
-
-    color:#1e293b;
-
-    margin-bottom:25px;
-
+.status-card span{
+    display:block;
+    color:#dbeafe;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.06em;
 }
 
-.grid-editar{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:18px;
-
-}
-
-.campo{
-
-    display:flex;
-
-    flex-direction:column;
-
-}
-
-.campo label{
-
-    margin-bottom:6px;
-
-    font-weight:600;
-
-    color:#64748b;
-
-}
-
-.campo input,
-.campo select,
-.campo textarea{
-
-    background:#f8fafc;
-
-    border:1px solid #e2e8f0;
-
-    border-radius:10px;
-
-    padding:12px;
-
-    font-size:15px;
-
-}
-
-.campo textarea{
-
-    min-height:120px;
-
-    resize:vertical;
-
-}
-
-.full{
-
-    grid-column:1/-1;
-
-}
-
-.modal-acoes{
-
-    display:flex;
-
-    justify-content:flex-end;
-
-    gap:12px;
-
-    margin-top:25px;
-
-}
-
-.btn-cancelar{
-
-    background:#e2e8f0;
-
-    color:#334155;
-
-    border:none;
-
-    padding:12px 20px;
-
-    border-radius:10px;
-
-    cursor:pointer;
-
-}
-
-.btn-salvar{
-
-    background:#2563eb;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 25px;
-
-    border-radius:10px;
-
-    cursor:pointer;
-
-    font-weight:bold;
-
+.status-card strong{
+    display:block;
+    margin-top:6px;
+    font-size:22px;
 }
 
 .perfil-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:25px;
-    margin-top:15px;
+    gap:24px;
 }
 
 .perfil-card{
     background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:24px;
+    padding:24px;
+    box-shadow:0 16px 40px rgba(15,23,42,.06);
+    margin-bottom:24px;
+}
+
+.card-title{
+    margin:0 0 18px;
+    color:#0f172a;
+    font-size:21px;
+    font-weight:900;
+    letter-spacing:-.02em;
+}
+
+.card-subtitle{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:#2563eb;
+    background:#eff6ff;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:12px;
+}
+
+.info-box{
+    background:#f8fafc;
     border:1px solid #e2e8f0;
-    border-radius:20px;
-    padding:25px;
-    box-shadow:0 4px 6px -1px rgba(0,0,0,.05);
-    margin-bottom:25px;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:20px;
 }
 
 .info-label{
     color:#64748b;
-    font-size:.75rem;
+    font-size:12px;
     text-transform:uppercase;
-    margin-bottom:5px;
+    margin-bottom:6px;
     display:block;
-    font-weight:700;
+    font-weight:900;
+    letter-spacing:.06em;
 }
 
 .info-val{
     color:#1e293b;
-    font-size:1.1rem;
+    font-size:16px;
     margin-bottom:18px;
-    font-weight:500;
+    font-weight:700;
+    word-break:break-word;
+}
+
+.info-val.money{
+    color:#059669;
 }
 
 .funnel-selector{
     background:#f8fafc;
-    border:1px solid #e2e8f0;
+    border:1px solid #dbe3ef;
     color:#1e293b;
-    padding:12px;
-    border-radius:10px;
+    padding:13px 14px;
+    border-radius:14px;
     width:100%;
-    font-size:1rem;
-    margin-bottom:15px;
+    font-size:15px;
+    margin-bottom:14px;
+    outline:none;
+}
+
+.funnel-selector:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.btn-salvar-status,
+.btn-excluir,
+.btn-ocorrencia,
+.btn-historico,
+.btn-whatsapp,
+.btn-ver-imovel,
+.btn-cancelar,
+.btn-salvar{
+    border:none;
+    cursor:pointer;
+    font-weight:900;
+    transition:.2s;
+    text-decoration:none;
 }
 
 .btn-salvar-status{
-    background:#2563eb;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
     color:white;
-    border:none;
-    padding:12px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:bold;
+    padding:13px;
+    border-radius:14px;
     width:100%;
-    transition:.2s;
+    box-shadow:0 10px 22px rgba(37,99,235,.22);
 }
 
-.btn-salvar-status:hover{
-    background:#1d4ed8;
+.btn-salvar-status:hover,
+.btn-historico:hover,
+.btn-ocorrencia:hover,
+.btn-whatsapp:hover,
+.btn-salvar:hover{
+    transform:translateY(-2px);
+}
+
+.acoes-cliente{
+    display:flex;
+    gap:10px;
+    margin:16px 0 22px;
+    flex-wrap:wrap;
+}
+
+.btn-historico{
+    background:#eff6ff;
+    color:#2563eb;
+    padding:12px 16px;
+    border-radius:14px;
 }
 
 .btn-excluir{
     background:#fef2f2;
     color:#dc2626;
-    border:none;
-    padding:12px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:bold;
+    padding:13px;
+    border-radius:14px;
     width:100%;
-    margin-top:15px;
+    margin-top:8px;
 }
-
-.ocorrencia-form textarea{
-    width:100%;
-    min-height:120px;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    color:#1e293b;
-    padding:15px;
-    border-radius:12px;
-    box-sizing:border-box;
-    resize:vertical;
-}
-
-.btn-ocorrencia{
-    margin-top:12px;
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-}
-
-.ocorrencia-item{
-    background:#ffffff;
-    border:1px solid #e2e8f0;
-    border-left:4px solid #2563eb;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:12px;
-}
-
-.ocorrencia-topo{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:10px;
-    font-size:.85rem;
-    color:#64748b;
-}
-
-/* MATCH IA */
 
 .match-scroll{
     max-height:700px;
@@ -279,254 +217,432 @@ MODAL EDITAR CLIENTE
     border-radius:20px;
 }
 
-/* MODAL */
+.match-item{
+    background:#f8fafc;
+    padding:16px;
+    border-radius:18px;
+    margin-bottom:12px;
+    border:1px solid #e2e8f0;
+}
 
-.modal-historico{
+.match-item h4{
+    color:#0f172a;
+    margin:0;
+    font-size:16px;
+}
+
+.match-item p{
+    color:#059669;
+    margin:7px 0 12px;
+    font-weight:900;
+}
+
+.acoes-match{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+
+.btn-ver-imovel{
+    color:#2563eb;
+    background:#eff6ff;
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:14px;
+}
+
+.btn-whatsapp{
+    background:linear-gradient(135deg,#25D366,#128C7E);
+    color:white;
+    padding:10px 16px;
+    border-radius:12px;
+    font-size:14px;
+    box-shadow:0 8px 18px rgba(37,211,102,.25);
+}
+
+.ocorrencia-form textarea{
+    width:100%;
+    min-height:120px;
+    background:#f8fafc;
+    border:1px solid #dbe3ef;
+    color:#1e293b;
+    padding:15px;
+    border-radius:16px;
+    box-sizing:border-box;
+    resize:vertical;
+    outline:none;
+}
+
+.ocorrencia-form textarea:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.btn-ocorrencia{
+    margin-top:12px;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:white;
+    padding:12px 18px;
+    border-radius:14px;
+}
+
+.ocorrencia-item{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-left:5px solid #2563eb;
+    padding:16px;
+    border-radius:16px;
+    margin-bottom:12px;
+}
+
+.ocorrencia-topo{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+    font-size:13px;
+    color:#64748b;
+    flex-wrap:wrap;
+}
+
+.modal-historico,
+.modal-editar{
     display:none;
     position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.65);
-    z-index:999999;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    backdrop-filter:blur(6px);
     justify-content:center;
     align-items:center;
+    z-index:999999;
+    padding:20px;
+}
+
+.modal-content-historico,
+.modal-editar-content{
+    background:#fff;
+    border-radius:24px;
+    padding:26px;
+    border:1px solid #e5e7eb;
+    box-shadow:0 25px 70px rgba(15,23,42,.25);
+    max-height:90vh;
+    overflow-y:auto;
 }
 
 .modal-content-historico{
     width:700px;
     max-width:95%;
-    max-height:85vh;
-    overflow-y:auto;
-    background:#fff;
-    border-radius:18px;
-    padding:25px;
-    box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.modal-editar-content{
+    width:900px;
+    max-width:95%;
 }
 
 .modal-topo{
     display:flex;
     justify-content:space-between;
     align-items:center;
+    gap:15px;
     margin-bottom:20px;
+}
+
+.modal-topo h2,
+.modal-topo h3{
+    margin:0;
+    color:#0f172a;
 }
 
 .fechar-modal{
     cursor:pointer;
     font-size:24px;
-    font-weight:bold;
+    font-weight:900;
+    color:#64748b;
 }
 
 .historico-item{
-    padding:12px;
-    border-bottom:1px solid #eee;
+    padding:14px;
+    border-bottom:1px solid #eef2f7;
+    color:#334155;
 }
 
 .status-badge{
     background:#2563eb;
     color:white;
-    padding:4px 10px;
-    border-radius:8px;
+    padding:5px 11px;
+    border-radius:999px;
     font-size:12px;
+    font-weight:900;
 }
 
-.btn-historico{
-    background:#2563eb;
+.grid-editar{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+
+.campo{
+    display:flex;
+    flex-direction:column;
+}
+
+.campo label{
+    margin-bottom:6px;
+    font-weight:900;
+    color:#64748b;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+}
+
+.campo input,
+.campo select,
+.campo textarea{
+    background:#f8fafc;
+    border:1px solid #dbe3ef;
+    border-radius:14px;
+    padding:13px;
+    font-size:15px;
+    outline:none;
+}
+
+.campo input:focus,
+.campo textarea:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
+
+.campo textarea{
+    min-height:120px;
+    resize:vertical;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.modal-acoes{
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+    margin-top:24px;
+    flex-wrap:wrap;
+}
+
+.btn-cancelar{
+    background:#f1f5f9;
+    color:#475569;
+    padding:12px 20px;
+    border-radius:14px;
+}
+
+.btn-salvar{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
     color:white;
-    border:none;
-    padding:10px 18px;
-    border-radius:10px;
-    cursor:pointer;
+    padding:12px 24px;
+    border-radius:14px;
+    box-shadow:0 10px 22px rgba(37,99,235,.22);
 }
 
 @media(max-width:900px){
     .perfil-grid{
         grid-template-columns:1fr;
     }
-}
-    .btn-whatsapp{
-    background: linear-gradient(135deg,#25D366,#128C7E);
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    margin-left: 10px;
-    transition: all .25s ease;
-    box-shadow: 0 4px 10px rgba(37,211,102,.25);
-}
 
-.btn-whatsapp:hover{
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(37,211,102,.35);
-}
+    .perfil-hero{
+        padding:22px;
+    }
 
-.btn-whatsapp:active{
-    transform: scale(.97);
-}
+    .perfil-hero h1{
+        font-size:24px;
+    }
 
-    .acoes-match{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-top:10px;
-}
+    .grid-editar{
+        grid-template-columns:1fr;
+    }
 
-.btn-ver-imovel{
-    color:#2563eb;
-    font-weight:600;
-    text-decoration:none;
-}
+    .acoes-cliente,
+    .acoes-match,
+    .modal-acoes{
+        flex-direction:column;
+        align-items:stretch;
+    }
 
-.btn-ver-imovel:hover{
-    text-decoration:underline;
+    .btn-historico,
+    .btn-whatsapp,
+    .btn-ver-imovel,
+    .btn-cancelar,
+    .btn-salvar{
+        width:100%;
+        text-align:center;
+    }
 }
-
 </style>
 
-<div class="perfil-grid">
-    <div class="perfil-card">
-        <span style="color:#2563eb; font-weight:bold; font-size: 0.8rem;">👤 CADASTRO GERAL</span>
-        <h2 style="color:#1e293b; margin-top: 5px;">{{ cliente[1] }}</h2>
+<div class="perfil-wrapper">
 
-        <div style="background:#eff6ff; padding:15px; border-radius:12px; border-left:5px solid #2563eb; margin-bottom: 20px;">
-            <span class="info-label">📍 Estágio Atual</span>
-            <div style="color:#1e293b; font-size:1.3rem; font-weight:bold;">{{ cliente[8] if cliente[8] else 'Novo' }}</div>
+    <div class="perfil-hero">
+        <div>
+            <h1>{{ cliente[1] }}</h1>
+            <p>Ficha completa do cliente, histórico, ocorrências e sugestões inteligentes de imóveis.</p>
         </div>
 
-        <form action="/cliente/atualizar_status/{{ cliente[0] }}" method="POST">
-            <label class="info-label">Mudar etapa</label>
-            <select name="status_funil" class="funnel-selector" onchange="verificarData(this)">
-                <option value="Lead Novo">🆕 Lead Novo</option>
-                <option value="Negociação">💬 Negociação</option>
-                <option value="Visita Agendada">📅 Visita Agendada</option>
-                <option value="Concluido">🏆 Venda Concluída</option>
-                <option value="Desistencia">⚠️ Desistência</option>
-            </select>
-            <div id="campoData" style="display:none;">
-                <label class="info-label">Data da visita</label>
-                <input type="datetime-local" name="data_visita" class="funnel-selector" value="{{ cliente[10] }}">
-            </div>
-            <button class="btn-salvar-status">💾 Atualizar Status</button>
-        </form>
-       
-        <div style="display:flex; gap:10px; margin-top:15px;">
-
-    <button class="btn-historico" onclick="abrirHistorico()">
-        📋 Ver Histórico
-    </button>
-
-    <button class="btn-historico" onclick="abrirEditarCliente()">
-        ✏️ Editar Cliente
-    </button>
-
-</div>
-        <span class="info-label">Telefone</span>
-        <div class="info-val">📞 {{ cliente[2] }}</div>
-
-        <span class="info-label">Orçamento</span>
-        <div class="info-val" style="color:#059669;">💰 {{ cliente.faixa_preco}}</div>
-
-         <span class="info-label">Entrada/avista</span>
-        <div class="info-val" style="color:#059669;">💰 {{ cliente.entrada }}</div>
-
-        <span class="info-label">Meio de captação</span>
-        <div class="info-val" style="color:#059669;">🚀 {{ cliente.origem }}</div>
-
-        <span class="info-label">Sobre o cliente</span>
-        <div class="info-val" style="color:#059669;">📝 {{ cliente[13] }}</div>
-
-
-        <form action="{{ url_for('excluir_cliente', cliente_id=cliente[0]) }}" method="POST" onsubmit="return confirm('Excluir definitivamente?');">
-            <button class="btn-excluir">🗑 Excluir Cliente</button>
-        </form>
+        <div class="status-card">
+            <span>Estágio atual</span>
+            <strong>{{ cliente[8] if cliente[8] else 'Novo' }}</strong>
+        </div>
     </div>
 
-    <div class="perfil-card">
-    <span style="color:#059669; font-weight:bold;">🧠 Sugestões Match IA</span>
-    <h2 style="color:#1e293b; margin-top:5px;">Imóveis Ideais</h2>
+    <div class="perfil-grid">
 
-    <div class="match-scroll">
+        <div>
 
-    {% for match in matches %}
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:10px; border:1px solid #e2e8f0;">
-                <h4 style="color:#1e293b; margin:0;">{{ match.titulo }}</h4>
-                <p style="color:#059669; margin: 5px 0;">{{ match.valor }}</p>
-                <a href="/imovel/{{ match.id }}" style="color:#2563eb; font-weight:600;">Ver imóvel</a>
-                <button
-    class="btn-whatsapp"
-    onclick="enviarImovel({{ cliente[0] }}, {{ match.id }})">
+            <div class="perfil-card">
+                <span class="card-subtitle">👤 Cadastro Geral</span>
+                <h2 class="card-title">Informações do Cliente</h2>
 
-    📲 Enviar WhatsApp
+                <div class="info-box">
+                    <span class="info-label">📍 Estágio Atual</span>
+                    <div class="info-val" style="margin-bottom:0;">
+                        {{ cliente[8] if cliente[8] else 'Novo' }}
+                    </div>
+                </div>
 
-</button>
+                <form action="/cliente/atualizar_status/{{ cliente[0] }}" method="POST">
+                    <label class="info-label">Mudar etapa</label>
+
+                    <select name="status_funil" class="funnel-selector" onchange="verificarData(this)">
+                        <option value="Lead Novo">🆕 Lead Novo</option>
+                        <option value="Negociação">💬 Negociação</option>
+                        <option value="Visita Agendada">📅 Visita Agendada</option>
+                        <option value="Concluido">🏆 Venda Concluída</option>
+                        <option value="Desistencia">⚠️ Desistência</option>
+                    </select>
+
+                    <div id="campoData" style="display:none;">
+                        <label class="info-label">Data da visita</label>
+                        <input type="datetime-local" name="data_visita" class="funnel-selector" value="{{ cliente[10] }}">
+                    </div>
+
+                    <button class="btn-salvar-status">💾 Atualizar Status</button>
+                </form>
+
+                <div class="acoes-cliente">
+                    <button class="btn-historico" onclick="abrirHistorico()">
+                        📋 Ver Histórico
+                    </button>
+
+                    <button class="btn-historico" onclick="abrirEditarCliente()">
+                        ✏️ Editar Cliente
+                    </button>
+                </div>
+
+                <span class="info-label">Telefone</span>
+                <div class="info-val">📞 {{ cliente[2] }}</div>
+
+                <span class="info-label">Orçamento</span>
+                <div class="info-val money">💰 {{ cliente.faixa_preco }}</div>
+
+                <span class="info-label">Entrada / À vista</span>
+                <div class="info-val money">💰 {{ cliente.entrada }}</div>
+
+                <span class="info-label">Meio de captação</span>
+                <div class="info-val money">🚀 {{ cliente.origem }}</div>
+
+                <span class="info-label">Sobre o cliente</span>
+                <div class="info-val money">📝 {{ cliente[13] }}</div>
+
+                <form action="{{ url_for('excluir_cliente', cliente_id=cliente[0]) }}" method="POST" onsubmit="return confirm('Excluir definitivamente?');">
+                    <button class="btn-excluir">🗑 Excluir Cliente</button>
+                </form>
             </div>
-        {% else %}
-            <p style="color:#64748b;">Nenhum imóvel encontrado.</p>
-        {% endfor %}
-    </div>
-</div>
 
-<div class="perfil-card">
-    <h3>📝 Ocorrências</h3>
-    <form class="ocorrencia-form" method="POST" action="/cliente/adicionar_ocorrencia/{{ cliente[0] }}">
-        <textarea name="ocorrencia" placeholder="Digite uma observação..." required></textarea>
-        <button class="btn-ocorrencia">➕ Adicionar Ocorrência</button>
-    </form>
-</div>
+            <div class="perfil-card">
+                <h3 class="card-title">➕ Nova Ocorrência</h3>
 
-<div class="perfil-card">
-    <h3>📝 Ocorrências</h3>
-
-    {% for o in ocorrencias %}
-
-        <div class="ocorrencia-item">
-
-            <div class="ocorrencia-topo">
-
-                <strong>
-                    {{ o["usuario_nome"] }}
-                </strong>
-
-                <span>
-                    {{ o["data_criacao"] }}
-                </span>
-
-            </div>
-
-            <div class="ocorrencia-texto" style="color:#334155;">
-                {{ o["ocorrencia"] }}
+                <form class="ocorrencia-form" method="POST" action="/cliente/adicionar_ocorrencia/{{ cliente[0] }}">
+                    <textarea name="ocorrencia" placeholder="Digite uma observação..." required></textarea>
+                    <button class="btn-ocorrencia">➕ Adicionar Ocorrência</button>
+                </form>
             </div>
 
         </div>
 
-    {% else %}
+        <div>
 
-        <p style="color:#94a3b8;">
-            Nenhuma ocorrência.
-        </p>
+            <div class="perfil-card">
+                <span class="card-subtitle" style="color:#059669; background:#dcfce7;">🧠 Sugestões Match IA</span>
+                <h2 class="card-title">Imóveis Ideais</h2>
 
-    {% endfor %}
+                <div class="match-scroll">
+                    {% for match in matches %}
+                        <div class="match-item">
+                            <h4>{{ match.titulo }}</h4>
+                            <p>{{ match.valor }}</p>
+
+                            <div class="acoes-match">
+                                <a href="/imovel/{{ match.id }}" class="btn-ver-imovel">
+                                    Ver imóvel
+                                </a>
+
+                                <button
+                                    class="btn-whatsapp"
+                                    onclick="enviarImovel({{ cliente[0] }}, {{ match.id }})">
+                                    📲 Enviar WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p style="color:#64748b;">Nenhum imóvel encontrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="perfil-card">
+                <h3 class="card-title">📝 Ocorrências</h3>
+
+                {% for o in ocorrencias %}
+
+                    <div class="ocorrencia-item">
+
+                        <div class="ocorrencia-topo">
+                            <strong>{{ o["usuario_nome"] }}</strong>
+                            <span>{{ o["data_criacao"] }}</span>
+                        </div>
+
+                        <div class="ocorrencia-texto" style="color:#334155;">
+                            {{ o["ocorrencia"] }}
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <p style="color:#94a3b8;">
+                        Nenhuma ocorrência.
+                    </p>
+
+                {% endfor %}
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
+
 <div id="modalHistorico" class="modal-historico">
 
     <div class="modal-content-historico">
 
         <div class="modal-topo">
-
             <h3>📋 Histórico do Cliente</h3>
 
-            <span
-                class="fechar-modal"
-                onclick="fecharHistorico()"
-            >
+            <span class="fechar-modal" onclick="fecharHistorico()">
                 ✖
             </span>
-
         </div>
 
         <div class="historico-lista">
@@ -535,25 +651,21 @@ MODAL EDITAR CLIENTE
 
                 {% for item in historico %}
 
-                <div class="historico-item">
+                    <div class="historico-item">
+                        <strong>{{ item["nome_usuario"] }}</strong>
 
-                    <strong>
-                        {{ item["nome_usuario"] }}
-                    </strong>
+                        alterou para
 
-                    alterou para
+                        <span class="status-badge">
+                            {{ item["status"] }}
+                        </span>
 
-                    <span class="status-badge">
-                        {{ item["status"] }}
-                    </span>
+                        <br>
 
-                    <br>
-
-                    <small>
-                        {{ item["data_evento"] }}
-                    </small>
-
-                </div>
+                        <small>
+                            {{ item["data_evento"] }}
+                        </small>
+                    </div>
 
                 {% endfor %}
 
@@ -568,9 +680,6 @@ MODAL EDITAR CLIENTE
     </div>
 
 </div>
-    <!--=========================================
-MODAL EDITAR CLIENTE
-==========================================-->
 
 <div id="modalEditarCliente" class="modal-editar">
 
@@ -580,15 +689,13 @@ MODAL EDITAR CLIENTE
 
             <h2>✏️ Editar Cliente</h2>
 
-            <span class="fechar-modal"
-                  onclick="fecharEditarCliente()">
+            <span class="fechar-modal" onclick="fecharEditarCliente()">
                 ✖
             </span>
 
         </div>
 
-        <form action="/cliente/atualizar_dados/{{ cliente[0] }}"
-              method="POST">
+        <form action="/cliente/atualizar_dados/{{ cliente[0] }}" method="POST">
 
             <div class="grid-editar">
 
@@ -632,21 +739,15 @@ MODAL EDITAR CLIENTE
                         value="{{ cliente[10] or '' }}">
                 </div>
 
-                <div class="campo">
-                    <label>Bairro</label>
-                    <input
-                        type="text"
-                        name="bairro"
-                        value="{{ cliente[7] or '' }}">
-                </div>
+                <input
+                    type="hidden"
+                    name="bairro"
+                    value="{{ cliente[7] or '' }}">
 
-                <div class="campo">
-                    <label>Interesse</label>
-                    <input
-                        type="text"
-                        name="interesse"
-                        value="{{ cliente[5] or '' }}">
-                </div>
+                <input
+                    type="hidden"
+                    name="interesse"
+                    value="{{ cliente[5] or '' }}">
 
                 <div class="campo">
                     <label>Faixa de Preço</label>
@@ -682,9 +783,7 @@ MODAL EDITAR CLIENTE
 
                 <div class="campo full">
                     <label>Sobre o Cliente</label>
-
                     <textarea name="sobre">{{ cliente[13] or '' }}</textarea>
-
                 </div>
 
             </div>
@@ -695,17 +794,13 @@ MODAL EDITAR CLIENTE
                     type="button"
                     class="btn-cancelar"
                     onclick="fecharEditarCliente()">
-
                     Cancelar
-
                 </button>
 
                 <button
                     type="submit"
                     class="btn-salvar">
-
                     💾 Salvar Alterações
-
                 </button>
 
             </div>
@@ -715,8 +810,9 @@ MODAL EDITAR CLIENTE
     </div>
 
 </div>
+
 <script>
-    function enviarImovel(clienteId, imovelId){
+function enviarImovel(clienteId, imovelId){
 
     if(!confirm("Enviar este imóvel para o cliente?")){
         return;
@@ -789,9 +885,6 @@ window.onclick = function(event){
         fecharHistorico();
     }
 }
-/*=========================================
-MODAL EDITAR CLIENTE
-=========================================*/
 
 function abrirEditarCliente(){
 
@@ -827,4 +920,5 @@ document.addEventListener("keydown",function(e){
 
 });
 </script>
+
 {% endblock %}
