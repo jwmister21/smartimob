@@ -2807,6 +2807,7 @@ def campanhas():
     erro_whatsapp = None
     sucesso_envio = session.pop("sucesso_envio", None)
     erro_envio = session.pop("erro_envio", None)
+    campanha_finalizada = session.pop("campanha_finalizada", None)
 
     if nome_instancia:
         try:
@@ -2831,6 +2832,8 @@ def campanhas():
         erro_whatsapp=erro_whatsapp,
         sucesso_envio=sucesso_envio,
         erro_envio=erro_envio
+        campanha_finalizada=campanha_finalizada
+
     )
      
 
@@ -3293,7 +3296,10 @@ def campanhas_enviar_teste_whatsapp():
 
     if erros:
         session["erro_envio"] = "Alguns envios falharam: " + " | ".join(erros)
-
+       
+    if erros:
+        session["campanha_finalizada"] = f"{enviados} enviada(s), {len(erros)} erro(s)."
+     
     return redirect("/campanhas")
 @app.route("/api/session/create", methods=["POST"])
 def create_session():
