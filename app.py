@@ -4369,6 +4369,46 @@ def cadastrar_usuario():
     return render_template("cadastrar_usuario.html")
 
 
+EVOLUTION_URL = "http://localhost:8080"
+EVOLUTION_API_KEY = "123456789"
+EVOLUTION_INSTANCE = "smartcrm"  # coloque exatamente o nome da sua instância
+
+
+@app.route("/whatsapp", methods=["GET", "POST"])
+def whatsapp():
+    sucesso = None
+    erro = None
+
+    if request.method == "POST":
+        numero = request.form.get("numero", "").strip()
+        mensagem = request.form.get("mensagem", "").strip()
+
+        url = f"{EVOLUTION_URL}/message/sendText/{EVOLUTION_INSTANCE}"
+
+        payload = {
+            "number": numero,
+            "textMessage": {
+                "text": mensagem
+            }
+        }
+
+        headers = {
+            "apikey": EVOLUTION_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        try:
+            resposta = requests.post(url, json=payload, headers=headers, timeout=30)
+
+            if resposta.status_code in [200, 201]:
+                sucesso = "Mensagem enviada com sucesso!"
+            else:
+                erro = f"Erro {resposta.status_code}: {resposta.text}"
+
+        except Exception as e:
+            erro = f"Erro ao conectar na Evolution: {e}"
+
+    return render_template("whatsapp.html", sucesso=sucesso, erro=erro)
 
 @app.route("/logout")
 def logout():
