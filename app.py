@@ -2338,12 +2338,17 @@ def whatsapp_sessoes():
     return render_template("campanhas.html")
 
 
-@app.route("/whatsapp/criar-sessao", methods=["POST"])
-def criar_sessao_whatsapp():
+
+
+@app.route("/campanhas/criar-sessao-whatsapp", methods=["POST"])
+def campanhas_criar_sessao_whatsapp():
     usuario_id = session.get("usuario_id", 1)
     nome_instancia = f"usuario_{usuario_id}"
 
-    url = f"{EVOLUTION_URL}/instance/create"
+    headers = {
+        "apikey": EVOLUTION_API_KEY,
+        "Content-Type": "application/json"
+    }
 
     payload = {
         "instanceName": nome_instancia,
@@ -2351,15 +2356,14 @@ def criar_sessao_whatsapp():
         "integration": "WHATSAPP-BAILEYS"
     }
 
-    headers = {
-        "apikey": EVOLUTION_API_KEY,
-        "Content-Type": "application/json"
-    }
+    resposta = requests.post(
+        f"{EVOLUTION_URL}/instance/create",
+        json=payload,
+        headers=headers,
+        timeout=30
+    )
 
-    resposta = requests.post(url, json=payload, headers=headers, timeout=30)
-
-    print("STATUS:", resposta.status_code)
-    print("RESPOSTA:", resposta.text)
+    session["whatsapp_instancia"] = nome_instancia
 
     return redirect("/campanhas")
      
@@ -2797,37 +2801,35 @@ def excluir_foto(foto_id):
 
 
 @app.route("/campanhas")
-@verificar_sessao
 def campanhas():
+    nome_instancia = session.get("whatsapp_instancia")
+    qrcode = None
+    erro_whatsapp = None
 
-    empresa_id = session.get('empresa_id')
+    if nome_instancia:
+        try:
+            headers = {
+                "apikey": EVOLUTION_API_KEY
+            }
 
+            resposta_qr = requests.get(
+                f"{EVOLUTION_URL}/instance/connect/{nome_instancia}",
+                headers=headers,
+                timeout=30
+            )
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+            dados = resposta_qr.json()
 
+            qrcode = dados.get("base64")
 
-    cursor.execute("""
-        SELECT *
-        FROM clientes
-        WHERE empresa_id = ?
-        ORDER BY id DESC
-    """, (empresa_id,))
-
-
-    clientes = cursor.fetchall()
-
-
-    conn.close()
-
-
-    user_id = session.get("user_id", None)
+        except Exception as e:
+            erro_whatsapp = f"Erro ao buscar QR Code: {e}"
 
     return render_template(
         "campanhas.html",
-        user_id=user_id,
-        clientes=clientes
+        nome_instancia=nome_instancia,
+        qrcode=qrcode,
+        erro_whatsapp=erro_whatsapp
     )
      
 
