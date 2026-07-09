@@ -5,96 +5,107 @@
 
 {% block content %}
 <style>
+    .campanha-container {
+        max-width: 1180px;
+        margin: 0 auto;
+    }
+
     .box-whatsapp {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 22px;
-        padding: 25px;
-        box-shadow: 0 10px 25px rgba(15,23,42,.08);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: 0 14px 35px rgba(15,23,42,.08);
         margin-bottom: 25px;
     }
 
-    .whatsapp-header {
+    .whatsapp-header,
+    .envio-topo {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 20px;
+        gap: 18px;
+        margin-bottom: 22px;
     }
 
-    .whatsapp-header h2 {
+    .whatsapp-header h2,
+    .envio-topo h2 {
         margin: 0;
         color: #0f172a;
-        font-size: 24px;
+        font-size: 25px;
     }
 
-    .whatsapp-header p {
+    .whatsapp-header p,
+    .envio-topo p {
         margin: 6px 0 0;
         color: #64748b;
+        font-size: 14px;
     }
 
     .btn-whatsapp {
         border: none;
         background: linear-gradient(135deg, #22c55e, #16a34a);
         color: white;
-        padding: 13px 18px;
-        border-radius: 14px;
-        font-weight: 800;
+        padding: 14px 20px;
+        border-radius: 15px;
+        font-weight: 900;
         cursor: pointer;
         white-space: nowrap;
+        transition: .2s;
     }
 
     .btn-whatsapp:hover {
         transform: translateY(-1px);
-        box-shadow: 0 10px 20px rgba(34,197,94,.22);
+        box-shadow: 0 12px 25px rgba(34,197,94,.25);
     }
 
     .sessao-info {
-        background: #f8fafc;
-        padding: 15px;
-        border-radius: 14px;
+        background: linear-gradient(135deg, #f8fafc, #ecfdf5);
+        padding: 16px;
+        border-radius: 16px;
         color: #334155;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #dbeafe;
         margin-bottom: 18px;
     }
 
-    .status-conectado {
+    .status-conectado,
+    .status-aguardando {
         display: inline-block;
-        background: #dcfce7;
-        color: #166534;
-        padding: 6px 11px;
+        padding: 7px 12px;
         border-radius: 999px;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 900;
         margin-left: 8px;
+    }
+
+    .status-conectado {
+        background: #dcfce7;
+        color: #166534;
     }
 
     .status-aguardando {
-        display: inline-block;
         background: #fef3c7;
         color: #92400e;
-        padding: 6px 11px;
-        border-radius: 999px;
-        font-size: 13px;
-        font-weight: 800;
-        margin-left: 8px;
     }
 
+    .sem-sessao,
     .qrcode-area {
-        text-align: center;
         background: #f8fafc;
-        padding: 22px;
-        border-radius: 18px;
         border: 1px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 24px;
+        text-align: center;
+        color: #64748b;
     }
 
     .qrcode-area img {
-        max-width: 280px;
+        max-width: 290px;
         width: 100%;
-        border-radius: 16px;
+        border-radius: 18px;
         background: white;
-        padding: 10px;
+        padding: 12px;
         border: 1px solid #e2e8f0;
+        box-shadow: 0 12px 25px rgba(15,23,42,.08);
     }
 
     .qrcode-area h3 {
@@ -102,31 +113,153 @@
         color: #0f172a;
     }
 
-    .qrcode-area p {
-        color: #64748b;
-        margin-bottom: 0;
+    .badge-contador {
+        background: #ecfdf5;
+        color: #166534;
+        border: 1px solid #86efac;
+        padding: 10px 15px;
+        border-radius: 999px;
+        font-weight: 900;
+        white-space: nowrap;
     }
 
+    .grid-envio {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-weight: 900;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    .textarea-numeros,
+    .textarea-mensagem {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        border-radius: 18px;
+        padding: 16px;
+        outline: none;
+        font-size: 15px;
+        color: #0f172a;
+        resize: vertical;
+    }
+
+    .textarea-numeros {
+        min-height: 240px;
+    }
+
+    .textarea-mensagem {
+        min-height: 165px;
+    }
+
+    .textarea-numeros:focus,
+    .textarea-mensagem:focus {
+        border-color: #22c55e;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+    }
+
+    small {
+        display: block;
+        margin-top: 8px;
+        color: #64748b;
+    }
+
+    .preview-whatsapp {
+        background:
+            radial-gradient(circle at top left, rgba(34,197,94,.16), transparent 32%),
+            linear-gradient(135deg, #e7f8ee, #f8fafc);
+        border: 1px solid #dbeafe;
+        border-radius: 20px;
+        min-height: 240px;
+        padding: 20px;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    .preview-bolha {
+        background: #dcf8c6;
+        color: #0f172a;
+        padding: 14px 16px;
+        border-radius: 18px 18px 5px 18px;
+        max-width: 92%;
+        white-space: pre-wrap;
+        box-shadow: 0 6px 15px rgba(15,23,42,.10);
+        font-size: 15px;
+        line-height: 1.45;
+    }
+
+    .campo-mensagem {
+        margin-bottom: 18px;
+    }
+
+    .btn-enviar-massa {
+        width: 100%;
+        font-size: 16px;
+        padding: 16px;
+    }
+
+    .alerta-sucesso,
+    .alerta-erro,
+    .erro-whatsapp,
+    .campanha-finalizada {
+        padding: 15px;
+        border-radius: 16px;
+        font-weight: 900;
+        margin-bottom: 18px;
+    }
+
+    .alerta-sucesso {
+        background: #dcfce7;
+        color: #166534;
+        border: 1px solid #86efac;
+    }
+
+    .alerta-erro,
     .erro-whatsapp {
         background: #fee2e2;
         color: #991b1b;
-        padding: 14px;
-        border-radius: 14px;
-        font-weight: 700;
         border: 1px solid #fca5a5;
     }
 
-    .sem-sessao {
+    .campanha-finalizada {
+        background: linear-gradient(135deg, #dcfce7, #ecfdf5);
+        color: #166534;
+        border: 1px solid #86efac;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .campanha-finalizada span {
+        font-size: 28px;
+    }
+
+    .loading-envio {
+        display: none;
+        margin-top: 15px;
         background: #f8fafc;
-        border: 1px dashed #cbd5e1;
-        border-radius: 16px;
-        padding: 22px;
-        color: #64748b;
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 14px;
+        color: #334155;
+        font-weight: 800;
         text-align: center;
     }
 
-    @media (max-width: 700px) {
-        .whatsapp-header {
+    @media (max-width: 850px) {
+        .grid-envio {
+            grid-template-columns: 1fr;
+        }
+
+        .whatsapp-header,
+        .envio-topo {
             flex-direction: column;
             align-items: stretch;
         }
@@ -137,131 +270,163 @@
     }
 </style>
 
-<div class="box-whatsapp">
-    <div class="whatsapp-header">
-        <div>
-            <h2>WhatsApp da Campanha</h2>
-            <p>Crie ou conecte uma sessão para enviar mensagens pelo CRM.</p>
-        </div>
+<div class="campanha-container">
 
-        <form method="POST" action="/campanhas/criar-sessao-whatsapp">
-            <button type="submit" class="btn-whatsapp">
-                + Criar / Conectar Sessão
-            </button>
-        </form>
-    </div>
-
-    {% if erro_whatsapp %}
-        <div class="erro-whatsapp">
-            {{ erro_whatsapp }}
-        </div>
-    {% endif %}
-
-    {% if nome_instancia %}
-        <div class="sessao-info">
-            <strong>Instância:</strong> {{ nome_instancia }}
-
-            {% if qrcode %}
-                <span class="status-aguardando">Aguardando conexão</span>
-            {% else %}
-                <span class="status-conectado">Conectado</span>
-            {% endif %}
-        </div>
-    {% else %}
-        <div class="sem-sessao">
-            Nenhuma sessão criada ainda. Clique em <strong>Criar / Conectar Sessão</strong>.
-        </div>
-    {% endif %}
-
-    {% if qrcode %}
-        <div class="qrcode-area">
-            <h3>Escaneie o QR Code</h3>
-            <img src="{{ qrcode }}" alt="QR Code WhatsApp">
-            <p>Abra o WhatsApp → Dispositivos conectados → Conectar dispositivo</p>
-        </div>
-    {% endif %}
-</div>
-{% if nome_instancia and not qrcode %}
-<div class="box-whatsapp envio-massa">
-    <div class="envio-topo">
-        <div>
-            <h2>Disparo de Mensagens</h2>
-            <p>Cole vários números, um por linha, e envie sua mensagem.</p>
-        </div>
-        <span class="badge-contador">
-            <span id="contadorNumeros">0</span> destinatário(s)
-        </span>
-    </div>
-
-    {% if sucesso_envio %}
-        <div class="alerta-sucesso">{{ sucesso_envio }}</div>
-    {% endif %}
-
-    {% if erro_envio %}
-        <div class="alerta-erro">{{ erro_envio }}</div>
-    {% endif %}
-
-    <form method="POST" action="/campanhas/enviar-teste-whatsapp">
-        <div class="grid-envio">
+    <div class="box-whatsapp">
+        <div class="whatsapp-header">
             <div>
-                <label>Números</label>
-                <textarea 
-                    name="numeros" 
-                    id="numeros"
-                    class="textarea-numeros"
-                    placeholder="5511999999999&#10;5511988888888&#10;5511977777777"
-                    required
-                ></textarea>
-                <small>Digite um número por linha. Use DDI + DDD + número.</small>
+                <h2>WhatsApp da Campanha</h2>
+                <p>Crie ou conecte uma sessão para enviar mensagens pelo CRM.</p>
             </div>
 
+            <form method="POST" action="/campanhas/criar-sessao-whatsapp">
+                <button type="submit" class="btn-whatsapp">
+                    + Criar / Conectar Sessão
+                </button>
+            </form>
+        </div>
+
+        {% if erro_whatsapp %}
+            <div class="erro-whatsapp">{{ erro_whatsapp }}</div>
+        {% endif %}
+
+        {% if nome_instancia %}
+            <div class="sessao-info">
+                <strong>Instância:</strong> {{ nome_instancia }}
+
+                {% if qrcode %}
+                    <span class="status-aguardando">Aguardando conexão</span>
+                {% else %}
+                    <span class="status-conectado">Conectado</span>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="sem-sessao">
+                Nenhuma sessão criada ainda. Clique em <strong>Criar / Conectar Sessão</strong>.
+            </div>
+        {% endif %}
+
+        {% if qrcode %}
+            <div class="qrcode-area">
+                <h3>Escaneie o QR Code</h3>
+                <img src="{{ qrcode }}" alt="QR Code WhatsApp">
+                <p>Abra o WhatsApp → Dispositivos conectados → Conectar dispositivo</p>
+                <small>A tela atualiza sozinha quando conectar.</small>
+            </div>
+
+            <script>
+                setTimeout(function () {
+                    window.location.reload();
+                }, 5000);
+            </script>
+        {% endif %}
+    </div>
+
+    {% if nome_instancia and not qrcode %}
+    <div class="box-whatsapp envio-massa">
+        <div class="envio-topo">
             <div>
-                <label>Prévia</label>
-                <div class="preview-whatsapp">
-                    <div class="preview-bolha" id="previewMensagem">
-                        Sua mensagem aparecerá aqui...
+                <h2>Disparo de Mensagens</h2>
+                <p>Cole vários números, um por linha, e envie sua mensagem.</p>
+            </div>
+
+            <span class="badge-contador">
+                <span id="contadorNumeros">0</span> destinatário(s)
+            </span>
+        </div>
+
+        {% if campanha_finalizada %}
+            <div class="campanha-finalizada">
+                <span>✅</span>
+                <div>
+                    Campanha finalizada!<br>
+                    <small>{{ campanha_finalizada }}</small>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if sucesso_envio %}
+            <div class="alerta-sucesso">{{ sucesso_envio }}</div>
+        {% endif %}
+
+        {% if erro_envio %}
+            <div class="alerta-erro">{{ erro_envio }}</div>
+        {% endif %}
+
+        <form method="POST" action="/campanhas/enviar-teste-whatsapp" id="formCampanha">
+            <div class="grid-envio">
+                <div>
+                    <label>Números</label>
+                    <textarea 
+                        name="numeros" 
+                        id="numeros"
+                        class="textarea-numeros"
+                        placeholder="5511999999999&#10;5511988888888&#10;5511977777777"
+                        required
+                    ></textarea>
+                    <small>Digite um número por linha. Use DDI + DDD + número.</small>
+                </div>
+
+                <div>
+                    <label>Prévia da mensagem</label>
+                    <div class="preview-whatsapp">
+                        <div class="preview-bolha" id="previewMensagem">
+                            Sua mensagem aparecerá aqui...
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="campo-mensagem">
-            <label>Mensagem</label>
-            <textarea 
-                name="mensagem" 
-                id="mensagem"
-                class="textarea-mensagem"
-                placeholder="Olá, tudo bem? Tenho uma ótima oportunidade de imóvel para você."
-                required
-            ></textarea>
-        </div>
+            <div class="campo-mensagem">
+                <label>Mensagem</label>
+                <textarea 
+                    name="mensagem" 
+                    id="mensagem"
+                    class="textarea-mensagem"
+                    placeholder="Olá, tudo bem? Tenho uma ótima oportunidade de imóvel para você."
+                    required
+                ></textarea>
+            </div>
 
-        <button type="submit" class="btn-whatsapp btn-enviar-massa">
-            📤 Enviar para todos
-        </button>
-    </form>
+            <button type="submit" class="btn-whatsapp btn-enviar-massa" id="btnEnviar">
+                📤 Enviar para todos
+            </button>
+
+            <div class="loading-envio" id="loadingEnvio">
+                Enviando campanha... não feche esta página.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const numeros = document.getElementById("numeros");
+        const mensagem = document.getElementById("mensagem");
+        const contador = document.getElementById("contadorNumeros");
+        const preview = document.getElementById("previewMensagem");
+        const formCampanha = document.getElementById("formCampanha");
+        const btnEnviar = document.getElementById("btnEnviar");
+        const loadingEnvio = document.getElementById("loadingEnvio");
+
+        function atualizarTela() {
+            const lista = numeros.value
+                .split("\n")
+                .map(n => n.trim())
+                .filter(n => n.length > 0);
+
+            contador.innerText = lista.length;
+            preview.innerText = mensagem.value.trim() || "Sua mensagem aparecerá aqui...";
+        }
+
+        numeros.addEventListener("input", atualizarTela);
+        mensagem.addEventListener("input", atualizarTela);
+
+        formCampanha.addEventListener("submit", function () {
+            btnEnviar.disabled = true;
+            btnEnviar.innerText = "Enviando...";
+            loadingEnvio.style.display = "block";
+        });
+    </script>
+    {% endif %}
+
 </div>
-
-<script>
-    const numeros = document.getElementById("numeros");
-    const mensagem = document.getElementById("mensagem");
-    const contador = document.getElementById("contadorNumeros");
-    const preview = document.getElementById("previewMensagem");
-
-    function atualizarTela() {
-        const lista = numeros.value
-            .split("\n")
-            .map(n => n.trim())
-            .filter(n => n.length > 0);
-
-        contador.innerText = lista.length;
-
-        preview.innerText = mensagem.value.trim() || "Sua mensagem aparecerá aqui...";
-    }
-
-    numeros.addEventListener("input", atualizarTela);
-    mensagem.addEventListener("input", atualizarTela);
-</script>
-{% endif %}
-
 {% endblock %}
