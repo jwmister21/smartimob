@@ -2323,6 +2323,45 @@ def site_publico(slug):
     finally:
 
         conn.close()
+
+
+import requests
+from flask import render_template, request, redirect, session
+
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+EVOLUTION_API_KEY = "123456789"
+
+
+@app.route("/whatsapp/sessoes")
+def whatsapp_sessoes():
+    # depois vamos buscar do banco
+    return render_template("whatsapp_sessoes.html")
+
+
+@app.route("/whatsapp/criar-sessao", methods=["POST"])
+def criar_sessao_whatsapp():
+    usuario_id = session.get("usuario_id", 1)
+
+    nome_instancia = f"usuario_{usuario_id}"
+
+    url = f"{EVOLUTION_URL}/instance/create"
+
+    payload = {
+        "instanceName": nome_instancia,
+        "qrcode": True
+    }
+
+    headers = {
+        "apikey": EVOLUTION_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    resposta = requests.post(url, json=payload, headers=headers, timeout=30)
+
+    print(resposta.status_code)
+    print(resposta.text)
+
+    return redirect("/whatsapp/sessoes")
      
 @app.route("/admin/ativar-usuario", methods=["POST"])
 @verificar_sessao
