@@ -2831,7 +2831,7 @@ def campanhas():
         qrcode=qrcode,
         erro_whatsapp=erro_whatsapp,
         sucesso_envio=sucesso_envio,
-        erro_envio=erro_envio
+        erro_envio=erro_envio,
         campanha_finalizada=campanha_finalizada
 
     )
