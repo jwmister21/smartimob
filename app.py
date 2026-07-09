@@ -2335,7 +2335,7 @@ EVOLUTION_API_KEY = "123456789"
 @app.route("/whatsapp/sessoes")
 def whatsapp_sessoes():
     # depois vamos buscar do banco
-    return render_template("whatsapp_sessoes.html")
+    return render_template("campanhas.html")
 
 
 @app.route("/whatsapp/criar-sessao", methods=["POST"])
@@ -2361,7 +2361,7 @@ def criar_sessao_whatsapp():
     print("STATUS:", resposta.status_code)
     print("RESPOSTA:", resposta.text)
 
-    return redirect("/whatsapp/sessoes")
+    return redirect("/campanhas")
      
 @app.route("/admin/ativar-usuario", methods=["POST"])
 @verificar_sessao
