@@ -2,250 +2,592 @@
 {% block content %}
 
 <style>
-    /* Estilos do Grid e Card */
-    .grid-imoveis { display:grid; grid-template-columns:repeat(auto-fill,minmax(350px,1fr)); gap:25px; }
-    .card-imovel { background:#ffffff; border:1px solid #e2e8f0; border-radius:20px; overflow:hidden; transition:.3s; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); display:flex; flex-direction:column; }
-    .link-detalhes { text-decoration:none; color:inherit; display:flex; flex-direction:column; flex-grow:1; }
+.imoveis-page{
+    width:100%;
+    max-width:100%;
+}
 
-    /* Carrossel */
-    .carousel-container { position:relative; width:100%; height:230px; overflow:hidden; }
-    .carousel-images { display:flex; transition:transform .5s ease; height:100%; }
-    .carousel-images img { min-width:100%; height:230px; object-fit:cover; }
-    .btn-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.9); border:none; color:#1e293b; width:35px; height:35px; border-radius:50%; cursor:pointer; z-index:10; }
-
-    /* Info */
-    .info { padding:20px; flex-grow:1; }
-    .valor { color:#1e293b; font-size:24px; font-weight:800; margin-bottom:5px; }
-    .titulo { font-size:16px; font-weight:600; color:#475569; margin-bottom:12px; }
-    .detalhes { color:#64748b; font-size:13px; line-height:1.5; }
-
-    /* Ações */
-    .acoes { padding:0 20px 20px; display:flex; gap:8px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
-    .btn-base { border:none; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; text-decoration:none; display:flex; align-items:center; justify-content:center; }
-    .btn-editar { background:#e0f2fe; color:#0369a1; }
-    .btn-excluir { background:#fee2e2; color:#b91c1c; }
-    .btn-drive { background:#f1f5f9; color:#475569; }
-    .btn-whatsapp { background:#dcfce7; color:#166534; }
-
-    /* Modal Moderno */
-    .modal-whatsapp { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:9999; justify-content:center; align-items:center; }
-    .modal-conteudo { background:#fff; width:90%; max-width:400px; padding:30px; border-radius:20px; animation: slideUp 0.3s ease-out; }
-    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-</style>
-<div style="margin-bottom:25px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
-
-
-<div>
-
-<a href="/cadastrar_imovel" 
-style="background:#2563eb; color:#ffffff; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:600; display:inline-block;">
-
-➕ Cadastrar Novo Imóvel
-
-</a>
-
-
-</div>
-
-
-
-<div style="
-background:white;
-padding:14px 22px;
-border-radius:16px;
-border:1px solid #e2e8f0;
-box-shadow:0 5px 15px rgba(0,0,0,.05);
-font-weight:700;
-color:#334155;
-">
-
-🏠 Você possui 
-
-<span style="color:#2563eb; font-size:22px;">
-
-{{ imoveis|length }}
-
-</span>
-
- imóveis cadastrados
-
-</div>
-
-
-
-<input type="text" 
-id="filtroImoveis" 
-onkeyup="filtrarImoveis()" 
-placeholder="🔍 Pesquisar por bairro, tipo ou valor..." 
-style="flex:1; padding:12px; border:1px solid #e2e8f0; border-radius:10px; outline:none;">
-
-</div>
-<div class="grid-imoveis">
-{% for imovel in imoveis %}
-<div class="card-imovel">
-    <a href="/detalhes_imovel/{{ imovel.id }}" class="link-detalhes">
-        {% if imovel.fotos %}
-        <div class="carousel-container" id="carousel-{{ imovel.id }}">
-            <div class="carousel-images">
-                {% for foto in imovel.fotos %}<img src="/uploads/imoveis/{{ foto }}" alt="Foto">{% endfor %}
-            </div>
-            {% if imovel.fotos|length > 1 %}
-                <button class="btn-nav" style="left:10px" onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', -1)">❮</button>
-                <button class="btn-nav" style="right:10px" onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', 1)">❯</button>
-            {% endif %}
-        </div>
-        {% else %}
-            <div class="sem-foto" style="height:230px; display:flex; align-items:center; justify-content:center; background:#f1f5f9; font-size:50px;">🏠</div>
-        {% endif %}
-
-        <div class="info">
-        <div class="valor">{{ imovel.valor }}</div>
-        
-        <div class="titulo" style="font-weight:700; color:#1e293b; margin-bottom:5px;">
-            {{ imovel.tipo }} à {{ imovel.status }} com {{ imovel.quartos }} quartos, {{ imovel.area }}m²
-        </div>
-        
-        <div class="local" style="color:#64748b; font-size:13px; margin-bottom:12px;">
-            📍 {{ imovel.bairro }}, {{ imovel.cidade }}
-        </div>
-        
-        <div class="detalhes" style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; color:#475569; font-size:13px;">
-            <div>🛏 {{ imovel.quartos }} Quartos</div>
-            <div>🛁 {{ imovel.banheiros }} Suites</div>
-            <div>🚽 {{ imovel.banheiros21 }} Banheiros</div>
-            <div>🚗 {{ imovel.vaga_garagem }} Vagas</div>
-            <div>📐 {{ imovel.area }} m²</div>
-        </div>
-           <!-- REFERÊNCIAS DO IMÓVEL -->
-
-{% if imovel.referencias %}
-
-<div style="
-    margin-top:15px;
-    background:#f8fafc;
-    border-radius:12px;
-    padding:12px;
-">
-
-<div style="
-    font-weight:700;
-    color:#1e293b;
-    margin-bottom:10px;
-">
-📍 Pontos próximos
-</div>
-
-
-{% for r in imovel.referencias %}
-
-<div style="
+.imoveis-topo{
+    margin-bottom:26px;
     display:flex;
     justify-content:space-between;
     align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+    background:linear-gradient(135deg,#0f172a,#1e293b 55%,#2563eb);
+    padding:24px;
+    border-radius:24px;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+}
+
+.btn-novo-imovel{
+    background:#ffffff;
+    color:#2563eb;
+    padding:13px 22px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:900;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+}
+
+.total-imoveis{
+    background:rgba(255,255,255,.13);
+    padding:14px 22px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.18);
+    font-weight:800;
+    color:#fff;
+    backdrop-filter:blur(12px);
+}
+
+.total-imoveis span{
+    color:#bfdbfe;
+    font-size:24px;
+}
+
+.busca-imoveis{
+    flex:1;
+    min-width:260px;
+    height:48px;
+    padding:0 16px;
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:14px;
+    outline:none;
+    background:rgba(255,255,255,.95);
+    color:#0f172a;
+    font-size:14px;
+}
+
+.grid-imoveis{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+    gap:24px;
+}
+
+.card-imovel{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:24px;
+    overflow:hidden;
+    transition:.25s;
+    box-shadow:0 12px 30px rgba(15,23,42,.08);
+    display:flex;
+    flex-direction:column;
+}
+
+.card-imovel:hover{
+    transform:translateY(-4px);
+    box-shadow:0 20px 45px rgba(15,23,42,.14);
+}
+
+.link-detalhes{
+    text-decoration:none;
+    color:inherit;
+    display:flex;
+    flex-direction:column;
+    flex-grow:1;
+}
+
+.carousel-container{
+    position:relative;
+    width:100%;
+    height:235px;
+    overflow:hidden;
+    background:#f1f5f9;
+}
+
+.carousel-images{
+    display:flex;
+    transition:transform .5s ease;
+    height:100%;
+}
+
+.carousel-images img{
+    min-width:100%;
+    height:235px;
+    object-fit:cover;
+}
+
+.sem-foto{
+    height:235px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f1f5f9;
+    font-size:52px;
+}
+
+.btn-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(255,255,255,.92);
+    border:none;
+    color:#0f172a;
+    width:38px;
+    height:38px;
+    border-radius:999px;
+    cursor:pointer;
+    z-index:10;
+    font-weight:900;
+    box-shadow:0 8px 18px rgba(15,23,42,.18);
+}
+
+.btn-nav:hover{
+    background:#fff;
+}
+
+.info{
+    padding:20px;
+    flex-grow:1;
+}
+
+.valor{
+    color:#0f172a;
+    font-size:26px;
+    font-weight:900;
+    margin-bottom:7px;
+    letter-spacing:-.03em;
+}
+
+.titulo{
+    font-size:16px;
+    font-weight:800;
+    color:#1e293b;
+    margin-bottom:8px;
+    line-height:1.35;
+}
+
+.local{
+    color:#64748b;
+    font-size:13px;
+    margin-bottom:14px;
+    font-weight:600;
+}
+
+.detalhes{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    color:#475569;
+    font-size:13px;
+}
+
+.detalhes div{
+    background:#f8fafc;
+    padding:9px 10px;
+    border-radius:12px;
+    border:1px solid #eef2f7;
+    font-weight:700;
+}
+
+.referencias-box{
+    margin-top:16px;
+    background:#f8fafc;
+    border-radius:16px;
+    padding:14px;
+    border:1px solid #e2e8f0;
+}
+
+.referencias-title{
+    font-weight:900;
+    color:#1e293b;
+    margin-bottom:10px;
+}
+
+.referencia-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
     font-size:13px;
     color:#475569;
     margin-bottom:8px;
-">
+}
 
-<span>
+.referencia-item:last-child{
+    margin-bottom:0;
+}
 
-{% if r.categoria == "Mercado" %}
-🛒
+.referencia-item strong{
+    color:#2563eb;
+    white-space:nowrap;
+}
 
-{% elif r.categoria == "Farmácia" %}
-💊
+.acoes{
+    padding:16px 20px 20px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+    border-top:1px solid #f1f5f9;
+}
 
-{% elif r.categoria == "Hospital" %}
-🏥
+.btn-base{
+    border:none;
+    border-radius:13px;
+    padding:10px 12px;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    text-decoration:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s;
+}
 
-{% elif r.categoria == "Escola" %}
-🏫
+.btn-base:hover{
+    transform:translateY(-2px);
+}
 
-{% elif r.categoria == "Posto de combustível" %}
-⛽
+.btn-editar{
+    background:#e0f2fe;
+    color:#0369a1;
+}
 
-{% elif r.categoria == "Praia" %}
-🏖️
+.btn-excluir{
+    background:#fee2e2;
+    color:#b91c1c;
+}
 
-{% else %}
-📍
+.btn-drive{
+    background:#f1f5f9;
+    color:#475569;
+}
 
-{% endif %}
+.btn-whatsapp{
+    background:#dcfce7;
+    color:#166534;
+}
 
-{{ r.nome }}
+.modal-whatsapp{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.6);
+    backdrop-filter:blur(6px);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
 
-</span>
+.modal-conteudo{
+    background:#fff;
+    width:90%;
+    max-width:420px;
+    padding:28px;
+    border-radius:22px;
+    box-shadow:0 25px 70px rgba(15,23,42,.25);
+    animation:slideUp .3s ease-out;
+}
 
+.modal-conteudo h3{
+    margin-top:0;
+    color:#0f172a;
+}
 
-<strong>
+.modal-conteudo input{
+    width:100%;
+    padding:13px;
+    border:1px solid #e2e8f0;
+    border-radius:13px;
+    margin:15px 0;
+    box-sizing:border-box;
+    outline:none;
+}
 
-{% if r.distancia >= 1000 %}
+.modal-conteudo input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+}
 
-{{ "%.1f"|format(r.distancia / 1000) }} km
+.modal-acoes{
+    display:flex;
+    gap:10px;
+}
 
-{% else %}
+.modal-acoes button{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:13px;
+    font-weight:900;
+    cursor:pointer;
+}
 
-{{ r.distancia }} metros
+.btn-modal-enviar{
+    background:#22c55e;
+    color:#fff;
+}
 
-{% endif %}
+.btn-modal-cancelar{
+    background:#f1f5f9;
+    color:#475569;
+}
 
-</strong>
+@keyframes slideUp{
+    from{
+        transform:translateY(30px);
+        opacity:0;
+    }
+    to{
+        transform:translateY(0);
+        opacity:1;
+    }
+}
 
+@media(max-width:760px){
+    .imoveis-topo{
+        align-items:stretch;
+    }
 
-</div>
+    .btn-novo-imovel,
+    .total-imoveis,
+    .busca-imoveis{
+        width:100%;
+        justify-content:center;
+    }
 
+    .grid-imoveis{
+        grid-template-columns:1fr;
+    }
 
-{% endfor %}
+    .acoes{
+        grid-template-columns:1fr;
+    }
+}
+</style>
 
+<div class="imoveis-page">
 
-</div>
+    <div class="imoveis-topo">
 
-{% endif %}
+        <a href="/cadastrar_imovel" class="btn-novo-imovel">
+            ➕ Cadastrar Novo Imóvel
+        </a>
+
+        <div class="total-imoveis">
+            🏠 Você possui
+            <span>{{ imoveis|length }}</span>
+            imóveis cadastrados
+        </div>
+
+        <input
+            type="text"
+            id="filtroImoveis"
+            onkeyup="filtrarImoveis()"
+            placeholder="🔍 Pesquisar por bairro, tipo ou valor..."
+            class="busca-imoveis">
+
     </div>
-</a>
 
-    <div class="acoes">
-        <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">✏️ Editar</a>
-        <a href="/excluir_imovel/{{ imovel.id }}" class="btn-base btn-excluir" onclick="return confirm('Excluir?')">🗑 Deletar</a>
-        <button class="btn-base btn-drive" onclick="copiarLink('{{ imovel.link }}')">🔗 Copiar</button>
-        <button class="btn-base btn-whatsapp" 
-        onclick="montarMensagemWhatsApp('{{ imovel.titulo }}', '{{ imovel.valor }}', '{{ imovel.bairro }}', '{{ imovel.link }}')">
-    📲 WhatsApp
-</button>
+    <div class="grid-imoveis">
+
+        {% for imovel in imoveis %}
+
+        <div class="card-imovel">
+
+            <a href="/detalhes_imovel/{{ imovel.id }}" class="link-detalhes">
+
+                {% if imovel.fotos %}
+
+                    <div class="carousel-container" id="carousel-{{ imovel.id }}">
+
+                        <div class="carousel-images">
+                            {% for foto in imovel.fotos %}
+                                <img src="/uploads/imoveis/{{ foto }}" alt="Foto">
+                            {% endfor %}
+                        </div>
+
+                        {% if imovel.fotos|length > 1 %}
+                            <button
+                                class="btn-nav"
+                                style="left:10px"
+                                onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', -1)">
+                                ❮
+                            </button>
+
+                            <button
+                                class="btn-nav"
+                                style="right:10px"
+                                onclick="event.preventDefault(); mudarFoto('carousel-{{ imovel.id }}', 1)">
+                                ❯
+                            </button>
+                        {% endif %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="sem-foto">
+                        🏠
+                    </div>
+
+                {% endif %}
+
+                <div class="info">
+
+                    <div class="valor">
+                        {{ imovel.valor }}
+                    </div>
+
+                    <div class="titulo">
+                        {{ imovel.tipo }} à {{ imovel.status }} com {{ imovel.quartos }} quartos, {{ imovel.area }}m²
+                    </div>
+
+                    <div class="local">
+                        📍 {{ imovel.bairro }}, {{ imovel.cidade }}
+                    </div>
+
+                    <div class="detalhes">
+                        <div>🛏 {{ imovel.quartos }} Quartos</div>
+                        <div>🛁 {{ imovel.banheiros }} Suites</div>
+                        <div>🚽 {{ imovel.banheiros21 }} Banheiros</div>
+                        <div>🚗 {{ imovel.vaga_garagem }} Vagas</div>
+                        <div>📐 {{ imovel.area }} m²</div>
+                    </div>
+
+                    {% if imovel.referencias %}
+
+                    <div class="referencias-box">
+
+                        <div class="referencias-title">
+                            📍 Pontos próximos
+                        </div>
+
+                        {% for r in imovel.referencias %}
+
+                        <div class="referencia-item">
+
+                            <span>
+                                {% if r.categoria == "Mercado" %}
+                                    🛒
+                                {% elif r.categoria == "Farmácia" %}
+                                    💊
+                                {% elif r.categoria == "Hospital" %}
+                                    🏥
+                                {% elif r.categoria == "Escola" %}
+                                    🏫
+                                {% elif r.categoria == "Posto de combustível" %}
+                                    ⛽
+                                {% elif r.categoria == "Praia" %}
+                                    🏖️
+                                {% else %}
+                                    📍
+                                {% endif %}
+
+                                {{ r.nome }}
+                            </span>
+
+                            <strong>
+                                {% if r.distancia >= 1000 %}
+                                    {{ "%.1f"|format(r.distancia / 1000) }} km
+                                {% else %}
+                                    {{ r.distancia }} metros
+                                {% endif %}
+                            </strong>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+            </a>
+
+            <div class="acoes">
+
+                <a href="/editar_imovel/{{ imovel.id }}" class="btn-base btn-editar">
+                    ✏️ Editar
+                </a>
+
+                <a
+                    href="/excluir_imovel/{{ imovel.id }}"
+                    class="btn-base btn-excluir"
+                    onclick="return confirm('Excluir?')">
+                    🗑 Deletar
+                </a>
+
+                <button
+                    class="btn-base btn-drive"
+                    onclick="copiarLink('{{ imovel.link }}')">
+                    🔗 Copiar
+                </button>
+
+                <button
+                    class="btn-base btn-whatsapp"
+                    onclick="montarMensagemWhatsApp('{{ imovel.titulo }}', '{{ imovel.valor }}', '{{ imovel.bairro }}', '{{ imovel.link }}')">
+                    📲 WhatsApp
+                </button>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
     </div>
-</div>
-{% endfor %}
+
 </div>
 
 <div id="modalWhatsapp" class="modal-whatsapp">
+
     <div class="modal-conteudo">
-        <h3 style="margin-top:0;">📲 Enviar Imóvel</h3>
-        <input type="text" id="telefoneDestino" placeholder="WhatsApp (5511...)" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:10px; margin:15px 0; box-sizing:border-box;">
+
+        <h3>📲 Enviar Imóvel</h3>
+
+        <input
+            type="text"
+            id="telefoneDestino"
+            placeholder="WhatsApp (5511...)">
+
         <input type="hidden" id="imovelSelecionado">
-        <div style="display:flex; gap:10px;">
-            <button onclick="enviarImovelWhatsapp()" style="flex:1; padding:12px; border:none; border-radius:10px; background:#22c55e; color:#fff; font-weight:600; cursor:pointer;">Enviar</button>
-            <button onclick="fecharModalWhatsapp()" style="flex:1; padding:12px; border:none; border-radius:10px; background:#f1f5f9; color:#475569; font-weight:600; cursor:pointer;">Cancelar</button>
+
+        <div class="modal-acoes">
+            <button class="btn-modal-enviar" onclick="enviarImovelWhatsapp()">
+                Enviar
+            </button>
+
+            <button class="btn-modal-cancelar" onclick="fecharModalWhatsapp()">
+                Cancelar
+            </button>
         </div>
+
     </div>
+
 </div>
 
 <script>
-    function mudarFoto(id, dir) {
-        const c = document.getElementById(id).querySelector('.carousel-images');
-        let idx = parseInt(c.dataset.index || 0);
-        idx = (idx + dir + c.children.length) % c.children.length;
-        c.dataset.index = idx;
-        c.style.transform = `translateX(-${idx * 100}%)`;
-    }
-    
-    function abrirModalEnviar(id) { document.getElementById("imovelSelecionado").value = id; document.getElementById("modalWhatsapp").style.display = "flex"; }
-    function fecharModalWhatsapp() { document.getElementById("modalWhatsapp").style.display = "none"; }
-    
-    function copiarLink(link) {
-        navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
-    }
-    function montarMensagemWhatsApp(titulo, valor, bairro, link) {
-    // Monta a mensagem formal
+function mudarFoto(id, dir) {
+    const c = document.getElementById(id).querySelector('.carousel-images');
+    let idx = parseInt(c.dataset.index || 0);
+    idx = (idx + dir + c.children.length) % c.children.length;
+    c.dataset.index = idx;
+    c.style.transform = `translateX(-${idx * 100}%)`;
+}
+
+function abrirModalEnviar(id) {
+    document.getElementById("imovelSelecionado").value = id;
+    document.getElementById("modalWhatsapp").style.display = "flex";
+}
+
+function fecharModalWhatsapp() {
+    document.getElementById("modalWhatsapp").style.display = "none";
+}
+
+function copiarLink(link) {
+    navigator.clipboard.writeText(link).then(() => alert("Link copiado!"));
+}
+
+function montarMensagemWhatsApp(titulo, valor, bairro, link) {
+
     const mensagem = `*Olá! Gostaria de apresentar uma excelente oportunidade de imóvel:*
 
 🏠 *${titulo}*
@@ -260,29 +602,26 @@ Fico à disposição para agendarmos uma visita ou para sanar quaisquer dúvidas
 Atenciosamente,
 Equipe de Vendas`;
 
-    // Codifica a mensagem para URL
     const mensagemCodificada = encodeURIComponent(mensagem);
-    
-    // Abre o WhatsApp (pode ser Web ou App)
-    // O número 55... pode ser inserido pelo usuário no seu modal, 
-    // ou fixado aqui se for um número padrão de atendimento.
+
     const url = `https://wa.me/?text=${mensagemCodificada}`;
+
     window.open(url, '_blank');
 }
-    function filtrarImoveis() {
+
+function filtrarImoveis() {
     let input = document.getElementById("filtroImoveis");
     let filtro = input.value.toLowerCase();
     let grid = document.querySelector(".grid-imoveis");
     let cards = grid.getElementsByClassName("card-imovel");
 
     for (let i = 0; i < cards.length; i++) {
-        // O texto que será filtrado (pega todo o conteúdo de texto do card)
         let textoCard = cards[i].textContent || cards[i].innerText;
-        
+
         if (textoCard.toLowerCase().indexOf(filtro) > -1) {
-            cards[i].style.display = ""; // Mostra o card
+            cards[i].style.display = "";
         } else {
-            cards[i].style.display = "none"; // Esconde o card
+            cards[i].style.display = "none";
         }
     }
 }
