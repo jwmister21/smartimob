@@ -4113,9 +4113,7 @@ def whatsapp():
 
         payload = {
             "number": numero,
-            "textMessage": {
-                "text": mensagem
-            }
+            "text": mensagem
         }
 
         headers = {
