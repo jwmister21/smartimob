@@ -4252,11 +4252,6 @@ def configuracoes():
     )
 
 
-@app.route("/whatsapp")
-def whatsapp():
-    return render_template("whatsapp.html")
-
-
 @app.route("/salvar_logo_imobiliaria", methods=["POST"])
 @verificar_sessao
 def salvar_logo_imobiliaria():
