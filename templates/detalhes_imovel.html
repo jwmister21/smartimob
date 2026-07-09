@@ -4,96 +4,651 @@
 
 {% block content %}
 <style>
-    .detalhes-page-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+    :root{
+        --sz-primary:#2563eb;
+        --sz-primary-dark:#1d4ed8;
+        --sz-success:#16a34a;
+        --sz-danger:#dc2626;
+        --sz-warning:#f59e0b;
+        --sz-bg:#f4f7fb;
+        --sz-card:#ffffff;
+        --sz-text:#0f172a;
+        --sz-muted:#64748b;
+        --sz-border:#e5e7eb;
+        --sz-soft:#f8fafc;
+        --sz-shadow:0 18px 45px rgba(15,23,42,.08);
+    }
+
+    .detalhes-page-container{
+        width:100%;
+        max-width:1280px;
+        margin:0 auto;
+        padding:22px;
+        color:var(--sz-text);
+    }
+
+    .detalhes-topbar{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:20px;
+        margin-bottom:22px;
+    }
+
+    .detalhes-kicker{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:8px 13px;
+        border-radius:999px;
+        background:#eff6ff;
+        color:var(--sz-primary);
+        font-size:13px;
+        font-weight:800;
+        margin-bottom:10px;
+    }
+
+    .detalhes-heading h1{
+        margin:0;
+        font-size:34px;
+        line-height:1.15;
+        font-weight:900;
+        letter-spacing:-.03em;
+        color:#0f172a;
+    }
+
+    .detalhes-heading p{
+        margin:10px 0 0;
+        color:var(--sz-muted);
+        font-size:15px;
+    }
+
+    .quick-actions{
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        justify-content:flex-end;
+    }
+
+    .layout-detalhe{
+        display:grid;
+        grid-template-columns:minmax(0,1.45fr) minmax(360px,.75fr);
+        gap:24px;
+        align-items:start;
+    }
 
     /* Carrossel */
-    .carousel-container { position: relative; width: 100%; height: 450px; overflow: hidden; border-radius: 30px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-    .carousel-images { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); height: 100%; }
-    .carousel-images img { min-width: 100%; height: 100%; object-fit: cover; }
-    .btn-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); color: #000; border: 1px solid #000; cursor: pointer; padding: 15px 20px; font-size: 20px; z-index: 10; border-radius: 50%; }
-
-    /* Card com Borda Preta */
-    .info-card { 
-        background: #ffffff; padding: 40px; border-radius: 30px; 
-        border: 2px solid #000; /* Borda preta definida */
-        margin-top: -50px; position: relative; z-index: 5; 
+    .media-card{
+        background:var(--sz-card);
+        border:1px solid var(--sz-border);
+        border-radius:30px;
+        box-shadow:var(--sz-shadow);
+        overflow:hidden;
+        position:relative;
     }
-    
-    .titulo { font-size: 2.5rem; font-weight: 800; color: #000; margin-bottom: 8px; }
-    .valor { font-size: 2rem; color: #2563eb; font-weight: 700; margin-bottom: 30px; }
 
-    /* Grid de Dados com Borda Preta */
-    .grid-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
-    .item { background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #000; }
-    .label-item { display: block; color: #000; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; margin-bottom: 6px; }
-    .valor-item { font-size: 1rem; font-weight: 600; color: #333; }
+    .carousel-container{
+        position:relative;
+        width:100%;
+        height:500px;
+        overflow:hidden;
+        background:linear-gradient(135deg,#e2e8f0,#f8fafc);
+    }
 
-    /* Descrição e Ações */
-    .descricao-box { background: #fff; border: 1px solid #000; padding: 30px; border-radius: 20px; color: #000; line-height: 1.6; margin-bottom: 40px; }
-    .acoes-container { display: flex; flex-wrap: wrap; gap: 15px; padding-top: 30px; border-top: 2px solid #000; }
-    .btn-acao { padding: 14px 28px; border-radius: 14px; font-weight: 600; text-decoration: none; border: 1px solid #000; cursor: pointer; }
+    .carousel-images{
+        display:flex;
+        transition:transform .5s cubic-bezier(.4,0,.2,1);
+        height:100%;
+    }
+
+    .carousel-images img{
+        min-width:100%;
+        height:100%;
+        object-fit:cover;
+    }
+
+    .foto-empty{
+        height:500px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+        gap:10px;
+        color:#64748b;
+        background:linear-gradient(135deg,#f8fafc,#e2e8f0);
+    }
+
+    .foto-empty strong{
+        font-size:20px;
+        color:#0f172a;
+    }
+
+    .btn-nav{
+        position:absolute;
+        top:50%;
+        transform:translateY(-50%);
+        width:48px;
+        height:48px;
+        border:none;
+        background:rgba(255,255,255,.92);
+        color:#0f172a;
+        cursor:pointer;
+        font-size:20px;
+        z-index:10;
+        border-radius:50%;
+        box-shadow:0 12px 30px rgba(15,23,42,.18);
+        transition:.2s;
+        backdrop-filter:blur(10px);
+    }
+
+    .btn-nav:hover{
+        transform:translateY(-50%) scale(1.06);
+        background:#fff;
+        color:var(--sz-primary);
+    }
+
+    .foto-badge{
+        position:absolute;
+        left:18px;
+        top:18px;
+        z-index:9;
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:9px 14px;
+        background:rgba(15,23,42,.72);
+        color:#fff;
+        border-radius:999px;
+        font-size:13px;
+        font-weight:800;
+        backdrop-filter:blur(12px);
+    }
+
+    /* Card principal */
+    .info-card{
+        background:var(--sz-card);
+        padding:30px;
+        border-radius:30px;
+        border:1px solid var(--sz-border);
+        box-shadow:var(--sz-shadow);
+    }
+
+    .titulo-row{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:18px;
+        margin-bottom:22px;
+    }
+
+    .titulo{
+        font-size:30px;
+        font-weight:900;
+        color:#0f172a;
+        margin-bottom:10px;
+        line-height:1.15;
+        letter-spacing:-.03em;
+    }
+
+    .localizacao{
+        display:flex;
+        align-items:center;
+        gap:8px;
+        color:var(--sz-muted);
+        font-size:15px;
+        font-weight:600;
+    }
+
+    .valor-box{
+        min-width:210px;
+        padding:18px;
+        border-radius:22px;
+        background:linear-gradient(135deg,#ecfdf5,#eff6ff);
+        border:1px solid #dbeafe;
+        text-align:right;
+    }
+
+    .valor-label{
+        display:block;
+        color:#64748b;
+        font-size:12px;
+        font-weight:800;
+        text-transform:uppercase;
+        letter-spacing:.08em;
+        margin-bottom:5px;
+    }
+
+    .valor{
+        font-size:28px;
+        color:var(--sz-success);
+        font-weight:950;
+        line-height:1.1;
+    }
+
+    .resumo-grid{
+        display:grid;
+        grid-template-columns:repeat(4,1fr);
+        gap:12px;
+        margin:24px 0;
+    }
+
+    .resumo-item{
+        background:var(--sz-soft);
+        border:1px solid var(--sz-border);
+        border-radius:18px;
+        padding:16px;
+        min-height:86px;
+    }
+
+    .resumo-icon{
+        font-size:22px;
+        margin-bottom:8px;
+    }
+
+    .resumo-item strong{
+        display:block;
+        color:#0f172a;
+        font-size:18px;
+    }
+
+    .resumo-item span{
+        color:#64748b;
+        font-size:13px;
+        font-weight:700;
+    }
+
+    .section-title{
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin:30px 0 16px;
+        font-size:20px;
+        color:#0f172a;
+        font-weight:900;
+    }
+
+    .section-title::before{
+        content:"";
+        width:9px;
+        height:26px;
+        border-radius:999px;
+        background:linear-gradient(180deg,var(--sz-primary),#22c55e);
+    }
+
+    .grid-info{
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+        gap:14px;
+        margin-bottom:28px;
+    }
+
+    .item{
+        background:#fff;
+        padding:17px;
+        border-radius:18px;
+        border:1px solid var(--sz-border);
+        box-shadow:0 8px 20px rgba(15,23,42,.035);
+        transition:.2s;
+    }
+
+    .item:hover{
+        transform:translateY(-2px);
+        border-color:#bfdbfe;
+        box-shadow:0 12px 28px rgba(37,99,235,.08);
+    }
+
+    .label-item{
+        display:block;
+        color:#64748b;
+        font-size:11px;
+        text-transform:uppercase;
+        font-weight:900;
+        letter-spacing:.08em;
+        margin-bottom:7px;
+    }
+
+    .valor-item{
+        font-size:15px;
+        font-weight:800;
+        color:#1e293b;
+        overflow-wrap:anywhere;
+    }
+
+    .descricao-box{
+        background:linear-gradient(180deg,#ffffff,#f8fafc);
+        border:1px solid var(--sz-border);
+        padding:26px;
+        border-radius:22px;
+        color:#334155;
+        line-height:1.8;
+        margin-bottom:30px;
+        white-space:pre-line;
+        font-size:15px;
+    }
+
+    .acoes-container{
+        display:flex;
+        flex-wrap:wrap;
+        gap:12px;
+        padding-top:24px;
+        border-top:1px solid var(--sz-border);
+    }
+
+    .btn-acao{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        padding:13px 20px;
+        border-radius:15px;
+        font-weight:800;
+        text-decoration:none;
+        border:1px solid var(--sz-border);
+        cursor:pointer;
+        background:#fff;
+        color:#0f172a;
+        transition:.2s;
+        font-size:14px;
+    }
+
+    .btn-acao:hover{
+        transform:translateY(-2px);
+        box-shadow:0 12px 26px rgba(15,23,42,.08);
+        text-decoration:none;
+    }
+
+    .btn-voltar{background:#f8fafc;}
+    .btn-editar{background:#eff6ff;color:var(--sz-primary);border-color:#bfdbfe;}
+    .btn-compartilhar{background:#ecfdf5;color:#15803d;border-color:#bbf7d0;}
+    .btn-drive{background:#f5f3ff;color:#7c3aed;border-color:#ddd6fe;}
+    .btn-excluir{background:#fef2f2;color:var(--sz-danger);border-color:#fecaca;}
+
+    /* Sidebar */
+    .side-card{
+        background:#fff;
+        border:1px solid var(--sz-border);
+        border-radius:28px;
+        box-shadow:var(--sz-shadow);
+        padding:24px;
+        position:sticky;
+        top:22px;
+    }
+
+    .side-status{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:9px 14px;
+        border-radius:999px;
+        background:#dcfce7;
+        color:#166534;
+        font-size:13px;
+        font-weight:900;
+        margin-bottom:18px;
+    }
+
+    .side-card h3{
+        margin:0 0 12px;
+        font-size:22px;
+        color:#0f172a;
+        font-weight:900;
+    }
+
+    .side-card p{
+        margin:0 0 20px;
+        color:#64748b;
+        line-height:1.6;
+        font-size:14px;
+    }
+
+    .side-list{
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+        margin:20px 0;
+    }
+
+    .side-list-item{
+        display:flex;
+        justify-content:space-between;
+        gap:14px;
+        padding:14px;
+        border-radius:16px;
+        background:#f8fafc;
+        border:1px solid #eef2f7;
+    }
+
+    .side-list-item span{
+        color:#64748b;
+        font-size:13px;
+        font-weight:700;
+    }
+
+    .side-list-item strong{
+        color:#0f172a;
+        font-size:13px;
+        text-align:right;
+        overflow-wrap:anywhere;
+    }
+
+    .side-actions{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        margin-top:18px;
+    }
+
+    .side-actions .btn-acao{
+        width:100%;
+    }
+
+    @media(max-width:1100px){
+        .layout-detalhe{
+            grid-template-columns:1fr;
+        }
+
+        .side-card{
+            position:relative;
+            top:auto;
+        }
+    }
+
+    @media(max-width:760px){
+        .detalhes-page-container{
+            padding:14px;
+        }
+
+        .detalhes-topbar,
+        .titulo-row{
+            flex-direction:column;
+        }
+
+        .quick-actions,
+        .valor-box{
+            width:100%;
+            justify-content:flex-start;
+            text-align:left;
+        }
+
+        .carousel-container,
+        .foto-empty{
+            height:330px;
+        }
+
+        .info-card,
+        .side-card{
+            padding:20px;
+            border-radius:22px;
+        }
+
+        .detalhes-heading h1,
+        .titulo{
+            font-size:25px;
+        }
+
+        .resumo-grid{
+            grid-template-columns:repeat(2,1fr);
+        }
+
+        .acoes-container .btn-acao{
+            width:100%;
+        }
+    }
+
+    @media(max-width:480px){
+        .resumo-grid,
+        .grid-info{
+            grid-template-columns:1fr;
+        }
+    }
 </style>
 
 <div class="detalhes-page-container">
-    {% if imovel.fotos %}
-    <div class="carousel-container" id="carousel-detalhe">
-        <div class="carousel-images">
-            {% for foto in imovel.fotos %}
-                <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
-            {% endfor %}
+
+    <div class="detalhes-topbar">
+        <div class="detalhes-heading">
+            <div class="detalhes-kicker">🏠 Detalhes do imóvel</div>
+            <h1>{{ imovel.titulo }}</h1>
+            <p>Gerencie fotos, informações, descrição e ações rápidas deste imóvel.</p>
         </div>
-        {% if imovel.fotos|length > 1 %}
-            <button class="btn-nav" style="left:20px;" onclick="mudarFoto('carousel-detalhe', -1)">❮</button>
-            <button class="btn-nav" style="right:20px;" onclick="mudarFoto('carousel-detalhe', 1)">❯</button>
-        {% endif %}
+
+        <div class="quick-actions">
+            <a href="/imoveis" class="btn-acao btn-voltar">← Voltar</a>
+            <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
+        </div>
     </div>
-    {% endif %}
 
-    <div class="info-card">
-        <div class="titulo">{{ imovel.titulo }}</div>
-        <div class="valor">{{ imovel.valor }}</div>
+    <div class="layout-detalhe">
 
-        <div class="grid-info">
-            <div class="item"><span class="label-item">Cidade</span><span class="valor-item">{{ imovel.cidade }}</span></div>
-            <div class="item"><span class="label-item">Bairro</span><span class="valor-item">{{ imovel.bairro }}</span></div>
-            <div class="item"><span class="label-item">Rua</span><span class="valor-item">{{ imovel.rua }}</span></div>
-            <div class="item"><span class="label-item">CEP</span><span class="valor-item">{{ imovel.cep }}</span></div>
-            <div class="item"><span class="label-item">Tipo</span><span class="valor-item">{{ imovel.tipo }}</span></div>
-            <div class="item"><span class="label-item">Status</span><span class="valor-item">{{ imovel.status }}</span></div>
-            <div class="item"><span class="label-item">Quartos</span><span class="valor-item">{{ imovel.quartos }}</span></div>
-            <div class="item"><span class="label-item">Suites</span><span class="valor-item">{{ imovel.banheiros }}</span></div>
-            <div class="item"><span class="label-item">Banheiros</span><span class="valor-item">{{ imovel.banheiros21 }}</span></div>
-            <div class="item"><span class="label-item">Área</span><span class="valor-item">{{ imovel.area }} m²</span></div>
-            <div class="item"><span class="label-item">Vagas</span><span class="valor-item">{{ imovel.vaga_garagem }}</span></div>
-            <div class="item"><span class="label-item">Condomínio</span><span class="valor-item">{{ imovel.condominio }}</span></div>
-            <div class="item"><span class="label-item">IPTU</span><span class="valor-item">{{ imovel.iptu }}</span></div>
-            <div class="item"><span class="label-item">Entrada</span><span class="valor-item">{{ imovel.entrada }}</span></div>
-            <div class="item"><span class="label-item">Parcela</span><span class="valor-item">{{ imovel.parcela }}</span></div>
-            <div class="item"><span class="label-item">Anuais</span><span class="valor-item">{{ imovel.anuais }}</span></div>
-            <div class="item"><span class="label-item">Prazo</span><span class="valor-item">{{ imovel.prazo }}</span></div>
-            <div class="item"><span class="label-item">Lavabo</span><span class="valor-item">{{ imovel.lavabo }}</span></div>
-            <div class="item"><span class="label-item">Sacada</span><span class="valor-item">{{ imovel.sacada }}</span></div>
-            <div class="item" style="grid-column: span 1;"><span class="label-item">Lazer</span><span class="valor-item">{{ imovel.lazer }}</span></div>
+        <div>
+            <div class="media-card">
+                {% if imovel.fotos %}
+                <div class="carousel-container" id="carousel-detalhe">
+                    <div class="foto-badge">📸 {{ imovel.fotos|length }} foto{% if imovel.fotos|length > 1 %}s{% endif %}</div>
+
+                    <div class="carousel-images">
+                        {% for foto in imovel.fotos %}
+                            <img src="/uploads/imoveis/{{ foto }}" alt="Foto do imóvel">
+                        {% endfor %}
+                    </div>
+
+                    {% if imovel.fotos|length > 1 %}
+                        <button class="btn-nav" style="left:20px;" onclick="mudarFoto('carousel-detalhe', -1)">❮</button>
+                        <button class="btn-nav" style="right:20px;" onclick="mudarFoto('carousel-detalhe', 1)">❯</button>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="foto-empty">
+                    <strong>Sem fotos cadastradas</strong>
+                    <span>Adicione fotos para valorizar este imóvel.</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="info-card" style="margin-top:24px;">
+                <div class="titulo-row">
+                    <div>
+                        <div class="titulo">{{ imovel.titulo }}</div>
+                        <div class="localizacao">📍 {{ imovel.bairro }} - {{ imovel.cidade }}</div>
+                    </div>
+
+                    <div class="valor-box">
+                        <span class="valor-label">Valor do imóvel</span>
+                        <div class="valor">{{ imovel.valor }}</div>
+                    </div>
+                </div>
+
+                <div class="resumo-grid">
+                    <div class="resumo-item">
+                        <div class="resumo-icon">🛏️</div>
+                        <strong>{{ imovel.quartos }}</strong>
+                        <span>Quartos</span>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-icon">💎</div>
+                        <strong>{{ imovel.banheiros }}</strong>
+                        <span>Suítes</span>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-icon">🚿</div>
+                        <strong>{{ imovel.banheiros21 }}</strong>
+                        <span>Banheiros</span>
+                    </div>
+                    <div class="resumo-item">
+                        <div class="resumo-icon">🚗</div>
+                        <strong>{{ imovel.vaga_garagem }}</strong>
+                        <span>Vagas</span>
+                    </div>
+                </div>
+
+                <div class="section-title">Informações completas</div>
+
+                <div class="grid-info">
+                    <div class="item"><span class="label-item">Cidade</span><span class="valor-item">{{ imovel.cidade }}</span></div>
+                    <div class="item"><span class="label-item">Bairro</span><span class="valor-item">{{ imovel.bairro }}</span></div>
+                    <div class="item"><span class="label-item">Rua</span><span class="valor-item">{{ imovel.rua }}</span></div>
+                    <div class="item"><span class="label-item">CEP</span><span class="valor-item">{{ imovel.cep }}</span></div>
+                    <div class="item"><span class="label-item">Tipo</span><span class="valor-item">{{ imovel.tipo }}</span></div>
+                    <div class="item"><span class="label-item">Status</span><span class="valor-item">{{ imovel.status }}</span></div>
+                    <div class="item"><span class="label-item">Quartos</span><span class="valor-item">{{ imovel.quartos }}</span></div>
+                    <div class="item"><span class="label-item">Suites</span><span class="valor-item">{{ imovel.banheiros }}</span></div>
+                    <div class="item"><span class="label-item">Banheiros</span><span class="valor-item">{{ imovel.banheiros21 }}</span></div>
+                    <div class="item"><span class="label-item">Área</span><span class="valor-item">{{ imovel.area }} m²</span></div>
+                    <div class="item"><span class="label-item">Vagas</span><span class="valor-item">{{ imovel.vaga_garagem }}</span></div>
+                    <div class="item"><span class="label-item">Condomínio</span><span class="valor-item">{{ imovel.condominio }}</span></div>
+                    <div class="item"><span class="label-item">IPTU</span><span class="valor-item">{{ imovel.iptu }}</span></div>
+                    <div class="item"><span class="label-item">Entrada</span><span class="valor-item">{{ imovel.entrada }}</span></div>
+                    <div class="item"><span class="label-item">Parcela</span><span class="valor-item">{{ imovel.parcela }}</span></div>
+                    <div class="item"><span class="label-item">Anuais</span><span class="valor-item">{{ imovel.anuais }}</span></div>
+                    <div class="item"><span class="label-item">Prazo</span><span class="valor-item">{{ imovel.prazo }}</span></div>
+                    <div class="item"><span class="label-item">Lavabo</span><span class="valor-item">{{ imovel.lavabo }}</span></div>
+                    <div class="item"><span class="label-item">Sacada</span><span class="valor-item">{{ imovel.sacada }}</span></div>
+                    <div class="item"><span class="label-item">Lazer</span><span class="valor-item">{{ imovel.lazer }}</span></div>
+                </div>
+
+                <div class="section-title">Descrição do imóvel</div>
+                <div class="descricao-box">{{ imovel.descricao }}</div>
+
+                <div class="acoes-container">
+                    <a href="/imoveis" class="btn-acao btn-voltar">← Voltar</a>
+                    <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar</a>
+                    <button onclick="compartilharImovel()" class="btn-acao btn-compartilhar">📱 Compartilhar</button>
+                    <button class="btn-acao btn-drive" onclick="copiarLink('{{ imovel['link'] }}')">🔗 Copiar Drive</button>
+                    <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao btn-excluir" onclick="return confirm('Excluir este imóvel?')">🗑 Excluir</a>
+                </div>
+            </div>
         </div>
 
-        <h3 style="margin-bottom: 15px; color: #000;">Descrição do Imóvel</h3>
-        <div class="descricao-box">{{ imovel.descricao }}</div>
+        <aside class="side-card">
+            <div class="side-status">● {{ imovel.status }}</div>
+            <h3>Resumo rápido</h3>
+            <p>Informações principais para conferência antes de editar, compartilhar ou enviar para clientes.</p>
 
-        <div class="acoes-container">
-            <a href="/imoveis" class="btn-acao">← Voltar</a>
-            <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao">✏ Editar</a>
-            <button onclick="compartilharImovel()" class="btn-acao">📱 Compartilhar</button>
-            <button class="btn-acao" onclick="copiarLink('{{ imovel['link'] }}')">🔗 Copiar Drive</button>
-            <a href="/excluir_imovel/{{ imovel.id }}" class="btn-acao" style="color:red" onclick="return confirm('Excluir este imóvel?')">🗑 Excluir</a>
-        </div>
+            <div class="side-list">
+                <div class="side-list-item"><span>Tipo</span><strong>{{ imovel.tipo }}</strong></div>
+                <div class="side-list-item"><span>Local</span><strong>{{ imovel.bairro }} - {{ imovel.cidade }}</strong></div>
+                <div class="side-list-item"><span>Valor</span><strong>{{ imovel.valor }}</strong></div>
+                <div class="side-list-item"><span>Entrada</span><strong>{{ imovel.entrada }}</strong></div>
+                <div class="side-list-item"><span>Parcela</span><strong>{{ imovel.parcela }}</strong></div>
+                <div class="side-list-item"><span>Prazo</span><strong>{{ imovel.prazo }}</strong></div>
+            </div>
+
+            <div class="side-actions">
+                <button onclick="compartilharImovel()" class="btn-acao btn-compartilhar">📱 Compartilhar imóvel</button>
+                <button class="btn-acao btn-drive" onclick="copiarLink('{{ imovel['link'] }}')">🔗 Copiar link do Drive</button>
+                <a href="/editar_imovel/{{ imovel.id }}" class="btn-acao btn-editar">✏ Editar cadastro</a>
+            </div>
+        </aside>
+
     </div>
 </div>
+
 <script>
     // Função para copiar o link do Drive
     function copiarLink(texto) {
-        if (!texto || texto === "None" || texto === "") { 
-            alert("Sem link de Drive cadastrado."); 
-            return; 
+        if (!texto || texto === "None" || texto === "") {
+            alert("Sem link de Drive cadastrado.");
+            return;
         }
         navigator.clipboard.writeText(texto).then(() => {
             alert("Link do Drive copiado para a área de transferência!");
@@ -106,10 +661,10 @@
     function mudarFoto(carouselId, direcao) {
         const container = document.getElementById(carouselId).querySelector('.carousel-images');
         if (!container) return;
-        
+
         const total = container.children.length;
         let index = parseInt(container.dataset.index || 0);
-        
+
         index = (index + direcao + total) % total;
         container.dataset.index = index;
         container.style.transform = `translateX(-${index * 100}%)`;
@@ -118,14 +673,14 @@
     // Função de Compartilhamento Nativo (Mobile/Desktop)
     function compartilharImovel() {
         const link = window.location.href;
-        if (navigator.share) { 
+        if (navigator.share) {
             navigator.share({
-                title: '{{ imovel.titulo }}', 
+                title: '{{ imovel.titulo }}',
                 url: link
-            }).catch(console.error); 
-        } else { 
+            }).catch(console.error);
+        } else {
             navigator.clipboard.writeText(link).then(() => {
-                alert("Link do imóvel copiado para a área de transferência!"); 
+                alert("Link do imóvel copiado para a área de transferência!");
             });
         }
     }
