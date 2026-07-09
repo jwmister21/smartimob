@@ -2341,14 +2341,14 @@ def whatsapp_sessoes():
 @app.route("/whatsapp/criar-sessao", methods=["POST"])
 def criar_sessao_whatsapp():
     usuario_id = session.get("usuario_id", 1)
-
     nome_instancia = f"usuario_{usuario_id}"
 
     url = f"{EVOLUTION_URL}/instance/create"
 
     payload = {
         "instanceName": nome_instancia,
-        "qrcode": True
+        "qrcode": True,
+        "integration": "WHATSAPP-BAILEYS"
     }
 
     headers = {
@@ -2358,8 +2358,8 @@ def criar_sessao_whatsapp():
 
     resposta = requests.post(url, json=payload, headers=headers, timeout=30)
 
-    print(resposta.status_code)
-    print(resposta.text)
+    print("STATUS:", resposta.status_code)
+    print("RESPOSTA:", resposta.text)
 
     return redirect("/whatsapp/sessoes")
      
