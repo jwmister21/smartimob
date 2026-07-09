@@ -9,761 +9,766 @@
 
 <style>
 
-  .card-footer strong.positivo{
-    color:#22c55e;
-}
-
-.card-footer strong.negativo{
-    color:#ef4444;
-}
-
-.card-footer strong.neutro{
-    color:#f59e0b;
-}
-
 /* ==========================================================
-  SMARTZEN IMOB DASHBOARD PREMIUM
+   SMARTZEN IMOB - DASHBOARD PREMIUM 2.0
+   Mantém IDs, variáveis Jinja e lógica Chart.js
 ========================================================== */
 
+:root{
+    --sz-bg:#f4f7fb;
+    --sz-card:#ffffff;
+    --sz-text:#0f172a;
+    --sz-muted:#64748b;
+    --sz-soft:#eef2f7;
+    --sz-border:#e5e7eb;
+    --sz-blue:#2563eb;
+    --sz-blue-2:#60a5fa;
+    --sz-green:#22c55e;
+    --sz-orange:#f59e0b;
+    --sz-red:#ef4444;
+    --sz-purple:#8b5cf6;
+    --sz-shadow:0 18px 45px rgba(15,23,42,.08);
+    --sz-shadow-hover:0 24px 60px rgba(15,23,42,.14);
+    --sz-radius:26px;
+}
+
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Inter,Arial,sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,"Segoe UI",Arial,sans-serif;
 }
 
 body{
-background:#f4f7fb;
+    background:
+        radial-gradient(circle at top left, rgba(37,99,235,.10), transparent 32%),
+        radial-gradient(circle at top right, rgba(34,197,94,.10), transparent 28%),
+        var(--sz-bg);
+    color:var(--sz-text);
 }
-
-/*=========================
-CONTAINER
-=========================*/
 
 .dashboard{
-display:flex;
-flex-direction:column;
-gap:25px;
-padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:26px;
+    padding:12px;
 }
 
-/*=========================
-HEADER
-=========================*/
+/* ================= HEADER ================= */
 
 .dashboard-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
+    position:relative;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+    overflow:hidden;
+    padding:28px;
+    border:1px solid rgba(255,255,255,.75);
+    border-radius:32px;
+    background:
+        linear-gradient(135deg, rgba(15,23,42,.96), rgba(30,64,175,.92)),
+        #0f172a;
+    box-shadow:var(--sz-shadow);
+    color:white;
 }
 
-.header-left h1{
-font-size:34px;
-font-weight:700;
-color:#111827;
+.dashboard-header:before{
+    content:"";
+    position:absolute;
+    width:360px;
+    height:360px;
+    right:-130px;
+    top:-180px;
+    border-radius:50%;
+    background:rgba(34,197,94,.28);
+    filter:blur(3px);
+}
+
+.dashboard-header:after{
+    content:"";
+    position:absolute;
+    width:170px;
+    height:170px;
+    left:45%;
+    bottom:-120px;
+    border-radius:50%;
+    background:rgba(96,165,250,.28);
+}
+
+.header-left,
+.header-right{
+    position:relative;
+    z-index:2;
 }
 
 .header-left p{
-margin-top:8px;
-color:#64748b;
+    margin-top:4px;
+    color:#cbd5e1;
+    font-size:16px;
+}
+
+.header-left p:before{
+    content:"🚀 Dashboard SmartZen";
+    display:block;
+    margin-bottom:8px;
+    color:white;
+    font-size:30px;
+    font-weight:900;
+    letter-spacing:-.7px;
+}
+
+.header-left p:after{
+    content:"Acompanhe seus clientes, imóveis, leads e oportunidades em tempo real.";
+    display:block;
+    margin-top:8px;
+    max-width:520px;
+    color:#94a3b8;
+    line-height:1.5;
 }
 
 .header-right{
-display:flex;
-align-items:center;
-gap:18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
 }
 
-/*=========================
-SEARCH
-=========================*/
-
 .search-box{
-width:320px;
-height:50px;
-background:#fff;
-border-radius:15px;
-display:flex;
-align-items:center;
-padding:0 18px;
-box-shadow:0 8px 20px rgba(15,23,42,.05);
+    width:320px;
+    height:52px;
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:18px;
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(14px);
+}
+
+.search-box:before{
+    content:"🔎";
+    margin-right:10px;
+    opacity:.85;
 }
 
 .search-box input{
-width:100%;
-border:none;
-outline:none;
-background:none;
-font-size:15px;
+    width:100%;
+    border:none;
+    outline:none;
+    background:transparent;
+    color:white;
+    font-size:15px;
 }
 
-/*=========================
-BOTÕES
-=========================*/
+.search-box input::placeholder{
+    color:#cbd5e1;
+}
 
 .icon-btn{
-width:50px;
-height:50px;
-border-radius:15px;
-border:none;
-background:#fff;
-cursor:pointer;
-font-size:20px;
-box-shadow:0 8px 20px rgba(15,23,42,.05);
-transition:.25s;
+    width:50px;
+    height:50px;
+    border-radius:15px;
+    border:none;
+    background:#fff;
+    cursor:pointer;
+    font-size:20px;
+    box-shadow:0 8px 20px rgba(15,23,42,.05);
+    transition:.25s;
 }
 
 .icon-btn:hover{
-background:#2563eb;
-color:white;
+    background:var(--sz-blue);
+    color:white;
 }
 
-/*=========================
-USUARIO
-=========================*/
-
 .user-box{
-display:flex;
-align-items:center;
-gap:12px;
-background:white;
-padding:8px 18px;
-border-radius:18px;
-box-shadow:0 8px 20px rgba(15,23,42,.05);
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:9px 16px 9px 9px;
+    border:1px solid rgba(255,255,255,.16);
+    border-radius:20px;
+    background:rgba(255,255,255,.13);
+    backdrop-filter:blur(14px);
 }
 
 .user-avatar{
-width:45px;
-height:45px;
-border-radius:50%;
-background:#2563eb;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-font-weight:bold;
-font-size:18px;
+    width:46px;
+    height:46px;
+    border-radius:16px;
+    background:linear-gradient(135deg,var(--sz-green),#16a34a);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:900;
+    font-size:18px;
+    box-shadow:0 12px 25px rgba(34,197,94,.28);
+    text-transform:uppercase;
 }
 
 .user-info strong{
-display:block;
-color:#111827;
+    display:block;
+    color:white;
+    font-size:14px;
 }
 
 .user-info span{
-color:#94a3b8;
-font-size:13px;
+    color:#cbd5e1;
+    font-size:12px;
 }
 
-/*=========================
-CARDS
-=========================*/
+/* ================= CARDS ================= */
 
 .cards{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:22px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:22px;
+}
+
+.card,
+.panel,
+.clients-card,
+.ai-card{
+    position:relative;
+    overflow:hidden;
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(226,232,240,.9);
+    border-radius:var(--sz-radius);
+    box-shadow:var(--sz-shadow);
+    transition:.28s ease;
 }
 
 .card{
-background:white;
-border-radius:22px;
-padding:24px;
-box-shadow:0 15px 35px rgba(15,23,42,.05);
-transition:.3s;
+    padding:24px;
 }
 
-.card:hover{
-transform:translateY(-5px);
+.card:before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto 0;
+    height:5px;
+    background:linear-gradient(90deg,var(--sz-blue),var(--sz-green));
+    opacity:.95;
+}
+
+.card:hover,
+.panel:hover,
+.clients-card:hover,
+.ai-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--sz-shadow-hover);
 }
 
 .card-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
 }
 
 .card-title{
-color:#94a3b8;
-font-size:14px;
+    color:var(--sz-muted);
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.5px;
+    text-transform:uppercase;
 }
 
 .card-value{
-margin-top:10px;
-font-size:36px;
-font-weight:700;
-color:#111827;
+    margin-top:10px;
+    font-size:38px;
+    font-weight:900;
+    letter-spacing:-1px;
+    color:var(--sz-text);
 }
-
-/*=========================
-ICONS
-=========================*/
 
 .icon{
-width:60px;
-height:60px;
-border-radius:18px;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:28px;
+    width:62px;
+    height:62px;
+    border-radius:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);
 }
 
-.blue{
-background:#dbeafe;
-}
-
-.green{
-background:#dcfce7;
-}
-
-.orange{
-background:#ffedd5;
-}
-
-.purple{
-background:#ede9fe;
-}
-
-/*=========================
-BARRA
-=========================*/
+.blue{ background:#dbeafe; }
+.green{ background:#dcfce7; }
+.orange{ background:#ffedd5; }
+.purple{ background:#ede9fe; }
 
 .progress{
-margin-top:22px;
-height:8px;
-background:#edf2f7;
-border-radius:50px;
-overflow:hidden;
+    margin-top:22px;
+    height:9px;
+    background:#edf2f7;
+    border-radius:50px;
+    overflow:hidden;
 }
 
 .progress div{
-height:100%;
-border-radius:50px;
-background:linear-gradient(90deg,#2563eb,#60a5fa);
+    height:100%;
+    border-radius:50px;
+    background:linear-gradient(90deg,var(--sz-blue),var(--sz-blue-2),var(--sz-green));
 }
 
-/*=========================
-RODAPÉ CARD
-=========================*/
-
 .card-footer{
-margin-top:18px;
-display:flex;
-justify-content:space-between;
-font-size:13px;
+    margin-top:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    font-size:13px;
 }
 
 .card-footer strong{
-color:#16a34a;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#f8fafc;
+    font-weight:900;
 }
 
-.card-footer span{
-color:#94a3b8;
-}
-/*==================================================
-GRAFICOS
-==================================================*/
+.card-footer strong.positivo{ color:var(--sz-green); background:#dcfce7; }
+.card-footer strong.negativo{ color:var(--sz-red); background:#fee2e2; }
+.card-footer strong.neutro{ color:var(--sz-orange); background:#fef3c7; }
+.card-footer span{ color:#94a3b8; }
 
-.content-grid{
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:24px;
-}
-
-.panel{
-background:#fff;
-border-radius:22px;
-padding:25px;
-box-shadow:0 15px 35px rgba(15,23,42,.05);
-}
-
-.panel-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:25px;
-}
-
-.panel-title h3{
-font-size:22px;
-color:#111827;
-}
-
-.panel-title p{
-margin-top:5px;
-color:#94a3b8;
-font-size:14px;
-}
-
-.panel select{
-padding:10px 15px;
-border:1px solid #e5e7eb;
-border-radius:12px;
-outline:none;
-background:white;
-}
-
-.chart-area{
-height:350px;
-}
-
-.chart-area canvas{
-width:100%!important;
-height:100%!important;
-}
-
-/*==================================================
-ESTATISTICAS LADO DIREITO
-==================================================*/
-
-.stats-list{
-display:flex;
-flex-direction:column;
-gap:15px;
-margin-top:25px;
-}
-
-.stat-item{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:16px;
-border-radius:16px;
-background:#f8fafc;
-}
-
-.stat-left{
-display:flex;
-align-items:center;
-gap:12px;
-}
-
-.stat-dot{
-width:14px;
-height:14px;
-border-radius:50%;
-}
-
-.dot-blue{
-background:#2563eb;
-}
-
-.dot-green{
-background:#10b981;
-}
-
-.dot-orange{
-background:#f59e0b;
-}
-
-.dot-red{
-background:#ef4444;
-}
-
-.stat-left strong{
-display:block;
-color:#111827;
-}
-
-.stat-left span{
-color:#94a3b8;
-font-size:13px;
-}
-
-/*==================================================
-CARD AZUL
-==================================================*/
-
-.total-card{
-margin-top:25px;
-background:linear-gradient(135deg,#2563eb,#3b82f6);
-border-radius:18px;
-color:white;
-text-align:center;
-padding:25px;
-}
-
-.total-card small{
-opacity:.8;
-}
-
-.total-card h2{
-margin-top:10px;
-font-size:42px;
-}
-
-/*==================================================
-AREA INFERIOR
-==================================================*/
-
-.bottom-grid{
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:24px;
-}
-
-/*==================================================
-ULTIMOS CLIENTES
-==================================================*/
-
-.clients-card{
-background:white;
-border-radius:22px;
-padding:25px;
-box-shadow:0 15px 35px rgba(15,23,42,.05);
-}
-
-.clients-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:25px;
-}
-
-.clients-header h3{
-font-size:22px;
-color:#111827;
-}
-
-.clients-header a{
-text-decoration:none;
-color:#2563eb;
-font-weight:600;
-}
-
-.client{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:18px 0;
-border-bottom:1px solid #eef2f7;
-}
-
-.client:last-child{
-border:none;
-}
-
-.client-left{
-display:flex;
-align-items:center;
-gap:15px;
-}
-
-.client-avatar{
-width:48px;
-height:48px;
-border-radius:50%;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-font-weight:bold;
-}
-
-.client-name{
-font-weight:600;
-color:#111827;
-}
-
-.client-type{
-color:#94a3b8;
-font-size:13px;
-}
-
-.status{
-padding:8px 15px;
-border-radius:30px;
-font-size:13px;
-font-weight:600;
-}
-
-.status-success{
-background:#dcfce7;
-color:#16a34a;
-}
-
-.status-warning{
-background:#fef3c7;
-color:#ca8a04;
-}
-
-.status-danger{
-background:#fee2e2;
-color:#dc2626;
-}
-
-/*==================================================
-IA
-==================================================*/
-
-.ai-card{
-background:white;
-border-radius:22px;
-padding:25px;
-box-shadow:0 15px 35px rgba(15,23,42,.05);
-}
-
-.ai-card h3{
-margin-bottom:22px;
-color:#111827;
-}
-
-.ai-item{
-display:flex;
-gap:15px;
-margin-bottom:15px;
-background:#f8fafc;
-border-radius:16px;
-padding:16px;
-transition:.25s;
-}
-
-.ai-item:hover{
-background:#eff6ff;
-transform:translateX(6px);
-}
-
-.ai-icon{
-width:50px;
-height:50px;
-border-radius:15px;
-background:#2563eb;
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-font-size:22px;
-}
-
-.ai-info strong{
-display:block;
-margin-bottom:5px;
-color:#111827;
-}
-
-.ai-info span{
-color:#64748b;
-font-size:13px;
-line-height:1.5;
-}
-
-/*==================================================
-RESPONSIVO
-==================================================*/
-
-@media(max-width:1200px){
-
-.cards{
-grid-template-columns:repeat(2,1fr);
-}
-
-.content-grid{
-grid-template-columns:1fr;
-}
-
-.bottom-grid{
-grid-template-columns:1fr;
-}
-
-}
-
-@media(max-width:768px){
-
-.dashboard-header{
-flex-direction:column;
-gap:20px;
-align-items:flex-start;
-}
-
-.header-right{
-width:100%;
-flex-wrap:wrap;
-}
-
-.search-box{
-width:100%;
-}
-
-.cards{
-grid-template-columns:1fr;
-}
-
-}
 /* ================= SITE PUBLICO ================= */
 
+.panel{
+    padding:25px;
+}
+
 .site-card{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:20px;
-flex-wrap:wrap;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap;
 }
 
 .site-info{
-display:flex;
-align-items:center;
-gap:16px;
+    display:flex;
+    align-items:center;
+    gap:16px;
 }
 
 .site-icon{
-width:60px;
-height:60px;
-border-radius:16px;
-background:linear-gradient(135deg,#2563eb,#22c55e);
-color:#fff;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:28px;
-box-shadow:0 8px 20px rgba(37,99,235,.25);
+    width:66px;
+    height:66px;
+    border-radius:22px;
+    background:linear-gradient(135deg,var(--sz-blue),var(--sz-green));
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    box-shadow:0 15px 30px rgba(37,99,235,.22);
 }
 
 .site-text h3{
-margin:0;
-font-size:24px;
-font-weight:700;
-color:#0f172a;
+    margin:0;
+    font-size:24px;
+    font-weight:900;
+    color:var(--sz-text);
 }
 
 .site-text p{
-margin:6px 0 0;
-color:#64748b;
-font-size:15px;
+    margin:6px 0 0;
+    color:var(--sz-muted);
+    font-size:15px;
 }
 
 .site-btn{
-display:inline-flex;
-align-items:center;
-gap:10px;
-padding:14px 28px;
-border-radius:14px;
-text-decoration:none;
-font-weight:600;
-color:#fff;
-transition:.25s;
-box-shadow:0 10px 20px rgba(34,197,94,.25);
+    border:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-height:50px;
+    padding:14px 28px;
+    border-radius:16px;
+    text-decoration:none;
+    font-weight:800;
+    color:#fff;
+    cursor:pointer;
+    transition:.25s;
+    box-shadow:0 12px 25px rgba(34,197,94,.22);
 }
 
 .site-btn:hover{
-transform:translateY(-2px);
-color:#fff;
+    transform:translateY(-2px);
+    color:#fff;
 }
 
-.site-btn.green{
-background:#16a34a;
+.site-btn.green{ background:linear-gradient(135deg,#16a34a,#22c55e); }
+.site-btn.blue{ background:linear-gradient(135deg,#2563eb,#60a5fa); }
+
+/* ================= GRAFICOS ================= */
+
+.content-grid,
+.bottom-grid{
+    display:grid;
+    grid-template-columns:minmax(0,2fr) minmax(320px,1fr);
+    gap:24px;
 }
 
-.site-btn.blue{
-background:#2563eb;
+.panel-header,
+.clients-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.panel-title h3,
+.clients-header h3,
+.ai-card h3{
+    font-size:22px;
+    font-weight:900;
+    color:var(--sz-text);
+    letter-spacing:-.3px;
+}
+
+.panel-title p{
+    margin-top:5px;
+    color:#94a3b8;
+    font-size:14px;
+}
+
+.panel select{
+    padding:11px 15px;
+    border:1px solid var(--sz-border);
+    border-radius:14px;
+    outline:none;
+    background:white;
+    color:var(--sz-text);
+    font-weight:700;
+}
+
+.chart-area{
+    height:350px;
+}
+
+.chart-area canvas,
+.panel canvas{
+    width:100%!important;
+    height:100%!important;
+}
+
+.stats-list{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:24px;
+}
+
+.stat-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    padding:15px;
+    border:1px solid #edf2f7;
+    border-radius:18px;
+    background:#f8fafc;
+    transition:.2s;
+}
+
+.stat-item:hover{
+    background:#fff;
+    transform:translateX(4px);
+}
+
+.stat-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+
+.stat-dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    flex-shrink:0;
+}
+
+.dot-blue{ background:#2563eb; }
+.dot-green{ background:#10b981; }
+.dot-orange{ background:#f59e0b; }
+.dot-red{ background:#ef4444; }
+
+.stat-left strong{
+    display:block;
+    color:var(--sz-text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:190px;
+}
+
+.stat-left span{
+    color:#94a3b8;
+    font-size:13px;
+}
+
+/* ================= CLIENTES ================= */
+
+.clients-card,
+.ai-card{
+    padding:25px;
+}
+
+.clients-header a{
+    text-decoration:none;
+    color:var(--sz-blue);
+    font-weight:800;
+    padding:9px 12px;
+    border-radius:12px;
+    background:#eff6ff;
+}
+
+.client{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px solid #eef2f7;
+}
+
+.client:last-child{ border:none; }
+
+.client-left{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    min-width:0;
+}
+
+.client-avatar{
+    width:50px;
+    height:50px;
+    border-radius:18px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-weight:900;
+    background:linear-gradient(135deg,var(--sz-blue),var(--sz-blue-2));
+    flex-shrink:0;
+    box-shadow:0 12px 22px rgba(37,99,235,.18);
+}
+
+.client-name{
+    font-weight:800;
+    color:var(--sz-text);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:260px;
+}
+
+.client-type{
+    color:#94a3b8;
+    font-size:13px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:260px;
+}
+
+.status{
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.status-success{ background:#dcfce7; color:#16a34a; }
+.status-warning{ background:#fef3c7; color:#ca8a04; }
+.status-danger{ background:#fee2e2; color:#dc2626; }
+
+/* ================= IA ================= */
+
+.ai-card h3{
+    margin-bottom:22px;
+}
+
+.ai-item{
+    display:flex;
+    gap:15px;
+    margin-bottom:14px;
+    border:1px solid #edf2f7;
+    background:#f8fafc;
+    border-radius:18px;
+    padding:16px;
+    transition:.25s;
+}
+
+.ai-item:hover{
+    background:#eff6ff;
+    transform:translateX(6px);
+}
+
+.ai-icon{
+    width:52px;
+    height:52px;
+    border-radius:17px;
+    background:linear-gradient(135deg,var(--sz-blue),var(--sz-purple));
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:22px;
+    flex-shrink:0;
+}
+
+.ai-info strong{
+    display:block;
+    margin-bottom:5px;
+    color:var(--sz-text);
+}
+
+.ai-info span{
+    color:var(--sz-muted);
+    font-size:13px;
+    line-height:1.5;
+}
+
+/* ================= RESPONSIVO ================= */
+
+@media(max-width:1200px){
+    .cards{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .content-grid,
+    .bottom-grid{
+        grid-template-columns:1fr;
+    }
 }
 
 @media(max-width:768px){
+    .dashboard{
+        padding:8px;
+        gap:18px;
+    }
 
-.site-card{
-flex-direction:column;
-align-items:flex-start;
-}
+    .dashboard-header{
+        flex-direction:column;
+        align-items:flex-start;
+        padding:22px;
+        border-radius:24px;
+    }
 
-.site-btn{
-width:100%;
-justify-content:center;
-}
+    .header-left p:before{
+        font-size:24px;
+    }
 
+    .header-right{
+        width:100%;
+        flex-wrap:wrap;
+    }
+
+    .search-box{
+        width:100%;
+    }
+
+    .user-box{
+        width:100%;
+    }
+
+    .cards{
+        grid-template-columns:1fr;
+    }
+
+    .card-value{
+        font-size:32px;
+    }
+
+    .panel,
+    .clients-card,
+    .ai-card,
+    .card{
+        border-radius:22px;
+        padding:20px;
+    }
+
+    .site-card{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .site-btn,
+    .site-card form{
+        width:100%;
+    }
+
+    .site-btn{
+        justify-content:center;
+    }
+
+    .client{
+        align-items:flex-start;
+        flex-direction:column;
+    }
 }
 
 </style>
 
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
 <div class="dashboard">
-
 
 <!-- ================= HEADER ================= -->
 
 <div class="dashboard-header">
 
-
 <div class="header-left">
-
 <p>
 Bem-vindo, {{ session['usuario_nome'] }}
 </p>
-
 </div>
-
-
 
 <div class="header-right">
 
-
 <div class="search-box">
-
 <input placeholder="Pesquisar...">
-
 </div>
 
 <div class="user-box">
-
-
 <div class="user-avatar">
-
 {{ session['usuario_nome'][0] }}
-
 </div>
 
-
 <div class="user-info">
-
 <strong>
 {{ session['usuario_nome'] }}
 </strong>
-
 <span>
 Corretor
 </span>
-
-
+</div>
 </div>
 
-
 </div>
-
-
 </div>
-
-
-</div>
-
-
-
 
 <!-- ================= CARDS ================= -->
-
 
 <div class="cards">
 
     <!-- CLIENTES -->
     <div class="card">
-
         <div class="card-header">
-
             <div>
-                <div class="card-title">
-                    Clientes
-                </div>
-
-                <div class="card-value">
-                    {{ total_clientes }}
-                </div>
+                <div class="card-title">Clientes</div>
+                <div class="card-value">{{ total_clientes }}</div>
             </div>
-
-            <div class="icon blue">
-                👥
-            </div>
-
+            <div class="icon blue">👥</div>
         </div>
 
         <div class="progress">
@@ -771,37 +776,21 @@ Corretor
         </div>
 
         <div class="card-footer">
-
             <strong class="{% if crescimento_clientes > 0 %}positivo{% elif crescimento_clientes < 0 %}negativo{% else %}neutro{% endif %}">
                 {% if crescimento_clientes > 0 %}+{% endif %}{{ crescimento_clientes }}%
             </strong>
-
             <span>Este mês</span>
-
         </div>
-
     </div>
-
 
     <!-- IMÓVEIS -->
     <div class="card">
-
         <div class="card-header">
-
             <div>
-                <div class="card-title">
-                    Imóveis
-                </div>
-
-                <div class="card-value">
-                    {{ total_imoveis }}
-                </div>
+                <div class="card-title">Imóveis</div>
+                <div class="card-value">{{ total_imoveis }}</div>
             </div>
-
-            <div class="icon green">
-                🏠
-            </div>
-
+            <div class="icon green">🏠</div>
         </div>
 
         <div class="progress">
@@ -809,37 +798,21 @@ Corretor
         </div>
 
         <div class="card-footer">
-
             <strong class="{% if crescimento_imoveis > 0 %}positivo{% elif crescimento_imoveis < 0 %}negativo{% else %}neutro{% endif %}">
                 {% if crescimento_imoveis > 0 %}+{% endif %}{{ crescimento_imoveis }}%
             </strong>
-
             <span>Carteira</span>
-
         </div>
-
     </div>
-
 
     <!-- LEADS -->
     <div class="card">
-
         <div class="card-header">
-
             <div>
-                <div class="card-title">
-                    Leads
-                </div>
-
-                <div class="card-value">
-                    {{ total_leads }}
-                </div>
+                <div class="card-title">Leads</div>
+                <div class="card-value">{{ total_leads }}</div>
             </div>
-
-            <div class="icon orange">
-                📈
-            </div>
-
+            <div class="icon orange">📈</div>
         </div>
 
         <div class="progress">
@@ -847,37 +820,21 @@ Corretor
         </div>
 
         <div class="card-footer">
-
             <strong class="{% if crescimento_leads > 0 %}positivo{% elif crescimento_leads < 0 %}negativo{% else %}neutro{% endif %}">
                 {% if crescimento_leads > 0 %}+{% endif %}{{ crescimento_leads }}%
             </strong>
-
             <span>Conversão</span>
-
         </div>
-
     </div>
-
 
     <!-- MATCH IA -->
     <div class="card">
-
         <div class="card-header">
-
             <div>
-                <div class="card-title">
-                    Match IA
-                </div>
-
-                <div class="card-value">
-                    {{ total_matchs }}
-                </div>
+                <div class="card-title">Match IA</div>
+                <div class="card-value">{{ total_matchs }}</div>
             </div>
-
-            <div class="icon purple">
-                🤖
-            </div>
-
+            <div class="icon purple">🤖</div>
         </div>
 
         <div class="progress">
@@ -885,15 +842,9 @@ Corretor
         </div>
 
         <div class="card-footer">
-
-            <strong class="positivo">
-                {{ total_matchs }}
-            </strong>
-
+            <strong class="positivo">{{ total_matchs }}</strong>
             <span>Matches encontrados</span>
-
         </div>
-
     </div>
 
 </div>
@@ -901,169 +852,87 @@ Corretor
 <!-- ================= SITE PÚBLICO ================= -->
 
 <div class="panel">
-
 <div class="site-card">
-
 <div class="site-info">
-
-<div class="site-icon">
-🌐
-</div>
-
+<div class="site-icon">🌐</div>
 <div class="site-text">
 <h3>Site Público</h3>
 <p>Publique sua imobiliária na internet</p>
 </div>
-
 </div>
 
 {% if site %}
-
-<a href="/site/{{ site['subdominio'] }}"
-target="_blank"
-class="site-btn green">
+<a href="/site/{{ site['subdominio'] }}" target="_blank" class="site-btn green">
 🌍 Acessar Site
 </a>
-
 {% else %}
-
 <form action="/gerar_site/salvar" method="POST">
     <button type="submit" class="site-btn blue">
         🚀 Gerar Site
     </button>
 </form>
-
 {% endif %}
 
 </div>
-
 </div>
 
 <!-- ================= GRAFICOS ================= -->
 
-
 <div class="content-grid">
 
-
-
 <div class="panel">
-
-
 <div class="panel-header">
-
-
 <div class="panel-title">
-
-<h3>
-Clientes cadastrados
-</h3>
-
-
-<p>
-Últimos meses
-</p>
-
-
+<h3>Clientes cadastrados</h3>
+<p>Últimos meses</p>
 </div>
-
-
 <select>
-
-<option>
-2026
-</option>
-
+<option>2026</option>
 </select>
-
-
 </div>
-
-
 
 <div class="chart-area">
-
 <canvas id="clientesChart"></canvas>
-
 </div>
-
-
-
 </div>
-
-
-
-
 
 <div class="panel">
-
-
 <div class="panel-header">
-
-
 <div class="panel-title">
-
-<h3>
-Imóveis
-</h3>
-
-
-<p>
-Distribuição
-</p>
-
-
+<h3>Imóveis</h3>
+<p>Distribuição</p>
 </div>
-
-
 </div>
-
-
 
 <div style="height:300px;">
 <canvas id="tipoChart"></canvas>
 </div>
 
-
-
 <div class="stats-list">
-
 {% for item in imoveis_por_tipo %}
-
 <div class="stat-item">
-
 <div class="stat-left">
-
 {% set cores = [
 'dot-blue',
 'dot-green',
 'dot-orange',
 'dot-red'
 ] %}
-
 <div class="stat-dot {{ cores[loop.index0 % 4] }}"></div>
-
 <div>
-
 <strong>{{ item.tipo }}</strong>
-
 <span>{{ item.percentual }}%</span>
-
 </div>
-
 </div>
-
 <b>{{ item.total }}</b>
-
 </div>
-
 {% endfor %}
-
 </div>
+</div>
+
 </div>
 
 <!-- ================= PARTE INFERIOR ================= -->
-
-
 
 <div class="bottom-grid">
 
@@ -1088,275 +957,145 @@ Distribuição
 </div>
 {% endfor %}
 </div>
+
 <!-- IA -->
 
-
 <div class="ai-card">
-
-
-<h3>
-🤖 SMARTZEN IA
-</h3>
-
-
-
+<h3>🤖 SMARTZEN IA</h3>
 
 <div class="ai-item">
-
-
-<div class="ai-icon">
-📈
-</div>
-
-
+<div class="ai-icon">📈</div>
 <div class="ai-info">
-
-<strong>
-12 Matches encontrados
-</strong>
-
-<span>
-Clientes compatíveis com imóveis.
-</span>
-
+<strong>12 Matches encontrados</strong>
+<span>Clientes compatíveis com imóveis.</span>
 </div>
-
-
 </div>
-
-
-
-
 
 <div class="ai-item">
-
-
-<div class="ai-icon">
-📞
-</div>
-
-
+<div class="ai-icon">📞</div>
 <div class="ai-info">
-
-<strong>
-5 clientes quentes
-</strong>
-
-<span>
-Precisam de contato.
-</span>
-
+<strong>5 clientes quentes</strong>
+<span>Precisam de contato.</span>
 </div>
-
-
 </div>
-
-
-
-
 
 <div class="ai-item">
-
-
-<div class="ai-icon">
-🏠
-</div>
-
-
+<div class="ai-icon">🏠</div>
 <div class="ai-info">
-
-<strong>
-8 anúncios incompletos
-</strong>
-
-<span>
-Melhore seus imóveis.
-</span>
+<strong>8 anúncios incompletos</strong>
+<span>Melhore seus imóveis.</span>
+</div>
+</div>
 
 </div>
 
-
 </div>
 
-
-
-
 </div>
-
-
-
-</div>
-
-
-
-
-
-</div>
-
 
 <script>
-
 
 // ===============================
 // GRAFICO CLIENTES
 // ===============================
 
-
 const clientesCtx = document.getElementById("clientesChart");
-
 
 new Chart(clientesCtx, {
 
-
 type:"line",
 
-
 data:{
-
 
 labels: {{ labels_clientes|tojson }},
 
 datasets:[{
 
-
 label:"Clientes",
-
 
 data: {{ dados_clientes|tojson }},
 
-
 borderColor:"#2563eb",
-
 
 backgroundColor:"rgba(37,99,235,.15)",
 
-
 fill:true,
-
 
 tension:.45,
 
-
 borderWidth:4,
-
 
 pointRadius:5,
 
-
 pointBackgroundColor:"#2563eb"
-
 
 }]
 
-
 },
-
-
 
 options:{
 
-
 responsive:true,
-
 
 maintainAspectRatio:false,
 
-
 plugins:{
-
 
 legend:{
 
-
 display:false
-
 
 }
 
-
 },
-
-
 
 scales:{
 
-
 y:{
-
 
 beginAtZero:true,
 
-
 grid:{
-
 
 color:"#eef2f7"
 
-
 }
-
 
 },
 
-
-
 x:{
-
 
 grid:{
 
-
 display:false
 
+}
 
 }
 
-
 }
 
-
-
 }
-
-
-
-}
-
-
 
 });
-
-
-
-
 
 // ===============================
 // GRAFICO TIPOS IMOVEIS
 // ===============================
 
-
 const tipoCtx = document.getElementById("tipoChart");
-
-
 
 new Chart(tipoCtx,{
 
-
 type:"doughnut",
-
 
 data:{
 
-
 labels: {{ labels_tipo|tojson }},
-
-
 
 datasets:[{
 
-
 data: {{ dados_tipo|tojson }},
-
 
 backgroundColor:[
 "#2563eb",
@@ -1373,16 +1112,11 @@ backgroundColor:[
 "#eab308"
 ],
 
-
 borderWidth:0
-
 
 }]
 
-
 },
-
-
 
 options:{
 responsive:true,
@@ -1417,52 +1151,33 @@ duration:1200
 // ANIMAÇÃO DOS CARDS
 // ===============================
 
-
 const cards = document.querySelectorAll(".card");
-
 
 cards.forEach((card,index)=>{
 
-
 card.style.opacity="0";
-
 
 card.style.transform="translateY(20px)";
 
-
-
 setTimeout(()=>{
-
 
 card.style.transition=".5s";
 
-
 card.style.opacity="1";
-
 
 card.style.transform="translateY(0)";
 
-
-
 },index * 120);
 
-
-
 });
-
-
-
 
 // ===============================
 // RELÓGIO / DATA HEADER (opcional)
 // ===============================
 
-
 function atualizarHora(){
 
-
 const agora = new Date();
-
 
 const hora = agora.toLocaleTimeString(
 "pt-BR",
@@ -1472,21 +1187,12 @@ minute:"2-digit"
 }
 );
 
-
-
 console.log("SMARTZEN online -",hora);
-
-
 
 }
 
-
-
 setInterval(atualizarHora,60000);
 
-
 </script>
-
-
 
 {% endblock %}
