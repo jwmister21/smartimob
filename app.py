@@ -3268,6 +3268,33 @@ def verificar_login():
     return "ativo"
 
 
+@app.route("/campanhas/enviar-teste-whatsapp", methods=["POST"])
+def campanhas_enviar_teste_whatsapp():
+    nome_instancia = session.get("whatsapp_instancia")
+    numero = request.form.get("numero", "").strip()
+    mensagem = request.form.get("mensagem", "").strip()
+
+    headers = {
+        "apikey": EVOLUTION_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "number": numero,
+        "text": mensagem
+    }
+
+    resposta = requests.post(
+        f"{EVOLUTION_URL}/message/sendText/{nome_instancia}",
+        json=payload,
+        headers=headers,
+        timeout=30
+    )
+
+    print("ENVIO:", resposta.status_code, resposta.text)
+
+    return redirect("/campanhas")
+
 @app.route("/api/session/create", methods=["POST"])
 def create_session():
     data = request.json
