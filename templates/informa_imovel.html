@@ -1,1263 +1,702 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
-
 <meta charset="UTF-8">
-<meta property="og:title"
-content="{{ imovel.titulo }}">
-
-
-<meta property="og:description"
-content="
-R$ {{ imovel.valor }} |
-{{ imovel.quartos }} quartos |
-{{ imovel.bairro }} - {{ imovel.cidade }}
-">
-
-
-{% if foto %}
-
-<meta property="og:image"
-content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
-{% endif %}
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+<meta property="og:title" content="{{ imovel.titulo }}">
+<meta property="og:description" content="R$ {{ imovel.valor }} | {{ imovel.quartos }} quartos | {{ imovel.bairro }} - {{ imovel.cidade }}">
+{% if foto %}
+<meta property="og:image" content="{{ request.host_url }}uploads/imoveis/{{ imovel.foto }}">
+{% endif %}
 
 <title>{{ imovel.titulo }}</title>
 
-
 <style>
-
-
-*{
-box-sizing:border-box;
+:root{
+    --primary:#16a34a;
+    --primary-2:#22c55e;
+    --blue:#2563eb;
+    --purple:#7c3aed;
+    --dark:#0f172a;
+    --muted:#64748b;
+    --soft:#f8fafc;
+    --line:#e2e8f0;
+    --bg:#eef4f8;
+    --white:#ffffff;
+    --shadow:0 18px 50px rgba(15,23,42,.10);
+    --shadow-soft:0 10px 30px rgba(15,23,42,.08);
 }
 
-
+*{box-sizing:border-box;}
 
 html,body{
-
-margin:0;
-padding:0;
-width:100%;
-overflow-x:hidden;
-
+    margin:0;
+    padding:0;
+    width:100%;
+    overflow-x:hidden;
 }
-
-
 
 body{
-
-font-family:"Segoe UI",Arial,sans-serif;
-
-background:#f1f5f9;
-
-color:#0f172a;
-
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(34,197,94,.16), transparent 35%),
+        linear-gradient(180deg,#f8fafc 0%,var(--bg) 100%);
+    color:var(--dark);
 }
 
+a{color:inherit;}
 
+/* TOPO */
+.property-hero{
+    width:100%;
+    padding:26px 20px 8px;
+}
 
+.hero-inner{
+    max-width:1200px;
+    margin:0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+}
+
+.back-link{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 15px;
+    border-radius:999px;
+    background:rgba(255,255,255,.85);
+    border:1px solid rgba(226,232,240,.9);
+    text-decoration:none;
+    color:#334155;
+    font-size:14px;
+    font-weight:700;
+    box-shadow:0 10px 25px rgba(15,23,42,.06);
+}
+
+.hero-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 14px;
+    border-radius:999px;
+    color:#166534;
+    background:#dcfce7;
+    font-size:13px;
+    font-weight:800;
+}
 
 /* LAYOUT */
-
-
 .container{
-
-width:100%;
-
-max-width:1200px;
-
-margin:auto;
-
-padding:20px;
-
-display:grid;
-
-grid-template-columns:minmax(0,2fr) 360px;
-
-gap:25px;
-
+    width:100%;
+    max-width:1200px;
+    margin:auto;
+    padding:18px 20px 40px;
+    display:grid;
+    grid-template-columns:minmax(0,2fr) 370px;
+    gap:26px;
+    align-items:start;
 }
-
-
-
-
 
 /* GALERIA */
-
-
-.galeria-principal{
-
-width:100%;
-
-aspect-ratio:16/10;
-
-border-radius:18px;
-
-overflow:hidden;
-
-background:#ddd;
-
+.gallery-shell{
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(226,232,240,.9);
+    border-radius:28px;
+    padding:12px;
+    box-shadow:var(--shadow);
+    backdrop-filter:blur(12px);
 }
 
+.galeria-principal{
+    width:100%;
+    aspect-ratio:16/10;
+    border-radius:22px;
+    overflow:hidden;
+    background:#dbe3ec;
+    position:relative;
+}
 
+.galeria-principal:after{
+    content:"Clique para ampliar";
+    position:absolute;
+    right:15px;
+    bottom:15px;
+    background:rgba(15,23,42,.75);
+    color:white;
+    padding:9px 13px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    pointer-events:none;
+}
 
 .galeria-principal img{
-
-width:100%;
-
-height:100%;
-
-object-fit:cover;
-
-cursor:pointer;
-
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    cursor:pointer;
+    transition:transform .45s ease;
 }
 
-
+.galeria-principal:hover img{transform:scale(1.035);}
 
 .miniaturas{
-
-display:flex;
-
-gap:10px;
-
-margin-top:12px;
-
-overflow-x:auto;
-
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+    overflow-x:auto;
+    padding-bottom:4px;
 }
 
-
+.miniaturas::-webkit-scrollbar{height:7px;}
+.miniaturas::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px;}
 
 .miniaturas img{
-
-width:95px;
-
-height:70px;
-
-flex-shrink:0;
-
-object-fit:cover;
-
-border-radius:10px;
-
+    width:100px;
+    height:74px;
+    flex-shrink:0;
+    object-fit:cover;
+    border-radius:14px;
+    border:3px solid white;
+    box-shadow:0 7px 18px rgba(15,23,42,.10);
+    cursor:pointer;
+    transition:.2s;
 }
 
+.miniaturas img:hover{
+    transform:translateY(-2px);
+    border-color:var(--primary-2);
+}
 
-
-
+.sem-foto{
+    width:100%;
+    aspect-ratio:16/10;
+    border-radius:22px;
+    background:linear-gradient(135deg,#e2e8f0,#f8fafc);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#64748b;
+    font-weight:800;
+}
 
 /* INFO */
-
-
 .info{
-
-background:white;
-
-padding:25px;
-
-margin-top:20px;
-
-border-radius:18px;
-
-box-shadow:0 10px 30px #0001;
-
+    background:rgba(255,255,255,.92);
+    padding:28px;
+    margin-top:22px;
+    border-radius:28px;
+    border:1px solid rgba(226,232,240,.95);
+    box-shadow:var(--shadow-soft);
 }
-
-
 
 .titulo{
-
-font-size:32px;
-
-font-weight:800;
-
+    font-size:34px;
+    line-height:1.13;
+    letter-spacing:-.8px;
+    font-weight:900;
+    color:#0f172a;
 }
-
-
 
 .valor{
-
-color:#16a34a;
-
-font-size:38px;
-
-font-weight:900;
-
-margin:15px 0;
-
+    display:inline-flex;
+    align-items:center;
+    margin:18px 0 14px;
+    padding:12px 18px;
+    border-radius:18px;
+    color:#166534;
+    background:linear-gradient(135deg,#dcfce7,#f0fdf4);
+    font-size:38px;
+    line-height:1;
+    font-weight:950;
+    box-shadow:inset 0 0 0 1px rgba(34,197,94,.18);
 }
 
-
-
-
+.localizacao{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#475569;
+    font-size:17px;
+    margin:6px 0 22px;
+}
 
 .caracteristicas{
-
-display:grid;
-
-grid-template-columns:repeat(2,1fr);
-
-gap:10px;
-
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
 }
-
-
 
 .item{
-
-background:#f8fafc;
-
-padding:12px;
-
-border-radius:12px;
-
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:linear-gradient(180deg,#f8fafc,#f1f5f9);
+    padding:14px;
+    border-radius:16px;
+    border:1px solid #e2e8f0;
+    color:#334155;
+    font-weight:700;
 }
-
-
-
 
 /* BOTÕES */
-
-
 .botoes{
-
-display:flex;
-
-gap:12px;
-
-margin-top:20px;
-
+    display:flex;
+    gap:12px;
+    margin-top:24px;
 }
-
-
 
 .btn{
-
-flex:1;
-
-padding:14px;
-
-border-radius:12px;
-
-color:white;
-
-text-decoration:none;
-
-text-align:center;
-
-font-weight:bold;
-
+    flex:1;
+    padding:15px;
+    border-radius:16px;
+    color:white;
+    text-decoration:none;
+    text-align:center;
+    font-weight:900;
+    letter-spacing:.2px;
+    box-shadow:0 12px 24px rgba(15,23,42,.12);
+    transition:.2s;
 }
 
-
-
-.whatsapp{
-
-background:#25D366;
-
-}
-
-
-
-.compartilhar{
-
-background:#2563eb;
-
-}
-
-
-
-
-
-/* FORM */
-
-
-.lead-box{
-
-background:white;
-
-padding:22px;
-
-border-radius:18px;
-
-margin-bottom:20px;
-
-box-shadow:0 10px 30px #0001;
-
-position:sticky;
-
-top:20px;
-
-}
-
-
-
-.lead-box input,
-.lead-box textarea{
-
-width:100%;
-
-padding:13px;
-
-margin-bottom:12px;
-
-border-radius:10px;
-
-border:1px solid #ddd;
-
-}
-
-
-
-.lead-box textarea{
-
-height:120px;
-
-resize:none;
-
-}
-
-
-
-.lead-box button{
-
-width:100%;
-
-padding:14px;
-
-border:0;
-
-border-radius:12px;
-
-background:#7c3aed;
-
-color:white;
-
-font-weight:bold;
-
-}
-
-
-
-
-
-/* SEMELHANTES */
-
-
-.imovel-semelhante{
-
-display:flex;
-
-width:100%;
-
-height:95px;
-
-margin-top:12px;
-
-background:#f8fafc;
-
-border-radius:14px;
-
-overflow:hidden;
-
-text-decoration:none;
-
-color:#0f172a;
-
-transition:.2s;
-
-}
-
-
-
-.imovel-semelhante:hover{
-
-transform:translateY(-3px);
-
-box-shadow:0 8px 20px #0002;
-
-}
-
-
-
-.imovel-semelhante img{
-
-width:105px;
-
-min-width:105px;
-
-height:95px;
-
-object-fit:cover;
-
-}
-
-
-
-.sim-info{
-
-flex:1;
-
-min-width:0;
-
-padding:10px;
-
-overflow:hidden;
-
-}
-
-
-
-.sim-titulo{
-
-font-size:14px;
-
-font-weight:700;
-
-white-space:nowrap;
-
-overflow:hidden;
-
-text-overflow:ellipsis;
-
-}
-
-
-
-.sim-valor{
-
-color:#16a34a;
-
-font-weight:800;
-
-font-size:16px;
-
-}
-
-
-
-.sim-local{
-
-font-size:12px;
-
-color:#64748b;
-
-overflow:hidden;
-
-white-space:nowrap;
-
-}
-
-
-
-
-
-/* MODAL */
-
-
-.modal{
-
-display:none;
-
-position:fixed;
-
-inset:0;
-
-background:#000;
-
-z-index:9999;
-
-}
-
-
-
-.modal img{
-
-width:100%;
-
-height:100%;
-
-object-fit:contain;
-
-}
-
-
-
-.fechar{
-
-position:absolute;
-
-top:20px;
-
-right:20px;
-
-color:white;
-
-font-size:40px;
-
-}
-
-
-
-
-
-/* WHATS */
-
-
-.float-whats{
-
-position:fixed;
-
-right:20px;
-
-bottom:20px;
-
-width:60px;
-
-height:60px;
-
-border-radius:50%;
-
-background:#25D366;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-color:white;
-
-z-index:100;
-
-}
-
-
-
-
-
-.mobile-bar{
-
-display:none;
-
-}
-id="hmtb3a"
-<style>
-
-
-@media(max-width:900px){
-
-
-.container{
-
-grid-template-columns:1fr;
-
-padding:12px;
-
-}
-
-
-.lead-box{
-
-position:relative;
-
-top:auto;
-
-}
-
-
-}
-
-
-
-@media(max-width:600px){
-
-
-.container{
-
-display:block;
-
-padding:10px;
-
-}
-
-
-
-.galeria-principal{
-
-aspect-ratio:4/3;
-
-}
-
-
-
-.info{
-
-padding:18px;
-
-}
-
-
-
-.caracteristicas{
-
-grid-template-columns:1fr;
-
-}
-
-
-
-.botoes{
-
-display:none;
-
-}
-
-
-
-.mobile-bar{
-
-display:flex;
-
-position:fixed;
-
-bottom:0;
-
-left:0;
-
-right:0;
-
-background:white;
-
-padding:10px;
-
-gap:10px;
-
-z-index:1000;
-
-}
-
-
-
-.mobile-bar a{
-
-flex:1;
-
-padding:12px;
-
-border-radius:10px;
-
-text-align:center;
-
-color:white;
-
-text-decoration:none;
-
-}
-
-
-
-.float-whats{
-
-bottom:90px;
-
-}
-
-
-
-.imovel-semelhante{
-
-height:90px;
-
-}
-
-
-
-.imovel-semelhante img{
-
-width:90px;
-
-min-width:90px;
-
-height:90px;
-
-}
-
-
-
-.valor{
-
-font-size:28px;
-
-}
-
-
-}
-  .descricao{
-    margin-top:35px;
-    padding-top:30px;
+.btn:hover{transform:translateY(-2px);filter:brightness(.98);}
+.whatsapp{background:linear-gradient(135deg,#25D366,#16a34a);}
+.compartilhar{background:linear-gradient(135deg,#2563eb,#1d4ed8);}
+
+/* DESCRIÇÃO */
+.descricao{
+    margin-top:32px;
+    padding-top:28px;
     border-top:1px solid #e5e7eb;
 }
 
 .descricao h3{
-    font-size:28px;
-    font-weight:700;
-    margin-bottom:25px;
+    font-size:26px;
+    font-weight:900;
+    margin:0 0 18px;
     color:#1e293b;
 }
 
 .descricao p{
     font-size:17px;
-    line-height:2;
+    line-height:1.9;
     color:#475569;
     text-align:justify;
     white-space:pre-line;
+    margin:0;
 }
 
+/* LATERAL */
+.side-col{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
 
+.lead-box{
+    background:rgba(255,255,255,.94);
+    padding:24px;
+    border-radius:28px;
+    border:1px solid rgba(226,232,240,.95);
+    box-shadow:var(--shadow-soft);
+}
+
+.lead-box.sticky{
+    position:sticky;
+    top:20px;
+    z-index:5;
+}
+
+.lead-box h2,
+.lead-box h3{
+    margin:0 0 8px;
+    color:#0f172a;
+    letter-spacing:-.3px;
+}
+
+.lead-subtitle{
+    margin:0 0 18px;
+    color:#64748b;
+    font-size:14px;
+    line-height:1.5;
+}
+
+.lead-box input,
+.lead-box textarea{
+    width:100%;
+    padding:14px 15px;
+    margin-bottom:12px;
+    border-radius:15px;
+    border:1px solid #dbe3ef;
+    background:#f8fafc;
+    outline:none;
+    font-size:15px;
+    transition:.2s;
+}
+
+.lead-box input:focus,
+.lead-box textarea:focus{
+    background:white;
+    border-color:var(--purple);
+    box-shadow:0 0 0 4px rgba(124,58,237,.12);
+}
+
+.lead-box textarea{
+    height:125px;
+    resize:none;
+    line-height:1.5;
+}
+
+.lead-box button{
+    width:100%;
+    padding:15px;
+    border:0;
+    border-radius:16px;
+    background:linear-gradient(135deg,#7c3aed,#5b21b6);
+    color:white;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 14px 26px rgba(124,58,237,.23);
+    transition:.2s;
+}
+
+.lead-box button:hover{transform:translateY(-2px);}
+
+.trust-list{
+    display:grid;
+    gap:9px;
+    margin-top:16px;
+    color:#64748b;
+    font-size:13px;
+}
+
+.trust-list span{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+/* SEMELHANTES */
+.imovel-semelhante{
+    display:flex;
+    width:100%;
+    height:98px;
+    margin-top:12px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:18px;
+    overflow:hidden;
+    text-decoration:none;
+    color:#0f172a;
+    transition:.2s;
+}
+
+.imovel-semelhante:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 22px rgba(15,23,42,.12);
+    border-color:#bbf7d0;
+}
+
+.imovel-semelhante img{
+    width:108px;
+    min-width:108px;
+    height:98px;
+    object-fit:cover;
+}
+
+.sim-info{
+    flex:1;
+    min-width:0;
+    padding:12px;
+    overflow:hidden;
+}
+
+.sim-titulo{
+    font-size:14px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.sim-local{
+    margin-top:10px;
+    font-size:12px;
+    color:#64748b;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+}
+
+.empty-similar{
+    margin-top:12px;
+    padding:16px;
+    border-radius:16px;
+    background:#f8fafc;
+    color:#64748b;
+    font-size:14px;
+}
+
+/* MODAL */
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.96);
+    z-index:9999;
+}
+
+.modal img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    padding:28px;
+}
+
+.fechar{
+    position:absolute;
+    top:18px;
+    right:24px;
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    background:rgba(255,255,255,.12);
+    color:white;
+    font-size:38px;
+    line-height:44px;
+    text-align:center;
+    cursor:pointer;
+    z-index:2;
+}
+
+/* WHATS */
+.float-whats{
+    position:fixed;
+    right:22px;
+    bottom:22px;
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#25D366,#16a34a);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    z-index:100;
+    text-decoration:none;
+    font-size:27px;
+    box-shadow:0 14px 35px rgba(22,163,74,.35);
+}
+
+.mobile-bar{display:none;}
+
+@media(max-width:900px){
+    .container{
+        grid-template-columns:1fr;
+        padding:12px 14px 34px;
+    }
+    .lead-box.sticky{
+        position:relative;
+        top:auto;
+    }
+    .hero-inner{padding:0 2px;}
+}
+
+@media(max-width:600px){
+    .property-hero{padding:14px 10px 0;}
+    .hero-inner{justify-content:center;}
+    .back-link{display:none;}
+    .container{display:block;padding:10px 10px 95px;}
+    .gallery-shell{border-radius:22px;padding:8px;}
+    .galeria-principal{aspect-ratio:4/3;border-radius:18px;}
+    .galeria-principal:after{display:none;}
+    .miniaturas img{width:82px;height:62px;border-radius:12px;}
+    .info{padding:20px;border-radius:22px;}
+    .titulo{font-size:25px;}
+    .valor{font-size:28px;width:100%;justify-content:center;text-align:center;}
+    .localizacao{font-size:15px;}
+    .caracteristicas{grid-template-columns:1fr;}
+    .botoes{display:none;}
+    .lead-box{border-radius:22px;padding:20px;margin-top:16px;}
+    .mobile-bar{
+        display:flex;
+        position:fixed;
+        bottom:0;
+        left:0;
+        right:0;
+        background:rgba(255,255,255,.96);
+        padding:10px;
+        gap:10px;
+        z-index:1000;
+        box-shadow:0 -10px 30px rgba(15,23,42,.12);
+    }
+    .mobile-bar a{
+        flex:1;
+        padding:13px 10px;
+        border-radius:14px;
+        text-align:center;
+        color:white;
+        text-decoration:none;
+        font-weight:900;
+    }
+    .float-whats{bottom:82px;right:14px;width:56px;height:56px;}
+    .imovel-semelhante{height:92px;}
+    .imovel-semelhante img{width:92px;min-width:92px;height:92px;}
+    .descricao h3{font-size:23px;}
+    .descricao p{font-size:16px;line-height:1.75;text-align:left;}
+}
 </style>
-
 </head>
-
-
 
 <body>
 
-
+<div class="property-hero">
+    <div class="hero-inner">
+        <a class="back-link" href="javascript:history.back()">← Voltar</a>
+        <span class="hero-pill">🏡 Imóvel disponível</span>
+    </div>
+</div>
 
 <div class="container">
 
+    <!-- ESQUERDA -->
+    <div>
 
+        {% if imovel.fotos %}
+        <div class="gallery-shell">
+            <div class="galeria-principal">
+                <img id="fotoPrincipal" src="/uploads/imoveis/{{ imovel.fotos[0] }}" onclick="abrirGaleria(this.src)" alt="{{ imovel.titulo }}">
+            </div>
 
-<!-- ESQUERDA -->
+            <div class="miniaturas">
+                {% for foto in imovel.fotos %}
+                <img src="/uploads/imoveis/{{ foto }}" onclick="trocarFoto(this.src)" alt="Foto do imóvel">
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="gallery-shell">
+            <div class="sem-foto">Sem foto cadastrada</div>
+        </div>
+        {% endif %}
 
+        <div class="info">
+            <div class="titulo">{{ imovel.titulo }}</div>
 
-<div>
+            <div class="valor">{{ imovel.valor }}</div>
 
+            <div class="localizacao">📍 <strong>{{ imovel.bairro }} - {{ imovel.cidade }}</strong></div>
 
+            <div class="caracteristicas">
+                <div class="item">🛏 {{ imovel.quartos }} Quartos</div>
+                <div class="item">🚿 {{ imovel.banheiros21 }} Banheiros</div>
+                <div class="item">💎 {{ imovel.banheiros }} Suites</div>
+                <div class="item">🚗 {{ imovel.vaga_garagem }} Vagas</div>
+                <div class="item">📐 {{ imovel.area }} m²</div>
+                <div class="item">💲 {{ imovel.iptu }} IPTU</div>
+                <div class="item">🚽 {{ imovel.lavabo }} Lavabo</div>
+            </div>
 
-{% if imovel.fotos %}
+            <div class="botoes">
+                <a class="btn whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
+                <a class="btn compartilhar" href="#" onclick="compartilhar()">Compartilhar</a>
+            </div>
 
+            <div class="descricao">
+                <h3>Descrição</h3>
+                <p>{{ imovel.descricao }}</p>
+            </div>
+        </div>
 
-<div class="galeria-principal">
+    </div>
 
+    <!-- DIREITA -->
+    <div class="side-col">
 
-<img
+        <div class="lead-box sticky">
+            <h2>Receba mais informações</h2>
+            <p class="lead-subtitle">Preencha seus dados e um consultor entra em contato sobre este imóvel.</p>
 
-id="fotoPrincipal"
+            <form action="/capturar_lead" method="POST">
+                <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
+                <input type="text" name="nome" placeholder="Seu nome" required>
+                <input type="text" name="telefone" placeholder="Seu telefone" required>
+                <textarea name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.</textarea>
+                <button>Quero ser atendido</button>
+            </form>
 
-src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+            <div class="trust-list">
+                <span>✅ Atendimento rápido</span>
+                <span>🔒 Seus dados estão seguros</span>
+                <span>💬 Contato direto pelo WhatsApp</span>
+            </div>
+        </div>
 
-onclick="abrirGaleria(this.src)">
+        <div class="lead-box">
+            <h3>🏡 Imóveis Semelhantes</h3>
+            <p class="lead-subtitle">Veja outras opções que podem combinar com você.</p>
 
+            {% for item in semelhantes %}
+            <a class="imovel-semelhante" href="/informa-imovel/{{ item.id }}">
+                {% if item.foto %}
+                <img src="/uploads/imoveis/{{ item.foto }}" alt="{{ item.titulo }}">
+                {% endif %}
+                <div class="sim-info">
+                    <div class="sim-titulo">{{ item.titulo }}</div>
+                    <div class="sim-local">📍 {{ item.bairro }} - {{ item.cidade }}</div>
+                </div>
+            </a>
+            {% else %}
+            <div class="empty-similar">Nenhum imóvel semelhante encontrado no momento.</div>
+            {% endfor %}
+        </div>
 
+    </div>
 </div>
-
-
-
-
-<div class="miniaturas">
-
-
-{% for foto in imovel.fotos %}
-
-
-<img
-
-src="/uploads/imoveis/{{ foto }}"
-
-onclick="trocarFoto(this.src)">
-
-
-
-{% endfor %}
-
-
-</div>
-
-
-{% endif %}
-
-
-
-
-
-<div class="info">
-
-
-<div class="titulo">
-
-{{ imovel.titulo }}
-
-</div>
-
-
-
-<div class="valor">
-
-
-{{ imovel.valor }}
-
-
-</div>
-
-
-
-<h4>
-
-📍 {{ imovel.bairro }} - {{ imovel.cidade }}
-
-</h4>
-
-
-
-
-<div class="caracteristicas">
-
-
-<div class="item">
-🛏 {{ imovel.quartos }} Quartos
-</div>
-
-
-<div class="item">
-🚿 {{ imovel.banheiros21 }} Banheiros
-</div>
-
-<div class="item">
-💎 {{ imovel.banheiros }} Suites
-</div>  
-
-<div class="item">
-🚗 {{ imovel.vaga_garagem }} Vagas
-</div>
-
-
-<div class="item">
-📐 {{ imovel.area }} m²
-</div>
-
-
-<div class="item">
-💲 {{ imovel.iptu }} IPTU
-</div>
-
-
-<div class="item">
-🚽 {{ imovel.lavabo }} Lavabo
-</div>
-
-
-
-</div>
-
-
-
-
-<div class="botoes">
-
-
-<a
-
-class="btn whatsapp"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-
-WhatsApp
-
-</a>
-
-
-
-
-<a
-
-class="btn compartilhar"
-
-href="#"
-
-onclick="compartilhar()">
-
-
-Compartilhar
-
-</a>
-
-
-</div>
-
-
-
-
-<div class="descricao">
-
-
-<h3>
-
-Descrição
-
-</h3>
-
-
-<p>
-
-{{ imovel.descricao }}
-
-</p>
-
-
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-<!-- DIREITA -->
-
-
-<div>
-
-
-
-
-<div class="lead-box">
-
-
-<h2>
-
-Receba mais informações
-
-</h2>
-
-
-
-<form action="/capturar_lead" method="POST">
-
-
-
-<input
-
-type="hidden"
-
-name="id_imovel"
-
-value="{{ imovel.id }}">
-
-
-
-<input
-
-type="text"
-
-name="nome"
-
-placeholder="Seu nome"
-
-required>
-
-
-
-<input
-
-type="text"
-
-name="telefone"
-
-placeholder="Seu telefone"
-
-required>
-
-
-
-
-<textarea
-
-name="mensagem">
-
-
-Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.
-
-
-</textarea>
-
-
-
-<button>
-
-Quero ser atendido
-
-</button>
-
-
-
-</form>
-
-
-
-</div>
-
-
-
-
-
-<div class="lead-box">
-
-
-<h3>
-
-🏡 Imóveis Semelhantes
-
-</h3>
-
-
-
-
-{% for item in semelhantes %}
-
-
-
-<a
-
-class="imovel-semelhante"
-
-href="/informa-imovel/{{ item.id }}">
-
-
-
-{% if item.foto %}
-
-<img src="/uploads/imoveis/{{ item.foto }}">
-
-
-{% endif %}
-
-
-
-<div class="sim-info">
-
-
-
-<div class="sim-titulo">
-
-{{ item.titulo }}
-
-</div>
-
-
-
-
-
-
-
-<div class="sim-local">
-
-
-📍 {{ item.bairro }} - {{ item.cidade }}
-
-
-</div>
-
-
-
-
-</div>
-
-
-</a>
-
-
-
-{% endfor %}
-
-
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
 
 <!-- MODAL -->
-
-
 <div class="modal" id="modal">
-
-
-<span
-
-class="fechar"
-
-onclick="fecharGaleria()">
-
-×
-
-</span>
-
-
-
-<img id="fotoModal">
-
-
+    <span class="fechar" onclick="fecharGaleria()">×</span>
+    <img id="fotoModal" alt="Foto ampliada">
 </div>
 
-
-
-
-
-
-
-<a
-
-class="float-whats"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-
-🟢
-
-
-</a>
-
-
-
-
-
+<a class="float-whats" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">🟢</a>
 
 <div class="mobile-bar">
-
-
-<a
-
-class="whatsapp"
-
-target="_blank"
-
-href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">
-
-
-WhatsApp
-
-
-</a>
-
-
-
-
-<a
-
-class="compartilhar"
-
-onclick="compartilhar()">
-
-
-Compartilhar
-
-
-</a>
-
-
-
+    <a class="whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
+    <a class="compartilhar" onclick="compartilhar()">Compartilhar</a>
 </div>
 
-
-
-
-
-
-
 <script>
-
-
 function trocarFoto(src){
-
-document.getElementById("fotoPrincipal").src=src;
-
+    document.getElementById("fotoPrincipal").src=src;
 }
-
-
 
 function abrirGaleria(src){
-
-document.getElementById("modal").style.display="block";
-
-document.getElementById("fotoModal").src=src;
-
+    document.getElementById("modal").style.display="block";
+    document.getElementById("fotoModal").src=src;
 }
-
-
 
 function fecharGaleria(){
-
-document.getElementById("modal").style.display="none";
-
+    document.getElementById("modal").style.display="none";
 }
-
-
 
 function compartilhar(){
-
-
-if(navigator.share){
-
-
-navigator.share({
-
-title:document.title,
-
-url:window.location.href
-
-});
-
-
-}else{
-
-
-navigator.clipboard.writeText(window.location.href);
-
-
-alert("Link copiado!");
-
-
+    if(navigator.share){
+        navigator.share({
+            title:document.title,
+            url:window.location.href
+        });
+    }else{
+        navigator.clipboard.writeText(window.location.href);
+        alert("Link copiado!");
+    }
 }
-
-
-}
-
-
-
 </script>
 
-
-
-
 </body>
-
 </html>
