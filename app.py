@@ -2805,12 +2805,12 @@ def campanhas():
     nome_instancia = session.get("whatsapp_instancia")
     qrcode = None
     erro_whatsapp = None
+    sucesso_envio = session.pop("sucesso_envio", None)
+    erro_envio = session.pop("erro_envio", None)
 
     if nome_instancia:
         try:
-            headers = {
-                "apikey": EVOLUTION_API_KEY
-            }
+            headers = {"apikey": EVOLUTION_API_KEY}
 
             resposta_qr = requests.get(
                 f"{EVOLUTION_URL}/instance/connect/{nome_instancia}",
@@ -2819,7 +2819,6 @@ def campanhas():
             )
 
             dados = resposta_qr.json()
-
             qrcode = dados.get("base64")
 
         except Exception as e:
@@ -2829,47 +2828,13 @@ def campanhas():
         "campanhas.html",
         nome_instancia=nome_instancia,
         qrcode=qrcode,
-        erro_whatsapp=erro_whatsapp
+        erro_whatsapp=erro_whatsapp,
+        sucesso_envio=sucesso_envio,
+        erro_envio=erro_envio
     )
      
 
-@app.route("/teste_envio", methods=["POST"])
-def teste_envio():
 
-    try:
-        data = request.get_json() or {}
-
-        print("🔥 TESTE RECEBIDO:", data)
-
-        telefone = data.get("telefone")
-        mensagem = data.get("mensagem")
-
-        if not telefone or not mensagem:
-            return jsonify({
-                "status": "error",
-                "erro": "telefone e mensagem obrigatórios"
-            }), 400
-
-        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-
-        resp = requests.post(
-            f"{WPP_URL}/enviar",
-            json={
-                "sessao": "empresa_1",
-                "numero": telefone,
-                "mensagem": mensagem
-            },
-            timeout=20
-        )
-
-        print("📤 RESPOSTA NODE:", resp.text)
-
-        return jsonify(resp.json())
-
-    except Exception as e:
-        print("🔥 ERRO TESTE:", str(e))
-        return jsonify({"status": "error", "erro": str(e)})
-     
 @app.route('/termos')
 def termos():
     return render_template('termos.html')
@@ -3271,30 +3236,65 @@ def verificar_login():
 @app.route("/campanhas/enviar-teste-whatsapp", methods=["POST"])
 def campanhas_enviar_teste_whatsapp():
     nome_instancia = session.get("whatsapp_instancia")
-    numero = request.form.get("numero", "").strip()
+
+    numeros_texto = request.form.get("numeros", "").strip()
     mensagem = request.form.get("mensagem", "").strip()
+
+    if not nome_instancia:
+        session["erro_envio"] = "Nenhuma sessão WhatsApp conectada."
+        return redirect("/campanhas")
+
+    numeros = []
+    for linha in numeros_texto.splitlines():
+        numero = linha.strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+        if numero:
+            numeros.append(numero)
+
+    if not numeros:
+        session["erro_envio"] = "Informe pelo menos um número."
+        return redirect("/campanhas")
+
+    if not mensagem:
+        session["erro_envio"] = "Digite uma mensagem."
+        return redirect("/campanhas")
 
     headers = {
         "apikey": EVOLUTION_API_KEY,
         "Content-Type": "application/json"
     }
 
-    payload = {
-        "number": numero,
-        "text": mensagem
-    }
+    enviados = 0
+    erros = []
 
-    resposta = requests.post(
-        f"{EVOLUTION_URL}/message/sendText/{nome_instancia}",
-        json=payload,
-        headers=headers,
-        timeout=30
-    )
+    for numero in numeros:
+        payload = {
+            "number": numero,
+            "text": mensagem
+        }
 
-    print("ENVIO:", resposta.status_code, resposta.text)
+        try:
+            resposta = requests.post(
+                f"{EVOLUTION_URL}/message/sendText/{nome_instancia}",
+                json=payload,
+                headers=headers,
+                timeout=30
+            )
+
+            if resposta.status_code in [200, 201]:
+                enviados += 1
+            else:
+                erros.append(f"{numero}: {resposta.status_code}")
+
+        except Exception as e:
+            erros.append(f"{numero}: {e}")
+
+    if enviados:
+        session["sucesso_envio"] = f"{enviados} mensagem(ns) enviada(s) com sucesso."
+
+    if erros:
+        session["erro_envio"] = "Alguns envios falharam: " + " | ".join(erros)
 
     return redirect("/campanhas")
-
 @app.route("/api/session/create", methods=["POST"])
 def create_session():
     data = request.json
