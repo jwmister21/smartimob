@@ -181,5 +181,24 @@
         </div>
     {% endif %}
 </div>
+{% if nome_instancia and not qrcode %}
+<div class="box-whatsapp">
+    <h2>Enviar teste</h2>
+
+    <form method="POST" action="/campanhas/enviar-teste-whatsapp">
+        <div class="campo">
+            <label>Número</label>
+            <input type="text" name="numero" placeholder="5511999999999" required>
+        </div>
+
+        <div class="campo">
+            <label>Mensagem</label>
+            <textarea name="mensagem" placeholder="Digite a mensagem..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-whatsapp">Enviar teste</button>
+    </form>
+</div>
+{% endif %}
 
 {% endblock %}
