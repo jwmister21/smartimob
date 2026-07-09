@@ -4095,7 +4095,7 @@ def cadastrar_usuario():
     return render_template("cadastrar_usuario.html")
 
 
-EVOLUTION_URL = "http://localhost:8080"
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
 EVOLUTION_API_KEY = "123456789"
 EVOLUTION_INSTANCE = "smartcrm"  # coloque exatamente o nome da sua instância
 
