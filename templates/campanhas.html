@@ -58,4 +58,119 @@
         Depois vamos mostrar o QR Code aqui.
     </div>
 </div>
+<div class="box-whatsapp">
+    <div class="whatsapp-header">
+        <div>
+            <h2>WhatsApp da Campanha</h2>
+            <p>Conecte sua sessão para enviar mensagens.</p>
+        </div>
+
+        <form method="POST" action="/campanhas/criar-sessao-whatsapp">
+            <button type="submit" class="btn-whatsapp">
+                Criar / Conectar WhatsApp
+            </button>
+        </form>
+    </div>
+
+    {% if nome_instancia %}
+        <div class="sessao-info">
+            <strong>Instância:</strong> {{ nome_instancia }}
+        </div>
+    {% endif %}
+
+    {% if qrcode %}
+        <div class="qrcode-area">
+            <h3>Escaneie o QR Code</h3>
+            <img src="{{ qrcode }}" alt="QR Code WhatsApp">
+            <p>WhatsApp → Dispositivos conectados → Conectar dispositivo</p>
+        </div>
+    {% endif %}
+
+    {% if erro_whatsapp %}
+        <div class="erro-whatsapp">
+            {{ erro_whatsapp }}
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .box-whatsapp {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 22px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 22px rgba(15,23,42,.08);
+    }
+
+    .whatsapp-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .whatsapp-header h2 {
+        margin: 0;
+        color: #0f172a;
+    }
+
+    .whatsapp-header p {
+        margin: 6px 0 0;
+        color: #64748b;
+    }
+
+    .btn-whatsapp {
+        border: none;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 13px 18px;
+        border-radius: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .sessao-info {
+        margin-top: 18px;
+        background: #f8fafc;
+        padding: 13px;
+        border-radius: 12px;
+        color: #334155;
+    }
+
+    .qrcode-area {
+        margin-top: 20px;
+        text-align: center;
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .qrcode-area img {
+        max-width: 280px;
+        width: 100%;
+        border-radius: 16px;
+        background: white;
+        padding: 10px;
+    }
+
+    .qrcode-area h3 {
+        margin-top: 0;
+        color: #0f172a;
+    }
+
+    .qrcode-area p {
+        color: #64748b;
+    }
+
+    .erro-whatsapp {
+        margin-top: 15px;
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 13px;
+        border-radius: 12px;
+        font-weight: 700;
+    }
+</style>
 {% endblock %}
