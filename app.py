@@ -3334,8 +3334,11 @@ def campanhas_enviar_teste_whatsapp():
     if erros:
         session["erro_envio"] = "Alguns envios falharam: " + " | ".join(erros)
 
-    return redirect("/campanhas")@app.route("/api/session/create", methods=["POST"])
-def create_session():
+    return redirect("/campanhas")
+
+
+ @app.route("/api/session/create", methods=["POST"])
+ def create_session():
     data = request.json
     session = data.get("session")
 
