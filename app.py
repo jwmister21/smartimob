@@ -2805,6 +2805,7 @@ def campanhas():
     nome_instancia = session.get("whatsapp_instancia")
     qrcode = None
     erro_whatsapp = None
+
     sucesso_envio = session.pop("sucesso_envio", None)
     erro_envio = session.pop("erro_envio", None)
     campanha_finalizada = session.pop("campanha_finalizada", None)
@@ -2833,9 +2834,7 @@ def campanhas():
         sucesso_envio=sucesso_envio,
         erro_envio=erro_envio,
         campanha_finalizada=campanha_finalizada
-
-    )
-     
+    )     
 
 
 @app.route('/termos')
@@ -3240,25 +3239,57 @@ def verificar_login():
 def campanhas_enviar_teste_whatsapp():
     nome_instancia = session.get("whatsapp_instancia")
 
-    numeros_texto = request.form.get("numeros", "").strip()
+    contatos_texto = request.form.get("numeros", "").strip()
     mensagem = request.form.get("mensagem", "").strip()
 
     if not nome_instancia:
         session["erro_envio"] = "Nenhuma sessão WhatsApp conectada."
         return redirect("/campanhas")
 
-    numeros = []
-    for linha in numeros_texto.splitlines():
-        numero = linha.strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-        if numero:
-            numeros.append(numero)
-
-    if not numeros:
-        session["erro_envio"] = "Informe pelo menos um número."
+    if not contatos_texto:
+        session["erro_envio"] = "Informe pelo menos um contato."
         return redirect("/campanhas")
 
     if not mensagem:
         session["erro_envio"] = "Digite uma mensagem."
+        return redirect("/campanhas")
+
+    contatos = []
+
+    for linha in contatos_texto.splitlines():
+        linha = linha.strip()
+
+        if not linha:
+            continue
+
+        if ";" in linha:
+            partes = linha.split(";")
+        else:
+            partes = linha.split(",")
+
+        if len(partes) < 2:
+            continue
+
+        nome = partes[0].strip()
+        telefone = partes[1].strip()
+
+        telefone = (
+            telefone
+            .replace(" ", "")
+            .replace("-", "")
+            .replace("(", "")
+            .replace(")", "")
+            .replace("+", "")
+        )
+
+        if nome and telefone:
+            contatos.append({
+                "name": nome,
+                "phone": telefone
+            })
+
+    if not contatos:
+        session["erro_envio"] = "Nenhum contato válido. Use o formato: Nome;Telefone"
         return redirect("/campanhas")
 
     headers = {
@@ -3269,10 +3300,14 @@ def campanhas_enviar_teste_whatsapp():
     enviados = 0
     erros = []
 
-    for numero in numeros:
+    for contato in contatos:
+        mensagem_final = mensagem
+        mensagem_final = mensagem_final.replace("{name}", contato["name"])
+        mensagem_final = mensagem_final.replace("{phone}", contato["phone"])
+
         payload = {
-            "number": numero,
-            "text": mensagem
+            "number": contato["phone"],
+            "text": mensagem_final
         }
 
         try:
@@ -3286,22 +3321,20 @@ def campanhas_enviar_teste_whatsapp():
             if resposta.status_code in [200, 201]:
                 enviados += 1
             else:
-                erros.append(f"{numero}: {resposta.status_code}")
+                erros.append(f'{contato["name"]}: {resposta.status_code}')
 
         except Exception as e:
-            erros.append(f"{numero}: {e}")
+            erros.append(f'{contato["name"]}: {e}')
+
+    session["campanha_finalizada"] = f"{enviados} enviada(s), {len(erros)} erro(s)."
 
     if enviados:
         session["sucesso_envio"] = f"{enviados} mensagem(ns) enviada(s) com sucesso."
 
     if erros:
         session["erro_envio"] = "Alguns envios falharam: " + " | ".join(erros)
-       
-    if erros:
-        session["campanha_finalizada"] = f"{enviados} enviada(s), {len(erros)} erro(s)."
-     
-    return redirect("/campanhas")
-@app.route("/api/session/create", methods=["POST"])
+
+    return redirect("/campanhas")@app.route("/api/session/create", methods=["POST"])
 def create_session():
     data = request.json
     session = data.get("session")
