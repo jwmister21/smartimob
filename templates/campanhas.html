@@ -356,17 +356,15 @@
         <form method="POST" action="/campanhas/enviar-teste-whatsapp" id="formCampanha">
             <div class="grid-envio">
                 <div>
-                    <label>Números</label>
-                    <textarea 
-                        name="numeros" 
-                        id="numeros"
-                        class="textarea-numeros"
-                        placeholder="5511999999999&#10;5511988888888&#10;5511977777777"
-                        required
-                    ></textarea>
-                    <small>Digite um número por linha. Use DDI + DDD + número.</small>
-                </div>
-
+                    <label>Contatos</label>
+<textarea 
+    name="numeros" 
+    id="numeros"
+    class="textarea-numeros"
+    placeholder="João;5511999999999&#10;Maria;5511988888888&#10;Carlos;5511977777777"
+    required
+></textarea>
+<small>Digite um contato por linha no formato: Nome;Telefone</small>
                 <div>
                     <label>Prévia da mensagem</label>
                     <div class="preview-whatsapp">
@@ -383,7 +381,7 @@
                     name="mensagem" 
                     id="mensagem"
                     class="textarea-mensagem"
-                    placeholder="Olá, tudo bem? Tenho uma ótima oportunidade de imóvel para você."
+                    placeholder="Olá {name}, tudo bem? Tenho uma ótima oportunidade de imóvel para você."
                     required
                 ></textarea>
             </div>
