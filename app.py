@@ -3337,8 +3337,8 @@ def campanhas_enviar_teste_whatsapp():
     return redirect("/campanhas")
 
 
- @app.route("/api/session/create", methods=["POST"])
- def create_session():
+@app.route("/api/session/create", methods=["POST"])
+def create_session():
     data = request.json
     session = data.get("session")
 
