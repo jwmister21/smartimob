@@ -1,467 +1,2490 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SMARTZEN - CRM Inteligente</title>
+    <meta charset="UTF-8">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Inter',sans-serif;
-}
+    <meta
+        name="description"
+        content="SMARTZEN, CRM imobiliário completo com automação, WhatsApp, inteligência artificial, gestão de clientes e imóveis."
+    >
 
-body{
-    background:#ffffff;
-    color:#0f172a;
-}
+    <title>SMARTZEN | CRM Imobiliário Inteligente</title>
 
-/* ===== HEADER ===== */
-header{
-    position:sticky;
-    top:0;
-    background:rgba(255,255,255,0.85);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid #eef2f7;
-    z-index:1000;
-}
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
 
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:0 5%;
-    height:72px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
 
-/* LOGO GRANDE */
-.logo{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+    >
 
-.logo img{
-    height:44px;
-    filter: drop-shadow(0 10px 20px rgba(37,99,235,0.25));
-}
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --secondary: #0f172a;
+            --text: #334155;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --background: #ffffff;
+            --background-soft: #f8fafc;
+            --success: #16a34a;
+            --shadow-sm:
+                0 10px 30px rgba(15, 23, 42, 0.06);
+            --shadow-md:
+                0 20px 50px rgba(15, 23, 42, 0.10);
+            --shadow-blue:
+                0 20px 45px rgba(37, 99, 235, 0.25);
+        }
 
-.logo span{
-    font-weight:800;
-    font-size:18px;
-    letter-spacing:1px;
-    color:#0f172a;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-nav a{
-    margin-left:18px;
-    text-decoration:none;
-    color:#475569;
-    font-weight:500;
-    transition:0.3s;
-}
+        html {
+            scroll-behavior: smooth;
+        }
 
-nav a:hover{
-    color:#2563eb;
-}
+        body {
+            font-family: "Inter", sans-serif;
+            background: var(--background);
+            color: var(--secondary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
 
-.btn-login{
-    background:#2563eb;
-    color:white;
-    padding:10px 16px;
-    border-radius:12px;
-    margin-left:18px;
-    text-decoration:none;
-    font-weight:600;
-}
+        img {
+            max-width: 100%;
+        }
 
-/* ===== HERO ===== */
-.hero{
-    text-align:center;
-    padding:110px 5% 80px;
-    background:
-    radial-gradient(circle at top, #2563eb15, transparent 60%);
-}
+        a {
+            color: inherit;
+        }
 
-.hero-logo{
-    margin-bottom:20px;
-}
+        button,
+        input {
+            font-family: inherit;
+        }
 
-.hero-logo img{
-    height:110px;
-    filter: drop-shadow(0 20px 40px rgba(37,99,235,0.25));
-    animation: float 3s ease-in-out infinite;
-}
+        .page-container {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+        }
 
-@keyframes float{
-    0%,100%{transform:translateY(0);}
-    50%{transform:translateY(-10px);}
-}
+        /* ==============================
+           HEADER
+        ============================== */
 
-.hero h1{
-    font-size:56px;
-    font-weight:800;
-    margin-bottom:15px;
-}
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+        }
 
-.hero p{
-    color:#64748b;
-    font-size:18px;
-    max-width:750px;
-    margin:auto;
-    line-height:1.5;
-}
+        .header-content {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
 
-.cta{
-    margin-top:30px;
-    display:inline-block;
-    background:#2563eb;
-    color:white;
-    padding:14px 22px;
-    border-radius:14px;
-    text-decoration:none;
-    font-weight:700;
-    transition:0.3s;
-}
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
 
-.cta:hover{
-    transform:scale(1.05);
-    box-shadow:0 15px 30px rgba(37,99,235,0.25);
-}
+        .logo img {
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
+            filter:
+                drop-shadow(
+                    0 10px 18px rgba(37, 99, 235, 0.24)
+                );
+        }
 
-/* ===== FEATURES ===== */
-.section{
-    padding:90px 5%;
-    max-width:1200px;
-    margin:auto;
-}
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
 
-.title{
-    text-align:center;
-    font-size:34px;
-    font-weight:800;
-    margin-bottom:50px;
-}
+        .logo-text strong {
+            font-size: 19px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            color: var(--secondary);
+        }
 
-.subtitle{
-    text-align:center;
-    color:#64748b;
-    margin-top:-35px;
-    margin-bottom:50px;
-}
+        .logo-text small {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
 
-.features{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:22px;
-}
+        .nav {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
 
-.card{
-    border:1px solid #eef2f7;
-    border-radius:18px;
-    padding:26px;
-    transition:0.3s;
-    background:white;
-}
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+        }
 
-.card:hover{
-    transform:translateY(-10px);
-    border-color:#2563eb;
-    box-shadow:0 20px 40px rgba(0,0,0,0.06);
-}
+        .nav-links a {
+            position: relative;
+            text-decoration: none;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.25s ease;
+        }
 
-.card h3{
-    margin-bottom:10px;
-    color:#2563eb;
-    font-size:18px;
-}
+        .nav-links a:not(.header-button)::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -7px;
+            width: 0;
+            height: 2px;
+            border-radius: 99px;
+            background: var(--primary);
+            transition: width 0.25s ease;
+        }
 
-.card p{
-    color:#64748b;
-    font-size:14px;
-    line-height:1.5;
-}
+        .nav-links a:not(.header-button):hover {
+            color: var(--primary);
+        }
 
-/* ===== PLANOS ===== */
-.planos{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-    gap:22px;
-}
+        .nav-links a:not(.header-button):hover::after {
+            width: 100%;
+        }
 
-.plan{
-    border:1px solid #eef2f7;
-    border-radius:20px;
-    padding:32px;
-    text-align:center;
-    transition:0.3s;
-    background:white;
-}
+        .header-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 20px;
+            border-radius: 13px;
+            background: var(--primary);
+            color: #ffffff !important;
+            box-shadow:
+                0 12px 25px rgba(37, 99, 235, 0.22);
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease,
+                box-shadow 0.25s ease;
+        }
 
-.plan:hover{
-    transform:translateY(-12px);
-    border-color:#2563eb;
-    box-shadow:0 25px 50px rgba(0,0,0,0.08);
-}
+        .header-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow:
+                0 16px 30px rgba(37, 99, 235, 0.30);
+        }
 
-.plan.featured{
-    border:2px solid #2563eb;
-    transform:scale(1.05);
-}
+        .mobile-menu-button {
+            display: none;
+            width: 46px;
+            height: 46px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: #ffffff;
+            color: var(--secondary);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
 
-.plan h3{
-    font-size:20px;
-    margin-bottom:10px;
-}
+        /* ==============================
+           HERO
+        ============================== */
 
-.price{
-    font-size:44px;
-    font-weight:800;
-    color:#2563eb;
-    margin:18px 0;
-}
+        .hero {
+            position: relative;
+            min-height: 780px;
+            padding: 150px 0 90px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background:
+                radial-gradient(
+                    circle at 12% 15%,
+                    rgba(37, 99, 235, 0.13),
+                    transparent 34%
+                ),
+                radial-gradient(
+                    circle at 92% 35%,
+                    rgba(59, 130, 246, 0.10),
+                    transparent 30%
+                ),
+                linear-gradient(
+                    180deg,
+                    #ffffff 0%,
+                    #f8fbff 100%
+                );
+        }
 
-ul{
-    list-style:none;
-    text-align:left;
-    margin:22px 0;
-}
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 420px;
+            height: 420px;
+            right: -180px;
+            top: 100px;
+            border-radius: 50%;
+            border: 70px solid rgba(37, 99, 235, 0.045);
+        }
 
-ul li{
-    margin-bottom:10px;
-    color:#475569;
-}
+        .hero::after {
+            content: "";
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            left: -180px;
+            bottom: 10px;
+            border-radius: 50%;
+            border: 55px solid rgba(37, 99, 235, 0.04);
+        }
 
-ul li::before{
-    content:"✓";
-    color:#2563eb;
-    margin-right:8px;
-    font-weight:800;
-}
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns:
+                minmax(0, 1.08fr)
+                minmax(420px, 0.92fr);
+            align-items: center;
+            gap: 65px;
+        }
 
-/* ===== FOOTER ===== */
-footer{
-    text-align:center;
-    padding:50px 5%;
-    border-top:1px solid #eef2f7;
-    color:#64748b;
-    margin-top:70px;
-}
-    .card-plano{
-    border:1px solid #eef2f7;
-    border-radius:20px;
-    padding:30px;
-    background:white;
-    transition:0.3s;
-    text-align:center;
-}
+        .hero-copy {
+            max-width: 680px;
+        }
 
-.card-plano:hover{
-    transform:translateY(-12px);
-    border-color:#2563eb;
-    box-shadow:0 25px 50px rgba(0,0,0,0.08);
-}
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 24px;
+            padding: 9px 14px;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            background: rgba(239, 246, 255, 0.92);
+            color: var(--primary-dark);
+            font-size: 13px;
+            font-weight: 800;
+        }
 
-.destaque{
-    border:2px solid #2563eb;
-    transform:scale(1.05);
-}
+        .hero-badge-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow:
+                0 0 0 5px rgba(37, 99, 235, 0.12);
+        }
 
-.preco{
-    font-size:42px;
-    font-weight:800;
-    color:#2563eb;
-    margin:15px 0;
-}
+        .hero h1 {
+            max-width: 760px;
+            font-size: clamp(45px, 5.8vw, 72px);
+            line-height: 1.03;
+            letter-spacing: -3.4px;
+            font-weight: 900;
+            color: var(--secondary);
+        }
 
-.sub-preco{
-    color:#64748b;
-    font-size:14px;
-}
+        .hero h1 span {
+            display: inline-block;
+            color: var(--primary);
+            background:
+                linear-gradient(
+                    135deg,
+                    #2563eb,
+                    #60a5fa
+                );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-.lista-beneficios{
-    list-style:none;
-    text-align:left;
-    margin:20px 0;
-}
+        .hero-description {
+            max-width: 650px;
+            margin-top: 25px;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.75;
+        }
 
-.lista-beneficios li{
-    margin-bottom:10px;
-    color:#475569;
-}
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px;
+            margin-top: 34px;
+        }
 
-.lista-beneficios li::before{
-    content:"✓";
-    color:#2563eb;
-    margin-right:8px;
-    font-weight:700;
-}
+        .button {
+            min-height: 52px;
+            padding: 0 24px;
+            border-radius: 15px;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 800;
+            transition:
+                0.25s ease;
+        }
 
-.btn-plano{
-    display:block;
-    padding:14px;
-    background:#2563eb;
-    color:white;
-    border-radius:12px;
-    text-decoration:none;
-    font-weight:600;
-    transition:0.3s;
-}
+        .button-primary {
+            color: #ffffff;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #3b82f6
+                );
+            box-shadow: var(--shadow-blue);
+        }
 
-.btn-plano:hover{
-    background:#1d4ed8;
-    transform:scale(1.03);
-}
-</style>
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 25px 55px rgba(37, 99, 235, 0.32);
+        }
+
+        .button-secondary {
+            color: var(--secondary);
+            background: #ffffff;
+            border-color: var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .button-secondary:hover {
+            color: var(--primary);
+            border-color: #bfdbfe;
+            transform: translateY(-3px);
+        }
+
+        .hero-benefits {
+            margin-top: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 19px;
+        }
+
+        .hero-benefit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .hero-benefit-icon {
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #ffffff;
+            background: var(--success);
+            font-size: 12px;
+        }
+
+        /* HERO PREVIEW */
+
+        .system-preview {
+            position: relative;
+        }
+
+        .system-preview::before {
+            content: "";
+            position: absolute;
+            inset: 45px 20px -30px 20px;
+            z-index: -1;
+            border-radius: 40px;
+            background:
+                rgba(37, 99, 235, 0.20);
+            filter: blur(55px);
+        }
+
+        .preview-window {
+            overflow: hidden;
+            border: 1px solid rgba(203, 213, 225, 0.95);
+            border-radius: 25px;
+            background: #ffffff;
+            box-shadow:
+                0 35px 90px rgba(15, 23, 42, 0.17);
+            transform:
+                perspective(1300px)
+                rotateY(-5deg)
+                rotateX(2deg);
+            animation:
+                preview-float 5s ease-in-out infinite;
+        }
+
+        @keyframes preview-float {
+            0%,
+            100% {
+                transform:
+                    perspective(1300px)
+                    rotateY(-5deg)
+                    rotateX(2deg)
+                    translateY(0);
+            }
+
+            50% {
+                transform:
+                    perspective(1300px)
+                    rotateY(-5deg)
+                    rotateX(2deg)
+                    translateY(-10px);
+            }
+        }
+
+        .preview-topbar {
+            min-height: 56px;
+            padding: 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            background: #ffffff;
+        }
+
+        .preview-dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .preview-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .preview-dot:nth-child(1) {
+            background: #fb7185;
+        }
+
+        .preview-dot:nth-child(2) {
+            background: #fbbf24;
+        }
+
+        .preview-dot:nth-child(3) {
+            background: #4ade80;
+        }
+
+        .preview-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--secondary);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .preview-brand img {
+            width: 25px;
+            height: 25px;
+            object-fit: contain;
+        }
+
+        .preview-body {
+            min-height: 410px;
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            background: var(--background-soft);
+        }
+
+        .preview-sidebar {
+            padding: 18px 12px;
+            background: #0f172a;
+        }
+
+        .preview-menu-item {
+            min-height: 31px;
+            margin-bottom: 8px;
+            padding: 0 9px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 8px;
+            font-weight: 700;
+        }
+
+        .preview-menu-item.active {
+            color: #ffffff;
+            background: var(--primary);
+        }
+
+        .preview-menu-icon {
+            font-size: 12px;
+        }
+
+        .preview-main {
+            padding: 20px;
+        }
+
+        .preview-title {
+            margin-bottom: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preview-title h3 {
+            font-size: 15px;
+        }
+
+        .preview-mini-button {
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 7px;
+            font-weight: 800;
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .preview-stat {
+            padding: 13px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        .preview-stat small {
+            display: block;
+            color: var(--muted);
+            font-size: 7px;
+            font-weight: 700;
+        }
+
+        .preview-stat strong {
+            display: block;
+            margin-top: 6px;
+            color: var(--secondary);
+            font-size: 17px;
+        }
+
+        .preview-chart {
+            position: relative;
+            height: 150px;
+            margin-top: 12px;
+            padding: 17px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #ffffff;
+        }
+
+        .preview-chart-title {
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .chart-bars {
+            position: absolute;
+            left: 17px;
+            right: 17px;
+            bottom: 16px;
+            height: 90px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            border-radius: 6px 6px 2px 2px;
+            background:
+                linear-gradient(
+                    180deg,
+                    #60a5fa,
+                    #2563eb
+                );
+        }
+
+        .chart-bar:nth-child(1) {
+            height: 37%;
+        }
+
+        .chart-bar:nth-child(2) {
+            height: 53%;
+        }
+
+        .chart-bar:nth-child(3) {
+            height: 42%;
+        }
+
+        .chart-bar:nth-child(4) {
+            height: 75%;
+        }
+
+        .chart-bar:nth-child(5) {
+            height: 61%;
+        }
+
+        .chart-bar:nth-child(6) {
+            height: 91%;
+        }
+
+        .preview-list {
+            margin-top: 12px;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #ffffff;
+        }
+
+        .preview-list-row {
+            min-height: 28px;
+            display: grid;
+            grid-template-columns: 1fr 70px 60px;
+            align-items: center;
+            gap: 7px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #64748b;
+            font-size: 7px;
+        }
+
+        .preview-list-row:last-child {
+            border-bottom: 0;
+        }
+
+        .preview-status {
+            padding: 4px 6px;
+            border-radius: 99px;
+            text-align: center;
+            color: #166534;
+            background: #dcfce7;
+            font-weight: 800;
+        }
+
+        .floating-card {
+            position: absolute;
+            z-index: 3;
+            padding: 14px 17px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: var(--shadow-md);
+        }
+
+        .floating-card.top {
+            top: 70px;
+            right: -38px;
+        }
+
+        .floating-card.bottom {
+            left: -38px;
+            bottom: 55px;
+        }
+
+        .floating-icon {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 11px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .floating-card strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .floating-card small {
+            display: block;
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 9px;
+        }
+
+        /* ==============================
+           TRUST NUMBERS
+        ============================== */
+
+        .numbers-section {
+            position: relative;
+            z-index: 5;
+            margin-top: -35px;
+        }
+
+        .numbers-box {
+            padding: 30px 35px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: var(--shadow-md);
+        }
+
+        .number-item {
+            position: relative;
+            text-align: center;
+        }
+
+        .number-item:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 10%;
+            right: -12px;
+            width: 1px;
+            height: 80%;
+            background: var(--border);
+        }
+
+        .number-item strong {
+            display: block;
+            color: var(--primary);
+            font-size: 30px;
+            line-height: 1;
+            font-weight: 900;
+        }
+
+        .number-item span {
+            display: block;
+            margin-top: 9px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* ==============================
+           SECTIONS
+        ============================== */
+
+        .section {
+            padding: 105px 0;
+        }
+
+        .section-soft {
+            background: var(--background-soft);
+        }
+
+        .section-header {
+            max-width: 720px;
+            margin: 0 auto 55px;
+            text-align: center;
+        }
+
+        .section-label {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            color: var(--secondary);
+            font-size: clamp(32px, 4vw, 46px);
+            line-height: 1.13;
+            letter-spacing: -1.8px;
+            font-weight: 900;
+        }
+
+        .section-description {
+            margin-top: 17px;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.75;
+        }
+
+        /* ==============================
+           FEATURES
+        ============================== */
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            position: relative;
+            min-height: 270px;
+            padding: 29px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 21px;
+            background: #ffffff;
+            transition:
+                transform 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+        }
+
+        .feature-card::after {
+            content: "";
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            right: -70px;
+            bottom: -70px;
+            border-radius: 50%;
+            background:
+                rgba(37, 99, 235, 0.055);
+            transition: 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-9px);
+            border-color: #bfdbfe;
+            box-shadow: var(--shadow-md);
+        }
+
+        .feature-card:hover::after {
+            width: 170px;
+            height: 170px;
+        }
+
+        .feature-icon {
+            width: 54px;
+            height: 54px;
+            margin-bottom: 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            color: var(--primary);
+            background:
+                linear-gradient(
+                    135deg,
+                    #eff6ff,
+                    #dbeafe
+                );
+            font-size: 25px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 12px;
+            color: var(--secondary);
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .feature-link {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        /* ==============================
+           HOW IT WORKS
+        ============================== */
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .workflow-card {
+            position: relative;
+            padding: 32px;
+            border-radius: 22px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+        }
+
+        .workflow-number {
+            width: 46px;
+            height: 46px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            color: #ffffff;
+            background: var(--primary);
+            font-size: 16px;
+            font-weight: 900;
+            box-shadow:
+                0 12px 25px rgba(37, 99, 235, 0.23);
+        }
+
+        .workflow-card h3 {
+            margin-bottom: 10px;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .workflow-card p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* ==============================
+           PLANS
+        ============================== */
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            align-items: stretch;
+            gap: 22px;
+        }
+
+        .plan-card {
+            position: relative;
+            padding: 34px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: #ffffff;
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-8px);
+            border-color: #bfdbfe;
+            box-shadow: var(--shadow-md);
+        }
+
+        .plan-card.featured {
+            border: 2px solid var(--primary);
+            box-shadow:
+                0 30px 70px rgba(37, 99, 235, 0.17);
+            transform: translateY(-12px);
+        }
+
+        .plan-card.featured:hover {
+            transform: translateY(-18px);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            padding: 8px 15px;
+            border-radius: 99px;
+            color: #ffffff;
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    #60a5fa
+                );
+            box-shadow:
+                0 10px 25px rgba(37, 99, 235, 0.28);
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .plan-name {
+            color: var(--secondary);
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .plan-description {
+            min-height: 44px;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .plan-price {
+            margin-top: 25px;
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+        }
+
+        .plan-price strong {
+            color: var(--primary);
+            font-size: 43px;
+            line-height: 1;
+            letter-spacing: -2px;
+            font-weight: 900;
+        }
+
+        .plan-price span {
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .plan-equivalent {
+            margin-top: 9px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .discount-label {
+            display: inline-flex;
+            align-self: flex-start;
+            margin-top: 14px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            color: #166534;
+            background: #dcfce7;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        .plan-divider {
+            width: 100%;
+            height: 1px;
+            margin: 25px 0;
+            background: var(--border);
+        }
+
+        .plan-benefits {
+            flex-grow: 1;
+            list-style: none;
+        }
+
+        .plan-benefits li {
+            margin-bottom: 13px;
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            color: #475569;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .plan-benefits li::before {
+            content: "✓";
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #ffffff;
+            background: var(--success);
+            font-size: 10px;
+            font-weight: 900;
+        }
+
+        .plan-button {
+            width: 100%;
+            min-height: 50px;
+            margin-top: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            color: var(--primary);
+            background: var(--primary-light);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 900;
+            transition: 0.25s ease;
+        }
+
+        .plan-button:hover {
+            color: #ffffff;
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .plan-card.featured .plan-button {
+            color: #ffffff;
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow:
+                0 15px 35px rgba(37, 99, 235, 0.25);
+        }
+
+        .plan-card.featured .plan-button:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ==============================
+           FINAL CTA
+        ============================== */
+
+        .final-cta {
+            padding: 0 0 100px;
+        }
+
+        .cta-box {
+            position: relative;
+            padding: 65px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 40px;
+            border-radius: 28px;
+            color: #ffffff;
+            background:
+                linear-gradient(
+                    135deg,
+                    #0f172a 0%,
+                    #1e3a8a 100%
+                );
+            box-shadow:
+                0 35px 80px rgba(15, 23, 42, 0.22);
+        }
+
+        .cta-box::before {
+            content: "";
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            right: -100px;
+            top: -160px;
+            border-radius: 50%;
+            background:
+                rgba(96, 165, 250, 0.17);
+        }
+
+        .cta-box::after {
+            content: "";
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            left: 35%;
+            bottom: -210px;
+            border-radius: 50%;
+            background:
+                rgba(37, 99, 235, 0.22);
+        }
+
+        .cta-content,
+        .cta-action {
+            position: relative;
+            z-index: 2;
+        }
+
+        .cta-box h2 {
+            max-width: 690px;
+            font-size: clamp(30px, 4vw, 45px);
+            line-height: 1.15;
+            letter-spacing: -1.5px;
+            font-weight: 900;
+        }
+
+        .cta-box p {
+            max-width: 650px;
+            margin-top: 15px;
+            color: #cbd5e1;
+            font-size: 15px;
+        }
+
+        .cta-box .button {
+            min-width: 190px;
+            background: #ffffff;
+            color: var(--primary-dark);
+            box-shadow: none;
+        }
+
+        .cta-box .button:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ==============================
+           FOOTER
+        ============================== */
+
+        .footer {
+            padding: 55px 0 25px;
+            border-top: 1px solid var(--border);
+            background: var(--background-soft);
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr 0.7fr;
+            gap: 50px;
+        }
+
+        .footer-brand {
+            max-width: 430px;
+        }
+
+        .footer-brand p {
+            margin-top: 17px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.75;
+        }
+
+        .footer-column h3 {
+            margin-bottom: 17px;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .footer-column a {
+            margin-bottom: 11px;
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.2s ease;
+        }
+
+        .footer-column a:hover {
+            color: var(--primary);
+            transform: translateX(3px);
+        }
+
+        .footer-bottom {
+            margin-top: 45px;
+            padding-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* ==============================
+           RESPONSIVE
+        ============================== */
+
+        @media (max-width: 1050px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-copy {
+                max-width: 780px;
+                margin: 0 auto;
+            }
+
+            .hero-description {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-actions,
+            .hero-benefits {
+                justify-content: center;
+            }
+
+            .system-preview {
+                width: min(680px, 100%);
+                margin: 15px auto 0;
+            }
+
+            .floating-card.top {
+                right: -10px;
+            }
+
+            .floating-card.bottom {
+                left: -10px;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .plans-grid {
+                grid-template-columns: 1fr;
+                max-width: 620px;
+                margin: auto;
+            }
+
+            .plan-card.featured {
+                transform: none;
+            }
+
+            .plan-card.featured:hover {
+                transform: translateY(-8px);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .mobile-menu-button {
+                display: inline-flex;
+            }
+
+            .nav {
+                position: absolute;
+                top: 76px;
+                left: 20px;
+                right: 20px;
+                padding: 16px;
+                display: none;
+                border: 1px solid var(--border);
+                border-radius: 18px;
+                background: #ffffff;
+                box-shadow: var(--shadow-md);
+            }
+
+            .nav.open {
+                display: block;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .nav-links a {
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .nav-links a:not(.header-button):hover {
+                background: var(--primary-light);
+            }
+
+            .header-button {
+                margin-top: 7px;
+            }
+
+            .numbers-box {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .number-item:nth-child(2)::after {
+                display: none;
+            }
+
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-box {
+                padding: 50px 35px;
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .cta-box p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .footer-brand {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .page-container {
+                width: min(100% - 28px, 1180px);
+            }
+
+            .header-content {
+                min-height: 68px;
+            }
+
+            .logo img {
+                width: 40px;
+                height: 40px;
+            }
+
+            .logo-text strong {
+                font-size: 16px;
+            }
+
+            .logo-text small {
+                font-size: 8px;
+            }
+
+            .nav {
+                top: 68px;
+                left: 14px;
+                right: 14px;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 120px 0 80px;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+                letter-spacing: -2.2px;
+            }
+
+            .hero-description {
+                font-size: 16px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+            }
+
+            .hero-actions .button {
+                width: 100%;
+            }
+
+            .hero-benefits {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .preview-window {
+                transform: none;
+                animation: none;
+            }
+
+            .preview-body {
+                grid-template-columns: 80px 1fr;
+                min-height: 330px;
+            }
+
+            .preview-sidebar {
+                padding: 13px 8px;
+            }
+
+            .preview-menu-item {
+                padding: 0 6px;
+                font-size: 0;
+            }
+
+            .preview-menu-icon {
+                font-size: 13px;
+            }
+
+            .preview-main {
+                padding: 12px;
+            }
+
+            .preview-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-stat:nth-child(2),
+            .preview-stat:nth-child(3) {
+                display: none;
+            }
+
+            .floating-card {
+                display: none;
+            }
+
+            .numbers-section {
+                margin-top: -20px;
+            }
+
+            .numbers-box {
+                padding: 24px 18px;
+                grid-template-columns: 1fr 1fr;
+                gap: 28px 10px;
+            }
+
+            .number-item::after {
+                display: none !important;
+            }
+
+            .number-item strong {
+                font-size: 25px;
+            }
+
+            .section {
+                padding: 80px 0;
+            }
+
+            .section-header {
+                margin-bottom: 38px;
+            }
+
+            .section-title {
+                font-size: 33px;
+                letter-spacing: -1.2px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-card {
+                min-height: auto;
+            }
+
+            .plan-card {
+                padding: 28px 23px;
+            }
+
+            .cta-box {
+                padding: 45px 23px;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-brand {
+                grid-column: auto;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<header>
-<div class="container">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="page-container header-content">
 
-    <div class="logo">
-        <img src="/static/logosm.png" alt="SMARTZEN">
-        <span>SMARTZEN</span>
-    </div>
+            <a href="#" class="logo">
+                <img
+                    src="/static/logosm.png"
+                    alt="Logo SMARTZEN"
+                >
 
-    <nav>
-        <a href="#func">Funcionalidades</a>
-        <a href="#planos">Planos</a>
-        <a href="/login" class="btn-login">Entrar</a>
-    </nav>
+                <span class="logo-text">
+                    <strong>SMARTZEN</strong>
+                    <small>CRM Imobiliário</small>
+                </span>
+            </a>
 
-</div>
-</header>
+            <button
+                class="mobile-menu-button"
+                id="mobileMenuButton"
+                type="button"
+                aria-label="Abrir menu"
+            >
+                ☰
+            </button>
 
-<!-- HERO -->
-<section class="hero">
+            <nav class="nav" id="navigation">
+                <div class="nav-links">
+                    <a href="#funcionalidades">
+                        Funcionalidades
+                    </a>
 
-<div class="hero-logo">
-    <img src="/static/logosm.png" alt="SMARTZEN LOGO">
-</div>
+                    <a href="#como-funciona">
+                        Como funciona
+                    </a>
 
-<h1>O CRM mais inteligente para o mercado imobiliário</h1>
+                    <a href="#planos">
+                        Planos
+                    </a>
 
-<p>
-REDE FIFFTY • WhatsApp Automático • Geração de Anúncios com IA • Sites automáticos • CRM completo para corretores e imobiliárias
-</p>
+                    <a
+                        href="/login"
+                        class="header-button"
+                    >
+                        Entrar no sistema
+                    </a>
+                </div>
+            </nav>
 
-<a href="/login" class="cta">Começar agora</a>
+        </div>
+    </header>
 
-</section>
+    <!-- HERO -->
+    <main>
+        <section class="hero">
+            <div class="page-container hero-content">
 
-<!-- FEATURES -->
-<section class="section" id="func">
+                <div class="hero-copy">
 
-<h2 class="title">Tudo que seu time precisa em um só sistema</h2>
-<p class="subtitle">Simples, rápido e feito para vender mais imóveis</p>
+                    <div class="hero-badge">
+                        <span class="hero-badge-dot"></span>
+                        Tecnologia feita para o mercado imobiliário
+                    </div>
 
-<div class="features">
+                    <h1>
+                        Organize sua imobiliária e
+                        <span>venda muito mais</span>
+                    </h1>
 
-<div class="card">
-<h3>REDE FIFFTY</h3>
-<p>Conecte corretores e aumente suas vendas com indicações inteligentes.</p>
-</div>
+                    <p class="hero-description">
+                        Gerencie clientes, imóveis, leads, tarefas,
+                        campanhas e anúncios em um único sistema.
+                        Automatize processos e transforme seu atendimento
+                        com a inteligência da SMARTZEN.
+                    </p>
 
-<div class="card">
-<h3>WhatsApp Automático</h3>
-<p>Disparos, follow-ups e envio de imóveis com um clique.</p>
-</div>
+                    <div class="hero-actions">
+                        <a
+                            href="/login"
+                            class="button button-primary"
+                        >
+                            Começar agora
+                            <span>→</span>
+                        </a>
 
-<div class="card">
-<h3>IA de Anúncios</h3>
-<p>Criação automática de anúncios prontos para portais imobiliários.</p>
-</div>
+                        <a
+                            href="#funcionalidades"
+                            class="button button-secondary"
+                        >
+                            Conhecer funcionalidades
+                        </a>
+                    </div>
 
-<div class="card">
-<h3>Site Automático</h3>
-<p>Seu site imobiliário gerado automaticamente com seus imóveis.</p>
-</div>
+                    <div class="hero-benefits">
+                        <div class="hero-benefit">
+                            <span class="hero-benefit-icon">✓</span>
+                            Fácil de usar
+                        </div>
 
-<div class="card">
-<h3>CRM Completo</h3>
-<p>Controle total de clientes, leads e histórico de vendas.</p>
-</div>
+                        <div class="hero-benefit">
+                            <span class="hero-benefit-icon">✓</span>
+                            Suporte especializado
+                        </div>
 
-<div class="card">
-<h3>Organização Inteligente</h3>
-<p>Funil de vendas, tarefas e automações inteligentes.</p>
-</div>
+                        <div class="hero-benefit">
+                            <span class="hero-benefit-icon">✓</span>
+                            Acesso pelo celular
+                        </div>
+                    </div>
 
-</div>
-</section>
+                </div>
 
-<!-- PLANOS -->
-<!-- PLANOS -->
-<section class="section" id="planos">
+                <!-- DEMONSTRAÇÃO VISUAL -->
+                <div class="system-preview">
 
-<h2 class="title">Escolha o plano ideal para seu negócio</h2>
+                    <div class="floating-card top">
+                        <div class="floating-icon">🤖</div>
 
-<div class="planos">
+                        <div>
+                            <strong>Anúncio criado com IA</strong>
+                            <small>Pronto para publicar</small>
+                        </div>
+                    </div>
 
-<!-- MENSAL -->
-<div class="card-plano">
-    <h3>MENSAL</h3>
-    <div class="preco">R$ 100,00</div>
-    <p class="sub-preco">por usuário/mês</p>
+                    <div class="floating-card bottom">
+                        <div class="floating-icon">💬</div>
 
-    <ul class="lista-beneficios">
-        <li>Todas as funcionalidades</li>
-        <li>Suporte especializado</li>
-        <li>Atualizações constantes</li>
-        <li>Segurança de dados</li>
-    </ul>
+                        <div>
+                            <strong>WhatsApp integrado</strong>
+                            <small>Atendimento mais rápido</small>
+                        </div>
+                    </div>
 
-    <a href="/login" class="btn-plano">Assinar Mensal</a>
-</div>
+                    <div class="preview-window">
 
-<!-- SEMESTRAL -->
-<div class="card-plano destaque">
-    <h3>SEMESTRAL 🔥</h3>
-    <div class="preco">R$ 540,00</div>
-    <p class="sub-preco">equivale a R$ 90,00/mês</p>
+                        <div class="preview-topbar">
+                            <div class="preview-dots">
+                                <span class="preview-dot"></span>
+                                <span class="preview-dot"></span>
+                                <span class="preview-dot"></span>
+                            </div>
 
-    <ul class="lista-beneficios">
-        <li>Todas as funcionalidades</li>
-        <li>Suporte especializado</li>
-        <li>Atualizações constantes</li>
-        <li>Economia de 10%</li>
-    </ul>
+                            <div class="preview-brand">
+                                <img
+                                    src="/static/logosm.png"
+                                    alt=""
+                                >
+                                SMARTZEN
+                            </div>
 
-    <a href="/login" class="btn-plano">Mais escolhido</a>
-</div>
+                            <span></span>
+                        </div>
 
-<!-- ANUAL -->
-<div class="card-plano">
-    <h3>ANUAL</h3>
-    <div class="preco">R$ 960,00</div>
-    <p class="sub-preco">equivale a R$ 80,00/mês</p>
+                        <div class="preview-body">
 
-    <ul class="lista-beneficios">
-        <li>Todas as funcionalidades</li>
-        <li>Suporte especializado</li>
-        <li>Atualizações constantes</li>
-        <li>Economia de 20%</li>
-    </ul>
+                            <aside class="preview-sidebar">
+                                <div class="preview-menu-item active">
+                                    <span class="preview-menu-icon">⌂</span>
+                                    Dashboard
+                                </div>
 
-    <a href="/login" class="btn-plano">Assinar Anual</a>
-</div>
+                                <div class="preview-menu-item">
+                                    <span class="preview-menu-icon">🏠</span>
+                                    Imóveis
+                                </div>
 
-</div>
-</section>
+                                <div class="preview-menu-item">
+                                    <span class="preview-menu-icon">👥</span>
+                                    Clientes
+                                </div>
 
-<!-- FOOTER -->
-<footer>
-© 2026 SMARTZEN TECNOLOGIA — CRM Imobiliário Inteligente
-</footer>
+                                <div class="preview-menu-item">
+                                    <span class="preview-menu-icon">📊</span>
+                                    Funil
+                                </div>
+
+                                <div class="preview-menu-item">
+                                    <span class="preview-menu-icon">💬</span>
+                                    WhatsApp
+                                </div>
+                            </aside>
+
+                            <div class="preview-main">
+
+                                <div class="preview-title">
+                                    <h3>Visão geral</h3>
+
+                                    <div class="preview-mini-button">
+                                        + Novo imóvel
+                                    </div>
+                                </div>
+
+                                <div class="preview-stats">
+
+                                    <div class="preview-stat">
+                                        <small>Imóveis ativos</small>
+                                        <strong>128</strong>
+                                    </div>
+
+                                    <div class="preview-stat">
+                                        <small>Novos leads</small>
+                                        <strong>34</strong>
+                                    </div>
+
+                                    <div class="preview-stat">
+                                        <small>Negociações</small>
+                                        <strong>18</strong>
+                                    </div>
+
+                                </div>
+
+                                <div class="preview-chart">
+                                    <div class="preview-chart-title">
+                                        Desempenho mensal
+                                    </div>
+
+                                    <div class="chart-bars">
+                                        <span class="chart-bar"></span>
+                                        <span class="chart-bar"></span>
+                                        <span class="chart-bar"></span>
+                                        <span class="chart-bar"></span>
+                                        <span class="chart-bar"></span>
+                                        <span class="chart-bar"></span>
+                                    </div>
+                                </div>
+
+                                <div class="preview-list">
+
+                                    <div class="preview-list-row">
+                                        <strong>Apartamento Centro</strong>
+                                        <span>R$ 420 mil</span>
+                                        <span class="preview-status">
+                                            Ativo
+                                        </span>
+                                    </div>
+
+                                    <div class="preview-list-row">
+                                        <strong>Casa Jardim Sul</strong>
+                                        <span>R$ 680 mil</span>
+                                        <span class="preview-status">
+                                            Ativo
+                                        </span>
+                                    </div>
+
+                                    <div class="preview-list-row">
+                                        <strong>Terreno Industrial</strong>
+                                        <span>R$ 290 mil</span>
+                                        <span class="preview-status">
+                                            Ativo
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- NÚMEROS -->
+        <section class="numbers-section">
+            <div class="page-container">
+
+                <div class="numbers-box">
+
+                    <div class="number-item">
+                        <strong>100%</strong>
+                        <span>Online e responsivo</span>
+                    </div>
+
+                    <div class="number-item">
+                        <strong>24h</strong>
+                        <span>Acesso ao sistema</span>
+                    </div>
+
+                    <div class="number-item">
+                        <strong>1 só</strong>
+                        <span>Sistema para toda operação</span>
+                    </div>
+
+                    <div class="number-item">
+                        <strong>+IA</strong>
+                        <span>Automação inteligente</span>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- FUNCIONALIDADES -->
+        <section
+            class="section"
+            id="funcionalidades"
+        >
+            <div class="page-container">
+
+                <div class="section-header">
+                    <span class="section-label">
+                        Funcionalidades
+                    </span>
+
+                    <h2 class="section-title">
+                        Tudo o que sua equipe precisa em um só lugar
+                    </h2>
+
+                    <p class="section-description">
+                        Menos planilhas, menos tarefas manuais e mais
+                        tempo para atender clientes e fechar negócios.
+                    </p>
+                </div>
+
+                <div class="features-grid">
+
+                    <article class="feature-card">
+                        <div class="feature-icon">🔗</div>
+
+                        <h3>REDE FIFFTY</h3>
+
+                        <p>
+                            Conecte corretores, compartilhe oportunidades
+                            e aumente as chances de vender seus imóveis
+                            através de indicações inteligentes.
+                        </p>
+
+                        <a
+                            href="/login"
+                            class="feature-link"
+                        >
+                            Conhecer recurso →
+                        </a>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon">💬</div>
+
+                        <h3>WhatsApp automático</h3>
+
+                        <p>
+                            Envie imóveis, mensagens, campanhas e
+                            acompanhamentos com muito mais rapidez
+                            diretamente pelo sistema.
+                        </p>
+
+                        <a
+                            href="/login"
+                            class="feature-link"
+                        >
+                            Conhecer recurso →
+                        </a>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon">🤖</div>
+
+                        <h3>Anúncios com inteligência artificial</h3>
+
+                        <p>
+                            Gere descrições profissionais e persuasivas
+                            para seus imóveis sem perder tempo escrevendo
+                            cada anúncio manualmente.
+                        </p>
+
+                        <a
+                            href="/login"
+                            class="feature-link"
+                        >
+                            Conhecer recurso →
+                        </a>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon">🌐</div>
+
+                        <h3>Site imobiliário automático</h3>
+
+                        <p>
+                            Divulgue seus imóveis em um site profissional,
+                            responsivo e sempre atualizado com o seu CRM.
+                        </p>
+
+                        <a
+                            href="/login"
+                            class="feature-link"
+                        >
+                            Conhecer recurso →
+                        </a>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon">👥</div>
+
+                        <h3>Gestão completa de clientes</h3>
+
+                        <p>
+                            Organize contatos, preferências, histórico,
+                            interesses, negociações e próximos passos de
+                            cada cliente.
+                        </p>
+
+                        <a
+                            href="/login"
+                            class="feature-link"
+                        >
+                            Conhecer recurso →
+                        </a>
+                    </article>
+
+                    <article class="feature-card">
+                        <div class="feature-icon">📈</div>
+
+                        <h3>Funil de vendas inteligente</h3>
+
+                        <p>
+                            Visualize cada negociação, acompanhe etapas
+                            e saiba exatamente quais oportunidades
+                            precisam de atenção.
+                        </p>
+
+                        <a
+                            href="/login"
+                            class="feature-link"
+                        >
+                            Conhecer recurso →
+                        </a>
+                    </article>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- COMO FUNCIONA -->
+        <section
+            class="section section-soft"
+            id="como-funciona"
+        >
+            <div class="page-container">
+
+                <div class="section-header">
+                    <span class="section-label">
+                        Simples de começar
+                    </span>
+
+                    <h2 class="section-title">
+                        Sua operação mais organizada em poucos passos
+                    </h2>
+
+                    <p class="section-description">
+                        A SMARTZEN foi criada para ser prática,
+                        intuitiva e fácil de usar no dia a dia.
+                    </p>
+                </div>
+
+                <div class="workflow-grid">
+
+                    <article class="workflow-card">
+                        <div class="workflow-number">01</div>
+
+                        <h3>Cadastre seus imóveis</h3>
+
+                        <p>
+                            Adicione fotos, valores, características,
+                            localização e todas as informações do imóvel.
+                        </p>
+                    </article>
+
+                    <article class="workflow-card">
+                        <div class="workflow-number">02</div>
+
+                        <h3>Organize seus clientes</h3>
+
+                        <p>
+                            Registre interesses, acompanhe atendimentos
+                            e encontre o imóvel ideal para cada cliente.
+                        </p>
+                    </article>
+
+                    <article class="workflow-card">
+                        <div class="workflow-number">03</div>
+
+                        <h3>Acompanhe e venda</h3>
+
+                        <p>
+                            Use o funil, o WhatsApp e as automações
+                            para acompanhar oportunidades e vender mais.
+                        </p>
+                    </article>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PLANOS -->
+        <section
+            class="section"
+            id="planos"
+        >
+            <div class="page-container">
+
+                <div class="section-header">
+                    <span class="section-label">
+                        Planos
+                    </span>
+
+                    <h2 class="section-title">
+                        Escolha o plano ideal para o seu negócio
+                    </h2>
+
+                    <p class="section-description">
+                        Tenha acesso às principais ferramentas para
+                        organizar, automatizar e aumentar suas vendas.
+                    </p>
+                </div>
+
+                <div class="plans-grid">
+
+                    <!-- MENSAL -->
+                    <article class="plan-card">
+
+                        <h3 class="plan-name">
+                            Mensal
+                        </h3>
+
+                        <p class="plan-description">
+                            Flexibilidade para começar sem compromisso
+                            de longo prazo.
+                        </p>
+
+                        <div class="plan-price">
+                            <strong>R$ 100</strong>
+                            <span>/mês</span>
+                        </div>
+
+                        <p class="plan-equivalent">
+                            Valor por usuário
+                        </p>
+
+                        <div class="plan-divider"></div>
+
+                        <ul class="plan-benefits">
+                            <li>
+                                Acesso a todas as funcionalidades
+                            </li>
+
+                            <li>
+                                CRM de clientes e imóveis
+                            </li>
+
+                            <li>
+                                WhatsApp e automações
+                            </li>
+
+                            <li>
+                                Anúncios gerados com IA
+                            </li>
+
+                            <li>
+                                Suporte especializado
+                            </li>
+
+                            <li>
+                                Atualizações constantes
+                            </li>
+                        </ul>
+
+                        <a
+                            href="/login"
+                            class="plan-button"
+                        >
+                            Assinar plano mensal
+                        </a>
+
+                    </article>
+
+                    <!-- SEMESTRAL -->
+                    <article class="plan-card featured">
+
+                        <div class="popular-badge">
+                            Mais escolhido
+                        </div>
+
+                        <h3 class="plan-name">
+                            Semestral
+                        </h3>
+
+                        <p class="plan-description">
+                            Economia e tranquilidade para usar durante
+                            seis meses.
+                        </p>
+
+                        <div class="plan-price">
+                            <strong>R$ 540</strong>
+                            <span>/semestre</span>
+                        </div>
+
+                        <p class="plan-equivalent">
+                            Equivale a R$ 90 por mês
+                        </p>
+
+                        <span class="discount-label">
+                            Economize 10%
+                        </span>
+
+                        <div class="plan-divider"></div>
+
+                        <ul class="plan-benefits">
+                            <li>
+                                Acesso a todas as funcionalidades
+                            </li>
+
+                            <li>
+                                CRM de clientes e imóveis
+                            </li>
+
+                            <li>
+                                WhatsApp e automações
+                            </li>
+
+                            <li>
+                                Anúncios gerados com IA
+                            </li>
+
+                            <li>
+                                Suporte especializado
+                            </li>
+
+                            <li>
+                                Atualizações constantes
+                            </li>
+                        </ul>
+
+                        <a
+                            href="/login"
+                            class="plan-button"
+                        >
+                            Escolher plano semestral
+                        </a>
+
+                    </article>
+
+                    <!-- ANUAL -->
+                    <article class="plan-card">
+
+                        <h3 class="plan-name">
+                            Anual
+                        </h3>
+
+                        <p class="plan-description">
+                            A maior economia para quem quer crescer
+                            durante o ano inteiro.
+                        </p>
+
+                        <div class="plan-price">
+                            <strong>R$ 960</strong>
+                            <span>/ano</span>
+                        </div>
+
+                        <p class="plan-equivalent">
+                            Equivale a R$ 80 por mês
+                        </p>
+
+                        <span class="discount-label">
+                            Economize 20%
+                        </span>
+
+                        <div class="plan-divider"></div>
+
+                        <ul class="plan-benefits">
+                            <li>
+                                Acesso a todas as funcionalidades
+                            </li>
+
+                            <li>
+                                CRM de clientes e imóveis
+                            </li>
+
+                            <li>
+                                WhatsApp e automações
+                            </li>
+
+                            <li>
+                                Anúncios gerados com IA
+                            </li>
+
+                            <li>
+                                Suporte especializado
+                            </li>
+
+                            <li>
+                                Atualizações constantes
+                            </li>
+                        </ul>
+
+                        <a
+                            href="/login"
+                            class="plan-button"
+                        >
+                            Escolher plano anual
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CTA FINAL -->
+        <section class="final-cta">
+            <div class="page-container">
+
+                <div class="cta-box">
+
+                    <div class="cta-content">
+                        <h2>
+                            Pronto para transformar a gestão da sua
+                            imobiliária?
+                        </h2>
+
+                        <p>
+                            Centralize seus imóveis, clientes,
+                            negociações e automações em uma plataforma
+                            criada especialmente para o mercado
+                            imobiliário.
+                        </p>
+                    </div>
+
+                    <div class="cta-action">
+                        <a
+                            href="/login"
+                            class="button"
+                        >
+                            Acessar a SMARTZEN
+                            <span>→</span>
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="page-container">
+
+            <div class="footer-top">
+
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <img
+                            src="/static/logosm.png"
+                            alt="Logo SMARTZEN"
+                        >
+
+                        <span class="logo-text">
+                            <strong>SMARTZEN</strong>
+                            <small>CRM Imobiliário</small>
+                        </span>
+                    </a>
+
+                    <p>
+                        Tecnologia, organização e inteligência para
+                        corretores e imobiliárias venderem mais e
+                        atenderem melhor.
+                    </p>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Navegação</h3>
+
+                    <a href="#funcionalidades">
+                        Funcionalidades
+                    </a>
+
+                    <a href="#como-funciona">
+                        Como funciona
+                    </a>
+
+                    <a href="#planos">
+                        Planos
+                    </a>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Sistema</h3>
+
+                    <a href="/login">
+                        Entrar
+                    </a>
+
+                    <a href="/login">
+                        Começar agora
+                    </a>
+
+                    <a href="#planos">
+                        Ver planos
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+                <span>
+                    © 2026 SMARTZEN TECNOLOGIA.
+                    Todos os direitos reservados.
+                </span>
+
+                <span>
+                    CRM imobiliário inteligente
+                </span>
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        const mobileMenuButton =
+            document.getElementById("mobileMenuButton");
+
+        const navigation =
+            document.getElementById("navigation");
+
+        mobileMenuButton.addEventListener(
+            "click",
+            () => {
+                navigation.classList.toggle("open");
+
+                const menuAberto =
+                    navigation.classList.contains("open");
+
+                mobileMenuButton.textContent =
+                    menuAberto ? "✕" : "☰";
+
+                mobileMenuButton.setAttribute(
+                    "aria-label",
+                    menuAberto
+                        ? "Fechar menu"
+                        : "Abrir menu"
+                );
+            }
+        );
+
+
+        document.querySelectorAll(
+            ".nav-links a"
+        ).forEach(link => {
+            link.addEventListener("click", () => {
+                navigation.classList.remove("open");
+                mobileMenuButton.textContent = "☰";
+            });
+        });
+
+
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 850) {
+                navigation.classList.remove("open");
+                mobileMenuButton.textContent = "☰";
+            }
+        });
+    </script>
 
 </body>
 </html>
