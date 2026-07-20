@@ -410,19 +410,19 @@ a{
 }
 
 /* ==========================================================
-   CHAT IA
+   CHAT IA - ASSISTENTE CRM
 ========================================================== */
 
 .chat-float-btn{
     position:fixed;
     right:26px;
     bottom:26px;
-    width:64px;
-    height:64px;
+    width:66px;
+    height:66px;
     border:none;
     border-radius:22px;
     background:linear-gradient(135deg,#2563eb,#7c3aed);
-    color:white;
+    color:#fff;
     font-size:28px;
     cursor:pointer;
     box-shadow:0 18px 35px rgba(37,99,235,.32);
@@ -434,42 +434,115 @@ a{
     transform:translateY(-4px) scale(1.03);
 }
 
+.chat-float-btn.tem-mensagem::after{
+    content:"";
+    position:absolute;
+    top:5px;
+    right:5px;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:#22c55e;
+    border:2px solid #fff;
+}
+
 .chat-widget{
     position:fixed;
     right:26px;
-    bottom:102px;
-    width:390px;
-    height:560px;
-    background:#ffffff;
+    bottom:104px;
+    width:420px;
+    height:650px;
+    max-height:calc(100vh - 135px);
+    background:#fff;
     border-radius:28px;
     border:1px solid var(--border);
-    box-shadow:0 28px 70px rgba(15,23,42,.22);
+    box-shadow:0 28px 70px rgba(15,23,42,.24);
     display:none;
     flex-direction:column;
     z-index:9998;
     overflow:hidden;
 }
 
+.chat-widget.aberto{
+    display:flex;
+    animation:chatAbrir .2s ease;
+}
+
+@keyframes chatAbrir{
+    from{
+        opacity:0;
+        transform:translateY(14px) scale(.98);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
 .chat-header{
-    padding:18px 20px;
+    padding:17px 18px;
     background:linear-gradient(135deg,#0f172a,#1e3a8a);
-    border-bottom:0;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    font-weight:700;
     color:#fff;
+}
+
+.chat-header-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.chat-avatar{
+    width:42px;
+    height:42px;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,.12);
+    font-size:21px;
+}
+
+.chat-header-title{
+    font-size:14px;
+    font-weight:800;
+}
+
+.chat-header-status{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:3px;
+    font-size:11px;
+    color:#bfdbfe;
+}
+
+.chat-header-status::before{
+    content:"";
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#22c55e;
+    box-shadow:0 0 0 4px rgba(34,197,94,.14);
+}
+
+.chat-header-actions{
+    display:flex;
+    gap:7px;
 }
 
 .chat-header button{
     width:34px;
     height:34px;
     border:none;
-    border-radius:12px;
+    border-radius:11px;
     cursor:pointer;
-    color:#cbd5e1;
+    color:#dbeafe;
     background:rgba(255,255,255,.10);
     font-weight:bold;
+    transition:.2s;
 }
 
 .chat-header button:hover{
@@ -477,11 +550,50 @@ a{
     background:rgba(255,255,255,.18);
 }
 
+.chat-sugestoes{
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    padding:11px 14px;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+}
+
+.chat-sugestoes::-webkit-scrollbar{
+    height:4px;
+}
+
+.chat-sugestoes::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:999px;
+}
+
+.chat-sugestao{
+    flex-shrink:0;
+    border:1px solid #dbeafe;
+    background:#eff6ff;
+    color:#1d4ed8;
+    padding:7px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.chat-sugestao:hover{
+    background:#2563eb;
+    color:#fff;
+    border-color:#2563eb;
+}
+
 .chat-body{
     flex:1;
     overflow-y:auto;
-    padding:20px;
-    background:linear-gradient(180deg,#f8fafc,#ffffff);
+    padding:17px;
+    background:
+        radial-gradient(circle at top right,rgba(37,99,235,.06),transparent 30%),
+        linear-gradient(180deg,#f8fafc,#fff);
 }
 
 .chat-body::-webkit-scrollbar{
@@ -493,64 +605,84 @@ a{
     border-radius:999px;
 }
 
-.chat-footer{
-    padding:16px 18px 18px;
-    background:#fff;
-    border-top:1px solid var(--border);
-}
-
-#texto_cliente{
+.chat-msg-row{
+    display:flex;
     width:100%;
-    padding:13px 14px;
-    border:1px solid #cbd5e1;
-    border-radius:16px;
-    margin-bottom:10px;
-    font-size:14px;
-    resize:none;
-    outline:none;
-    transition:.2s;
+    margin-bottom:12px;
 }
 
-#texto_cliente:focus{
-    border-color:var(--primary);
-    box-shadow:0 0 0 4px rgba(37,99,235,.10);
+.chat-msg-row.usuario{
+    justify-content:flex-end;
 }
 
-.btn-analisar{
-    width:100%;
-    border:none;
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
-    color:white;
-    padding:13px;
-    border-radius:16px;
-    cursor:pointer;
-    font-weight:800;
-    box-shadow:0 12px 22px rgba(37,99,235,.20);
-}
-
-.btn-analisar:hover{
-    filter:brightness(.97);
+.chat-msg-row.assistente{
+    justify-content:flex-start;
 }
 
 .msg{
+    max-width:86%;
     padding:12px 14px;
-    border-radius:16px;
-    margin-bottom:12px;
-    max-width:78%;
+    border-radius:17px;
     font-size:13px;
     line-height:1.55;
+    word-break:break-word;
     box-shadow:0 8px 18px rgba(15,23,42,.06);
 }
 
-.msg.cliente{
+.msg.usuario{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    border-bottom-right-radius:5px;
+}
+
+.msg.assistente{
     background:#fff;
     border:1px solid var(--border);
     color:#334155;
+    border-bottom-left-radius:5px;
 }
 
-.msg.corretor{
-    background:#e2e8f0;
-    margin-left:auto;
+.msg.assistente.resposta-completa{
+    width:100%;
+    max-width:100%;
+    padding:0;
+    border:0;
+    background:transparent;
+    box-shadow:none;
+}
+
+.msg.erro{
+    background:#fff1f2;
+    border:1px solid #fecdd3;
+    color:#be123c;
+}
+
+.chat-loading{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    min-height:42px;
+}
+
+.chat-loading span{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#64748b;
+    animation:chatPonto 1s infinite ease-in-out;
+}
+
+.chat-loading span:nth-child(2){
+    animation-delay:.15s;
+}
+
+.chat-loading span:nth-child(3){
+    animation-delay:.30s;
+}
+
+@keyframes chatPonto{
+    0%,80%,100%{transform:scale(.65);opacity:.45}
+    40%{transform:scale(1);opacity:1}
 }
 
 .card-msg-imovel{
@@ -558,38 +690,111 @@ a{
     padding:16px;
     border-radius:18px;
     margin:10px 0;
+    border:1px solid rgba(148,163,184,.18);
     border-left:4px solid #10b981;
     color:#f8fafc;
-    text-decoration:none;
     display:block;
-    box-shadow:0 14px 28px rgba(15,23,42,.20);
+    box-shadow:0 14px 28px rgba(15,23,42,.18);
 }
 
-.card-msg-imovel h3{
-    font-size:15px;
-    margin-bottom:8px;
-    color:#fff;
+.card-msg-imovel:first-child{
+    margin-top:0;
 }
 
-.card-msg-imovel .valor{
-    color:#10b981;
-    font-weight:800;
-    font-size:18px;
-    margin-bottom:10px;
+.card-msg-imovel:last-child{
+    margin-bottom:0;
 }
 
-.card-msg-imovel .detalhes{
+.card-msg-imovel a{
+    text-decoration:none;
+}
+
+.chat-footer{
+    padding:13px 14px 15px;
+    background:#fff;
+    border-top:1px solid var(--border);
+}
+
+.chat-input-box{
+    display:flex;
+    align-items:flex-end;
+    gap:9px;
+    padding:8px;
+    background:#f8fafc;
+    border:1px solid #cbd5e1;
+    border-radius:18px;
+    transition:.2s;
+}
+
+.chat-input-box:focus-within{
+    background:#fff;
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(37,99,235,.10);
+}
+
+#texto_cliente{
+    flex:1;
+    min-height:42px;
+    max-height:110px;
+    padding:10px 8px;
+    border:0;
+    background:transparent;
     font-size:13px;
+    resize:none;
+    outline:none;
+    color:#0f172a;
+}
+
+#texto_cliente::placeholder{
     color:#94a3b8;
-    line-height:1.6;
 }
 
-.card-msg-imovel .btn-ver{
-    color:#10b981;
+.btn-analisar{
+    flex-shrink:0;
+    width:44px;
+    height:44px;
+    border:none;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    border-radius:14px;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:800;
+    box-shadow:0 10px 18px rgba(37,99,235,.20);
+    transition:.2s;
+}
+
+.btn-analisar:hover{
+    transform:translateY(-2px);
+}
+
+.btn-analisar:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.chat-footer-info{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:8px;
+    padding:0 4px;
+    font-size:10px;
+    color:#94a3b8;
+}
+
+.chat-limpar{
+    border:0;
+    background:transparent;
+    color:#64748b;
+    cursor:pointer;
+    font-size:10px;
     font-weight:700;
-    font-size:13px;
-    margin-top:12px;
-    display:inline-block;
+}
+
+.chat-limpar:hover{
+    color:#ef4444;
 }
 
 /* ==========================================================
@@ -753,6 +958,27 @@ a{
     }
 }
 
+
+@media(max-width:820px){
+    .chat-widget{
+        right:12px;
+        left:12px;
+        bottom:92px;
+        width:auto;
+        height:calc(100vh - 116px);
+        max-height:none;
+        border-radius:24px;
+    }
+
+    .chat-float-btn{
+        right:18px;
+        bottom:92px;
+        width:58px;
+        height:58px;
+        border-radius:20px;
+    }
+}
+
 @media(max-width:480px){
     .user-controls{
         gap:10px;
@@ -834,7 +1060,7 @@ a{
 <h1>{% block pagina %}{% endblock %}</h1>
 <div class="user-controls">
     <!-- Ícone de Sino (SVG) -->
-    <div class="icone-topo" onclick="toggleNotificacoes()">
+    <div class="icone-topo" onclick="toggleNotificacoes(event)">
     <!-- SVG do Sino -->
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -876,22 +1102,124 @@ a{
 </div>
 
 <div class="chat-widget" id="chat-widget">
+
     <div class="chat-header">
-        <span>🧠 IA SmartZen</span>
-        <button onclick="toggleChat()">✕</button>
+
+        <div class="chat-header-info">
+            <div class="chat-avatar">🧠</div>
+
+            <div>
+                <div class="chat-header-title">Assistente SmartZen</div>
+                <div class="chat-header-status">CRM conectado</div>
+            </div>
+        </div>
+
+        <div class="chat-header-actions">
+            <button
+                type="button"
+                onclick="limparHistoricoChat()"
+                title="Limpar conversa">
+                ↻
+            </button>
+
+            <button
+                type="button"
+                onclick="toggleChat()"
+                title="Fechar">
+                ✕
+            </button>
+        </div>
+
+    </div>
+
+    <div class="chat-sugestoes">
+
+        <button
+            type="button"
+            class="chat-sugestao"
+            onclick="usarSugestao('Mostre apartamentos até 500 mil')">
+            🏢 Buscar imóveis
+        </button>
+
+        <button
+            type="button"
+            class="chat-sugestao"
+            onclick="usarSugestao('Mostre meus clientes mais recentes')">
+            👥 Buscar clientes
+        </button>
+
+        <button
+            type="button"
+            class="chat-sugestao"
+            onclick="usarSugestao('Crie uma abordagem comercial para WhatsApp')">
+            💬 Criar abordagem
+        </button>
+
+        <button
+            type="button"
+            class="chat-sugestao"
+            onclick="usarSugestao('Crie um follow-up curto e profissional')">
+            🔁 Follow-up
+        </button>
+
     </div>
 
     <div class="chat-body" id="chat-body">
-        <div class="msg cliente">Olá! Como posso ajudar você a encontrar o imóvel ideal hoje?</div>
+
+        <div class="chat-msg-row assistente">
+            <div class="msg assistente">
+                Olá, {{ session.get('nome', 'Usuário') }}! 👋<br><br>
+                Posso buscar imóveis e clientes do seu CRM, criar abordagens,
+                follow-ups e legendas comerciais.
+            </div>
+        </div>
+
     </div>
 
     <div class="chat-footer">
-        <textarea id="texto_cliente" placeholder="Cole a mensagem do cliente aqui..." rows="3"></textarea>
-        <button class="btn-analisar" onclick="analisarIA()">Analisar Imóvel</button>
+
+        <div class="chat-input-box">
+
+            <textarea
+                id="texto_cliente"
+                placeholder="Ex.: mostre apartamentos até 500 mil..."
+                rows="1"
+                maxlength="3000"></textarea>
+
+            <button
+                type="button"
+                class="btn-analisar"
+                id="btn-analisar-ia"
+                onclick="analisarIA()"
+                title="Enviar mensagem">
+                ➤
+            </button>
+
+        </div>
+
+        <div class="chat-footer-info">
+            <span>Enter envia • Shift + Enter quebra linha</span>
+
+            <button
+                type="button"
+                class="chat-limpar"
+                onclick="limparHistoricoChat()">
+                Limpar conversa
+            </button>
+        </div>
+
     </div>
+
 </div>
 
-<button class="chat-float-btn" onclick="toggleChat()">🧠</button>
+<button
+    type="button"
+    class="chat-float-btn"
+    id="chat-float-btn"
+    onclick="toggleChat()"
+    aria-label="Abrir assistente SmartZen">
+    🧠
+</button>
 
 {% block content %}
 {% endblock %}
@@ -921,123 +1249,391 @@ a{
 </div>
 
 <script>
-function toggleNotificacoes() {
-var box = document.getElementById("notificacoes-box");
-box.style.display = (box.style.display === "block") ? "none" : "block";
+const historicoChat = [];
+let chatEnviando = false;
+
+function toggleNotificacoes(event) {
+    if (event) {
+        event.stopPropagation();
+    }
+
+    const box = document.getElementById("notificacoes-box");
+
+    if (!box) {
+        return;
+    }
+
+    const aberto = box.style.display === "block";
+    box.style.display = aberto ? "none" : "block";
 }
 
 function toggleChat() {
-const chat = document.getElementById('chat-widget');
-if (chat.style.display === 'flex') {
-chat.style.display = 'none';
-} else {
-chat.style.display = 'flex';
+    const chat = document.getElementById("chat-widget");
+    const botao = document.getElementById("chat-float-btn");
+    const input = document.getElementById("texto_cliente");
+
+    if (!chat) {
+        return;
+    }
+
+    const aberto = chat.classList.toggle("aberto");
+
+    if (aberto) {
+        botao?.classList.remove("tem-mensagem");
+
+        setTimeout(() => {
+            input?.focus();
+            rolarChatParaBaixo();
+        }, 100);
+    }
 }
+
+function toggleUsuario(event) {
+    event.stopPropagation();
+
+    const menu = document.getElementById("menuUsuario");
+
+    if (menu) {
+        menu.classList.toggle("ativo");
+    }
+}
+
+function escaparHTML(texto) {
+    const elemento = document.createElement("div");
+    elemento.textContent = texto;
+    return elemento.innerHTML;
+}
+
+function rolarChatParaBaixo() {
+    const chatBody = document.getElementById("chat-body");
+
+    if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+}
+
+function adicionarMensagemUsuario(texto) {
+    const chatBody = document.getElementById("chat-body");
+
+    if (!chatBody) {
+        return;
+    }
+
+    const linha = document.createElement("div");
+    linha.className = "chat-msg-row usuario";
+
+    const mensagem = document.createElement("div");
+    mensagem.className = "msg usuario";
+    mensagem.innerHTML = escaparHTML(texto).replace(/\n/g, "<br>");
+
+    linha.appendChild(mensagem);
+    chatBody.appendChild(linha);
+
+    rolarChatParaBaixo();
+}
+
+function adicionarMensagemAssistente(conteudoHTML, classeExtra = "") {
+    const chatBody = document.getElementById("chat-body");
+
+    if (!chatBody) {
+        return;
+    }
+
+    const linha = document.createElement("div");
+    linha.className = "chat-msg-row assistente";
+
+    const mensagem = document.createElement("div");
+    mensagem.className = `msg assistente resposta-completa ${classeExtra}`.trim();
+
+    /*
+       O backend monta os cards usando dados do banco e escapa os campos.
+       Por isso o resultado pode ser inserido como HTML.
+    */
+    mensagem.innerHTML = conteudoHTML;
+
+    linha.appendChild(mensagem);
+    chatBody.appendChild(linha);
+
+    const chat = document.getElementById("chat-widget");
+    const botao = document.getElementById("chat-float-btn");
+
+    if (chat && !chat.classList.contains("aberto")) {
+        botao?.classList.add("tem-mensagem");
+    }
+
+    rolarChatParaBaixo();
+}
+
+function adicionarErroChat(mensagemErro) {
+    const chatBody = document.getElementById("chat-body");
+
+    if (!chatBody) {
+        return;
+    }
+
+    const linha = document.createElement("div");
+    linha.className = "chat-msg-row assistente";
+
+    const mensagem = document.createElement("div");
+    mensagem.className = "msg erro";
+    mensagem.textContent = mensagemErro;
+
+    linha.appendChild(mensagem);
+    chatBody.appendChild(linha);
+
+    rolarChatParaBaixo();
+}
+
+function adicionarLoading() {
+    const chatBody = document.getElementById("chat-body");
+
+    if (!chatBody) {
+        return null;
+    }
+
+    const id = `loading_${Date.now()}`;
+
+    const linha = document.createElement("div");
+    linha.className = "chat-msg-row assistente";
+    linha.id = id;
+
+    linha.innerHTML = `
+        <div class="msg assistente chat-loading">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+
+    chatBody.appendChild(linha);
+    rolarChatParaBaixo();
+
+    return id;
+}
+
+function removerLoading(id) {
+    if (!id) {
+        return;
+    }
+
+    document.getElementById(id)?.remove();
+}
+
+function usarSugestao(texto) {
+    const input = document.getElementById("texto_cliente");
+
+    if (!input || chatEnviando) {
+        return;
+    }
+
+    input.value = texto;
+    ajustarAlturaTextarea();
+    input.focus();
+}
+
+function ajustarAlturaTextarea() {
+    const input = document.getElementById("texto_cliente");
+
+    if (!input) {
+        return;
+    }
+
+    input.style.height = "auto";
+    input.style.height = `${Math.min(input.scrollHeight, 110)}px`;
+}
+
+function limparHistoricoChat() {
+    historicoChat.length = 0;
+
+    const chatBody = document.getElementById("chat-body");
+
+    if (!chatBody) {
+        return;
+    }
+
+    chatBody.innerHTML = `
+        <div class="chat-msg-row assistente">
+            <div class="msg assistente">
+                Conversa limpa. Como posso ajudar agora?
+            </div>
+        </div>
+    `;
+
+    document.getElementById("texto_cliente")?.focus();
 }
 
 async function analisarIA() {
+    if (chatEnviando) {
+        return;
+    }
 
-    const input = document.getElementById('texto_cliente');
-    const chatBody = document.getElementById('chat-body');
+    const input = document.getElementById("texto_cliente");
+    const botao = document.getElementById("btn-analisar-ia");
+
+    if (!input) {
+        return;
+    }
 
     const texto = input.value.trim();
 
     if (!texto) {
-        alert("Cole a mensagem do cliente primeiro!");
+        input.focus();
         return;
     }
 
-    // Mensagem do corretor
+    chatEnviando = true;
+    botao.disabled = true;
 
-    chatBody.innerHTML += `
-        <div class="msg corretor" style="background:#e2e8f0;margin-left:auto;">
-            ${texto}
-        </div>
-    `;
+    adicionarMensagemUsuario(texto);
+
+    /*
+       O histórico enviado contém as mensagens anteriores.
+       A mensagem atual é enviada separadamente no campo "mensagem".
+    */
+    const historicoParaEnviar = historicoChat.slice(-10);
+
+    historicoChat.push({
+        role: "user",
+        content: texto
+    });
 
     input.value = "";
+    ajustarAlturaTextarea();
 
-    // Loading
-
-    const loadingId = "loading_" + Date.now();
-
-    chatBody.innerHTML += `
-        <div class="msg cliente" id="${loadingId}">
-            🤖 Analisando cliente...
-        </div>
-    `;
-
-    chatBody.scrollTop = chatBody.scrollHeight;
+    const loadingId = adicionarLoading();
 
     try {
-
-        const response = await fetch('/analisar_cliente', {
-            method: 'POST',
+        const response = await fetch("/analisar_cliente", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
+                "Accept": "application/json"
             },
             body: JSON.stringify({
-                mensagem: texto
+                mensagem: texto,
+                historico: historicoParaEnviar
             })
         });
 
-        const data = await response.json();
+        let data;
 
-        const loading = document.getElementById(loadingId);
-
-        if (loading) {
-            loading.remove();
+        try {
+            data = await response.json();
+        } catch {
+            throw new Error("O servidor retornou uma resposta inválida.");
         }
 
-        chatBody.innerHTML += `
-            <div class="msg cliente">
-                ${data.resultado || "Nenhum imóvel encontrado."}
+        removerLoading(loadingId);
+
+        if (!response.ok || data.sucesso === false) {
+            throw new Error(
+                data.erro ||
+                "Não foi possível processar sua solicitação."
+            );
+        }
+
+        const resultado = data.resultado || `
+            <div class="card-msg-imovel">
+                Nenhum resultado foi retornado.
             </div>
         `;
+
+        adicionarMensagemAssistente(resultado);
+
+        /*
+           Guardamos um resumo textual no histórico.
+           Isso evita devolver todos os cards HTML para a IA.
+        */
+        let resumoHistorico = "";
+
+        if (data.tipo === "imoveis") {
+            resumoHistorico =
+                `Foram encontrados ${data.quantidade || 0} imóveis. ` +
+                `Filtros utilizados: ${JSON.stringify(data.filtros || {})}.`;
+        } else if (data.tipo === "clientes") {
+            resumoHistorico =
+                `Foram encontrados ${data.quantidade || 0} clientes. ` +
+                `Filtros utilizados: ${JSON.stringify(data.filtros || {})}.`;
+        } else {
+            const temporario = document.createElement("div");
+            temporario.innerHTML = resultado;
+
+            resumoHistorico = (
+                temporario.textContent ||
+                temporario.innerText ||
+                ""
+            ).trim();
+        }
+
+        historicoChat.push({
+            role: "assistant",
+            content: resumoHistorico.slice(0, 3000)
+        });
+
+        /*
+           Limita o histórico local para não crescer indefinidamente.
+        */
+        if (historicoChat.length > 20) {
+            historicoChat.splice(
+                0,
+                historicoChat.length - 20
+            );
+        }
 
     } catch (error) {
+        removerLoading(loadingId);
 
-        console.error(error);
+        console.error("Erro no assistente:", error);
 
-        const loading = document.getElementById(loadingId);
+        adicionarErroChat(
+            error.message ||
+            "Erro ao conectar com o assistente."
+        );
 
-        if (loading) {
-            loading.remove();
+    } finally {
+        chatEnviando = false;
+        botao.disabled = false;
+        input.focus();
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const input = document.getElementById("texto_cliente");
+
+    input?.addEventListener("input", ajustarAlturaTextarea);
+
+    input?.addEventListener("keydown", function (event) {
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+            event.preventDefault();
+            analisarIA();
         }
+    });
+});
 
-        chatBody.innerHTML += `
-            <div class="msg cliente">
-                <div style="
-                    background:#7f1d1d;
-                    color:white;
-                    padding:10px;
-                    border-radius:10px;
-                ">
-                    ❌ Erro ao conectar com o servidor.
-                </div>
-            </div>
-        `;
+document.addEventListener("click", function (event) {
+    const menu = document.getElementById("menuUsuario");
+    const dropdown = document.querySelector(".dropdown");
+    const notificacoes = document.getElementById("notificacoes-box");
+    const iconeNotificacao = document.querySelector(".icone-topo");
+
+    if (
+        menu &&
+        dropdown &&
+        !dropdown.contains(event.target)
+    ) {
+        menu.classList.remove("ativo");
     }
 
-    chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-function toggleUsuario(event){
-
-    event.stopPropagation();
-
-    const menu = document.querySelector(".dropdown-content");
-
-    menu.classList.toggle("ativo");
-
-}
-
-document.addEventListener("click", function(){
-
-    document
-        .querySelector(".dropdown-content")
-        .classList.remove("ativo");
-
+    if (
+        notificacoes &&
+        iconeNotificacao &&
+        !iconeNotificacao.contains(event.target)
+    ) {
+        notificacoes.style.display = "none";
+    }
 });
 </script>
 </body>
