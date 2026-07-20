@@ -1162,15 +1162,27 @@ a{
             🔁 Follow-up
         </button>
 
+        <button
+            type="button"
+            class="chat-sugestao"
+            onclick="usarSugestao('Crie uma legenda para divulgar um imóvel no Instagram')">
+            📢 Criar anúncio
+        </button>
+
+        <button
+            type="button"
+            class="chat-sugestao"
+            onclick="usarSugestao('Quais clientes precisam de acompanhamento hoje?')">
+            📊 Prioridades
+        </button>
+
     </div>
 
     <div class="chat-body" id="chat-body">
 
         <div class="chat-msg-row assistente">
-            <div class="msg assistente">
-                Olá, {{ session.get('nome', 'Usuário') }}! 👋<br><br>
-                Posso buscar imóveis e clientes do seu CRM, criar abordagens,
-                follow-ups e legendas comerciais.
+            <div class="msg assistente" id="mensagem-boas-vindas-ia">
+                Carregando sua assistente...
             </div>
         </div>
 
@@ -1451,10 +1463,15 @@ function limparHistoricoChat() {
         return;
     }
 
+    const saudacao = obterSaudacaoAtual();
+    const nomeUsuario = {{ session.get('nome', 'Usuário')|tojson }};
+
     chatBody.innerHTML = `
         <div class="chat-msg-row assistente">
             <div class="msg assistente">
-                Conversa limpa. Como posso ajudar agora?
+                <strong>${saudacao.icone} ${saudacao.texto}, ${escaparHTML(nomeUsuario)}!</strong>
+                <br><br>
+                Conversa limpa. O que vamos fazer agora?
             </div>
         </div>
     `;
@@ -1597,8 +1614,89 @@ async function analisarIA() {
     }
 }
 
+function obterSaudacaoAtual() {
+    const hora = new Date().getHours();
+
+    if (hora < 12) {
+        return {
+            texto: "Bom dia",
+            icone: "☀️"
+        };
+    }
+
+    if (hora < 18) {
+        return {
+            texto: "Boa tarde",
+            icone: "🌤️"
+        };
+    }
+
+    return {
+        texto: "Boa noite",
+        icone: "🌙"
+    };
+}
+
+function montarBoasVindasIA() {
+    const elemento = document.getElementById("mensagem-boas-vindas-ia");
+
+    if (!elemento) {
+        return;
+    }
+
+    const saudacao = obterSaudacaoAtual();
+    const nomeUsuario = {{ session.get('nome', 'Usuário')|tojson }};
+
+    elemento.innerHTML = `
+        <strong>${saudacao.icone} ${saudacao.texto}, ${escaparHTML(nomeUsuario)}!</strong>
+        <br><br>
+        Eu sou a Assistente SmartZen.
+        <br><br>
+        Posso ajudar você a:
+        <br>
+        • encontrar imóveis;
+        <br>
+        • buscar clientes;
+        <br>
+        • criar abordagens;
+        <br>
+        • preparar follow-ups;
+        <br>
+        • gerar anúncios;
+        <br>
+        • organizar suas prioridades.
+        <br><br>
+        O que vamos fazer hoje?
+    `;
+}
+
+function abrirChatAutomaticamente() {
+    const chat = document.getElementById("chat-widget");
+    const botao = document.getElementById("chat-float-btn");
+    const input = document.getElementById("texto_cliente");
+
+    if (!chat) {
+        return;
+    }
+
+    /*
+       Abre automaticamente em todo carregamento após o login.
+       Ao clicar no X, o usuário apenas minimiza para o botão.
+    */
+    chat.classList.add("aberto");
+    botao?.classList.remove("tem-mensagem");
+
+    setTimeout(() => {
+        input?.focus();
+        rolarChatParaBaixo();
+    }, 250);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const input = document.getElementById("texto_cliente");
+
+    montarBoasVindasIA();
+    abrirChatAutomaticamente();
 
     input?.addEventListener("input", ajustarAlturaTextarea);
 
