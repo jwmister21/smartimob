@@ -4385,7 +4385,9 @@ def verificar_login():
 
 
 @app.route("/campanhas/enviar-teste-whatsapp", methods=["POST"])
+@verificar_sessao
 def campanhas_enviar_teste_whatsapp():
+
     nome_instancia = session.get("whatsapp_instancia")
 
     contatos_texto = request.form.get("numeros", "").strip()
@@ -4404,41 +4406,67 @@ def campanhas_enviar_teste_whatsapp():
         return redirect("/campanhas")
 
     contatos = []
+    linhas_invalidas = []
 
-    for linha in contatos_texto.splitlines():
+    for numero_linha, linha in enumerate(
+        contatos_texto.splitlines(),
+        start=1
+    ):
         linha = linha.strip()
 
         if not linha:
             continue
 
-        if ";" in linha:
-            partes = linha.split(";")
-        else:
-            partes = linha.split(",")
+        nome = ""
+        telefone = ""
 
-        if len(partes) < 2:
+        # Aceita Nome;Telefone
+        if ";" in linha:
+            partes = linha.split(";", 1)
+            nome = partes[0].strip()
+            telefone = partes[1].strip()
+
+        # Aceita Nome,Telefone
+        elif "," in linha:
+            partes = linha.split(",", 1)
+            nome = partes[0].strip()
+            telefone = partes[1].strip()
+
+        # Aceita somente telefone
+        else:
+            telefone = linha.strip()
+
+        # Remove qualquer caractere que não seja número
+        telefone = re.sub(r"\D", "", telefone)
+
+        # Remove zeros colocados antes do DDD
+        telefone = telefone.lstrip("0")
+
+        # Adiciona o código do Brasil quando necessário
+        if telefone and not telefone.startswith("55"):
+            telefone = "55" + telefone
+
+        # Validação simples:
+        # Brasil + DDD + número costuma ter 12 ou 13 dígitos
+        if len(telefone) not in [12, 13]:
+            linhas_invalidas.append(
+                f"Linha {numero_linha}: {linha}"
+            )
             continue
 
-        nome = partes[0].strip()
-        telefone = partes[1].strip()
+        # Se não houver nome, usa um nome padrão
+        if not nome:
+            nome = "cliente"
 
-        telefone = (
-            telefone
-            .replace(" ", "")
-            .replace("-", "")
-            .replace("(", "")
-            .replace(")", "")
-            .replace("+", "")
-        )
-
-        if nome and telefone:
-            contatos.append({
-                "name": nome,
-                "phone": telefone
-            })
+        contatos.append({
+            "name": nome,
+            "phone": telefone
+        })
 
     if not contatos:
-        session["erro_envio"] = "Nenhum contato válido. Use o formato: Nome;Telefone"
+        session["erro_envio"] = (
+            "Nenhum contato válido. Use Nome;Telefone ou apenas Telefone."
+        )
         return redirect("/campanhas")
 
     headers = {
@@ -4450,9 +4478,29 @@ def campanhas_enviar_teste_whatsapp():
     erros = []
 
     for contato in contatos:
+
         mensagem_final = mensagem
-        mensagem_final = mensagem_final.replace("{name}", contato["name"])
-        mensagem_final = mensagem_final.replace("{phone}", contato["phone"])
+
+        # Aceita {name}, {nome}, {phone} e {telefone}
+        mensagem_final = mensagem_final.replace(
+            "{name}",
+            contato["name"]
+        )
+
+        mensagem_final = mensagem_final.replace(
+            "{nome}",
+            contato["name"]
+        )
+
+        mensagem_final = mensagem_final.replace(
+            "{phone}",
+            contato["phone"]
+        )
+
+        mensagem_final = mensagem_final.replace(
+            "{telefone}",
+            contato["phone"]
+        )
 
         payload = {
             "number": contato["phone"],
@@ -4460,6 +4508,7 @@ def campanhas_enviar_teste_whatsapp():
         }
 
         try:
+
             resposta = requests.post(
                 f"{EVOLUTION_URL}/message/sendText/{nome_instancia}",
                 json=payload,
@@ -4467,24 +4516,63 @@ def campanhas_enviar_teste_whatsapp():
                 timeout=30
             )
 
+            print(
+                "ENVIO WHATSAPP:",
+                contato["phone"],
+                resposta.status_code,
+                resposta.text[:500]
+            )
+
             if resposta.status_code in [200, 201]:
                 enviados += 1
+
             else:
-                erros.append(f'{contato["name"]}: {resposta.status_code}')
+                erros.append(
+                    f'{contato["name"]} '
+                    f'({contato["phone"]}): '
+                    f'{resposta.status_code} - '
+                    f'{resposta.text[:150]}'
+                )
 
-        except Exception as e:
-            erros.append(f'{contato["name"]}: {e}')
+        except requests.RequestException as erro:
 
-    session["campanha_finalizada"] = f"{enviados} enviada(s), {len(erros)} erro(s)."
+            print(
+                "ERRO NO ENVIO WHATSAPP:",
+                contato["phone"],
+                erro
+            )
+
+            erros.append(
+                f'{contato["name"]} '
+                f'({contato["phone"]}): {erro}'
+            )
+
+    session["campanha_finalizada"] = (
+        f"{enviados} enviada(s), "
+        f"{len(erros)} erro(s)."
+    )
 
     if enviados:
-        session["sucesso_envio"] = f"{enviados} mensagem(ns) enviada(s) com sucesso."
+        session["sucesso_envio"] = (
+            f"{enviados} mensagem(ns) enviada(s) com sucesso."
+        )
+
+    mensagens_erro = []
+
+    if linhas_invalidas:
+        mensagens_erro.append(
+            "Contatos inválidos: " + " | ".join(linhas_invalidas[:10])
+        )
 
     if erros:
-        session["erro_envio"] = "Alguns envios falharam: " + " | ".join(erros)
+        mensagens_erro.append(
+            "Falhas no envio: " + " | ".join(erros[:10])
+        )
+
+    if mensagens_erro:
+        session["erro_envio"] = " ".join(mensagens_erro)
 
     return redirect("/campanhas")
-
 
 @app.route("/api/session/create", methods=["POST"])
 def create_session():
