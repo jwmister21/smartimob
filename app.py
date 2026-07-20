@@ -1720,311 +1720,1460 @@ def atualizar_cliente(id):
 def importar_pdf():
     return render_template("importar_pdf.html")
 
+# ==========================================================
+# ASSISTENTE IA DO CRM
+# Coloque este bloco antes da rota /analisar_cliente
+# ==========================================================
 
-@app.route('/analisar_cliente', methods=['POST'])
-def analisar_cliente():
+import html
+import json
+import re
+import sqlite3
+from flask import request, jsonify, session
 
-    import json
-    import re
 
-    dados = request.get_json()
-    msg = dados.get('mensagem', '').strip()
+def limpar_json_ia(texto):
+    """
+    Extrai e converte o JSON retornado pelo Llama.
+    """
 
-    if not msg:
-        return jsonify({
-            "resultado": """
-            <div class="card-msg-imovel">
-                Digite o que o cliente procura.
-            </div>
-            """
-        })
+    if not texto:
+        return {}
 
-    empresa_id = session.get("empresa_id")
-
-    if not empresa_id:
-        return jsonify({
-            "resultado": """
-            <div class="card-msg-imovel">
-                Usuário não autenticado.
-            </div>
-            """
-        })
-
-    # ==================================================
-    # IA ANALISA PEDIDO
-    # ==================================================
+    texto = (
+        texto
+        .replace("```json", "")
+        .replace("```JSON", "")
+        .replace("```", "")
+        .strip()
+    )
 
     try:
+        return json.loads(texto)
 
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            temperature=0.1,
-            messages=[
-                {
-                    "role": "system",
-                    "content": """
-Você é um especialista imobiliário.
+    except json.JSONDecodeError:
+        pass
 
-Extraia da mensagem:
+    match = re.search(r"\{.*\}", texto, re.DOTALL)
 
-bairro
+    if not match:
+        return {}
+
+    try:
+        return json.loads(match.group())
+
+    except json.JSONDecodeError:
+        return {}
+
+
+def valor_para_float(valor):
+    """
+    Converte valores como:
+    R$ 500.000,00
+    500000
+    500.000
+    500 mil
+    1 milhão
+    """
+
+    if valor is None:
+        return 0.0
+
+    if isinstance(valor, (int, float)):
+        return float(valor)
+
+    texto = str(valor).lower().strip()
+
+    multiplicador = 1
+
+    if "milhão" in texto or "milhao" in texto:
+        multiplicador = 1000000
+
+    elif "mil" in texto:
+        multiplicador = 1000
+
+    texto = (
+        texto
+        .replace("r$", "")
+        .replace("\xa0", "")
+        .replace("milhões", "")
+        .replace("milhoes", "")
+        .replace("milhão", "")
+        .replace("milhao", "")
+        .replace("mil", "")
+        .replace(" ", "")
+        .strip()
+    )
+
+    # Valor brasileiro com vírgula.
+    if "," in texto:
+        texto = texto.replace(".", "").replace(",", ".")
+
+    else:
+        # Se possuir apenas um ponto e até duas casas depois dele,
+        # tratamos como decimal. Caso contrário, como separador de milhar.
+        partes = texto.split(".")
+
+        if len(partes) > 2:
+            texto = texto.replace(".", "")
+
+        elif len(partes) == 2 and len(partes[1]) > 2:
+            texto = texto.replace(".", "")
+
+    texto = re.sub(r"[^0-9.]", "", texto)
+
+    try:
+        return float(texto) * multiplicador
+
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def inteiro_seguro(valor):
+    try:
+        return int(float(valor or 0))
+
+    except (ValueError, TypeError):
+        return 0
+
+
+def obter_valor_linha(linha, coluna, padrao=None):
+    """
+    Evita erro quando alguma coluna ainda não existir
+    ou estiver vazia.
+    """
+
+    try:
+        valor = linha[coluna]
+
+        if valor is None:
+            return padrao
+
+        return valor
+
+    except (KeyError, IndexError):
+        return padrao
+
+
+def montar_historico_ia(historico):
+    """
+    Transforma o histórico recebido do frontend
+    em mensagens aceitas pela Groq.
+    """
+
+    mensagens = []
+
+    if not isinstance(historico, list):
+        return mensagens
+
+    # Mantém somente as últimas 10 mensagens.
+    for item in historico[-10:]:
+
+        if not isinstance(item, dict):
+            continue
+
+        papel = item.get("role") or item.get("papel")
+        conteudo = item.get("content") or item.get("mensagem")
+
+        if not conteudo:
+            continue
+
+        if papel in ["user", "usuario"]:
+            role = "user"
+
+        elif papel in ["assistant", "assistente", "ia"]:
+            role = "assistant"
+
+        else:
+            continue
+
+        # Evita enviar HTML dos cards para a IA.
+        conteudo_limpo = re.sub(
+            r"<[^>]+>",
+            " ",
+            str(conteudo)
+        )
+
+        conteudo_limpo = re.sub(
+            r"\s+",
+            " ",
+            conteudo_limpo
+        ).strip()
+
+        mensagens.append({
+            "role": role,
+            "content": conteudo_limpo[:3000]
+        })
+
+    return mensagens
+
+
+def identificar_intencao_e_filtros(mensagem, historico):
+    """
+    Identifica o que o usuário deseja e extrai os filtros.
+    A IA não recebe acesso ao banco.
+    """
+
+    historico_texto = ""
+
+    if isinstance(historico, list):
+
+        partes = []
+
+        for item in historico[-6:]:
+
+            if not isinstance(item, dict):
+                continue
+
+            papel = item.get("role") or item.get("papel") or "usuario"
+            conteudo = item.get("content") or item.get("mensagem") or ""
+
+            conteudo = re.sub(
+                r"<[^>]+>",
+                " ",
+                str(conteudo)
+            )
+
+            partes.append(
+                f"{papel}: {conteudo[:1000]}"
+            )
+
+        historico_texto = "\n".join(partes)
+
+    prompt_sistema = """
+Você é o classificador do assistente de um CRM imobiliário.
+
+Sua função é identificar a intenção da mensagem e extrair filtros.
+
+Ações permitidas:
+
+buscar_imoveis
+criar_abordagem
+criar_followup
+criar_legenda
+buscar_clientes
+conversa
+
+Regras:
+
+1. Use buscar_imoveis quando o usuário quiser procurar, mostrar,
+listar, encontrar ou filtrar imóveis.
+
+2. Use criar_abordagem quando quiser uma mensagem comercial,
+abordagem de venda ou mensagem para WhatsApp.
+
+3. Use criar_followup quando pedir uma mensagem de retorno,
+cobrança de resposta ou acompanhamento.
+
+4. Use criar_legenda quando pedir legenda para Instagram,
+Facebook, anúncio ou publicação.
+
+5. Use buscar_clientes quando quiser pesquisar ou listar clientes.
+
+6. Use conversa para dúvidas gerais relacionadas ao CRM,
+imóveis, vendas ou atendimento.
+
+Filtros possíveis para imóveis:
+
+titulo
+tipo
 cidade
+bairro
+valor_minimo
 valor_maximo
 quartos
+banheiros
 suites
 vagas
-tipo
+area_minima
+status
+empreendimento
+mobilia
+financiamento
 
-Tipos permitidos:
+Tipos comuns:
+
 apartamento
 casa
 sobrado
 terreno
 comercial
+kitnet
+studio
+cobertura
+chácara
 
-Retorne SOMENTE JSON válido.
+Filtros possíveis para clientes:
 
-Exemplo:
+nome
+telefone
+interesse
+bairro
+faixa_preco
+status_funil
+
+Considere o histórico para entender frases como:
+
+"agora somente apartamentos"
+"mostre os mais baratos"
+"faça uma abordagem para esses imóveis"
+"somente com duas vagas"
+
+Retorne SOMENTE JSON válido neste formato:
 
 {
-    "bairro":"Tatuapé",
-    "cidade":"São Paulo",
-    "valor_maximo":500000,
-    "quartos":3,
-    "suites":1,
-    "vagas":2,
-    "tipo":"apartamento"
+  "acao": "buscar_imoveis",
+  "filtros": {
+    "tipo": null,
+    "cidade": null,
+    "bairro": null,
+    "valor_minimo": null,
+    "valor_maximo": null,
+    "quartos": null,
+    "banheiros": null,
+    "suites": null,
+    "vagas": null,
+    "area_minima": null,
+    "status": null,
+    "empreendimento": null,
+    "mobilia": null,
+    "financiamento": null
+  }
 }
+
+Não escreva explicações.
+Não use markdown.
 """
-                },
-                {
-                    "role": "user",
-                    "content": msg
-                }
-            ]
+
+    mensagens = [
+        {
+            "role": "system",
+            "content": prompt_sistema
+        },
+        {
+            "role": "user",
+            "content": f"""
+HISTÓRICO:
+{historico_texto or "Sem histórico"}
+
+MENSAGEM ATUAL:
+{mensagem}
+"""
+        }
+    ]
+
+    try:
+
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0,
+            response_format={"type": "json_object"},
+            messages=mensagens
         )
 
-        texto = (
-            response.choices[0]
-            .message.content
-            .replace("```json", "")
-            .replace("```", "")
-            .strip()
-        )
+        texto = resposta.choices[0].message.content
 
-        print("RESPOSTA IA:", texto)
+        dados = limpar_json_ia(texto)
 
-        match = re.search(r'\{.*\}', texto, re.DOTALL)
+        if not isinstance(dados, dict):
+            dados = {}
 
-        if match:
-            filtros = json.loads(match.group())
-        else:
+        acao = dados.get("acao", "conversa")
+        filtros = dados.get("filtros", {})
+
+        acoes_permitidas = [
+            "buscar_imoveis",
+            "criar_abordagem",
+            "criar_followup",
+            "criar_legenda",
+            "buscar_clientes",
+            "conversa"
+        ]
+
+        if acao not in acoes_permitidas:
+            acao = "conversa"
+
+        if not isinstance(filtros, dict):
             filtros = {}
+
+        return {
+            "acao": acao,
+            "filtros": filtros
+        }
 
     except Exception as erro:
 
-        print("ERRO IA:", erro)
+        print("ERRO AO IDENTIFICAR INTENÇÃO:", erro)
 
-        return jsonify({
-            "resultado": f"""
-            <div class="card-msg-imovel">
-                Erro ao analisar cliente.
-            </div>
-            """
-        })
+        # Fallback simples caso a IA fique indisponível.
+        mensagem_lower = mensagem.lower()
 
-    # ==================================================
-    # FILTROS
-    # ==================================================
+        palavras_imovel = [
+            "imóvel",
+            "imovel",
+            "apartamento",
+            "casa",
+            "terreno",
+            "sobrado",
+            "cobertura",
+            "studio",
+            "kitnet"
+        ]
 
-    bairro = filtros.get("bairro")
-    cidade = filtros.get("cidade")
-    tipo = filtros.get("tipo")
+        if any(palavra in mensagem_lower for palavra in palavras_imovel):
+            acao = "buscar_imoveis"
 
-    quartos = int(filtros.get("quartos") or 0)
-    suites = int(filtros.get("suites") or 0)
-    vagas = int(filtros.get("vagas") or 0)
+        elif "abordagem" in mensagem_lower:
+            acao = "criar_abordagem"
 
-    valor_maximo = float(
-        filtros.get("valor_maximo") or 999999999
+        elif "follow" in mensagem_lower:
+            acao = "criar_followup"
+
+        elif "legenda" in mensagem_lower:
+            acao = "criar_legenda"
+
+        elif "cliente" in mensagem_lower:
+            acao = "buscar_clientes"
+
+        else:
+            acao = "conversa"
+
+        return {
+            "acao": acao,
+            "filtros": {}
+        }
+
+
+def imovel_combina_com_filtros(imovel, filtros):
+    """
+    Faz os filtros em Python porque o campo valor
+    do seu banco atualmente pode estar salvo como texto.
+    """
+
+    titulo = str(
+        obter_valor_linha(imovel, "titulo", "")
+    ).lower()
+
+    tipo = str(
+        obter_valor_linha(imovel, "tipo", "")
+    ).lower()
+
+    cidade = str(
+        obter_valor_linha(imovel, "cidade", "")
+    ).lower()
+
+    bairro = str(
+        obter_valor_linha(imovel, "bairro", "")
+    ).lower()
+
+    status = str(
+        obter_valor_linha(imovel, "status", "")
+    ).lower()
+
+    empreendimento = str(
+        obter_valor_linha(imovel, "empreendimento", "")
+    ).lower()
+
+    mobilia = str(
+        obter_valor_linha(imovel, "mobilia", "")
+    ).lower()
+
+    valor = valor_para_float(
+        obter_valor_linha(imovel, "valor", 0)
     )
 
-    # ==================================================
-    # BUSCA IMÓVEIS
-    # ==================================================
+    quartos = inteiro_seguro(
+        obter_valor_linha(imovel, "quartos", 0)
+    )
+
+    banheiros = inteiro_seguro(
+        obter_valor_linha(imovel, "banheiros", 0)
+    )
+
+    suites = inteiro_seguro(
+        obter_valor_linha(imovel, "suites", 0)
+        or obter_valor_linha(imovel, "suite", 0)
+    )
+
+    vagas = inteiro_seguro(
+        obter_valor_linha(imovel, "vaga_garagem", 0)
+        or obter_valor_linha(imovel, "vagas", 0)
+    )
+
+    area = valor_para_float(
+        obter_valor_linha(imovel, "area", 0)
+    )
+
+    filtro_titulo = filtros.get("titulo")
+    filtro_tipo = filtros.get("tipo")
+    filtro_cidade = filtros.get("cidade")
+    filtro_bairro = filtros.get("bairro")
+    filtro_status = filtros.get("status")
+    filtro_empreendimento = filtros.get("empreendimento")
+    filtro_mobilia = filtros.get("mobilia")
+
+    if filtro_titulo:
+        if str(filtro_titulo).lower() not in titulo:
+            return False
+
+    if filtro_tipo:
+        filtro_tipo = str(filtro_tipo).lower()
+
+        # Usa "in" para aceitar "apartamento cobertura",
+        # "casa em condomínio", etc.
+        if filtro_tipo not in tipo:
+            return False
+
+    if filtro_cidade:
+        if str(filtro_cidade).lower() not in cidade:
+            return False
+
+    if filtro_bairro:
+        if str(filtro_bairro).lower() not in bairro:
+            return False
+
+    if filtro_status:
+        if str(filtro_status).lower() not in status:
+            return False
+
+    if filtro_empreendimento:
+        if str(filtro_empreendimento).lower() not in empreendimento:
+            return False
+
+    if filtro_mobilia:
+        if str(filtro_mobilia).lower() not in mobilia:
+            return False
+
+    valor_minimo = valor_para_float(
+        filtros.get("valor_minimo")
+    )
+
+    valor_maximo = valor_para_float(
+        filtros.get("valor_maximo")
+    )
+
+    if valor_minimo > 0 and valor < valor_minimo:
+        return False
+
+    if valor_maximo > 0 and valor > valor_maximo:
+        return False
+
+    quartos_minimos = inteiro_seguro(
+        filtros.get("quartos")
+    )
+
+    banheiros_minimos = inteiro_seguro(
+        filtros.get("banheiros")
+    )
+
+    suites_minimas = inteiro_seguro(
+        filtros.get("suites")
+    )
+
+    vagas_minimas = inteiro_seguro(
+        filtros.get("vagas")
+    )
+
+    area_minima = valor_para_float(
+        filtros.get("area_minima")
+    )
+
+    if quartos_minimos > 0 and quartos < quartos_minimos:
+        return False
+
+    if banheiros_minimos > 0 and banheiros < banheiros_minimos:
+        return False
+
+    if suites_minimas > 0 and suites < suites_minimas:
+        return False
+
+    if vagas_minimas > 0 and vagas < vagas_minimas:
+        return False
+
+    if area_minima > 0 and area < area_minima:
+        return False
+
+    filtro_financiamento = filtros.get("financiamento")
+
+    if filtro_financiamento is not None:
+
+        financiamento = obter_valor_linha(
+            imovel,
+            "financiamento",
+            None
+        )
+
+        quer_financiamento = str(
+            filtro_financiamento
+        ).lower() in [
+            "true",
+            "1",
+            "sim",
+            "aceita",
+            "aceitado"
+        ]
+
+        aceita_financiamento = str(
+            financiamento
+        ).lower() in [
+            "true",
+            "1",
+            "sim",
+            "aceita",
+            "aceitado"
+        ]
+
+        if quer_financiamento != aceita_financiamento:
+            return False
+
+    return True
+
+
+def calcular_score_imovel(imovel, filtros):
+    """
+    Calcula apenas uma indicação visual.
+    Não interfere na segurança ou no filtro.
+    """
+
+    filtros_ativos = 0
+    filtros_atendidos = 0
+
+    verificacoes_texto = [
+        ("tipo", "tipo"),
+        ("cidade", "cidade"),
+        ("bairro", "bairro"),
+        ("status", "status"),
+        ("empreendimento", "empreendimento"),
+        ("mobilia", "mobilia")
+    ]
+
+    for filtro_nome, coluna in verificacoes_texto:
+
+        filtro = filtros.get(filtro_nome)
+
+        if not filtro:
+            continue
+
+        filtros_ativos += 1
+
+        valor_imovel = str(
+            obter_valor_linha(imovel, coluna, "")
+        ).lower()
+
+        if str(filtro).lower() in valor_imovel:
+            filtros_atendidos += 1
+
+    verificacoes_numero = [
+        ("quartos", "quartos"),
+        ("banheiros", "banheiros"),
+        ("vagas", "vaga_garagem")
+    ]
+
+    for filtro_nome, coluna in verificacoes_numero:
+
+        filtro = inteiro_seguro(
+            filtros.get(filtro_nome)
+        )
+
+        if filtro <= 0:
+            continue
+
+        filtros_ativos += 1
+
+        valor_imovel = inteiro_seguro(
+            obter_valor_linha(imovel, coluna, 0)
+        )
+
+        if valor_imovel >= filtro:
+            filtros_atendidos += 1
+
+    if filtros.get("valor_maximo"):
+        filtros_ativos += 1
+
+        if valor_para_float(
+            obter_valor_linha(imovel, "valor", 0)
+        ) <= valor_para_float(filtros.get("valor_maximo")):
+            filtros_atendidos += 1
+
+    if filtros_ativos == 0:
+        return 85
+
+    score = int(
+        (filtros_atendidos / filtros_ativos) * 100
+    )
+
+    return max(50, min(score, 100))
+
+
+def formatar_valor_imovel(valor):
+    numero = valor_para_float(valor)
+
+    if numero <= 0:
+        return "Valor sob consulta"
+
+    return (
+        f"R$ {numero:,.2f}"
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
+
+
+def buscar_imoveis_assistente(empresa_id, filtros):
+    """
+    Busca somente imóveis da empresa logada.
+    Depois aplica os filtros em Python.
+    """
 
     conn = get_db()
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
 
-    query = """
-    SELECT *
-    FROM imoveis
-    WHERE empresa_id = ?
-    """
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+        LIMIT 1000
+    """, (empresa_id,))
 
-    parametros = [empresa_id]
+    todos_imoveis = cursor.fetchall()
 
-    if bairro:
-        query += " AND LOWER(bairro) LIKE ?"
-        parametros.append(f"%{bairro.lower()}%")
+    encontrados = []
 
-    if cidade:
-        query += " AND LOWER(cidade) LIKE ?"
-        parametros.append(f"%{cidade.lower()}%")
+    for imovel in todos_imoveis:
 
-    if tipo:
-        query += " AND LOWER(tipo) = ?"
-        parametros.append(tipo.lower())
+        if not imovel_combina_com_filtros(
+            imovel,
+            filtros
+        ):
+            continue
 
-    if quartos > 0:
-        query += " AND quartos >= ?"
-        parametros.append(quartos)
+        imovel_dict = dict(imovel)
 
-    if vagas > 0:
-        query += " AND vaga_garagem >= ?"
-        parametros.append(vagas)
+        imovel_dict["score_ia"] = calcular_score_imovel(
+            imovel,
+            filtros
+        )
 
-    if valor_maximo < 999999999:
-        query += " AND valor <= ?"
-        parametros.append(valor_maximo)
+        imovel_dict["valor_numero"] = valor_para_float(
+            obter_valor_linha(imovel, "valor", 0)
+        )
 
-    query += """
-    ORDER BY valor ASC
-    LIMIT 20
-    """
-
-    cursor.execute(query, parametros)
-
-    imoveis = cursor.fetchall()
+        encontrados.append(imovel_dict)
 
     conn.close()
 
-    # ==================================================
-    # SEM RESULTADO
-    # ==================================================
+    # Ordena do menor para o maior preço.
+    encontrados.sort(
+        key=lambda item: (
+            item.get("valor_numero", 0) <= 0,
+            item.get("valor_numero", 0)
+        )
+    )
+
+    return encontrados[:20]
+
+
+def montar_html_imoveis(imoveis):
+    """
+    Cria os cards sem permitir HTML vindo da IA.
+    """
 
     if not imoveis:
-
-        return jsonify({
-            "resultado": """
-            <div class="card-msg-imovel">
-                Nenhum imóvel encontrado com esses critérios.
+        return """
+        <div class="card-msg-imovel">
+            <strong>Nenhum imóvel encontrado.</strong>
+            <div style="margin-top:6px;color:#94a3b8;">
+                Tente alterar o bairro, cidade, valor ou quantidade de quartos.
             </div>
-            """
-        })
+        </div>
+        """
 
-    # ==================================================
-    # RESULTADO
-    # ==================================================
-
-    resultado = ""
+    resultado = f"""
+    <div class="card-msg-imovel">
+        Encontrei <strong>{len(imoveis)}</strong>
+        imóvel{"is" if len(imoveis) != 1 else ""}
+        dentro dos critérios.
+    </div>
+    """
 
     for imovel in imoveis:
 
-        score = 50
-
-        if bairro and imovel["bairro"]:
-            if bairro.lower() in imovel["bairro"].lower():
-                score += 15
-
-        if cidade and imovel["cidade"]:
-            if cidade.lower() in imovel["cidade"].lower():
-                score += 10
-
-        if tipo and imovel["tipo"]:
-            if tipo.lower() == imovel["tipo"].lower():
-                score += 10
-
-        if quartos > 0:
-            score += 5
-
-        
-
-        if vagas > 0:
-            score += 5
-
-        score = min(score, 100)
-
-        valor_formatado = imovel["valor"] or "R$ 0,00"
-
-        valor_str = str(imovel["valor"] or "0")
-
-        valor_str = (
-            valor_str
-             .replace("R$", "")
-             .replace("\xa0", "")
-             .replace(".", "")
-             .replace(",", ".")
-             .strip()
+        imovel_id = inteiro_seguro(
+            imovel.get("id")
         )
-        try:
-            valor = float(valor_str)
-        except:
-            valor = 0
 
-        bairro_imovel = imovel["bairro"] if imovel["bairro"] else ""
-        cidade_imovel = imovel["cidade"] if imovel["cidade"] else ""
-        tipo_imovel = imovel["tipo"] if imovel["tipo"] else ""
-        quartos_imovel = imovel["quartos"] if imovel["quartos"] else 0
-        vagas_imovel = imovel["vaga_garagem"] if imovel["vaga_garagem"] else 0
+        titulo = html.escape(
+            str(imovel.get("titulo") or "Imóvel sem título")
+        )
+
+        tipo = html.escape(
+            str(imovel.get("tipo") or "Não informado")
+        )
+
+        bairro = html.escape(
+            str(imovel.get("bairro") or "")
+        )
+
+        cidade = html.escape(
+            str(imovel.get("cidade") or "")
+        )
+
+        quartos = inteiro_seguro(
+            imovel.get("quartos")
+        )
+
+        vagas = inteiro_seguro(
+            imovel.get("vaga_garagem")
+            or imovel.get("vagas")
+        )
+
+        banheiros = inteiro_seguro(
+            imovel.get("banheiros")
+        )
+
+        area = html.escape(
+            str(imovel.get("area") or "")
+        )
+
+        valor_formatado = formatar_valor_imovel(
+            imovel.get("valor")
+        )
+
+        score = inteiro_seguro(
+            imovel.get("score_ia")
+        )
+
+        localizacao = " - ".join(
+            parte
+            for parte in [bairro, cidade]
+            if parte
+        )
+
+        detalhes = []
+
+        if quartos:
+            detalhes.append(
+                f"🛏 {quartos} quarto{'s' if quartos != 1 else ''}"
+            )
+
+        if banheiros:
+            detalhes.append(
+                f"🚿 {banheiros} banheiro{'s' if banheiros != 1 else ''}"
+            )
+
+        if vagas:
+            detalhes.append(
+                f"🚗 {vagas} vaga{'s' if vagas != 1 else ''}"
+            )
+
+        if area:
+            detalhes.append(
+                f"📐 {area} m²"
+            )
+
+        detalhes_html = "<br>".join(detalhes)
 
         resultado += f"""
         <div class="card-msg-imovel">
 
             <div style="
-                color:#facc15;
-                font-weight:700;
-                margin-bottom:8px;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:10px;
+                margin-bottom:10px;
             ">
-                ⭐ Match IA: {score}%
+                <span style="
+                    color:#facc15;
+                    font-weight:800;
+                    font-size:13px;
+                ">
+                    ⭐ Match IA: {score}%
+                </span>
+
+                <span style="
+                    background:rgba(16,185,129,.12);
+                    color:#10b981;
+                    padding:5px 9px;
+                    border-radius:999px;
+                    font-size:11px;
+                    font-weight:700;
+                ">
+                    {tipo}
+                </span>
             </div>
 
             <h3 style="
                 color:#ffffff;
-                margin-bottom:8px;
+                margin:0 0 8px;
+                font-size:17px;
+                line-height:1.3;
             ">
-                {imovel['titulo']}
+                {titulo}
             </h3>
 
             <div style="
                 color:#10b981;
-                font-size:18px;
+                font-size:19px;
                 font-weight:800;
+                margin-bottom:8px;
             ">
-                💰 {valor_formatado}
+                {valor_formatado}
             </div>
 
             <div style="
                 color:#cbd5e1;
-                margin-top:10px;
-                font-size:14px;
-                line-height:1.6;
+                font-size:13px;
+                line-height:1.65;
             ">
-                📍 {bairro_imovel} - {cidade_imovel}<br>
-                🏠 {tipo_imovel}<br>
-                🛏 {quartos_imovel} quartos<br>
-                🚗 {vagas_imovel} vagas
+                {"📍 " + localizacao + "<br>" if localizacao else ""}
+                {detalhes_html}
             </div>
 
-            <a href="/imovel/{imovel['id']}"
-               style="
-                    display:inline-block;
-                    margin-top:12px;
-                    color:#10b981;
-                    font-weight:700;
+            <a
+                href="/imovel/{imovel_id}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    margin-top:13px;
+                    padding:9px 13px;
+                    border-radius:9px;
+                    background:#10b981;
+                    color:#052e25;
+                    font-size:13px;
+                    font-weight:800;
                     text-decoration:none;
-               ">
+                "
+            >
                 Ver imóvel →
             </a>
 
         </div>
         """
 
-    return jsonify({
-        "resultado": resultado
+    return resultado
+
+
+def buscar_clientes_assistente(empresa_id, filtros):
+    """
+    Pesquisa somente clientes da empresa logada.
+    """
+
+    conn = get_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    query = """
+        SELECT *
+        FROM clientes
+        WHERE empresa_id = ?
+    """
+
+    parametros = [empresa_id]
+
+    nome = filtros.get("nome")
+    telefone = filtros.get("telefone")
+    interesse = filtros.get("interesse")
+    bairro = filtros.get("bairro")
+    faixa_preco = filtros.get("faixa_preco")
+    status_funil = filtros.get("status_funil")
+
+    if nome:
+        query += " AND LOWER(nome) LIKE ?"
+        parametros.append(
+            f"%{str(nome).lower()}%"
+        )
+
+    if telefone:
+        telefone_limpo = re.sub(
+            r"\D",
+            "",
+            str(telefone)
+        )
+
+        query += """
+            AND REPLACE(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(telefone, ' ', ''),
+                    '-', ''),
+                '(', ''),
+            ')', '') LIKE ?
+        """
+
+        parametros.append(
+            f"%{telefone_limpo}%"
+        )
+
+    if interesse:
+        query += " AND LOWER(interesse) LIKE ?"
+        parametros.append(
+            f"%{str(interesse).lower()}%"
+        )
+
+    if bairro:
+        query += " AND LOWER(bairro) LIKE ?"
+        parametros.append(
+            f"%{str(bairro).lower()}%"
+        )
+
+    if faixa_preco:
+        query += " AND LOWER(faixa_preco) LIKE ?"
+        parametros.append(
+            f"%{str(faixa_preco).lower()}%"
+        )
+
+    if status_funil:
+        query += " AND LOWER(status_funil) LIKE ?"
+        parametros.append(
+            f"%{str(status_funil).lower()}%"
+        )
+
+    query += " ORDER BY id DESC LIMIT 30"
+
+    cursor.execute(query, parametros)
+
+    clientes = [
+        dict(cliente)
+        for cliente in cursor.fetchall()
+    ]
+
+    conn.close()
+
+    return clientes
+
+
+def montar_html_clientes(clientes):
+    if not clientes:
+        return """
+        <div class="card-msg-imovel">
+            Nenhum cliente encontrado com esses critérios.
+        </div>
+        """
+
+    resultado = f"""
+    <div class="card-msg-imovel">
+        Encontrei <strong>{len(clientes)}</strong>
+        cliente{"s" if len(clientes) != 1 else ""}.
+    </div>
+    """
+
+    for cliente in clientes:
+
+        cliente_id = inteiro_seguro(
+            cliente.get("id")
+        )
+
+        nome = html.escape(
+            str(cliente.get("nome") or "Cliente sem nome")
+        )
+
+        telefone = html.escape(
+            str(cliente.get("telefone") or "Não informado")
+        )
+
+        interesse = html.escape(
+            str(cliente.get("interesse") or "Não informado")
+        )
+
+        status_funil = html.escape(
+            str(cliente.get("status_funil") or "Sem status")
+        )
+
+        resultado += f"""
+        <div class="card-msg-imovel">
+
+            <h3 style="
+                color:#ffffff;
+                margin:0 0 8px;
+                font-size:16px;
+            ">
+                👤 {nome}
+            </h3>
+
+            <div style="
+                color:#cbd5e1;
+                font-size:13px;
+                line-height:1.6;
+            ">
+                📱 {telefone}<br>
+                🏠 Interesse: {interesse}<br>
+                📊 Status: {status_funil}
+            </div>
+
+            <a
+                href="/editar_cliente/{cliente_id}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:inline-block;
+                    margin-top:11px;
+                    color:#10b981;
+                    font-weight:700;
+                    text-decoration:none;
+                "
+            >
+                Abrir cliente →
+            </a>
+
+        </div>
+        """
+
+    return resultado
+
+
+def gerar_texto_assistente(
+    mensagem,
+    historico,
+    tipo_resposta="conversa"
+):
+    """
+    Gera textos, abordagens, follow-ups e legendas.
+    Não consulta nem altera o banco.
+    """
+
+    instrucoes = {
+        "criar_abordagem": """
+Crie uma abordagem comercial pronta para enviar pelo WhatsApp.
+Use português do Brasil.
+Seja natural, profissional e persuasivo.
+Não invente dados de imóveis, clientes, preços ou condições.
+Quando o nome do cliente não tiver sido informado, use {nome}.
+Entregue somente a mensagem pronta.
+""",
+
+        "criar_followup": """
+Crie uma mensagem de follow-up pronta para WhatsApp.
+A mensagem deve ser educada, curta e incentivar uma resposta.
+Não seja insistente.
+Não invente informações.
+Quando o nome não for informado, use {nome}.
+Entregue somente a mensagem pronta.
+""",
+
+        "criar_legenda": """
+Crie uma legenda comercial para uma publicação imobiliária.
+Use português do Brasil.
+Use emojis com moderação.
+Inclua uma chamada para ação.
+Não invente endereço, preço ou características.
+Entregue somente a legenda pronta.
+""",
+
+        "conversa": """
+Você é o assistente do CRM imobiliário SMARTZEN IMOB.
+
+Ajude o usuário com:
+
+vendas imobiliárias
+atendimento de clientes
+organização do CRM
+mensagens comerciais
+follow-ups
+descrições de imóveis
+ideias de divulgação
+uso do sistema
+
+Regras:
+
+Não diga que encontrou dados no banco.
+Não invente clientes ou imóveis.
+Quando o usuário pedir imóveis ou clientes,
+explique que ele pode informar os filtros.
+Responda em português do Brasil.
+Seja direto e útil.
+"""
+    }
+
+    mensagens = [
+        {
+            "role": "system",
+            "content": instrucoes.get(
+                tipo_resposta,
+                instrucoes["conversa"]
+            )
+        }
+    ]
+
+    mensagens.extend(
+        montar_historico_ia(historico)
+    )
+
+    mensagens.append({
+        "role": "user",
+        "content": mensagem
     })
+
+    try:
+
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0.5,
+            messages=mensagens
+        )
+
+        texto = resposta.choices[0].message.content.strip()
+
+        # Escapa o texto para evitar que uma resposta da IA
+        # injete tags HTML na página.
+        texto_seguro = html.escape(texto)
+
+        texto_seguro = texto_seguro.replace(
+            "\n",
+            "<br>"
+        )
+
+        return f"""
+        <div class="card-msg-imovel">
+            {texto_seguro}
+        </div>
+        """
+
+    except Exception as erro:
+
+        print("ERRO AO GERAR TEXTO:", erro)
+
+        return """
+        <div class="card-msg-imovel">
+            Não consegui gerar a resposta neste momento.
+            Tente novamente.
+        </div>
+        """
+
+
+# ==========================================================
+# ROTA PRINCIPAL DO ASSISTENTE
+# Substitua sua rota /analisar_cliente atual por esta
+# ==========================================================
+
+@app.route("/analisar_cliente", methods=["POST"])
+@verificar_sessao
+def analisar_cliente():
+
+    try:
+
+        dados = request.get_json(silent=True) or {}
+
+        mensagem = str(
+            dados.get("mensagem", "")
+        ).strip()
+
+        historico = dados.get(
+            "historico",
+            []
+        )
+
+        if not mensagem:
+
+            return jsonify({
+                "sucesso": False,
+                "tipo": "erro",
+                "resultado": """
+                <div class="card-msg-imovel">
+                    Digite uma mensagem para o assistente.
+                </div>
+                """
+            }), 400
+
+        empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id")
+
+        if not empresa_id or not usuario_id:
+
+            return jsonify({
+                "sucesso": False,
+                "tipo": "erro",
+                "resultado": """
+                <div class="card-msg-imovel">
+                    Sua sessão expirou. Entre novamente no sistema.
+                </div>
+                """
+            }), 401
+
+        interpretacao = identificar_intencao_e_filtros(
+            mensagem,
+            historico
+        )
+
+        acao = interpretacao.get(
+            "acao",
+            "conversa"
+        )
+
+        filtros = interpretacao.get(
+            "filtros",
+            {}
+        )
+
+        print("================ ASSISTENTE IA ================")
+        print("USUÁRIO:", usuario_id)
+        print("EMPRESA:", empresa_id)
+        print("MENSAGEM:", mensagem)
+        print("AÇÃO:", acao)
+        print("FILTROS:", filtros)
+        print("================================================")
+
+        # ==============================================
+        # BUSCAR IMÓVEIS
+        # ==============================================
+
+        if acao == "buscar_imoveis":
+
+            imoveis = buscar_imoveis_assistente(
+                empresa_id,
+                filtros
+            )
+
+            resultado_html = montar_html_imoveis(
+                imoveis
+            )
+
+            imoveis_json = []
+
+            for imovel in imoveis:
+
+                imoveis_json.append({
+                    "id": imovel.get("id"),
+                    "titulo": imovel.get("titulo"),
+                    "tipo": imovel.get("tipo"),
+                    "valor": imovel.get("valor"),
+                    "cidade": imovel.get("cidade"),
+                    "bairro": imovel.get("bairro"),
+                    "quartos": imovel.get("quartos"),
+                    "banheiros": imovel.get("banheiros"),
+                    "vagas": (
+                        imovel.get("vaga_garagem")
+                        or imovel.get("vagas")
+                    ),
+                    "area": imovel.get("area"),
+                    "score_ia": imovel.get("score_ia"),
+                    "url": f"/imovel/{imovel.get('id')}"
+                })
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "imoveis",
+                "acao": acao,
+                "filtros": filtros,
+                "quantidade": len(imoveis_json),
+                "imoveis": imoveis_json,
+                "resultado": resultado_html
+            })
+
+        # ==============================================
+        # BUSCAR CLIENTES
+        # ==============================================
+
+        if acao == "buscar_clientes":
+
+            clientes = buscar_clientes_assistente(
+                empresa_id,
+                filtros
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "clientes",
+                "acao": acao,
+                "filtros": filtros,
+                "quantidade": len(clientes),
+                "clientes": clientes,
+                "resultado": montar_html_clientes(clientes)
+            })
+
+        # ==============================================
+        # CRIAR ABORDAGEM
+        # ==============================================
+
+        if acao == "criar_abordagem":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_abordagem"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CRIAR FOLLOW-UP
+        # ==============================================
+
+        if acao == "criar_followup":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_followup"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CRIAR LEGENDA
+        # ==============================================
+
+        if acao == "criar_legenda":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_legenda"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CONVERSA NORMAL
+        # ==============================================
+
+        resultado = gerar_texto_assistente(
+            mensagem,
+            historico,
+            "conversa"
+        )
+
+        return jsonify({
+            "sucesso": True,
+            "tipo": "texto",
+            "acao": "conversa",
+            "resultado": resultado
+        })
+
+    except Exception as erro:
+
+        print("ERRO GERAL DO ASSISTENTE:", erro)
+
+        return jsonify({
+            "sucesso": False,
+            "tipo": "erro",
+            "resultado": """
+            <div class="card-msg-imovel">
+                Ocorreu um erro ao processar sua solicitação.
+            </div>
+            """,
+            "erro": str(erro)
+        }), 500
 
 
 
