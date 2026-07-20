@@ -1671,18 +1671,18 @@ function montarBoasVindasIA() {
 }
 
 function abrirChatAutomaticamente() {
+
     const chat = document.getElementById("chat-widget");
     const botao = document.getElementById("chat-float-btn");
     const input = document.getElementById("texto_cliente");
 
-    if (!chat) {
+    // Já abriu nesta sessão?
+    if (sessionStorage.getItem("smartzen_chat_aberto")) {
         return;
     }
 
-    /*
-       Abre automaticamente em todo carregamento após o login.
-       Ao clicar no X, o usuário apenas minimiza para o botão.
-    */
+    sessionStorage.setItem("smartzen_chat_aberto", "1");
+
     chat.classList.add("aberto");
     botao?.classList.remove("tem-mensagem");
 
@@ -1690,6 +1690,7 @@ function abrirChatAutomaticamente() {
         input?.focus();
         rolarChatParaBaixo();
     }, 250);
+
 }
 
 document.addEventListener("DOMContentLoaded", function () {
