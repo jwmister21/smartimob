@@ -1,148 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SMARTZEN IMOB</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: #f8fafc; /* Fundo claro (White Clean) */
-            color: #1e293b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-        }
-        .logo-topo {
-            text-align: center;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #2563eb;
-            margin-bottom: 30px;
-        }
-        .logo-topo span { color: #0f172a; }
-        
-        .login-box {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-        }
-        
-        .form-group { margin-bottom: 20px; }
-        
-        label {
-            display: block;
-            color: #64748b;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            background: #f9fafb;
-            border: 1px solid #d1d5db;
-            color: #111827;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: 0.2s;
-        }
-        
-        input:focus {
-            border-color: #2563eb;
-            outline: none;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        
-        .btn-login {
-            width: 100%;
-            padding: 14px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            font-size: 1rem;
-            transition: 0.3s;
-        }
-        
-        .btn-login:hover { background: #1d4ed8; }
-        
-        .erro-msg {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #fecaca;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .link-cadastro {
-            text-align: center;
-            margin-top: 25px;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-        
-        .link-cadastro a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 700;
-        }
-        
-        .link-cadastro a:hover { text-decoration: underline; }
-    </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - SMARTZEN IMOB</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;display:flex;justify-content:center;align-items:center;min-height:100vh}.login-container{width:100%;max-width:420px;padding:20px}.logo-topo{text-align:center;font-size:1.9rem;font-weight:800;color:#2563eb;margin-bottom:30px}.logo-topo span{color:#0f172a}.login-box{background:#fff;padding:40px;border-radius:20px;border:1px solid #e2e8f0;box-shadow:0 10px 25px rgba(15,23,42,.06)}.form-group{margin-bottom:20px}label{display:block;color:#64748b;margin-bottom:8px;font-size:.85rem;font-weight:700;text-transform:uppercase}input{width:100%;padding:14px;border-radius:12px;background:#f9fafb;border:1px solid #d1d5db;color:#111827;font-size:1rem;transition:.2s}input:focus{border-color:#2563eb;outline:none;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}.btn-login{width:100%;padding:14px;background:#2563eb;color:#fff;border:0;border-radius:12px;font-weight:700;cursor:pointer;margin-top:10px;font-size:1rem}.btn-login:hover{background:#1d4ed8}.erro-msg,.flash{padding:12px;border-radius:10px;margin-bottom:20px;text-align:center;font-size:.9rem;font-weight:600}.erro-msg{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}.flash-success{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}.flash-warning{background:#fef3c7;color:#92400e;border:1px solid #fde68a}.link-cadastro{text-align:center;margin-top:25px;color:#64748b;font-size:.9rem}.link-cadastro a{color:#2563eb;text-decoration:none;font-weight:700}.trial{margin-top:22px;padding:12px;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-size:.85rem;text-align:center}
+</style>
 </head>
 <body>
-
 <div class="login-container">
-    <div class="logo-topo">SMART<span>ZEN</span></div>
-
-    <div class="login-box">
-        <h3 style="margin-top: 0; margin-bottom: 25px; text-align: center; color: #1e293b;">Acessar Painel</h3>
-
-        {% if erro %}
-            <div class="erro-msg">⚠️ {{ erro }}</div>
-        {% endif %}
-        
-        <form method="POST">
-            <div class="form-group">
-                <label>E-mail</label>
-                <input type="email" name="email" placeholder="seu@email.com" required>
-            </div>
-
-            <div class="form-group">
-                <label>Senha</label>
-                <input type="password" name="senha" placeholder="••••••••" required>
-            </div>
-
-            <button type="submit" class="btn-login">Entrar</button>
-        </form>
-
-        <div class="link-cadastro">
-            Não tem uma conta? <a href="/cadastrar_usuario">Cadastre-se aqui</a>
-        </div>
-    </div>
-</div>
-
-</body>
-</html>
+<div class="logo-topo">SMART<span>ZEN</span></div>
+<div class="login-box">
+<h3 style="margin-top:0;margin-bottom:25px;text-align:center">Acessar Painel</h3>
+{% with mensagens = get_flashed_messages(with_categories=true) %}{% for categoria, mensagem in mensagens %}<div class="flash flash-{{ categoria }}">{{ mensagem }}</div>{% endfor %}{% endwith %}
+{% if erro %}<div class="erro-msg">⚠️ {{ erro }}</div>{% endif %}
+<form method="POST">
+<div class="form-group"><label>E-mail</label><input type="email" name="email" placeholder="seu@email.com" required></div>
+<div class="form-group"><label>Senha</label><input type="password" name="senha" placeholder="••••••••" required></div>
+<button type="submit" class="btn-login">Entrar</button>
+</form>
+<div class="link-cadastro">Não tem uma conta? <a href="/cadastrar_usuario">Teste grátis por 24 horas</a></div>
+<div class="trial">🔒 O painel administrativo master possui acesso separado.</div>
+</div></div>
+</body></html>
