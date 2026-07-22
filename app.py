@@ -667,49 +667,6 @@ def verificar_sessao(f):
         if "usuario_id" not in session:
             return redirect("/login")
 
-        # Super Admin usa um login separado e não passa por esta área.
-        empresa_id = session.get("empresa_id")
-        if not empresa_id:
-            session.clear()
-            return redirect("/login")
-
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT status_assinatura, data_vencimento
-            FROM empresas
-            WHERE id = ?
-        """, (empresa_id,))
-        empresa = cursor.fetchone()
-        conn.close()
-
-        if not empresa:
-            session.clear()
-            return redirect("/login")
-
-        status = (empresa["status_assinatura"] or "bloqueado").lower()
-        vencimento_texto = empresa["data_vencimento"]
-
-        expirou = False
-        if vencimento_texto:
-            try:
-                expirou = datetime.fromisoformat(vencimento_texto) < datetime.now()
-            except ValueError:
-                expirou = True
-
-        if status in ("bloqueado", "vencido") or expirou:
-            if expirou and status != "vencido":
-                conn = get_db()
-                conn.execute(
-                    "UPDATE empresas SET status_assinatura = 'vencido' WHERE id = ?",
-                    (empresa_id,)
-                )
-                conn.commit()
-                conn.close()
-
-            session.clear()
-            return redirect("/assinatura-vencida")
-
         return f(*args, **kwargs)
 
     return decorated_function
@@ -1036,89 +993,6 @@ def atualizar_banco():
 
 init_db()
 atualizar_banco()
-
-
-def preparar_assinaturas_e_superadmin():
-    """Adiciona as colunas de assinatura na empresa sem apagar dados atuais."""
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("PRAGMA table_info(empresas)")
-    colunas = [coluna[1] for coluna in cursor.fetchall()]
-
-    migracoes = {
-        "data_cadastro": "TEXT",
-        "inicio_teste": "TEXT",
-        "data_vencimento": "TEXT",
-        "status_assinatura": "TEXT DEFAULT 'ativo'",
-        "plano": "TEXT DEFAULT 'mensal'",
-        "observacao_assinatura": "TEXT"
-    }
-
-    for nome_coluna, tipo in migracoes.items():
-        if nome_coluna not in colunas:
-            cursor.execute(f"ALTER TABLE empresas ADD COLUMN {nome_coluna} {tipo}")
-
-    agora = datetime.now().isoformat(timespec="seconds")
-    cursor.execute("""
-        UPDATE empresas
-        SET data_cadastro = COALESCE(NULLIF(data_cadastro, ''), ?),
-            status_assinatura = COALESCE(NULLIF(status_assinatura, ''), 'ativo'),
-            plano = COALESCE(NULLIF(plano, ''), 'mensal')
-    """, (agora,))
-
-    conn.commit()
-    conn.close()
-
-
-preparar_assinaturas_e_superadmin()
-
-
-def atualizar_gestao_assinaturas():
-    """Adiciona as colunas de início/vencimento sem apagar dados existentes."""
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("PRAGMA table_info(usuarios)")
-    colunas = [coluna[1] for coluna in cursor.fetchall()]
-
-    migracoes = {
-        "ativo": "ALTER TABLE usuarios ADD COLUMN ativo INTEGER DEFAULT 1",
-        "data_inicio": "ALTER TABLE usuarios ADD COLUMN data_inicio TEXT",
-        "data_vencimento": "ALTER TABLE usuarios ADD COLUMN data_vencimento TEXT",
-        "telefone": "ALTER TABLE usuarios ADD COLUMN telefone TEXT",
-        "whatsapp_sessao": "ALTER TABLE usuarios ADD COLUMN whatsapp_sessao TEXT",
-    }
-
-    for coluna, sql in migracoes.items():
-        if coluna not in colunas:
-            cursor.execute(sql)
-
-    hoje = datetime.now().strftime("%Y-%m-%d")
-
-    cursor.execute("""
-        UPDATE usuarios
-        SET data_inicio = COALESCE(NULLIF(data_inicio, ''), ?)
-    """, (hoje,))
-
-    # Mantém compatibilidade com a coluna antiga validade_assinatura.
-    cursor.execute("PRAGMA table_info(usuarios)")
-    colunas = [coluna[1] for coluna in cursor.fetchall()]
-
-    if "validade_assinatura" in colunas:
-        cursor.execute("""
-            UPDATE usuarios
-            SET data_vencimento = validade_assinatura
-            WHERE (data_vencimento IS NULL OR data_vencimento = '')
-              AND validade_assinatura IS NOT NULL
-              AND validade_assinatura <> ''
-        """)
-
-    conn.commit()
-    conn.close()
-
-
-atualizar_gestao_assinaturas()
 
 
 def admin_required(f):
@@ -1484,340 +1358,2443 @@ def tela_gestao():
             'desist': contagem.get('Desistencia', 0)
         })
 
-    hoje = datetime.now().strftime("%Y-%m-%d")
-    limite_vencendo = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
+    conn.close()
+    return render_template("gestao.html", total_usuarios=total_usuarios, total_imoveis=total_imoveis, 
+                           total_clientes=total_clientes, corretores=corretores)
+# Decorator para o Super Admin
+
+
+@app.route("/simulador_financiamento")
+def simulador_financiamento():
+    return render_template("simulador_financiamento.html")
+
+
+
+
+
+@app.route("/fifit")
+@verificar_sessao
+def fifit():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # ============================
+    # FILTROS
+    # ============================
+
+    busca = request.args.get("busca", "").strip()
+    tipo = request.args.get("tipo", "").strip()
+    cidade = request.args.get("cidade", "").strip()
+    bairro = request.args.get("bairro", "").strip()
+    empreendimento = request.args.get("empreendimento", "").strip()
+    quartos = request.args.get("quartos", "").strip()
+    corretor = request.args.get("corretor", "").strip()
+    status = request.args.get("status", "").strip()
+    ordenar = request.args.get("ordenar", "recentes")
+
+    sql = """
+        SELECT
+            i.*,
+            u.nome AS corretor_nome,
+            u.telefone AS corretor_telefone,
+            u.foto_url AS corretor_foto
+        FROM imoveis i
+        LEFT JOIN usuarios u
+            ON u.id = i.usuario_id
+        WHERE i.compartilhar_fifit = 1
+    """
+
+    params = []
+
+    # ============================
+    # BUSCA
+    # ============================
+
+    if busca:
+        sql += """
+        AND (
+            i.titulo LIKE ?
+            OR i.descricao LIKE ?
+            OR i.cidade LIKE ?
+            OR i.bairro LIKE ?
+            OR i.tipo LIKE ?
+            OR i.empreendimento LIKE ?
+            OR u.nome LIKE ?
+        )
+        """
+
+        termo = f"%{busca}%"
+
+        params.extend([
+            termo,
+            termo,
+            termo,
+            termo,
+            termo,
+            termo,
+            termo
+        ])
+
+    # ============================
+    # FILTROS
+    # ============================
+
+    if tipo:
+        sql += " AND i.tipo = ?"
+        params.append(tipo)
+
+    if cidade:
+        sql += " AND i.cidade = ?"
+        params.append(cidade)
+
+    if bairro:
+        sql += " AND i.bairro = ?"
+        params.append(bairro)
+
+    if empreendimento:
+        sql += " AND i.empreendimento = ?"
+        params.append(empreendimento)
+
+    if quartos:
+        sql += " AND i.quartos >= ?"
+        params.append(quartos)
+
+    if corretor:
+        sql += " AND u.nome = ?"
+        params.append(corretor)
+
+    if status:
+        sql += " AND i.status = ?"
+        params.append(status)
+
+    # ============================
+    # ORDENAÇÃO
+    # ============================
+
+    if ordenar == "menor_preco":
+        sql += " ORDER BY i.valor ASC"
+
+    elif ordenar == "maior_preco":
+        sql += " ORDER BY i.valor DESC"
+
+    elif ordenar == "maior_area":
+        sql += " ORDER BY i.area DESC"
+
+    elif ordenar == "mais_quartos":
+        sql += " ORDER BY i.quartos DESC"
+
+    else:
+        sql += " ORDER BY i.id DESC"
+
+    # ============================
+    # CONSULTA PRINCIPAL
+    # ============================
+
+    cursor.execute(sql, params)
+
+    imoveis = cursor.fetchall()
+
+    imoveis_com_fotos = []
+
+    for imovel in imoveis:
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id
+        """, (imovel["id"],))
+
+        fotos = [
+            foto["nome_arquivo"]
+            for foto in cursor.fetchall()
+        ]
+
+        imovel_dict = dict(imovel)
+        imovel_dict["fotos"] = fotos
+
+        imoveis_com_fotos.append(imovel_dict)
+
+    # ============================
+    # DADOS DOS FILTROS
+    # ============================
 
     cursor.execute("""
-        SELECT COUNT(*) FROM usuarios
-        WHERE empresa_id = ?
-          AND ativo = 1
-          AND status_assinatura <> 'bloqueado'
-          AND (data_vencimento IS NULL OR data_vencimento = '' OR data_vencimento >= ?)
-    """, (empresa_id, hoje))
-    usuarios_ativos = cursor.fetchone()[0]
+        SELECT DISTINCT tipo
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY tipo
+    """)
+    tipos = cursor.fetchall()
 
     cursor.execute("""
-        SELECT COUNT(*) FROM usuarios
-        WHERE empresa_id = ?
-          AND ativo = 1
-          AND data_vencimento BETWEEN ? AND ?
-    """, (empresa_id, hoje, limite_vencendo))
-    usuarios_vencendo = cursor.fetchone()[0]
+        SELECT DISTINCT cidade
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY cidade
+    """)
+    cidades = cursor.fetchall()
 
     cursor.execute("""
-        SELECT COUNT(*) FROM usuarios
-        WHERE empresa_id = ?
-          AND data_vencimento IS NOT NULL
-          AND data_vencimento <> ''
-          AND data_vencimento < ?
-    """, (empresa_id, hoje))
-    usuarios_vencidos = cursor.fetchone()[0]
+        SELECT DISTINCT bairro
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY bairro
+    """)
+    bairros = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT empreendimento
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+          AND empreendimento IS NOT NULL
+          AND empreendimento <> ''
+        ORDER BY empreendimento
+    """)
+    empreendimentos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT status
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY status
+    """)
+    status_lista = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT u.nome
+        FROM usuarios u
+        INNER JOIN imoveis i
+            ON i.usuario_id = u.id
+        WHERE i.compartilhar_fifit = 1
+        ORDER BY u.nome
+    """)
+    corretores = cursor.fetchall()
 
     conn.close()
+
     return render_template(
-        "gestao.html",
-        total_usuarios=total_usuarios,
-        total_imoveis=total_imoveis,
-        total_clientes=total_clientes,
+        "fifit.html",
+
+        imoveis=imoveis_com_fotos,
+
+        tipos=tipos,
+        cidades=cidades,
+        bairros=bairros,
+        empreendimentos=empreendimentos,
         corretores=corretores,
-        usuarios_ativos=usuarios_ativos,
-        usuarios_vencendo=usuarios_vencendo,
-        usuarios_vencidos=usuarios_vencidos,
+        status_lista=status_lista,
+
+        busca=busca,
+        tipo=tipo,
+        cidade=cidade,
+        bairro=bairro,
+        empreendimento=empreendimento,
+        quartos=quartos,
+        corretor=corretor,
+        status=status,
+        ordenar=ordenar
     )
+
+NODE_API = "https://lucky-analysis-production-e497.up.railway.app"
+
+
+
+@app.route("/catalogo")
+def catalogo():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM imoveis ORDER BY id DESC")
+    imoveis = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("catalogo.html", imoveis=imoveis)
+
+
+
+
+
+ 
+@app.route("/excluir_lead/<int:lead_id>", methods=["POST"])
+@verificar_sessao
+def excluir_lead(lead_id):
+
+    empresa_id = session.get("empresa_id")
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    # verifica se o lead pertence à empresa atual
+
+    cursor.execute("""
+        SELECT 
+            l.id
+        FROM lead_site l
+        LEFT JOIN imoveis i
+            ON i.id = l.id_imovel
+        WHERE l.id = ?
+        AND i.empresa_id = ?
+    """, (lead_id, empresa_id))
+
+
+    lead = cursor.fetchone()
+
+
+    if not lead:
+
+        conn.close()
+
+        return jsonify({
+            "sucesso": False,
+            "erro": "Lead não encontrado"
+        })
+
+
+
+    cursor.execute("""
+        DELETE FROM lead_site
+        WHERE id = ?
+    """, (lead_id,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return jsonify({
+        "sucesso": True
+    })
+
+ 
+@app.route("/atualizar_cliente/<int:id>", methods=["POST"])
+def atualizar_cliente(id):
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    email = request.form.get("email")
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Atualiza o registro no banco
+    cursor.execute("""
+        UPDATE clientes 
+        SET nome = ?, telefone = ?, email = ? 
+        WHERE id = ?
+    """, (nome, telefone, email, id))
+    
+    conn.commit()
+    conn.close()
+    
+    return "Cliente atualizado com sucesso! <a href='/'>Voltar</a>"
+
+@app.route("/importar_pdf")
+@verificar_sessao
+def importar_pdf():
+    return render_template("importar_pdf.html")
+
 # ==========================================================
-# SUPER ADMIN SMARTZEN
-# Credenciais configuradas por variáveis no Railway:
-# SUPERADMIN_EMAIL e SUPERADMIN_PASSWORD
+# ASSISTENTE IA DO CRM
+# Coloque este bloco antes da rota /analisar_cliente
 # ==========================================================
 
-def super_admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get("super_admin"):
-            return redirect("/superadmin/login")
-        return f(*args, **kwargs)
-    return decorated_function
+import html
+import json
+import re
+import sqlite3
+from flask import request, jsonify, session
 
 
-@app.route("/superadmin/login", methods=["GET", "POST"])
-def superadmin_login():
-    if request.method == "POST":
-        email = (request.form.get("email") or "").strip().lower()
-        senha = request.form.get("senha") or ""
+def limpar_json_ia(texto):
+    """
+    Extrai e converte o JSON retornado pelo Llama.
+    """
 
-        email_master = (os.getenv("SUPERADMIN_EMAIL") or "").strip().lower()
-        senha_master = os.getenv("SUPERADMIN_PASSWORD") or ""
+    if not texto:
+        return {}
 
-        if not email_master or not senha_master:
-            return render_template(
-                "superadmin_login.html",
-                erro="Configure SUPERADMIN_EMAIL e SUPERADMIN_PASSWORD no Railway."
+    texto = (
+        texto
+        .replace("```json", "")
+        .replace("```JSON", "")
+        .replace("```", "")
+        .strip()
+    )
+
+    try:
+        return json.loads(texto)
+
+    except json.JSONDecodeError:
+        pass
+
+    match = re.search(r"\{.*\}", texto, re.DOTALL)
+
+    if not match:
+        return {}
+
+    try:
+        return json.loads(match.group())
+
+    except json.JSONDecodeError:
+        return {}
+
+
+def valor_para_float(valor):
+    """
+    Converte valores como:
+    R$ 500.000,00
+    500000
+    500.000
+    500 mil
+    1 milhão
+    """
+
+    if valor is None:
+        return 0.0
+
+    if isinstance(valor, (int, float)):
+        return float(valor)
+
+    texto = str(valor).lower().strip()
+
+    multiplicador = 1
+
+    if "milhão" in texto or "milhao" in texto:
+        multiplicador = 1000000
+
+    elif "mil" in texto:
+        multiplicador = 1000
+
+    texto = (
+        texto
+        .replace("r$", "")
+        .replace("\xa0", "")
+        .replace("milhões", "")
+        .replace("milhoes", "")
+        .replace("milhão", "")
+        .replace("milhao", "")
+        .replace("mil", "")
+        .replace(" ", "")
+        .strip()
+    )
+
+    # Valor brasileiro com vírgula.
+    if "," in texto:
+        texto = texto.replace(".", "").replace(",", ".")
+
+    else:
+        # Se possuir apenas um ponto e até duas casas depois dele,
+        # tratamos como decimal. Caso contrário, como separador de milhar.
+        partes = texto.split(".")
+
+        if len(partes) > 2:
+            texto = texto.replace(".", "")
+
+        elif len(partes) == 2 and len(partes[1]) > 2:
+            texto = texto.replace(".", "")
+
+    texto = re.sub(r"[^0-9.]", "", texto)
+
+    try:
+        return float(texto) * multiplicador
+
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def inteiro_seguro(valor):
+    try:
+        return int(float(valor or 0))
+
+    except (ValueError, TypeError):
+        return 0
+
+
+def obter_valor_linha(linha, coluna, padrao=None):
+    """
+    Evita erro quando alguma coluna ainda não existir
+    ou estiver vazia.
+    """
+
+    try:
+        valor = linha[coluna]
+
+        if valor is None:
+            return padrao
+
+        return valor
+
+    except (KeyError, IndexError):
+        return padrao
+
+
+def montar_historico_ia(historico):
+    """
+    Transforma o histórico recebido do frontend
+    em mensagens aceitas pela Groq.
+    """
+
+    mensagens = []
+
+    if not isinstance(historico, list):
+        return mensagens
+
+    # Mantém somente as últimas 10 mensagens.
+    for item in historico[-10:]:
+
+        if not isinstance(item, dict):
+            continue
+
+        papel = item.get("role") or item.get("papel")
+        conteudo = item.get("content") or item.get("mensagem")
+
+        if not conteudo:
+            continue
+
+        if papel in ["user", "usuario"]:
+            role = "user"
+
+        elif papel in ["assistant", "assistente", "ia"]:
+            role = "assistant"
+
+        else:
+            continue
+
+        # Evita enviar HTML dos cards para a IA.
+        conteudo_limpo = re.sub(
+            r"<[^>]+>",
+            " ",
+            str(conteudo)
+        )
+
+        conteudo_limpo = re.sub(
+            r"\s+",
+            " ",
+            conteudo_limpo
+        ).strip()
+
+        mensagens.append({
+            "role": role,
+            "content": conteudo_limpo[:3000]
+        })
+
+    return mensagens
+
+
+def identificar_intencao_e_filtros(mensagem, historico):
+    """
+    Identifica o que o usuário deseja e extrai os filtros.
+    A IA não recebe acesso ao banco.
+    """
+
+    historico_texto = ""
+
+    if isinstance(historico, list):
+
+        partes = []
+
+        for item in historico[-6:]:
+
+            if not isinstance(item, dict):
+                continue
+
+            papel = item.get("role") or item.get("papel") or "usuario"
+            conteudo = item.get("content") or item.get("mensagem") or ""
+
+            conteudo = re.sub(
+                r"<[^>]+>",
+                " ",
+                str(conteudo)
             )
 
-        if secrets.compare_digest(email, email_master) and secrets.compare_digest(senha, senha_master):
-            session.clear()
-            session["super_admin"] = True
-            session["super_admin_email"] = email_master
-            return redirect("/superadmin")
+            partes.append(
+                f"{papel}: {conteudo[:1000]}"
+            )
 
-        return render_template("superadmin_login.html", erro="Credenciais inválidas.")
+        historico_texto = "\n".join(partes)
 
-    return render_template("superadmin_login.html")
+    prompt_sistema = """
+Você é o classificador do assistente de um CRM imobiliário.
+
+Sua função é identificar a intenção da mensagem e extrair filtros.
+
+Ações permitidas:
+
+buscar_imoveis
+criar_abordagem
+criar_followup
+criar_legenda
+buscar_clientes
+conversa
+
+Regras:
+
+1. Use buscar_imoveis quando o usuário quiser procurar, mostrar,
+listar, encontrar ou filtrar imóveis.
+
+2. Use criar_abordagem quando quiser uma mensagem comercial,
+abordagem de venda ou mensagem para WhatsApp.
+
+3. Use criar_followup quando pedir uma mensagem de retorno,
+cobrança de resposta ou acompanhamento.
+
+4. Use criar_legenda quando pedir legenda para Instagram,
+Facebook, anúncio ou publicação.
+
+5. Use buscar_clientes quando quiser pesquisar ou listar clientes.
+
+6. Use conversa para dúvidas gerais relacionadas ao CRM,
+imóveis, vendas ou atendimento.
+
+Filtros possíveis para imóveis:
+
+titulo
+tipo
+cidade
+bairro
+valor_minimo
+valor_maximo
+quartos
+banheiros
+suites
+vagas
+area_minima
+status
+empreendimento
+mobilia
+financiamento
+
+Tipos comuns:
+
+apartamento
+casa
+sobrado
+terreno
+comercial
+kitnet
+studio
+cobertura
+chácara
+
+Filtros possíveis para clientes:
+
+nome
+telefone
+interesse
+bairro
+faixa_preco
+status_funil
+
+Considere o histórico para entender frases como:
+
+"agora somente apartamentos"
+"mostre os mais baratos"
+"faça uma abordagem para esses imóveis"
+"somente com duas vagas"
+
+Retorne SOMENTE JSON válido neste formato:
+
+{
+  "acao": "buscar_imoveis",
+  "filtros": {
+    "tipo": null,
+    "cidade": null,
+    "bairro": null,
+    "valor_minimo": null,
+    "valor_maximo": null,
+    "quartos": null,
+    "banheiros": null,
+    "suites": null,
+    "vagas": null,
+    "area_minima": null,
+    "status": null,
+    "empreendimento": null,
+    "mobilia": null,
+    "financiamento": null
+  }
+}
+
+Não escreva explicações.
+Não use markdown.
+"""
+
+    mensagens = [
+        {
+            "role": "system",
+            "content": prompt_sistema
+        },
+        {
+            "role": "user",
+            "content": f"""
+HISTÓRICO:
+{historico_texto or "Sem histórico"}
+
+MENSAGEM ATUAL:
+{mensagem}
+"""
+        }
+    ]
+
+    try:
+
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0,
+            response_format={"type": "json_object"},
+            messages=mensagens
+        )
+
+        texto = resposta.choices[0].message.content
+
+        dados = limpar_json_ia(texto)
+
+        if not isinstance(dados, dict):
+            dados = {}
+
+        acao = dados.get("acao", "conversa")
+        filtros = dados.get("filtros", {})
+
+        acoes_permitidas = [
+            "buscar_imoveis",
+            "criar_abordagem",
+            "criar_followup",
+            "criar_legenda",
+            "buscar_clientes",
+            "conversa"
+        ]
+
+        if acao not in acoes_permitidas:
+            acao = "conversa"
+
+        if not isinstance(filtros, dict):
+            filtros = {}
+
+        return {
+            "acao": acao,
+            "filtros": filtros
+        }
+
+    except Exception as erro:
+
+        print("ERRO AO IDENTIFICAR INTENÇÃO:", erro)
+
+        # Fallback simples caso a IA fique indisponível.
+        mensagem_lower = mensagem.lower()
+
+        palavras_imovel = [
+            "imóvel",
+            "imovel",
+            "apartamento",
+            "casa",
+            "terreno",
+            "sobrado",
+            "cobertura",
+            "studio",
+            "kitnet"
+        ]
+
+        if any(palavra in mensagem_lower for palavra in palavras_imovel):
+            acao = "buscar_imoveis"
+
+        elif "abordagem" in mensagem_lower:
+            acao = "criar_abordagem"
+
+        elif "follow" in mensagem_lower:
+            acao = "criar_followup"
+
+        elif "legenda" in mensagem_lower:
+            acao = "criar_legenda"
+
+        elif "cliente" in mensagem_lower:
+            acao = "buscar_clientes"
+
+        else:
+            acao = "conversa"
+
+        return {
+            "acao": acao,
+            "filtros": {}
+        }
 
 
-@app.route("/superadmin/logout")
-def superadmin_logout():
-    session.clear()
-    return redirect("/superadmin/login")
+def imovel_combina_com_filtros(imovel, filtros):
+    """
+    Faz os filtros em Python porque o campo valor
+    do seu banco atualmente pode estar salvo como texto.
+    """
+
+    titulo = str(
+        obter_valor_linha(imovel, "titulo", "")
+    ).lower()
+
+    tipo = str(
+        obter_valor_linha(imovel, "tipo", "")
+    ).lower()
+
+    cidade = str(
+        obter_valor_linha(imovel, "cidade", "")
+    ).lower()
+
+    bairro = str(
+        obter_valor_linha(imovel, "bairro", "")
+    ).lower()
+
+    status = str(
+        obter_valor_linha(imovel, "status", "")
+    ).lower()
+
+    empreendimento = str(
+        obter_valor_linha(imovel, "empreendimento", "")
+    ).lower()
+
+    mobilia = str(
+        obter_valor_linha(imovel, "mobilia", "")
+    ).lower()
+
+    valor = valor_para_float(
+        obter_valor_linha(imovel, "valor", 0)
+    )
+
+    quartos = inteiro_seguro(
+        obter_valor_linha(imovel, "quartos", 0)
+    )
+
+    banheiros = inteiro_seguro(
+        obter_valor_linha(imovel, "banheiros", 0)
+    )
+
+    suites = inteiro_seguro(
+        obter_valor_linha(imovel, "suites", 0)
+        or obter_valor_linha(imovel, "suite", 0)
+    )
+
+    vagas = inteiro_seguro(
+        obter_valor_linha(imovel, "vaga_garagem", 0)
+        or obter_valor_linha(imovel, "vagas", 0)
+    )
+
+    area = valor_para_float(
+        obter_valor_linha(imovel, "area", 0)
+    )
+
+    filtro_titulo = filtros.get("titulo")
+    filtro_tipo = filtros.get("tipo")
+    filtro_cidade = filtros.get("cidade")
+    filtro_bairro = filtros.get("bairro")
+    filtro_status = filtros.get("status")
+    filtro_empreendimento = filtros.get("empreendimento")
+    filtro_mobilia = filtros.get("mobilia")
+
+    if filtro_titulo:
+        if str(filtro_titulo).lower() not in titulo:
+            return False
+
+    if filtro_tipo:
+        filtro_tipo = str(filtro_tipo).lower()
+
+        # Usa "in" para aceitar "apartamento cobertura",
+        # "casa em condomínio", etc.
+        if filtro_tipo not in tipo:
+            return False
+
+    if filtro_cidade:
+        if str(filtro_cidade).lower() not in cidade:
+            return False
+
+    if filtro_bairro:
+        if str(filtro_bairro).lower() not in bairro:
+            return False
+
+    if filtro_status:
+        if str(filtro_status).lower() not in status:
+            return False
+
+    if filtro_empreendimento:
+        if str(filtro_empreendimento).lower() not in empreendimento:
+            return False
+
+    if filtro_mobilia:
+        if str(filtro_mobilia).lower() not in mobilia:
+            return False
+
+    valor_minimo = valor_para_float(
+        filtros.get("valor_minimo")
+    )
+
+    valor_maximo = valor_para_float(
+        filtros.get("valor_maximo")
+    )
+
+    if valor_minimo > 0 and valor < valor_minimo:
+        return False
+
+    if valor_maximo > 0 and valor > valor_maximo:
+        return False
+
+    quartos_minimos = inteiro_seguro(
+        filtros.get("quartos")
+    )
+
+    banheiros_minimos = inteiro_seguro(
+        filtros.get("banheiros")
+    )
+
+    suites_minimas = inteiro_seguro(
+        filtros.get("suites")
+    )
+
+    vagas_minimas = inteiro_seguro(
+        filtros.get("vagas")
+    )
+
+    area_minima = valor_para_float(
+        filtros.get("area_minima")
+    )
+
+    if quartos_minimos > 0 and quartos < quartos_minimos:
+        return False
+
+    if banheiros_minimos > 0 and banheiros < banheiros_minimos:
+        return False
+
+    if suites_minimas > 0 and suites < suites_minimas:
+        return False
+
+    if vagas_minimas > 0 and vagas < vagas_minimas:
+        return False
+
+    if area_minima > 0 and area < area_minima:
+        return False
+
+    filtro_financiamento = filtros.get("financiamento")
+
+    if filtro_financiamento is not None:
+
+        financiamento = obter_valor_linha(
+            imovel,
+            "financiamento",
+            None
+        )
+
+        quer_financiamento = str(
+            filtro_financiamento
+        ).lower() in [
+            "true",
+            "1",
+            "sim",
+            "aceita",
+            "aceitado"
+        ]
+
+        aceita_financiamento = str(
+            financiamento
+        ).lower() in [
+            "true",
+            "1",
+            "sim",
+            "aceita",
+            "aceitado"
+        ]
+
+        if quer_financiamento != aceita_financiamento:
+            return False
+
+    return True
 
 
-@app.route("/superadmin")
-@super_admin_required
-def super_dashboard():
+def calcular_score_imovel(imovel, filtros):
+    """
+    Calcula apenas uma indicação visual.
+    Não interfere na segurança ou no filtro.
+    """
+
+    filtros_ativos = 0
+    filtros_atendidos = 0
+
+    verificacoes_texto = [
+        ("tipo", "tipo"),
+        ("cidade", "cidade"),
+        ("bairro", "bairro"),
+        ("status", "status"),
+        ("empreendimento", "empreendimento"),
+        ("mobilia", "mobilia")
+    ]
+
+    for filtro_nome, coluna in verificacoes_texto:
+
+        filtro = filtros.get(filtro_nome)
+
+        if not filtro:
+            continue
+
+        filtros_ativos += 1
+
+        valor_imovel = str(
+            obter_valor_linha(imovel, coluna, "")
+        ).lower()
+
+        if str(filtro).lower() in valor_imovel:
+            filtros_atendidos += 1
+
+    verificacoes_numero = [
+        ("quartos", "quartos"),
+        ("banheiros", "banheiros"),
+        ("vagas", "vaga_garagem")
+    ]
+
+    for filtro_nome, coluna in verificacoes_numero:
+
+        filtro = inteiro_seguro(
+            filtros.get(filtro_nome)
+        )
+
+        if filtro <= 0:
+            continue
+
+        filtros_ativos += 1
+
+        valor_imovel = inteiro_seguro(
+            obter_valor_linha(imovel, coluna, 0)
+        )
+
+        if valor_imovel >= filtro:
+            filtros_atendidos += 1
+
+    if filtros.get("valor_maximo"):
+        filtros_ativos += 1
+
+        if valor_para_float(
+            obter_valor_linha(imovel, "valor", 0)
+        ) <= valor_para_float(filtros.get("valor_maximo")):
+            filtros_atendidos += 1
+
+    if filtros_ativos == 0:
+        return 85
+
+    score = int(
+        (filtros_atendidos / filtros_ativos) * 100
+    )
+
+    return max(50, min(score, 100))
+
+
+def formatar_valor_imovel(valor):
+    numero = valor_para_float(valor)
+
+    if numero <= 0:
+        return "Valor sob consulta"
+
+    return (
+        f"R$ {numero:,.2f}"
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
+
+
+def buscar_imoveis_assistente(empresa_id, filtros):
+    """
+    Busca somente imóveis da empresa logada.
+    Depois aplica os filtros em Python.
+    """
+
+    conn = get_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+        LIMIT 1000
+    """, (empresa_id,))
+
+    todos_imoveis = cursor.fetchall()
+
+    encontrados = []
+
+    for imovel in todos_imoveis:
+
+        if not imovel_combina_com_filtros(
+            imovel,
+            filtros
+        ):
+            continue
+
+        imovel_dict = dict(imovel)
+
+        imovel_dict["score_ia"] = calcular_score_imovel(
+            imovel,
+            filtros
+        )
+
+        imovel_dict["valor_numero"] = valor_para_float(
+            obter_valor_linha(imovel, "valor", 0)
+        )
+
+        encontrados.append(imovel_dict)
+
+    conn.close()
+
+    # Ordena do menor para o maior preço.
+    encontrados.sort(
+        key=lambda item: (
+            item.get("valor_numero", 0) <= 0,
+            item.get("valor_numero", 0)
+        )
+    )
+
+    return encontrados[:20]
+
+
+def montar_html_imoveis(imoveis):
+    """
+    Cria os cards sem permitir HTML vindo da IA.
+    """
+
+    if not imoveis:
+        return """
+        <div class="card-msg-imovel">
+            <strong>Nenhum imóvel encontrado.</strong>
+            <div style="margin-top:6px;color:#94a3b8;">
+                Tente alterar o bairro, cidade, valor ou quantidade de quartos.
+            </div>
+        </div>
+        """
+
+    resultado = f"""
+    <div class="card-msg-imovel">
+        Encontrei <strong>{len(imoveis)}</strong>
+        imóvel{"is" if len(imoveis) != 1 else ""}
+        dentro dos critérios.
+    </div>
+    """
+
+    for imovel in imoveis:
+
+        imovel_id = inteiro_seguro(
+            imovel.get("id")
+        )
+
+        titulo = html.escape(
+            str(imovel.get("titulo") or "Imóvel sem título")
+        )
+
+        tipo = html.escape(
+            str(imovel.get("tipo") or "Não informado")
+        )
+
+        bairro = html.escape(
+            str(imovel.get("bairro") or "")
+        )
+
+        cidade = html.escape(
+            str(imovel.get("cidade") or "")
+        )
+
+        quartos = inteiro_seguro(
+            imovel.get("quartos")
+        )
+
+        vagas = inteiro_seguro(
+            imovel.get("vaga_garagem")
+            or imovel.get("vagas")
+        )
+
+        banheiros = inteiro_seguro(
+            imovel.get("banheiros")
+        )
+
+        area = html.escape(
+            str(imovel.get("area") or "")
+        )
+
+        valor_formatado = formatar_valor_imovel(
+            imovel.get("valor")
+        )
+
+        score = inteiro_seguro(
+            imovel.get("score_ia")
+        )
+
+        localizacao = " - ".join(
+            parte
+            for parte in [bairro, cidade]
+            if parte
+        )
+
+        detalhes = []
+
+        if quartos:
+            detalhes.append(
+                f"🛏 {quartos} quarto{'s' if quartos != 1 else ''}"
+            )
+
+        if banheiros:
+            detalhes.append(
+                f"🚿 {banheiros} banheiro{'s' if banheiros != 1 else ''}"
+            )
+
+        if vagas:
+            detalhes.append(
+                f"🚗 {vagas} vaga{'s' if vagas != 1 else ''}"
+            )
+
+        if area:
+            detalhes.append(
+                f"📐 {area} m²"
+            )
+
+        detalhes_html = "<br>".join(detalhes)
+
+        resultado += f"""
+        <div class="card-msg-imovel">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:10px;
+                margin-bottom:10px;
+            ">
+                <span style="
+                    color:#facc15;
+                    font-weight:800;
+                    font-size:13px;
+                ">
+                    ⭐ Match IA: {score}%
+                </span>
+
+                <span style="
+                    background:rgba(16,185,129,.12);
+                    color:#10b981;
+                    padding:5px 9px;
+                    border-radius:999px;
+                    font-size:11px;
+                    font-weight:700;
+                ">
+                    {tipo}
+                </span>
+            </div>
+
+            <h3 style="
+                color:#ffffff;
+                margin:0 0 8px;
+                font-size:17px;
+                line-height:1.3;
+            ">
+                {titulo}
+            </h3>
+
+            <div style="
+                color:#10b981;
+                font-size:19px;
+                font-weight:800;
+                margin-bottom:8px;
+            ">
+                {valor_formatado}
+            </div>
+
+            <div style="
+                color:#cbd5e1;
+                font-size:13px;
+                line-height:1.65;
+            ">
+                {"📍 " + localizacao + "<br>" if localizacao else ""}
+                {detalhes_html}
+            </div>
+
+            <a
+                href="/imovel/{imovel_id}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    margin-top:13px;
+                    padding:9px 13px;
+                    border-radius:9px;
+                    background:#10b981;
+                    color:#052e25;
+                    font-size:13px;
+                    font-weight:800;
+                    text-decoration:none;
+                "
+            >
+                Ver imóvel →
+            </a>
+
+        </div>
+        """
+
+    return resultado
+
+
+def buscar_clientes_assistente(empresa_id, filtros):
+    """
+    Pesquisa somente clientes da empresa logada.
+    """
+
+    conn = get_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    query = """
+        SELECT *
+        FROM clientes
+        WHERE empresa_id = ?
+    """
+
+    parametros = [empresa_id]
+
+    nome = filtros.get("nome")
+    telefone = filtros.get("telefone")
+    interesse = filtros.get("interesse")
+    bairro = filtros.get("bairro")
+    faixa_preco = filtros.get("faixa_preco")
+    status_funil = filtros.get("status_funil")
+
+    if nome:
+        query += " AND LOWER(nome) LIKE ?"
+        parametros.append(
+            f"%{str(nome).lower()}%"
+        )
+
+    if telefone:
+        telefone_limpo = re.sub(
+            r"\D",
+            "",
+            str(telefone)
+        )
+
+        query += """
+            AND REPLACE(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(telefone, ' ', ''),
+                    '-', ''),
+                '(', ''),
+            ')', '') LIKE ?
+        """
+
+        parametros.append(
+            f"%{telefone_limpo}%"
+        )
+
+    if interesse:
+        query += " AND LOWER(interesse) LIKE ?"
+        parametros.append(
+            f"%{str(interesse).lower()}%"
+        )
+
+    if bairro:
+        query += " AND LOWER(bairro) LIKE ?"
+        parametros.append(
+            f"%{str(bairro).lower()}%"
+        )
+
+    if faixa_preco:
+        query += " AND LOWER(faixa_preco) LIKE ?"
+        parametros.append(
+            f"%{str(faixa_preco).lower()}%"
+        )
+
+    if status_funil:
+        query += " AND LOWER(status_funil) LIKE ?"
+        parametros.append(
+            f"%{str(status_funil).lower()}%"
+        )
+
+    query += " ORDER BY id DESC LIMIT 30"
+
+    cursor.execute(query, parametros)
+
+    clientes = [
+        dict(cliente)
+        for cliente in cursor.fetchall()
+    ]
+
+    conn.close()
+
+    return clientes
+
+
+def montar_html_clientes(clientes):
+    if not clientes:
+        return """
+        <div class="card-msg-imovel">
+            Nenhum cliente encontrado com esses critérios.
+        </div>
+        """
+
+    resultado = f"""
+    <div class="card-msg-imovel">
+        Encontrei <strong>{len(clientes)}</strong>
+        cliente{"s" if len(clientes) != 1 else ""}.
+    </div>
+    """
+
+    for cliente in clientes:
+
+        cliente_id = inteiro_seguro(
+            cliente.get("id")
+        )
+
+        nome = html.escape(
+            str(cliente.get("nome") or "Cliente sem nome")
+        )
+
+        telefone = html.escape(
+            str(cliente.get("telefone") or "Não informado")
+        )
+
+        interesse = html.escape(
+            str(cliente.get("interesse") or "Não informado")
+        )
+
+        status_funil = html.escape(
+            str(cliente.get("status_funil") or "Sem status")
+        )
+
+        resultado += f"""
+        <div class="card-msg-imovel">
+
+            <h3 style="
+                color:#ffffff;
+                margin:0 0 8px;
+                font-size:16px;
+            ">
+                👤 {nome}
+            </h3>
+
+            <div style="
+                color:#cbd5e1;
+                font-size:13px;
+                line-height:1.6;
+            ">
+                📱 {telefone}<br>
+                🏠 Interesse: {interesse}<br>
+                📊 Status: {status_funil}
+            </div>
+
+            <a
+                href="/editar_cliente/{cliente_id}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:inline-block;
+                    margin-top:11px;
+                    color:#10b981;
+                    font-weight:700;
+                    text-decoration:none;
+                "
+            >
+                Abrir cliente →
+            </a>
+
+        </div>
+        """
+
+    return resultado
+
+
+def gerar_texto_assistente(
+    mensagem,
+    historico,
+    tipo_resposta="conversa"
+):
+    """
+    Gera textos, abordagens, follow-ups e legendas.
+    Não consulta nem altera o banco.
+    """
+
+    instrucoes = {
+        "criar_abordagem": """
+Crie uma abordagem comercial pronta para enviar pelo WhatsApp.
+Use português do Brasil.
+Seja natural, profissional e persuasivo.
+Não invente dados de imóveis, clientes, preços ou condições.
+Quando o nome do cliente não tiver sido informado, use {nome}.
+Entregue somente a mensagem pronta.
+""",
+
+        "criar_followup": """
+Crie uma mensagem de follow-up pronta para WhatsApp.
+A mensagem deve ser educada, curta e incentivar uma resposta.
+Não seja insistente.
+Não invente informações.
+Quando o nome não for informado, use {nome}.
+Entregue somente a mensagem pronta.
+""",
+
+        "criar_legenda": """
+Crie uma legenda comercial para uma publicação imobiliária.
+Use português do Brasil.
+Use emojis com moderação.
+Inclua uma chamada para ação.
+Não invente endereço, preço ou características.
+Entregue somente a legenda pronta.
+""",
+
+        "conversa": """
+Você é o assistente do CRM imobiliário SMARTZEN IMOB.
+
+Ajude o usuário com:
+
+vendas imobiliárias
+atendimento de clientes
+organização do CRM
+mensagens comerciais
+follow-ups
+descrições de imóveis
+ideias de divulgação
+uso do sistema
+
+Regras:
+
+Não diga que encontrou dados no banco.
+Não invente clientes ou imóveis.
+Quando o usuário pedir imóveis ou clientes,
+explique que ele pode informar os filtros.
+Responda em português do Brasil.
+Seja direto e útil.
+"""
+    }
+
+    mensagens = [
+        {
+            "role": "system",
+            "content": instrucoes.get(
+                tipo_resposta,
+                instrucoes["conversa"]
+            )
+        }
+    ]
+
+    mensagens.extend(
+        montar_historico_ia(historico)
+    )
+
+    mensagens.append({
+        "role": "user",
+        "content": mensagem
+    })
+
+    try:
+
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0.5,
+            messages=mensagens
+        )
+
+        texto = resposta.choices[0].message.content.strip()
+
+        # Escapa o texto para evitar que uma resposta da IA
+        # injete tags HTML na página.
+        texto_seguro = html.escape(texto)
+
+        texto_seguro = texto_seguro.replace(
+            "\n",
+            "<br>"
+        )
+
+        return f"""
+        <div class="card-msg-imovel">
+            {texto_seguro}
+        </div>
+        """
+
+    except Exception as erro:
+
+        print("ERRO AO GERAR TEXTO:", erro)
+
+        return """
+        <div class="card-msg-imovel">
+            Não consegui gerar a resposta neste momento.
+            Tente novamente.
+        </div>
+        """
+
+
+# ==========================================================
+# ROTA PRINCIPAL DO ASSISTENTE
+# Substitua sua rota /analisar_cliente atual por esta
+# ==========================================================
+
+@app.route("/analisar_cliente", methods=["POST"])
+@verificar_sessao
+def analisar_cliente():
+
+    try:
+
+        dados = request.get_json(silent=True) or {}
+
+        mensagem = str(
+            dados.get("mensagem", "")
+        ).strip()
+
+        historico = dados.get(
+            "historico",
+            []
+        )
+
+        if not mensagem:
+
+            return jsonify({
+                "sucesso": False,
+                "tipo": "erro",
+                "resultado": """
+                <div class="card-msg-imovel">
+                    Digite uma mensagem para o assistente.
+                </div>
+                """
+            }), 400
+
+        empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id")
+
+        if not empresa_id or not usuario_id:
+
+            return jsonify({
+                "sucesso": False,
+                "tipo": "erro",
+                "resultado": """
+                <div class="card-msg-imovel">
+                    Sua sessão expirou. Entre novamente no sistema.
+                </div>
+                """
+            }), 401
+
+        interpretacao = identificar_intencao_e_filtros(
+            mensagem,
+            historico
+        )
+
+        acao = interpretacao.get(
+            "acao",
+            "conversa"
+        )
+
+        filtros = interpretacao.get(
+            "filtros",
+            {}
+        )
+
+        print("================ ASSISTENTE IA ================")
+        print("USUÁRIO:", usuario_id)
+        print("EMPRESA:", empresa_id)
+        print("MENSAGEM:", mensagem)
+        print("AÇÃO:", acao)
+        print("FILTROS:", filtros)
+        print("================================================")
+
+        # ==============================================
+        # BUSCAR IMÓVEIS
+        # ==============================================
+
+        if acao == "buscar_imoveis":
+
+            imoveis = buscar_imoveis_assistente(
+                empresa_id,
+                filtros
+            )
+
+            resultado_html = montar_html_imoveis(
+                imoveis
+            )
+
+            imoveis_json = []
+
+            for imovel in imoveis:
+
+                imoveis_json.append({
+                    "id": imovel.get("id"),
+                    "titulo": imovel.get("titulo"),
+                    "tipo": imovel.get("tipo"),
+                    "valor": imovel.get("valor"),
+                    "cidade": imovel.get("cidade"),
+                    "bairro": imovel.get("bairro"),
+                    "quartos": imovel.get("quartos"),
+                    "banheiros": imovel.get("banheiros"),
+                    "vagas": (
+                        imovel.get("vaga_garagem")
+                        or imovel.get("vagas")
+                    ),
+                    "area": imovel.get("area"),
+                    "score_ia": imovel.get("score_ia"),
+                    "url": f"/imovel/{imovel.get('id')}"
+                })
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "imoveis",
+                "acao": acao,
+                "filtros": filtros,
+                "quantidade": len(imoveis_json),
+                "imoveis": imoveis_json,
+                "resultado": resultado_html
+            })
+
+        # ==============================================
+        # BUSCAR CLIENTES
+        # ==============================================
+
+        if acao == "buscar_clientes":
+
+            clientes = buscar_clientes_assistente(
+                empresa_id,
+                filtros
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "clientes",
+                "acao": acao,
+                "filtros": filtros,
+                "quantidade": len(clientes),
+                "clientes": clientes,
+                "resultado": montar_html_clientes(clientes)
+            })
+
+        # ==============================================
+        # CRIAR ABORDAGEM
+        # ==============================================
+
+        if acao == "criar_abordagem":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_abordagem"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CRIAR FOLLOW-UP
+        # ==============================================
+
+        if acao == "criar_followup":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_followup"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CRIAR LEGENDA
+        # ==============================================
+
+        if acao == "criar_legenda":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_legenda"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CONVERSA NORMAL
+        # ==============================================
+
+        resultado = gerar_texto_assistente(
+            mensagem,
+            historico,
+            "conversa"
+        )
+
+        return jsonify({
+            "sucesso": True,
+            "tipo": "texto",
+            "acao": "conversa",
+            "resultado": resultado
+        })
+
+    except Exception as erro:
+
+        print("ERRO GERAL DO ASSISTENTE:", erro)
+
+        return jsonify({
+            "sucesso": False,
+            "tipo": "erro",
+            "resultado": """
+            <div class="card-msg-imovel">
+                Ocorreu um erro ao processar sua solicitação.
+            </div>
+            """,
+            "erro": str(erro)
+        }), 500
+
+
+
+
+@app.context_processor
+def total_leads_site():
+
+    try:
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM lead_site
+        """)
+
+        total = cursor.fetchone()[0]
+
+        conn.close()
+
+        return {
+            "total_leads_site": total
+        }
+
+    except:
+        return {
+            "total_leads_site": 0
+        }
+
+
+
+
+@app.route('/data/uploads/imoveis/<filename>')
+def servir_video_do_volume(filename):
+    # Verifica se o arquivo realmente existe no seu volume /data/
+    caminho_completo = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], filename)
+    if os.path.exists(caminho_completo):
+        return send_from_directory(app.config['UPLOAD_FOLDER_IMOVEIS'], filename)
+    else:
+        abort(404)
+
+
+
+
+    
+@app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
+@verificar_sessao
+@admin_required
+def alterar_senha_usuario(id):
+
+    nova_senha = request.form.get("senha")
+
+    senha_hash = generate_password_hash(nova_senha)
+
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT
-            e.id,
-            e.nome,
-            e.data_cadastro,
-            e.inicio_teste,
-            e.data_vencimento,
-            e.status_assinatura,
-            e.plano,
-            e.observacao_assinatura,
-            (SELECT COUNT(*) FROM usuarios u WHERE u.empresa_id = e.id) AS total_usuarios,
-            (SELECT COUNT(*) FROM imoveis i WHERE i.empresa_id = e.id) AS total_imoveis,
-            (SELECT COUNT(*) FROM clientes c WHERE c.empresa_id = e.id) AS total_clientes,
-            (SELECT u.nome FROM usuarios u WHERE u.empresa_id = e.id ORDER BY u.is_admin DESC, u.id ASC LIMIT 1) AS admin_nome,
-            (SELECT u.email FROM usuarios u WHERE u.empresa_id = e.id ORDER BY u.is_admin DESC, u.id ASC LIMIT 1) AS admin_email
-        FROM empresas e
-        ORDER BY e.id DESC
-    """)
+        UPDATE usuarios
+        SET senha=?
+        WHERE id=?
+        AND empresa_id=?
+    """, (
+        senha_hash,
+        id,
+        session.get("empresa_id")
+    ))
 
-    empresas_db = cursor.fetchall()
-    conn.close()
-
-    empresas = []
-    agora = datetime.now()
-    for item in empresas_db:
-        empresa = dict(item)
-        restante = None
-        if empresa.get("data_vencimento"):
-            try:
-                vencimento = datetime.fromisoformat(empresa["data_vencimento"])
-                restante = int((vencimento - agora).total_seconds() // 3600)
-                if vencimento < agora and empresa.get("status_assinatura") not in ("bloqueado", "vencido"):
-                    empresa["status_assinatura"] = "vencido"
-            except ValueError:
-                restante = None
-        empresa["horas_restantes"] = restante
-        empresas.append(empresa)
-
-    return render_template("superadmin.html", empresas=empresas)
-
-
-@app.route('/superadmin/empresa/<int:empresa_id>/usuarios')
-@super_admin_required
-def superadmin_empresa_usuarios(empresa_id):
-    conn = get_db()
-    empresa = conn.execute('SELECT * FROM empresas WHERE id = ?', (empresa_id,)).fetchone()
-    if not empresa:
-        conn.close()
-        flash('Empresa não encontrada.', 'warning')
-        return redirect('/superadmin')
-
-    usuarios = conn.execute('''
-        SELECT id, nome, email, telefone, cargo, is_admin, ativo,
-               status_assinatura, data_inicio, data_vencimento
-        FROM usuarios
-        WHERE empresa_id = ?
-        ORDER BY is_admin DESC, nome COLLATE NOCASE ASC
-    ''', (empresa_id,)).fetchall()
-    conn.close()
-    return render_template('superadmin_usuarios.html', empresa=empresa, usuarios=usuarios)
-
-
-@app.route('/superadmin/empresa/<int:empresa_id>/usuario/novo', methods=['POST'])
-@super_admin_required
-def superadmin_criar_usuario_empresa(empresa_id):
-    nome = (request.form.get('nome') or '').strip()
-    email = (request.form.get('email') or '').strip().lower()
-    senha = request.form.get('senha') or ''
-    telefone = (request.form.get('telefone') or '').strip()
-    cargo = (request.form.get('cargo') or 'Corretor').strip()
-    is_admin = 1 if request.form.get('is_admin') == '1' else 0
-
-    if not nome or not email or not senha:
-        flash('Preencha nome, e-mail e senha.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
-
-    if len(senha) < 6:
-        flash('A senha precisa ter pelo menos 6 caracteres.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
-
-    conn = get_db()
-    empresa = conn.execute('SELECT id FROM empresas WHERE id = ?', (empresa_id,)).fetchone()
-    if not empresa:
-        conn.close()
-        flash('Empresa não encontrada.', 'warning')
-        return redirect('/superadmin')
-
-    existente = conn.execute('SELECT id FROM usuarios WHERE lower(email) = lower(?)', (email,)).fetchone()
-    if existente:
-        conn.close()
-        flash('Já existe um usuário com este e-mail.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
-
-    hoje = datetime.now().strftime('%Y-%m-%d')
-    senha_hash = generate_password_hash(senha)
-
-    conn.execute('''
-        INSERT INTO usuarios
-        (nome, email, senha, empresa_id, telefone, cargo, is_admin, ativo,
-         status_assinatura, data_inicio)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'ativo', ?)
-    ''', (nome, email, senha_hash, empresa_id, telefone, cargo, is_admin, hoje))
     conn.commit()
     conn.close()
 
-    flash(f'Usuário {nome} criado com sucesso nesta empresa.', 'success')
-    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+    return redirect("/admin/usuarios")
 
 
-@app.route('/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/status', methods=['POST'])
-@super_admin_required
-def superadmin_status_usuario(empresa_id, usuario_id):
-    acao = request.form.get('acao')
-    ativo = 1 if acao == 'ativar' else 0
-    status = 'ativo' if ativo else 'bloqueado'
+@app.route("/analisar_pdf", methods=["POST"])
+@verificar_sessao
+def analisar_pdf():
+    arquivo = request.files.get("pdf")
 
-    conn = get_db()
-    usuario = conn.execute(
-        'SELECT id FROM usuarios WHERE id = ? AND empresa_id = ?',
-        (usuario_id, empresa_id)
-    ).fetchone()
-    if not usuario:
+    if not arquivo:
+        return "PDF não enviado", 400
+
+    # Configuração de diretório
+    pasta = "data/uploads/pdf"
+    os.makedirs(pasta, exist_ok=True)
+    caminho = os.path.join(pasta, arquivo.filename)
+
+    # Salva o arquivo temporariamente
+    arquivo.save(caminho)
+
+    texto = ""
+    print("COMEÇOU EXTRAÇÃO PDF")
+    
+    try:
+        with pdfplumber.open(caminho, laparams={"detect_vertical": False}) as pdf:
+            for pagina in pdf.pages:
+                conteudo = pagina.extract_text()
+                if conteudo:
+                    texto += conteudo + "\n"
+        
+        # Processa a extração
+        imoveis = extrair_imoveis(texto)
+        print(f"Foram encontrados {len(imoveis)} imóveis.")
+        links = extrair_links_pdf(caminho)
+
+        print("LINKS ENCONTRADOS:")
+        print(links)
+
+    finally:
+        # Garante que o arquivo será deletado mesmo que ocorra um erro
+        if os.path.exists(caminho):
+            os.remove(caminho)
+
+    return render_template(
+        "preview_importacao.html",
+        imoveis=imoveis,
+        links=links
+    )
+
+
+@app.route("/site/<slug>")
+def site_publico(slug):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    try:
+
+        # ==========================
+        # BUSCAR CONFIGURAÇÃO DO SITE
+        # ==========================
+
+        cursor.execute("""
+            SELECT *
+            FROM configuracoes_site
+            WHERE subdominio = ?
+        """, (slug,))
+
+        empresa = cursor.fetchone()
+
+
+        if not empresa:
+            return "Site não encontrado", 404
+
+
+
+        # ==========================
+        # BUSCAR IMÓVEIS
+        # ==========================
+
+        cursor.execute("""
+            SELECT *
+            FROM imoveis
+            WHERE empresa_id = ?
+            ORDER BY id DESC
+        """,
+        (empresa["empresa_id"],))
+
+
+        rows = cursor.fetchall()
+
+
+        imoveis = []
+
+
+
+        for row in rows:
+
+            imovel = dict(row)
+
+
+
+            # ==========================
+            # BUSCAR FOTOS
+            # ==========================
+
+            cursor.execute("""
+                SELECT nome_arquivo
+                FROM fotos_imoveis
+                WHERE imovel_id = ?
+                ORDER BY id ASC
+            """,
+            (imovel["id"],))
+
+
+            fotos = cursor.fetchall()
+
+
+            imovel["fotos"] = []
+
+
+
+            for foto in fotos:
+
+
+                caminho = foto["nome_arquivo"]
+
+
+                # remove caminhos antigos
+                caminho = caminho.replace("\\","/")
+
+
+                nome_foto = caminho.split("/")[-1]
+
+
+                imovel["fotos"].append(
+                    nome_foto
+                )
+
+
+
+            if imovel["fotos"]:
+
+                imovel["foto_capa"] = imovel["fotos"][0]
+
+            else:
+
+                imovel["foto_capa"] = None
+
+
+
+
+            # ==========================
+            # REFERÊNCIAS
+            # ==========================
+
+            try:
+
+                cursor.execute("""
+                    SELECT
+                        nome,
+                        categoria,
+                        distancia
+                    FROM referencias_imovel
+                    WHERE imovel_id = ?
+                    ORDER BY distancia ASC
+                """,
+                (imovel["id"],))
+
+
+                referencias = cursor.fetchall()
+
+
+
+                imovel["referencias"] = [
+
+                    {
+                        "nome": ref["nome"],
+                        "categoria": ref["categoria"],
+                        "distancia": ref["distancia"]
+                    }
+
+                    for ref in referencias
+
+                ]
+
+            except:
+
+                imovel["referencias"] = []
+
+
+
+            print(
+                "IMÓVEL",
+                imovel["id"],
+                "FOTOS:",
+                imovel["fotos"]
+            )
+
+
+
+            imoveis.append(imovel)
+
+
+
+
+        return render_template(
+            "template_site.html",
+            empresa=empresa,
+            imoveis=imoveis
+        )
+
+
+    except Exception as erro:
+
+        print(
+            "ERRO SITE PUBLICO:",
+            erro
+        )
+
+        return "Erro ao carregar site"
+
+
+    finally:
+
         conn.close()
-        flash('Usuário não encontrado nesta empresa.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+
+import requests
+from flask import render_template, request, redirect, session
+
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+EVOLUTION_API_KEY = "123456789"
+
+
+@app.route("/whatsapp/sessoes")
+def whatsapp_sessoes():
+    # depois vamos buscar do banco
+    return render_template("campanhas.html")
+
+
+
+
+@app.route("/campanhas/criar-sessao-whatsapp", methods=["POST"])
+def campanhas_criar_sessao_whatsapp():
+    usuario_id = session.get("usuario_id", 1)
+    nome_instancia = f"usuario_{usuario_id}"
+
+    headers = {
+        "apikey": EVOLUTION_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "instanceName": nome_instancia,
+        "qrcode": True,
+        "integration": "WHATSAPP-BAILEYS"
+    }
+
+    resposta = requests.post(
+        f"{EVOLUTION_URL}/instance/create",
+        json=payload,
+        headers=headers,
+        timeout=30
+    )
+
+    session["whatsapp_instancia"] = nome_instancia
+
+    return redirect("/campanhas")
+     
+@app.route("/admin/ativar-usuario", methods=["POST"])
+@verificar_sessao
+def ativar_usuario():
+
+    user_id = request.form["user_id"]
+
+    conn = sqlite3.connect(DB_PATH)
 
     conn.execute(
-        'UPDATE usuarios SET ativo = ?, status_assinatura = ? WHERE id = ? AND empresa_id = ?',
-        (ativo, status, usuario_id, empresa_id)
+        "UPDATE usuarios SET ativo = 1 WHERE id = ?",
+        (user_id,)
     )
+
     conn.commit()
     conn.close()
-    flash('Status do usuário atualizado.', 'success')
-    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    flash("Usuário ativado com sucesso.")
+
+    return redirect("/admin/novo-usuario")
 
 
-@app.route('/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/senha', methods=['POST'])
-@super_admin_required
-def superadmin_redefinir_senha_usuario(empresa_id, usuario_id):
-    nova_senha = request.form.get('nova_senha') or ''
-    if len(nova_senha) < 6:
-        flash('A nova senha precisa ter pelo menos 6 caracteres.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+@app.route("/admin/desativar-usuario", methods=["POST"])
+@verificar_sessao
+def desativar_usuario():
 
-    conn = get_db()
-    cursor = conn.execute(
-        'UPDATE usuarios SET senha = ? WHERE id = ? AND empresa_id = ?',
-        (generate_password_hash(nova_senha), usuario_id, empresa_id)
+    user_id = request.form["user_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.execute(
+        "UPDATE usuarios SET ativo = 0 WHERE id = ?",
+        (user_id,)
     )
-    conn.commit()
-    alterado = cursor.rowcount
-    conn.close()
 
-    flash('Senha redefinida com sucesso.' if alterado else 'Usuário não encontrado.',
-          'success' if alterado else 'warning')
-    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
-
-
-@app.route('/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/excluir', methods=['POST'])
-@super_admin_required
-def superadmin_excluir_usuario(empresa_id, usuario_id):
-    conn = get_db()
-    usuario = conn.execute(
-        'SELECT nome FROM usuarios WHERE id = ? AND empresa_id = ?',
-        (usuario_id, empresa_id)
-    ).fetchone()
-    if not usuario:
-        conn.close()
-        flash('Usuário não encontrado nesta empresa.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
-
-    total = conn.execute('SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?', (empresa_id,)).fetchone()[0]
-    if total <= 1:
-        conn.close()
-        flash('Não é possível excluir o único usuário da empresa.', 'warning')
-        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
-
-    conn.execute('DELETE FROM usuarios WHERE id = ? AND empresa_id = ?', (usuario_id, empresa_id))
     conn.commit()
     conn.close()
-    flash(f'Usuário {usuario["nome"]} excluído.', 'success')
-    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
 
+    flash("Usuário desativado com sucesso.")
 
-@app.route('/superadmin/empresa/<int:empresa_id>/renovar', methods=['POST'])
-@super_admin_required
-def superadmin_renovar_empresa(empresa_id):
-    dias = int(request.form.get('dias') or 30)
-    plano = (request.form.get('plano') or 'mensal').strip()
-    observacao = (request.form.get('observacao') or '').strip()
-    data_personalizada = (request.form.get('data_vencimento') or '').strip()
+    return redirect("/admin/novo-usuario")
 
-    if data_personalizada:
-        try:
-            vencimento = datetime.fromisoformat(data_personalizada)
-        except ValueError:
-            flash('Data de vencimento inválida.', 'warning')
-            return redirect('/superadmin')
+@app.route("/clientes")
+@verificar_sessao
+def listar_clientes():
+
+    empresa_id = session.get("empresa_id")
+
+    data_inicio = request.args.get("data_inicio")
+    data_fim = request.args.get("data_fim")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if data_inicio and data_fim:
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE empresa_id = ?
+            AND data_criacao BETWEEN ? AND ?
+            ORDER BY id DESC
+        """, (
+            empresa_id,
+            data_inicio,
+            data_fim
+        ))
+
     else:
-        vencimento = datetime.now() + timedelta(days=dias)
 
-    conn = get_db()
-    conn.execute('''
-        UPDATE empresas
-        SET data_vencimento = ?, status_assinatura = 'ativo', plano = ?,
-            observacao_assinatura = ?
-        WHERE id = ?
-    ''', (vencimento.isoformat(timespec='seconds'), plano, observacao, empresa_id))
-    conn.execute("UPDATE usuarios SET ativo = 1, status_assinatura = 'ativo' WHERE empresa_id = ?", (empresa_id,))
-    conn.commit()
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE empresa_id = ?
+            ORDER BY id DESC
+        """, (empresa_id,))
+
+    clientes = cursor.fetchall()
+
     conn.close()
-    flash('Assinatura da empresa renovada.', 'success')
-    return redirect('/superadmin')
+
+    return render_template(
+        "clientes.html",
+        clientes=clientes,
+        data_inicio=data_inicio,
+        data_fim=data_fim
+    )
+ 
 
 
-@app.route('/superadmin/empresa/<int:empresa_id>/bloquear', methods=['POST'])
+
+@app.route("/superadmin/usuario/editar/<int:user_id>", methods=["POST"])
 @super_admin_required
-def superadmin_bloquear_empresa(empresa_id):
-    conn = get_db()
-    conn.execute("UPDATE empresas SET status_assinatura = 'bloqueado' WHERE id = ?", (empresa_id,))
-    conn.execute("UPDATE usuarios SET status_assinatura = 'bloqueado' WHERE empresa_id = ?", (empresa_id,))
-    conn.commit()
+def editar_usuario(user_id):
+    dados = request.json
+    # Exemplo: Desativar login ou alterar senha
+    if 'nova_senha' in dados:
+        db.execute("UPDATE usuarios SET senha = ? WHERE id = ?", (gerar_hash(dados['nova_senha']), user_id))
+    if 'ativo' in dados:
+        db.execute("UPDATE usuarios SET status = ? WHERE id = ?", (dados['ativo'], user_id))
+    db.commit()
+    return jsonify({"status": "sucesso"})
+
+
+@app.route("/ceo/usuarios")
+@verificar_sessao
+@somente_ceo
+def ceo_usuarios():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM usuarios
+        ORDER BY nome
+    """)
+
+    usuarios = cursor.fetchall()
+
     conn.close()
-    flash('Empresa bloqueada.', 'warning')
-    return redirect('/superadmin')
+
+    return render_template(
+        "ceo/usuarios.html",
+        usuarios=usuarios
+    )
+
+@app.route("/admin/usuarios")
+@verificar_sessao
+@admin_required
+def admin_usuarios():
+
+    empresa_id = session.get("empresa_id")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id,nome,email,is_admin,status
+        FROM usuarios
+        WHERE empresa_id=?
+    """, (empresa_id,))
+
+    usuarios = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_usuarios.html",
+        usuarios=usuarios
+    )
 
 
-@app.route('/superadmin/empresa/<int:empresa_id>/reativar', methods=['POST'])
+
+@app.route("/importar_clientes", methods=["GET", "POST"])
+@verificar_sessao
+def importar_clientes():
+
+    if request.method == "POST":
+
+        import pandas as pd
+        import sqlite3
+
+        arquivo = request.files["arquivo"]
+
+        if not arquivo:
+            flash("Selecione um arquivo.")
+            return redirect("/importar_clientes")
+
+        nome_arquivo = arquivo.filename.lower()
+
+        try:
+
+            if nome_arquivo.endswith(".xlsx"):
+                df = pd.read_excel(arquivo, engine="openpyxl")
+
+            elif nome_arquivo.endswith(".csv"):
+                df = pd.read_csv(arquivo)
+
+            else:
+                flash("Envie um arquivo XLSX ou CSV.")
+                return redirect("/importar_clientes")
+
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            adicionados = 0
+            duplicados = 0
+
+            for _, row in df.iterrows():
+
+                nome = str(row.get("nome", "")).strip()
+
+                telefone = str(row.get("telefone", "")).strip()
+
+                interesse = str(row.get("interesse", "")).strip()
+
+                faixa_preco = str(row.get("faixa_preco", "")).strip()
+
+                if not telefone:
+                    continue
+
+                telefone = (
+                    telefone
+                    .replace(".0", "")
+                    .replace(" ", "")
+                    .replace("-", "")
+                    .replace("(", "")
+                    .replace(")", "")
+                )
+
+                cursor.execute("""
+                    SELECT id
+                    FROM clientes
+                    WHERE telefone = ?
+                    AND empresa_id = ?
+                """, (
+                    telefone,
+                    session["empresa_id"]
+                ))
+
+                if cursor.fetchone():
+                    duplicados += 1
+                    continue
+
+                cursor.execute("""
+                    INSERT INTO clientes
+                    (
+                        nome,
+                        telefone,
+                        email,
+                        interesse,
+                        faixa_preco,
+                        bairro,
+                        sobre,
+                        entrada,
+                        pagamento,
+                        usuario_id,
+                        empresa_id
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    nome,
+                    telefone,
+                    "",
+                    interesse,
+                    faixa_preco,
+                    "",
+                    "",
+                    "",
+                    "",
+                    session["usuario_id"],
+                    session["empresa_id"]
+                ))
+
+                adicionados += 1
+
+            conn.commit()
+            conn.close()
+
+            flash(
+                f"{adicionados} clientes importados | {duplicados} duplicados ignorados"
+            )
+
+            return redirect("/clientes")
+
+        except Exception as e:
+
+            flash(f"Erro ao importar: {str(e)}")
+            return redirect("/importar_clientes")
+
+    return render_template("importar_clientes.html")
+
+
+
+@app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
 @super_admin_required
-def superadmin_reativar_empresa(empresa_id):
-    conn = get_db()
-    conn.execute("UPDATE empresas SET status_assinatura = 'ativo' WHERE id = ?", (empresa_id,))
-    conn.execute("UPDATE usuarios SET ativo = 1, status_assinatura = 'ativo' WHERE empresa_id = ?", (empresa_id,))
-    conn.commit()
-    conn.close()
-    flash('Empresa reativada.', 'success')
-    return redirect('/superadmin')
+def gerenciar_usuarios_empresa(empresa_id):
+    # Busca todos os usuários da empresa selecionada
+    usuarios = db.execute("""
+        SELECT id, nome, email, cargo, is_admin 
+        FROM usuarios WHERE empresa_id = ?
+    """, (empresa_id,)).fetchall()
+
+    return render_template("gerenciar_usuarios.html", usuarios=usuarios, empresa_id=empresa_id)
 
 @app.route("/privacidade")
 def privacidade():
     return render_template("privacidade.html")
+
+@app.route("/superadmin/usuario/promover/<int:usuario_id>", methods=["POST"])
+@super_admin_required
+def tornar_admin(usuario_id):
+    db.execute("UPDATE usuarios SET is_admin = 1 WHERE id = ?", (usuario_id,))
+    db.commit()
+    return jsonify({"status": "sucesso", "mensagem": "Usuário agora é Administrador!"})    
+
 
 # --- FUNÇÃO DE LOGIN ---
 def verificar_login():
@@ -2393,8 +4370,9 @@ def verificar_login():
 def campanhas_enviar_teste_whatsapp():
 
     nome_instancia = session.get("whatsapp_instancia")
+
     contatos_texto = request.form.get("numeros", "").strip()
-    mensagem_modelo = request.form.get("mensagem", "").strip()
+    mensagem = request.form.get("mensagem", "").strip()
 
     if not nome_instancia:
         session["erro_envio"] = "Nenhuma sessão WhatsApp conectada."
@@ -2404,151 +4382,178 @@ def campanhas_enviar_teste_whatsapp():
         session["erro_envio"] = "Informe pelo menos um contato."
         return redirect("/campanhas")
 
-    if not mensagem_modelo:
+    if not mensagem:
         session["erro_envio"] = "Digite uma mensagem."
         return redirect("/campanhas")
-
-    def normalizar_telefone(valor):
-        numero = re.sub(r"\D", "", str(valor or ""))
-        numero = numero.lstrip("0")
-
-        # Corrige 0055..., +55..., 055... e 5555... duplicado.
-        while numero.startswith("00"):
-            numero = numero[2:]
-
-        if numero.startswith("5555"):
-            numero = numero[2:]
-
-        if not numero.startswith("55"):
-            numero = "55" + numero
-
-        # Brasil: 55 + DDD + telefone (10 ou 11 dígitos nacionais).
-        if len(numero) not in (12, 13):
-            return None
-
-        ddd = numero[2:4]
-        if len(ddd) != 2 or ddd.startswith("0"):
-            return None
-
-        return numero
 
     contatos = []
     linhas_invalidas = []
 
-    for numero_linha, linha in enumerate(contatos_texto.splitlines(), start=1):
+    for numero_linha, linha in enumerate(
+        contatos_texto.splitlines(),
+        start=1
+    ):
         linha = linha.strip()
+
         if not linha:
             continue
 
         nome = ""
-        telefone_bruto = linha
+        telefone = ""
 
-        # Aceita Nome;Telefone, Nome,Telefone ou apenas Telefone.
-        separador = ";" if ";" in linha else ("," if "," in linha else None)
+        # Aceita Nome;Telefone
+        if ";" in linha:
+            partes = linha.split(";", 1)
+            nome = partes[0].strip()
+            telefone = partes[1].strip()
 
-        if separador:
-            nome, telefone_bruto = [parte.strip() for parte in linha.split(separador, 1)]
+        # Aceita Nome,Telefone
+        elif "," in linha:
+            partes = linha.split(",", 1)
+            nome = partes[0].strip()
+            telefone = partes[1].strip()
 
-        telefone = normalizar_telefone(telefone_bruto)
+        # Aceita somente telefone
+        else:
+            telefone = linha.strip()
 
-        if not telefone:
-            linhas_invalidas.append(f"Linha {numero_linha}: {linha}")
+        # Remove qualquer caractere que não seja número
+        telefone = re.sub(r"\D", "", telefone)
+
+        # Remove zeros colocados antes do DDD
+        telefone = telefone.lstrip("0")
+
+        # Adiciona o código do Brasil quando necessário
+        if telefone and not telefone.startswith("55"):
+            telefone = "55" + telefone
+
+        # Validação simples:
+        # Brasil + DDD + número costuma ter 12 ou 13 dígitos
+        if len(telefone) not in [12, 13]:
+            linhas_invalidas.append(
+                f"Linha {numero_linha}: {linha}"
+            )
             continue
 
+        # Se não houver nome, usa um nome padrão
+        if not nome:
+            nome = "cliente"
+
         contatos.append({
-            "name": nome or "cliente",
-            "phone": telefone,
+            "name": nome,
+            "phone": telefone
         })
 
     if not contatos:
         session["erro_envio"] = (
-            "Nenhum contato válido. Use Nome;Telefone, Nome,Telefone ou somente Telefone."
+            "Nenhum contato válido. Use Nome;Telefone ou apenas Telefone."
         )
         return redirect("/campanhas")
 
     headers = {
         "apikey": EVOLUTION_API_KEY,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
     }
 
     enviados = 0
     erros = []
 
     for contato in contatos:
-        mensagem_final = mensagem_modelo
 
-        substituicoes = {
-            "{name}": contato["name"],
-            "{nome}": contato["name"],
-            "{phone}": contato["phone"],
-            "{telefone}": contato["phone"],
-        }
+        mensagem_final = mensagem
 
-        for marcador, valor in substituicoes.items():
-            mensagem_final = mensagem_final.replace(marcador, valor)
+        # Aceita {name}, {nome}, {phone} e {telefone}
+        mensagem_final = mensagem_final.replace(
+            "{name}",
+            contato["name"]
+        )
+
+        mensagem_final = mensagem_final.replace(
+            "{nome}",
+            contato["name"]
+        )
+
+        mensagem_final = mensagem_final.replace(
+            "{phone}",
+            contato["phone"]
+        )
+
+        mensagem_final = mensagem_final.replace(
+            "{telefone}",
+            contato["phone"]
+        )
 
         payload = {
             "number": contato["phone"],
-            "text": mensagem_final,
-            "delay": 1200,
-            "linkPreview": True,
+            "text": mensagem_final
         }
 
         try:
+
             resposta = requests.post(
                 f"{EVOLUTION_URL}/message/sendText/{nome_instancia}",
                 json=payload,
                 headers=headers,
-                timeout=35,
+                timeout=30
             )
 
             print(
                 "ENVIO WHATSAPP:",
                 contato["phone"],
                 resposta.status_code,
-                resposta.text[:500],
+                resposta.text[:500]
             )
 
-            sucesso_http = resposta.status_code in (200, 201)
-            sucesso_api = sucesso_http
-
-            if sucesso_http:
-                try:
-                    dados = resposta.json()
-                    sucesso_api = not bool(dados.get("error"))
-                except ValueError:
-                    sucesso_api = True
-
-            if sucesso_api:
+            if resposta.status_code in [200, 201]:
                 enviados += 1
+
             else:
                 erros.append(
-                    f'{contato["name"]} ({contato["phone"]}): '
-                    f'{resposta.status_code} - {resposta.text[:180]}'
+                    f'{contato["name"]} '
+                    f'({contato["phone"]}): '
+                    f'{resposta.status_code} - '
+                    f'{resposta.text[:150]}'
                 )
 
         except requests.RequestException as erro:
-            print("ERRO NO ENVIO WHATSAPP:", contato["phone"], erro)
-            erros.append(f'{contato["name"]} ({contato["phone"]}): {erro}')
 
-    session["campanha_finalizada"] = f"{enviados} enviada(s), {len(erros)} erro(s)."
+            print(
+                "ERRO NO ENVIO WHATSAPP:",
+                contato["phone"],
+                erro
+            )
+
+            erros.append(
+                f'{contato["name"]} '
+                f'({contato["phone"]}): {erro}'
+            )
+
+    session["campanha_finalizada"] = (
+        f"{enviados} enviada(s), "
+        f"{len(erros)} erro(s)."
+    )
 
     if enviados:
-        session["sucesso_envio"] = f"{enviados} mensagem(ns) enviada(s) com sucesso."
+        session["sucesso_envio"] = (
+            f"{enviados} mensagem(ns) enviada(s) com sucesso."
+        )
 
     mensagens_erro = []
 
     if linhas_invalidas:
-        mensagens_erro.append("Contatos inválidos: " + " | ".join(linhas_invalidas[:10]))
+        mensagens_erro.append(
+            "Contatos inválidos: " + " | ".join(linhas_invalidas[:10])
+        )
 
     if erros:
-        mensagens_erro.append("Falhas no envio: " + " | ".join(erros[:10]))
+        mensagens_erro.append(
+            "Falhas no envio: " + " | ".join(erros[:10])
+        )
 
     if mensagens_erro:
         session["erro_envio"] = " ".join(mensagens_erro)
 
     return redirect("/campanhas")
-
 
 @app.route("/api/session/create", methods=["POST"])
 def create_session():
@@ -3321,154 +5326,7 @@ def salvar_configuracoes():
 def manutencao():
     return render_template("manutencao.html")
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = (request.form.get("email") or "").strip().lower()
-        senha = request.form.get("senha") or ""
 
-        if not email or not senha:
-            return render_template("login.html", erro="Preencha todos os campos.")
-
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT
-                u.*,
-                e.status_assinatura AS empresa_status,
-                e.data_vencimento AS empresa_vencimento,
-                e.nome AS empresa_nome
-            FROM usuarios u
-            LEFT JOIN empresas e ON e.id = u.empresa_id
-            WHERE LOWER(u.email) = ?
-        """, (email,))
-        usuario = cursor.fetchone()
-
-        if not usuario or not check_password_hash(usuario["senha"], senha):
-            conn.close()
-            return render_template("login.html", erro="E-mail ou senha incorretos.")
-
-        colunas = usuario.keys()
-        ativo = usuario["ativo"] if "ativo" in colunas else 1
-        if int(ativo or 0) != 1:
-            conn.close()
-            return render_template("login.html", erro="Seu usuário está bloqueado pelo administrador da empresa.")
-
-        status_empresa = (usuario["empresa_status"] or "bloqueado").lower()
-        vencimento_texto = usuario["empresa_vencimento"]
-        vencimento = None
-
-        if vencimento_texto:
-            try:
-                vencimento = datetime.fromisoformat(vencimento_texto)
-            except ValueError:
-                vencimento = None
-
-        expirou = vencimento is not None and vencimento < datetime.now()
-
-        if expirou:
-            cursor.execute("UPDATE empresas SET status_assinatura = 'vencido' WHERE id = ?", (usuario["empresa_id"],))
-            conn.commit()
-            conn.close()
-            return redirect("/assinatura-vencida")
-
-        if status_empresa in ("bloqueado", "vencido"):
-            conn.close()
-            return redirect("/assinatura-vencida")
-
-        novo_token = secrets.token_hex(16)
-        cursor.execute("UPDATE usuarios SET session_token = ? WHERE id = ?", (novo_token, usuario["id"]))
-        conn.commit()
-        conn.close()
-
-        session.clear()
-        session["usuario_id"] = usuario["id"]
-        session["empresa_id"] = usuario["empresa_id"]
-        session["usuario_nome"] = usuario["nome"]
-        session["user_email"] = usuario["email"]
-        session["email"] = usuario["email"]
-        session["perfil"] = usuario["perfil"] if "perfil" in colunas else "Corretor"
-        session["is_admin"] = usuario["is_admin"] if "is_admin" in colunas else 0
-        session["session_token"] = novo_token
-
-        return redirect("/dashboard_v2")
-
-    return render_template("login.html")
-
-
-@app.route("/assinatura-vencida")
-def assinatura_vencida():
-    return render_template("assinatura_vencida.html")
-
-
-@app.route("/cadastrar_usuario", methods=["GET", "POST"])
-def cadastrar_usuario():
-    if request.method == "POST":
-        nome = (request.form.get("nome") or "").strip()
-        email = (request.form.get("email") or "").strip().lower()
-        senha_pura = request.form.get("senha") or ""
-        nome_empresa = (request.form.get("nome_empresa") or "Minha Imobiliária").strip()
-
-        if not nome or not email or len(senha_pura) < 6:
-            return render_template(
-                "cadastrar_usuario.html",
-                erro="Preencha todos os campos e use uma senha com pelo menos 6 caracteres."
-            )
-
-        senha_hash = generate_password_hash(senha_pura)
-        agora = datetime.now()
-        vencimento = agora + timedelta(hours=24)
-
-        conn = get_db()
-        cursor = conn.cursor()
-
-        try:
-            cursor.execute("SELECT id FROM usuarios WHERE LOWER(email) = ?", (email,))
-            if cursor.fetchone():
-                return render_template("cadastrar_usuario.html", erro="Este e-mail já está cadastrado.")
-
-            cursor.execute("""
-                INSERT INTO empresas
-                (nome, data_cadastro, inicio_teste, data_vencimento, status_assinatura, plano)
-                VALUES (?, ?, ?, ?, 'teste', 'teste_24h')
-            """, (
-                nome_empresa,
-                agora.isoformat(timespec="seconds"),
-                agora.isoformat(timespec="seconds"),
-                vencimento.isoformat(timespec="seconds")
-            ))
-            empresa_id = cursor.lastrowid
-
-            cursor.execute("""
-                INSERT INTO usuarios
-                (nome, email, senha, empresa_id, status_assinatura, is_admin, ativo)
-                VALUES (?, ?, ?, ?, 'ativo', 1, 1)
-            """, (nome, email, senha_hash, empresa_id))
-            usuario_id = cursor.lastrowid
-
-            cursor.execute(
-                "UPDATE usuarios SET whatsapp_sessao = ? WHERE id = ?",
-                (f"corretor_{usuario_id}", usuario_id)
-            )
-
-            conn.commit()
-
-        except sqlite3.IntegrityError:
-            conn.rollback()
-            return render_template("cadastrar_usuario.html", erro="Este e-mail já está cadastrado.")
-
-        except sqlite3.Error as erro:
-            conn.rollback()
-            print("ERRO NO CADASTRO:", erro)
-            return render_template("cadastrar_usuario.html", erro="Não foi possível criar sua conta.")
-
-        finally:
-            conn.close()
-
-        flash("Conta criada! Seu teste gratuito de 24 horas já começou.", "success")
-        return redirect("/login")
-
-    return render_template("cadastrar_usuario.html")
 
 
 EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
@@ -3744,187 +5602,118 @@ def admin_bloquear(id):
     return redirect("/admin")
 
 
-@app.route("/admin/criar-login", methods=["POST"])
-@verificar_sessao
+@app.route('/admin/criar-login', methods=['POST'])
 def criar_login():
-    if session.get("is_admin") != 1:
+
+    if not session.get('is_admin'):
         return "Acesso negado", 403
 
-    nome = (request.form.get("nome") or "").strip()
-    email = (request.form.get("email") or "").strip().lower()
-    senha_raw = request.form.get("senha") or ""
-    telefone = re.sub(r"\D", "", request.form.get("telefone") or "")
-    data_inicio = request.form.get("data_inicio") or datetime.now().strftime("%Y-%m-%d")
-    data_vencimento = request.form.get("data_vencimento") or ""
-    empresa_id = session.get("empresa_id")
-
-    if not nome or not email or not senha_raw:
-        flash("Preencha nome, e-mail e senha.", "danger")
-        return redirect("/admin/novo-usuario")
-
-    if data_vencimento and data_vencimento < data_inicio:
-        flash("A data de vencimento não pode ser anterior à data de início.", "danger")
-        return redirect("/admin/novo-usuario")
+    email = request.form.get('email')
+    senha_raw = request.form.get('senha')
+    nome = request.form.get('nome')
+    telefone = request.form.get('telefone')
+    empresa_id = session.get('empresa_id')
 
     senha_hash = generate_password_hash(senha_raw)
-    conn = sqlite3.connect(DB_PATH)
+
+    conn = sqlite3.connect('/data/imobiliaria.db')
     cursor = conn.cursor()
 
     try:
+
+        # Cria usuário
         cursor.execute("""
             INSERT INTO usuarios
-            (email, senha, telefone, empresa_id, nome, ativo,
-             status_assinatura, data_inicio, data_vencimento, validade_assinatura)
-            VALUES (?, ?, ?, ?, ?, 1, 'ativo', ?, ?, ?)
-        """, (
-            email, senha_hash, telefone, empresa_id, nome,
-            data_inicio, data_vencimento or None, data_vencimento or None,
+            (
+                email,
+                senha,
+                telefone,
+                empresa_id,
+                nome
+            )
+            VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            email,
+            senha_hash,
+            telefone,
+            empresa_id,
+            nome
         ))
 
+        # ID gerado
         usuario_id = cursor.lastrowid
+
+        # Cria sessão WhatsApp automática
         whatsapp_sessao = f"corretor_{usuario_id}"
 
-        cursor.execute(
-            "UPDATE usuarios SET whatsapp_sessao = ? WHERE id = ?",
-            (whatsapp_sessao, usuario_id),
-        )
+        cursor.execute("""
+            UPDATE usuarios
+            SET whatsapp_sessao = ?
+            WHERE id = ?
+        """,
+        (
+            whatsapp_sessao,
+            usuario_id
+        ))
 
         conn.commit()
-        flash("Usuário criado com sucesso.", "success")
 
-    except sqlite3.IntegrityError:
-        conn.rollback()
-        flash("Já existe um usuário cadastrado com esse e-mail.", "danger")
+        print(
+            f"Usuário criado: {nome} | Sessão: {whatsapp_sessao}"
+        )
 
-    except Exception as erro:
+        return redirect("/admin/novo-usuario")
+
+    except Exception as e:
+
         conn.rollback()
-        print("ERRO AO CRIAR USUÁRIO:", erro)
-        flash(f"Erro ao criar usuário: {erro}", "danger")
+
+        print("ERRO:", e)
+
+        return f"Erro ao criar usuário: {e}"
 
     finally:
+
         conn.close()
 
-    return redirect("/admin/novo-usuario")
 
 
-@app.route("/admin/novo-usuario")
-@verificar_sessao
+@app.route('/admin/novo-usuario')
 def exibir_novo_usuario():
-    if session.get("is_admin") != 1:
-        return "Acesso negado", 403
 
-    empresa_id = session.get("empresa_id")
-    hoje = datetime.now().date()
+    empresa_id = session.get('empresa_id')
 
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    if not empresa_id:
+        return "Acesso negado: você não está logado como empresa.", 403
+
+    conn = sqlite3.connect('/data/imobiliaria.db')
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, nome, email, telefone, ativo, status_assinatura,
-               data_inicio, data_vencimento
+        SELECT id, nome, email, ativo
         FROM usuarios
         WHERE empresa_id = ?
-        ORDER BY nome COLLATE NOCASE
     """, (empresa_id,))
 
-    usuarios = []
-
-    for linha in cursor.fetchall():
-        usuario = dict(linha)
-        vencimento_texto = usuario.get("data_vencimento")
-        dias_restantes = None
-        status_acesso = "ativo"
-
-        if int(usuario.get("ativo") or 0) != 1 or usuario.get("status_assinatura") == "bloqueado":
-            status_acesso = "bloqueado"
-        elif vencimento_texto:
-            try:
-                vencimento = datetime.strptime(vencimento_texto, "%Y-%m-%d").date()
-                dias_restantes = (vencimento - hoje).days
-
-                if dias_restantes < 0:
-                    status_acesso = "vencido"
-                elif dias_restantes <= 7:
-                    status_acesso = "vencendo"
-            except ValueError:
-                status_acesso = "sem_vencimento"
-        else:
-            status_acesso = "sem_vencimento"
-
-        usuario["dias_restantes"] = dias_restantes
-        usuario["status_acesso"] = status_acesso
-        usuarios.append(usuario)
+    usuarios_db = cursor.fetchall()
 
     conn.close()
+
+    lista_usuarios = [
+        {
+            "id": u[0],
+            "nome": u[1],
+            "email": u[2],
+            "ativo": u[3]
+        }
+        for u in usuarios_db
+    ]
 
     return render_template(
-        "novo-usuario.html",
-        usuarios=usuarios,
-        hoje=datetime.now().strftime("%Y-%m-%d"),
+        'novo-usuario.html',
+        usuarios=lista_usuarios
     )
-
-
-@app.route("/admin/renovar-usuario", methods=["POST"])
-@verificar_sessao
-def renovar_usuario():
-    if session.get("is_admin") != 1:
-        return "Acesso negado", 403
-
-    user_id = request.form.get("user_id", type=int)
-    data_inicio = request.form.get("data_inicio") or datetime.now().strftime("%Y-%m-%d")
-    data_vencimento = request.form.get("data_vencimento") or ""
-    empresa_id = session.get("empresa_id")
-
-    if not user_id or not data_vencimento:
-        flash("Informe a nova data de vencimento.", "danger")
-        return redirect("/admin/novo-usuario")
-
-    if data_vencimento < data_inicio:
-        flash("O vencimento não pode ser anterior ao início.", "danger")
-        return redirect("/admin/novo-usuario")
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE usuarios
-        SET data_inicio = ?, data_vencimento = ?, validade_assinatura = ?,
-            ativo = 1, status_assinatura = 'ativo'
-        WHERE id = ? AND empresa_id = ?
-    """, (data_inicio, data_vencimento, data_vencimento, user_id, empresa_id))
-    conn.commit()
-    conn.close()
-
-    flash("Acesso renovado com sucesso.", "success")
-    return redirect("/admin/novo-usuario")
-
-
-@app.route("/admin/deletar-usuario", methods=["POST"])
-@verificar_sessao
-def deletar_usuario():
-    if session.get("is_admin") != 1:
-        return "Acesso negado", 403
-
-    user_id = request.form.get("user_id", type=int)
-    empresa_id = session.get("empresa_id")
-
-    if user_id == session.get("usuario_id"):
-        flash("Você não pode remover o próprio usuário enquanto está logado.", "danger")
-        return redirect("/admin/novo-usuario")
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute(
-        "DELETE FROM usuarios WHERE id = ? AND empresa_id = ?",
-        (user_id, empresa_id),
-    )
-    conn.commit()
-    conn.close()
-
-    flash("Usuário removido com sucesso.", "success")
-    return redirect("/admin/novo-usuario")
-
-
 @app.route("/admin/liberar/<int:id>", methods=["POST"])
 def admin_liberar(id):
     if session.get("is_admin") != 1:
@@ -5418,6 +7207,798 @@ def informa_imovel(imovel_id):
 
     )
 
+
+
+
+# ==========================================================
+# ASSINATURA POR EMPRESA + SUPER ADMIN
+# Bloco integrado sem remover as rotas originais do sistema
+# ==========================================================
+
+def atualizar_banco_superadmin():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    def adicionar_coluna(tabela, coluna, definicao):
+        cursor.execute(f"PRAGMA table_info({tabela})")
+        existentes = [linha[1] for linha in cursor.fetchall()]
+        if coluna not in existentes:
+            cursor.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {definicao}")
+
+    # Empresas
+    adicionar_coluna("empresas", "data_cadastro", "TEXT")
+    adicionar_coluna("empresas", "inicio_teste", "TEXT")
+    adicionar_coluna("empresas", "data_vencimento", "TEXT")
+    adicionar_coluna("empresas", "status_assinatura", "TEXT DEFAULT 'ativo'")
+    adicionar_coluna("empresas", "plano", "TEXT DEFAULT 'mensal'")
+    adicionar_coluna("empresas", "observacao_assinatura", "TEXT")
+
+    # Usuários
+    adicionar_coluna("usuarios", "telefone", "TEXT")
+    adicionar_coluna("usuarios", "cargo", "TEXT DEFAULT 'Corretor'")
+    adicionar_coluna("usuarios", "ativo", "INTEGER DEFAULT 1")
+    adicionar_coluna("usuarios", "data_inicio", "TEXT")
+    adicionar_coluna("usuarios", "data_vencimento", "TEXT")
+
+    agora = datetime.now().isoformat(timespec="seconds")
+
+    cursor.execute("""
+        UPDATE empresas
+        SET data_cadastro = COALESCE(data_cadastro, ?),
+            status_assinatura = COALESCE(status_assinatura, 'ativo'),
+            plano = COALESCE(plano, 'mensal')
+    """, (agora,))
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET ativo = COALESCE(ativo, 1),
+            cargo = COALESCE(cargo, 'Corretor')
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+atualizar_banco_superadmin()
+
+
+def super_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("super_admin"):
+            return redirect("/superadmin/login")
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.route("/superadmin/login", methods=["GET", "POST"])
+def superadmin_login():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        senha = request.form.get("senha") or ""
+
+        email_master = (os.getenv("SUPERADMIN_EMAIL") or "").strip().lower()
+        senha_master = os.getenv("SUPERADMIN_PASSWORD") or ""
+
+        if not email_master or not senha_master:
+            return render_template(
+                "superadmin_login.html",
+                erro="Configure SUPERADMIN_EMAIL e SUPERADMIN_PASSWORD no Railway."
+            )
+
+        if (
+            secrets.compare_digest(email, email_master)
+            and secrets.compare_digest(senha, senha_master)
+        ):
+            session.clear()
+            session["super_admin"] = True
+            session["super_admin_email"] = email_master
+            return redirect("/superadmin")
+
+        return render_template(
+            "superadmin_login.html",
+            erro="Credenciais inválidas."
+        )
+
+    return render_template("superadmin_login.html")
+
+
+@app.route("/superadmin/logout")
+def superadmin_logout():
+    session.clear()
+    return redirect("/superadmin/login")
+
+
+@app.route("/superadmin")
+@app.route("/superadmin/dashboard")
+@super_admin_required
+def super_dashboard():
+    conn = get_db()
+
+    empresas_db = conn.execute("""
+        SELECT
+            e.id,
+            e.nome,
+            e.data_cadastro,
+            e.inicio_teste,
+            e.data_vencimento,
+            e.status_assinatura,
+            e.plano,
+            e.observacao_assinatura,
+            (SELECT COUNT(*) FROM usuarios u WHERE u.empresa_id = e.id) AS total_usuarios,
+            (SELECT COUNT(*) FROM imoveis i WHERE i.empresa_id = e.id) AS total_imoveis,
+            (SELECT COUNT(*) FROM clientes c WHERE c.empresa_id = e.id) AS total_clientes,
+            (
+                SELECT u.nome
+                FROM usuarios u
+                WHERE u.empresa_id = e.id
+                ORDER BY u.is_admin DESC, u.id ASC
+                LIMIT 1
+            ) AS admin_nome,
+            (
+                SELECT u.email
+                FROM usuarios u
+                WHERE u.empresa_id = e.id
+                ORDER BY u.is_admin DESC, u.id ASC
+                LIMIT 1
+            ) AS admin_email
+        FROM empresas e
+        ORDER BY e.id DESC
+    """).fetchall()
+
+    conn.close()
+
+    empresas = []
+    agora = datetime.now()
+
+    for item in empresas_db:
+        empresa = dict(item)
+        empresa["horas_restantes"] = None
+
+        if empresa.get("data_vencimento"):
+            try:
+                vencimento = datetime.fromisoformat(
+                    empresa["data_vencimento"]
+                )
+                empresa["horas_restantes"] = int(
+                    (vencimento - agora).total_seconds() // 3600
+                )
+
+                if (
+                    vencimento < agora
+                    and empresa.get("status_assinatura")
+                    not in ("bloqueado", "vencido")
+                ):
+                    empresa["status_assinatura"] = "vencido"
+            except (ValueError, TypeError):
+                pass
+
+        empresas.append(empresa)
+
+    return render_template(
+        "superadmin.html",
+        empresas=empresas
+    )
+
+
+@app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
+@super_admin_required
+def superadmin_empresa_usuarios(empresa_id):
+    conn = get_db()
+
+    empresa = conn.execute(
+        "SELECT * FROM empresas WHERE id = ?",
+        (empresa_id,)
+    ).fetchone()
+
+    if not empresa:
+        conn.close()
+        flash("Empresa não encontrada.", "warning")
+        return redirect("/superadmin")
+
+    usuarios = conn.execute("""
+        SELECT
+            id,
+            nome,
+            email,
+            telefone,
+            cargo,
+            is_admin,
+            ativo,
+            status_assinatura,
+            data_inicio,
+            data_vencimento
+        FROM usuarios
+        WHERE empresa_id = ?
+        ORDER BY is_admin DESC, nome COLLATE NOCASE ASC
+    """, (empresa_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "superadmin_usuarios.html",
+        empresa=empresa,
+        usuarios=usuarios
+    )
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/novo",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_criar_usuario_empresa(empresa_id):
+    nome = (request.form.get("nome") or "").strip()
+    email = (request.form.get("email") or "").strip().lower()
+    senha = request.form.get("senha") or ""
+    telefone = (request.form.get("telefone") or "").strip()
+    cargo = (request.form.get("cargo") or "Corretor").strip()
+    is_admin = 1 if request.form.get("is_admin") == "1" else 0
+
+    destino = url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    )
+
+    if not nome or not email or not senha:
+        flash("Preencha nome, e-mail e senha.", "warning")
+        return redirect(destino)
+
+    if len(senha) < 6:
+        flash("A senha precisa ter pelo menos 6 caracteres.", "warning")
+        return redirect(destino)
+
+    conn = get_db()
+
+    empresa = conn.execute(
+        "SELECT id FROM empresas WHERE id = ?",
+        (empresa_id,)
+    ).fetchone()
+
+    if not empresa:
+        conn.close()
+        flash("Empresa não encontrada.", "warning")
+        return redirect("/superadmin")
+
+    existente = conn.execute(
+        "SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?)",
+        (email,)
+    ).fetchone()
+
+    if existente:
+        conn.close()
+        flash("Já existe um usuário com este e-mail.", "warning")
+        return redirect(destino)
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+
+    cursor = conn.execute("""
+        INSERT INTO usuarios (
+            nome,
+            email,
+            senha,
+            empresa_id,
+            telefone,
+            cargo,
+            is_admin,
+            ativo,
+            status_assinatura,
+            data_inicio
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'ativo', ?)
+    """, (
+        nome,
+        email,
+        generate_password_hash(senha),
+        empresa_id,
+        telefone,
+        cargo,
+        is_admin,
+        hoje
+    ))
+
+    usuario_id = cursor.lastrowid
+
+    # Mantém a lógica original de sessão individual do WhatsApp.
+    try:
+        conn.execute(
+            "UPDATE usuarios SET whatsapp_sessao = ? WHERE id = ?",
+            (f"corretor_{usuario_id}", usuario_id)
+        )
+    except sqlite3.OperationalError:
+        pass
+
+    conn.commit()
+    conn.close()
+
+    flash(
+        f"Usuário {nome} criado para esta empresa.",
+        "success"
+    )
+    return redirect(destino)
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/status",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_status_usuario(empresa_id, usuario_id):
+    acao = request.form.get("acao")
+    ativo = 1 if acao == "ativar" else 0
+    status = "ativo" if ativo else "bloqueado"
+
+    conn = get_db()
+
+    usuario = conn.execute("""
+        SELECT id
+        FROM usuarios
+        WHERE id = ? AND empresa_id = ?
+    """, (usuario_id, empresa_id)).fetchone()
+
+    if not usuario:
+        conn.close()
+        flash("Usuário não encontrado nesta empresa.", "warning")
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET ativo = ?, status_assinatura = ?
+        WHERE id = ? AND empresa_id = ?
+    """, (ativo, status, usuario_id, empresa_id))
+
+    conn.commit()
+    conn.close()
+
+    flash("Status do usuário atualizado.", "success")
+    return redirect(url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    ))
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/senha",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_redefinir_senha_usuario(empresa_id, usuario_id):
+    nova_senha = request.form.get("nova_senha") or ""
+
+    if len(nova_senha) < 6:
+        flash(
+            "A nova senha precisa ter pelo menos 6 caracteres.",
+            "warning"
+        )
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    conn = get_db()
+
+    cursor = conn.execute("""
+        UPDATE usuarios
+        SET senha = ?
+        WHERE id = ? AND empresa_id = ?
+    """, (
+        generate_password_hash(nova_senha),
+        usuario_id,
+        empresa_id
+    ))
+
+    conn.commit()
+    alterado = cursor.rowcount
+    conn.close()
+
+    flash(
+        "Senha redefinida com sucesso."
+        if alterado
+        else "Usuário não encontrado.",
+        "success" if alterado else "warning"
+    )
+
+    return redirect(url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    ))
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/excluir",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_excluir_usuario(empresa_id, usuario_id):
+    conn = get_db()
+
+    usuario = conn.execute("""
+        SELECT nome
+        FROM usuarios
+        WHERE id = ? AND empresa_id = ?
+    """, (usuario_id, empresa_id)).fetchone()
+
+    if not usuario:
+        conn.close()
+        flash("Usuário não encontrado nesta empresa.", "warning")
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    total = conn.execute("""
+        SELECT COUNT(*)
+        FROM usuarios
+        WHERE empresa_id = ?
+    """, (empresa_id,)).fetchone()[0]
+
+    if total <= 1:
+        conn.close()
+        flash(
+            "Não é possível excluir o único usuário da empresa.",
+            "warning"
+        )
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    conn.execute("""
+        DELETE FROM usuarios
+        WHERE id = ? AND empresa_id = ?
+    """, (usuario_id, empresa_id))
+
+    conn.commit()
+    conn.close()
+
+    flash(f'Usuário {usuario["nome"]} excluído.', "success")
+    return redirect(url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    ))
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/renovar",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_renovar_empresa(empresa_id):
+    try:
+        dias = int(request.form.get("dias") or 30)
+    except ValueError:
+        dias = 30
+
+    plano = (request.form.get("plano") or "mensal").strip()
+    observacao = (
+        request.form.get("observacao") or ""
+    ).strip()
+    data_personalizada = (
+        request.form.get("data_vencimento") or ""
+    ).strip()
+
+    if data_personalizada:
+        try:
+            vencimento = datetime.fromisoformat(data_personalizada)
+        except ValueError:
+            flash("Data de vencimento inválida.", "warning")
+            return redirect("/superadmin")
+    else:
+        vencimento = datetime.now() + timedelta(days=dias)
+
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE empresas
+        SET
+            data_vencimento = ?,
+            status_assinatura = 'ativo',
+            plano = ?,
+            observacao_assinatura = ?
+        WHERE id = ?
+    """, (
+        vencimento.isoformat(timespec="seconds"),
+        plano,
+        observacao,
+        empresa_id
+    ))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET ativo = 1, status_assinatura = 'ativo'
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Assinatura da empresa renovada.", "success")
+    return redirect("/superadmin")
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/bloquear",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_bloquear_empresa(empresa_id):
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE empresas
+        SET status_assinatura = 'bloqueado'
+        WHERE id = ?
+    """, (empresa_id,))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET status_assinatura = 'bloqueado'
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Empresa bloqueada.", "warning")
+    return redirect("/superadmin")
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/reativar",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_reativar_empresa(empresa_id):
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE empresas
+        SET status_assinatura = 'ativo'
+        WHERE id = ?
+    """, (empresa_id,))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET ativo = 1, status_assinatura = 'ativo'
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Empresa reativada.", "success")
+    return redirect("/superadmin")
+
+
+@app.route("/assinatura-vencida")
+def assinatura_vencida():
+    return render_template("assinatura_vencida.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        senha = request.form.get("senha") or ""
+
+        if not email or not senha:
+            return render_template(
+                "login.html",
+                erro="Preencha todos os campos."
+            )
+
+        conn = get_db()
+
+        usuario = conn.execute("""
+            SELECT
+                u.*,
+                e.status_assinatura AS empresa_status,
+                e.data_vencimento AS empresa_vencimento
+            FROM usuarios u
+            LEFT JOIN empresas e ON e.id = u.empresa_id
+            WHERE LOWER(u.email) = ?
+        """, (email,)).fetchone()
+
+        if (
+            not usuario
+            or not check_password_hash(usuario["senha"], senha)
+        ):
+            conn.close()
+            return render_template(
+                "login.html",
+                erro="E-mail ou senha incorretos."
+            )
+
+        chaves = usuario.keys()
+        ativo = usuario["ativo"] if "ativo" in chaves else 1
+
+        if int(ativo or 0) != 1:
+            conn.close()
+            return render_template(
+                "login.html",
+                erro="Seu usuário está bloqueado."
+            )
+
+        status_empresa = (
+            usuario["empresa_status"] or "ativo"
+        ).lower()
+
+        vencimento = None
+        vencimento_texto = usuario["empresa_vencimento"]
+
+        if vencimento_texto:
+            try:
+                vencimento = datetime.fromisoformat(vencimento_texto)
+            except (ValueError, TypeError):
+                vencimento = None
+
+        if vencimento and vencimento < datetime.now():
+            conn.execute("""
+                UPDATE empresas
+                SET status_assinatura = 'vencido'
+                WHERE id = ?
+            """, (usuario["empresa_id"],))
+            conn.commit()
+            conn.close()
+            return redirect("/assinatura-vencida")
+
+        if status_empresa in ("bloqueado", "vencido"):
+            conn.close()
+            return redirect("/assinatura-vencida")
+
+        novo_token = secrets.token_hex(16)
+
+        conn.execute("""
+            UPDATE usuarios
+            SET session_token = ?
+            WHERE id = ?
+        """, (novo_token, usuario["id"]))
+
+        conn.commit()
+        conn.close()
+
+        session.clear()
+        session["usuario_id"] = usuario["id"]
+        session["empresa_id"] = usuario["empresa_id"]
+        session["usuario_nome"] = usuario["nome"]
+        session["nome"] = usuario["nome"]
+        session["user_email"] = usuario["email"]
+        session["email"] = usuario["email"]
+        session["perfil"] = (
+            usuario["perfil"] if "perfil" in chaves else ""
+        )
+        session["is_admin"] = (
+            usuario["is_admin"] if "is_admin" in chaves else 0
+        )
+        session["session_token"] = novo_token
+
+        return redirect("/dashboard_v2")
+
+    return render_template("login.html")
+
+
+@app.route("/cadastrar_usuario", methods=["GET", "POST"])
+def cadastrar_usuario():
+    if request.method == "POST":
+        nome = (request.form.get("nome") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        senha_pura = request.form.get("senha") or ""
+        nome_empresa = (
+            request.form.get("nome_empresa")
+            or "Minha Imobiliária"
+        ).strip()
+
+        if not nome or not email or len(senha_pura) < 6:
+            return render_template(
+                "cadastrar_usuario.html",
+                erro=(
+                    "Preencha todos os campos e use uma senha "
+                    "com pelo menos 6 caracteres."
+                )
+            )
+
+        agora = datetime.now()
+        vencimento = agora + timedelta(hours=24)
+
+        conn = get_db()
+
+        try:
+            existente = conn.execute("""
+                SELECT id
+                FROM usuarios
+                WHERE LOWER(email) = ?
+            """, (email,)).fetchone()
+
+            if existente:
+                return render_template(
+                    "cadastrar_usuario.html",
+                    erro="Este e-mail já está cadastrado."
+                )
+
+            cursor = conn.execute("""
+                INSERT INTO empresas (
+                    nome,
+                    data_cadastro,
+                    inicio_teste,
+                    data_vencimento,
+                    status_assinatura,
+                    plano
+                )
+                VALUES (?, ?, ?, ?, 'teste', 'teste_24h')
+            """, (
+                nome_empresa,
+                agora.isoformat(timespec="seconds"),
+                agora.isoformat(timespec="seconds"),
+                vencimento.isoformat(timespec="seconds")
+            ))
+
+            empresa_id = cursor.lastrowid
+
+            cursor = conn.execute("""
+                INSERT INTO usuarios (
+                    nome,
+                    email,
+                    senha,
+                    empresa_id,
+                    status_assinatura,
+                    is_admin,
+                    ativo,
+                    cargo,
+                    data_inicio
+                )
+                VALUES (?, ?, ?, ?, 'ativo', 1, 1, 'Administrador', ?)
+            """, (
+                nome,
+                email,
+                generate_password_hash(senha_pura),
+                empresa_id,
+                agora.strftime("%Y-%m-%d")
+            ))
+
+            usuario_id = cursor.lastrowid
+
+            try:
+                conn.execute("""
+                    UPDATE usuarios
+                    SET whatsapp_sessao = ?
+                    WHERE id = ?
+                """, (
+                    f"corretor_{usuario_id}",
+                    usuario_id
+                ))
+            except sqlite3.OperationalError:
+                pass
+
+            conn.commit()
+
+        except sqlite3.IntegrityError:
+            conn.rollback()
+            return render_template(
+                "cadastrar_usuario.html",
+                erro="Este e-mail já está cadastrado."
+            )
+
+        except sqlite3.Error as erro:
+            conn.rollback()
+            print("ERRO NO CADASTRO:", erro)
+            return render_template(
+                "cadastrar_usuario.html",
+                erro="Não foi possível criar sua conta."
+            )
+
+        finally:
+            conn.close()
+
+        flash(
+            "Conta criada! Seu teste gratuito de 24 horas começou.",
+            "success"
+        )
+        return redirect("/login")
+
+    return render_template("cadastrar_usuario.html")
 
 
 if __name__ == "__main__":
