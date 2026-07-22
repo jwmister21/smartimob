@@ -5,7 +5,7 @@ import requests
 import math
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, session, url_for, flash
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename 
 from google import genai
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
