@@ -260,6 +260,21 @@
 
         </div>
 
+        <div class="card-dashboard">
+            <div class="card-info"><h3>Acessos ativos</h3><span>{{ usuarios_ativos }}</span></div>
+            <div class="card-icon">✅</div>
+        </div>
+
+        <div class="card-dashboard">
+            <div class="card-info"><h3>Vencendo em 7 dias</h3><span>{{ usuarios_vencendo }}</span></div>
+            <div class="card-icon">⚠️</div>
+        </div>
+
+        <div class="card-dashboard">
+            <div class="card-info"><h3>Acessos vencidos</h3><span>{{ usuarios_vencidos }}</span></div>
+            <div class="card-icon">⛔</div>
+        </div>
+
     </div>
 
     <div class="box-tabela">
@@ -343,7 +358,7 @@
                 ➕ Novo Corretor
             </a>
 
-            <a href="/admin/usuarios"
+            <a href="/admin/novo-usuario"
                class="btn-admin btn-secundario">
                 👥 Gerenciar Usuários
             </a>
