@@ -5,7 +5,7 @@ import requests
 import math
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, session, url_for, flash
-from werkzeug.utils import secure_filename 
+from werkzeug.utils import secure_filename
 from google import genai
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -1002,31 +1002,6 @@ def admin_required(f):
         if session.get('is_admin') != 1:
             return "Acesso Negado: Apenas administradores.", 403
         return f(*args, **kwargs)
-    return decorated_function
- # ===========================
-# SUPER ADMIN
-# ===========================
-
-def super_admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-
-        email_master = (
-            os.getenv("SUPERADMIN_EMAIL") or ""
-        ).strip().lower()
-
-        senha_master = (
-            os.getenv("SUPERADMIN_PASSWORD") or ""
-        ).strip()
-
-        if not email_master or not senha_master:
-            return "Configure SUPERADMIN_EMAIL e SUPERADMIN_PASSWORD no Railway.", 500
-
-        if not session.get("super_admin"):
-            return redirect(url_for("superadmin_login"))
-
-        return f(*args, **kwargs)
-
     return decorated_function
 
 def salvar_status_whatsapp(sessao, status):
@@ -7231,9 +7206,6 @@ def informa_imovel(imovel_id):
         empresa=empresa
 
     )
-
-
-
 
 # ==========================================================
 # ASSINATURA POR EMPRESA + SUPER ADMIN
