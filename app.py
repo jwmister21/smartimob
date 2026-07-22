@@ -1003,6 +1003,31 @@ def admin_required(f):
             return "Acesso Negado: Apenas administradores.", 403
         return f(*args, **kwargs)
     return decorated_function
+ # ===========================
+# SUPER ADMIN
+# ===========================
+
+def super_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+
+        email_master = (
+            os.getenv("SUPERADMIN_EMAIL") or ""
+        ).strip().lower()
+
+        senha_master = (
+            os.getenv("SUPERADMIN_PASSWORD") or ""
+        ).strip()
+
+        if not email_master or not senha_master:
+            return "Configure SUPERADMIN_EMAIL e SUPERADMIN_PASSWORD no Railway.", 500
+
+        if not session.get("super_admin"):
+            return redirect(url_for("superadmin_login"))
+
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 def salvar_status_whatsapp(sessao, status):
 
