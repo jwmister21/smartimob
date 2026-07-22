@@ -1,1 +1,49 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Usuários da empresa</title><style>*{box-sizing:border-box}body{margin:0;background:#f1f5f9;font-family:Inter,Arial;color:#0f172a}.container{max-width:1100px;margin:auto;padding:30px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top a{background:#e2e8f0;color:#334155;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:700}.box{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px;overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:14px;border-bottom:1px solid #e2e8f0}th{color:#64748b;font-size:.8rem;text-transform:uppercase}.badge{padding:5px 9px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.75rem;font-weight:700}.off{background:#fee2e2;color:#b91c1c}</style></head><body><div class="container"><div class="top"><div><h1>{{ empresa.nome }}</h1><p>Todos os usuários vinculados a esta empresa.</p></div><a href="/superadmin">← Voltar</a></div><div class="box"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cargo</th><th>Administrador</th><th>Status</th></tr></thead><tbody>{% for u in usuarios %}<tr><td><strong>{{ u.nome or '-' }}</strong></td><td>{{ u.email }}</td><td>{{ u.telefone or '-' }}</td><td>{{ u.cargo or 'Corretor' }}</td><td>{{ 'Sim' if u.is_admin|int == 1 else 'Não' }}</td><td><span class="badge {{ 'off' if u.ativo|int != 1 else '' }}">{{ 'Ativo' if u.ativo|int == 1 else 'Bloqueado' }}</span></td></tr>{% endfor %}</tbody></table></div></div></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{{ empresa.nome }} - Usuários</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f1f5f9;font-family:Inter,Arial;color:#0f172a}.topo{background:#0f172a;color:#fff;padding:19px 28px;display:flex;justify-content:space-between;align-items:center}.topo a{color:#cbd5e1;text-decoration:none;font-weight:700}.container{max-width:1250px;margin:auto;padding:28px}.header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}.header h1{margin:0 0 5px}.header p{margin:0;color:#64748b}.voltar{background:#e2e8f0;color:#334155;text-decoration:none;padding:11px 15px;border-radius:11px;font-weight:800}.flash{padding:13px 15px;border-radius:12px;margin-bottom:14px;font-weight:700}.flash-success{background:#dcfce7;color:#166534}.flash-warning{background:#fef3c7;color:#92400e}.box{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:22px;box-shadow:0 8px 24px rgba(15,23,42,.05);margin-bottom:22px}.box h2{margin:0 0 6px}.sub{color:#64748b;margin:0 0 18px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.grupo label{display:block;font-size:.82rem;font-weight:800;color:#475569;margin-bottom:7px}.grupo input,.grupo select{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:11px;font-size:.95rem}.check{display:flex;align-items:center;gap:9px;margin-top:31px}.check input{width:auto}.btn{border:0;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}.btn-criar{background:#2563eb;color:#fff;padding:13px 18px;margin-top:16px}.tabela{overflow:auto}table{width:100%;border-collapse:collapse;min-width:950px}th,td{text-align:left;padding:13px;border-bottom:1px solid #e2e8f0;vertical-align:middle}th{color:#64748b;font-size:.75rem;text-transform:uppercase}.badge{padding:6px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.75rem;font-weight:800}.off{background:#fee2e2;color:#b91c1c}.acoes{display:flex;gap:7px;flex-wrap:wrap}.verde{background:#16a34a;color:#fff}.vermelho{background:#dc2626;color:#fff}.cinza{background:#e2e8f0;color:#334155}.senha-form{display:flex;gap:6px}.senha-form input{width:120px;padding:9px;border:1px solid #cbd5e1;border-radius:9px}.vazio{text-align:center;padding:28px;color:#64748b}@media(max-width:750px){.container{padding:16px}.header{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.check{margin-top:0}.topo{padding:16px}}
+</style>
+</head>
+<body>
+<div class="topo"><strong>SMARTZEN • Super Admin</strong><a href="/superadmin/logout">Sair</a></div>
+<div class="container">
+{% with mensagens=get_flashed_messages(with_categories=true) %}{% for categoria,mensagem in mensagens %}<div class="flash flash-{{ categoria }}">{{ mensagem }}</div>{% endfor %}{% endwith %}
+<div class="header"><div><h1>{{ empresa.nome or 'Empresa sem nome' }}</h1><p>Crie e gerencie somente os usuários desta empresa.</p></div><a class="voltar" href="/superadmin">← Empresas</a></div>
+
+<div class="box">
+<h2>➕ Criar usuário nesta empresa</h2>
+<p class="sub">O vínculo com <strong>{{ empresa.nome }}</strong> será feito automaticamente.</p>
+<form action="{{ url_for('superadmin_criar_usuario_empresa', empresa_id=empresa.id) }}" method="POST">
+<div class="form-grid">
+<div class="grupo"><label>Nome completo</label><input name="nome" required placeholder="Nome do colaborador"></div>
+<div class="grupo"><label>E-mail</label><input type="email" name="email" required placeholder="usuario@email.com"></div>
+<div class="grupo"><label>Senha inicial</label><input type="password" name="senha" minlength="6" required placeholder="Mínimo 6 caracteres"></div>
+<div class="grupo"><label>Telefone</label><input name="telefone" placeholder="(13) 99999-9999"></div>
+<div class="grupo"><label>Cargo</label><select name="cargo"><option>Corretor</option><option>Gerente</option><option>Administrador</option><option>Atendimento</option></select></div>
+<div class="check"><input type="checkbox" id="is_admin" name="is_admin" value="1"><label for="is_admin"><strong>Administrador da imobiliária</strong></label></div>
+</div>
+<button class="btn btn-criar" type="submit">Criar usuário</button>
+</form>
+</div>
+
+<div class="box tabela">
+<h2>👥 Usuários cadastrados</h2>
+<p class="sub">Total: {{ usuarios|length }}</p>
+{% if usuarios %}
+<table><thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Cargo</th><th>Perfil</th><th>Status</th><th>Nova senha</th><th>Ações</th></tr></thead>
+<tbody>{% for u in usuarios %}<tr>
+<td><strong>{{ u.nome or '-' }}</strong></td><td>{{ u.email }}</td><td>{{ u.telefone or '-' }}</td><td>{{ u.cargo or 'Corretor' }}</td><td>{{ 'Administrador' if u.is_admin|int == 1 else 'Usuário' }}</td>
+<td><span class="badge {{ 'off' if u.ativo|int != 1 else '' }}">{{ 'Ativo' if u.ativo|int == 1 else 'Bloqueado' }}</span></td>
+<td><form class="senha-form" action="{{ url_for('superadmin_redefinir_senha_usuario', empresa_id=empresa.id, usuario_id=u.id) }}" method="POST"><input type="password" name="nova_senha" minlength="6" required placeholder="Nova senha"><button class="btn cinza">Salvar</button></form></td>
+<td><div class="acoes">
+<form action="{{ url_for('superadmin_status_usuario', empresa_id=empresa.id, usuario_id=u.id) }}" method="POST"><input type="hidden" name="acao" value="{{ 'ativar' if u.ativo|int != 1 else 'bloquear' }}"><button class="btn {{ 'verde' if u.ativo|int != 1 else 'vermelho' }}">{{ 'Ativar' if u.ativo|int != 1 else 'Bloquear' }}</button></form>
+<form action="{{ url_for('superadmin_excluir_usuario', empresa_id=empresa.id, usuario_id=u.id) }}" method="POST" onsubmit="return confirm('Excluir este usuário?')"><button class="btn vermelho">Excluir</button></form>
+</div></td></tr>{% endfor %}</tbody></table>
+{% else %}<div class="vazio">Nenhum usuário cadastrado nesta empresa.</div>{% endif %}
+</div>
+</div>
+</body></html>
