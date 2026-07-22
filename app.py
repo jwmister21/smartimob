@@ -1618,6 +1618,203 @@ def super_dashboard():
     return render_template("superadmin.html", empresas=empresas)
 
 
+@app.route('/superadmin/empresa/<int:empresa_id>/usuarios')
+@super_admin_required
+def superadmin_empresa_usuarios(empresa_id):
+    conn = get_db()
+    empresa = conn.execute('SELECT * FROM empresas WHERE id = ?', (empresa_id,)).fetchone()
+    if not empresa:
+        conn.close()
+        flash('Empresa não encontrada.', 'warning')
+        return redirect('/superadmin')
+
+    usuarios = conn.execute('''
+        SELECT id, nome, email, telefone, cargo, is_admin, ativo,
+               status_assinatura, data_inicio, data_vencimento
+        FROM usuarios
+        WHERE empresa_id = ?
+        ORDER BY is_admin DESC, nome COLLATE NOCASE ASC
+    ''', (empresa_id,)).fetchall()
+    conn.close()
+    return render_template('superadmin_usuarios.html', empresa=empresa, usuarios=usuarios)
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/usuario/novo', methods=['POST'])
+@super_admin_required
+def superadmin_criar_usuario_empresa(empresa_id):
+    nome = (request.form.get('nome') or '').strip()
+    email = (request.form.get('email') or '').strip().lower()
+    senha = request.form.get('senha') or ''
+    telefone = (request.form.get('telefone') or '').strip()
+    cargo = (request.form.get('cargo') or 'Corretor').strip()
+    is_admin = 1 if request.form.get('is_admin') == '1' else 0
+
+    if not nome or not email or not senha:
+        flash('Preencha nome, e-mail e senha.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    if len(senha) < 6:
+        flash('A senha precisa ter pelo menos 6 caracteres.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    conn = get_db()
+    empresa = conn.execute('SELECT id FROM empresas WHERE id = ?', (empresa_id,)).fetchone()
+    if not empresa:
+        conn.close()
+        flash('Empresa não encontrada.', 'warning')
+        return redirect('/superadmin')
+
+    existente = conn.execute('SELECT id FROM usuarios WHERE lower(email) = lower(?)', (email,)).fetchone()
+    if existente:
+        conn.close()
+        flash('Já existe um usuário com este e-mail.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    hoje = datetime.now().strftime('%Y-%m-%d')
+    senha_hash = generate_password_hash(senha)
+
+    conn.execute('''
+        INSERT INTO usuarios
+        (nome, email, senha, empresa_id, telefone, cargo, is_admin, ativo,
+         status_assinatura, data_inicio)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'ativo', ?)
+    ''', (nome, email, senha_hash, empresa_id, telefone, cargo, is_admin, hoje))
+    conn.commit()
+    conn.close()
+
+    flash(f'Usuário {nome} criado com sucesso nesta empresa.', 'success')
+    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/status', methods=['POST'])
+@super_admin_required
+def superadmin_status_usuario(empresa_id, usuario_id):
+    acao = request.form.get('acao')
+    ativo = 1 if acao == 'ativar' else 0
+    status = 'ativo' if ativo else 'bloqueado'
+
+    conn = get_db()
+    usuario = conn.execute(
+        'SELECT id FROM usuarios WHERE id = ? AND empresa_id = ?',
+        (usuario_id, empresa_id)
+    ).fetchone()
+    if not usuario:
+        conn.close()
+        flash('Usuário não encontrado nesta empresa.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    conn.execute(
+        'UPDATE usuarios SET ativo = ?, status_assinatura = ? WHERE id = ? AND empresa_id = ?',
+        (ativo, status, usuario_id, empresa_id)
+    )
+    conn.commit()
+    conn.close()
+    flash('Status do usuário atualizado.', 'success')
+    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/senha', methods=['POST'])
+@super_admin_required
+def superadmin_redefinir_senha_usuario(empresa_id, usuario_id):
+    nova_senha = request.form.get('nova_senha') or ''
+    if len(nova_senha) < 6:
+        flash('A nova senha precisa ter pelo menos 6 caracteres.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    conn = get_db()
+    cursor = conn.execute(
+        'UPDATE usuarios SET senha = ? WHERE id = ? AND empresa_id = ?',
+        (generate_password_hash(nova_senha), usuario_id, empresa_id)
+    )
+    conn.commit()
+    alterado = cursor.rowcount
+    conn.close()
+
+    flash('Senha redefinida com sucesso.' if alterado else 'Usuário não encontrado.',
+          'success' if alterado else 'warning')
+    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/excluir', methods=['POST'])
+@super_admin_required
+def superadmin_excluir_usuario(empresa_id, usuario_id):
+    conn = get_db()
+    usuario = conn.execute(
+        'SELECT nome FROM usuarios WHERE id = ? AND empresa_id = ?',
+        (usuario_id, empresa_id)
+    ).fetchone()
+    if not usuario:
+        conn.close()
+        flash('Usuário não encontrado nesta empresa.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    total = conn.execute('SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?', (empresa_id,)).fetchone()[0]
+    if total <= 1:
+        conn.close()
+        flash('Não é possível excluir o único usuário da empresa.', 'warning')
+        return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+    conn.execute('DELETE FROM usuarios WHERE id = ? AND empresa_id = ?', (usuario_id, empresa_id))
+    conn.commit()
+    conn.close()
+    flash(f'Usuário {usuario["nome"]} excluído.', 'success')
+    return redirect(url_for('superadmin_empresa_usuarios', empresa_id=empresa_id))
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/renovar', methods=['POST'])
+@super_admin_required
+def superadmin_renovar_empresa(empresa_id):
+    dias = int(request.form.get('dias') or 30)
+    plano = (request.form.get('plano') or 'mensal').strip()
+    observacao = (request.form.get('observacao') or '').strip()
+    data_personalizada = (request.form.get('data_vencimento') or '').strip()
+
+    if data_personalizada:
+        try:
+            vencimento = datetime.fromisoformat(data_personalizada)
+        except ValueError:
+            flash('Data de vencimento inválida.', 'warning')
+            return redirect('/superadmin')
+    else:
+        vencimento = datetime.now() + timedelta(days=dias)
+
+    conn = get_db()
+    conn.execute('''
+        UPDATE empresas
+        SET data_vencimento = ?, status_assinatura = 'ativo', plano = ?,
+            observacao_assinatura = ?
+        WHERE id = ?
+    ''', (vencimento.isoformat(timespec='seconds'), plano, observacao, empresa_id))
+    conn.execute("UPDATE usuarios SET ativo = 1, status_assinatura = 'ativo' WHERE empresa_id = ?", (empresa_id,))
+    conn.commit()
+    conn.close()
+    flash('Assinatura da empresa renovada.', 'success')
+    return redirect('/superadmin')
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/bloquear', methods=['POST'])
+@super_admin_required
+def superadmin_bloquear_empresa(empresa_id):
+    conn = get_db()
+    conn.execute("UPDATE empresas SET status_assinatura = 'bloqueado' WHERE id = ?", (empresa_id,))
+    conn.execute("UPDATE usuarios SET status_assinatura = 'bloqueado' WHERE empresa_id = ?", (empresa_id,))
+    conn.commit()
+    conn.close()
+    flash('Empresa bloqueada.', 'warning')
+    return redirect('/superadmin')
+
+
+@app.route('/superadmin/empresa/<int:empresa_id>/reativar', methods=['POST'])
+@super_admin_required
+def superadmin_reativar_empresa(empresa_id):
+    conn = get_db()
+    conn.execute("UPDATE empresas SET status_assinatura = 'ativo' WHERE id = ?", (empresa_id,))
+    conn.execute("UPDATE usuarios SET ativo = 1, status_assinatura = 'ativo' WHERE empresa_id = ?", (empresa_id,))
+    conn.commit()
+    conn.close()
+    flash('Empresa reativada.', 'success')
+    return redirect('/superadmin')
+
 @app.route("/privacidade")
 def privacidade():
     return render_template("privacidade.html")
@@ -5226,4 +5423,3 @@ def informa_imovel(imovel_id):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port)
-
