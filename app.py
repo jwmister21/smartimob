@@ -3787,16 +3787,6 @@ def importar_clientes():
 
 
 
-@app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
-@super_admin_required
-def gerenciar_usuarios_empresa(empresa_id):
-    # Busca todos os usuários da empresa selecionada
-    usuarios = db.execute("""
-        SELECT id, nome, email, cargo, is_admin 
-        FROM usuarios WHERE empresa_id = ?
-    """, (empresa_id,)).fetchall()
-
-    return render_template("gerenciar_usuarios.html", usuarios=usuarios, empresa_id=empresa_id)
 
 @app.route("/privacidade")
 def privacidade():
