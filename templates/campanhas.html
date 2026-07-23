@@ -5,7 +5,12 @@
 
 {% block content %}
 <style>
+    * {
+        box-sizing: border-box;
+    }
+
     .campanha-container {
+        width: 100%;
         max-width: 1180px;
         margin: 0 auto;
     }
@@ -15,7 +20,7 @@
         border: 1px solid #e2e8f0;
         border-radius: 24px;
         padding: 26px;
-        box-shadow: 0 14px 35px rgba(15,23,42,.08);
+        box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
         margin-bottom: 25px;
     }
 
@@ -45,21 +50,31 @@
     .btn-whatsapp {
         border: none;
         background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: white;
+        color: #ffffff;
         padding: 14px 20px;
         border-radius: 15px;
+        font-size: 14px;
         font-weight: 900;
         cursor: pointer;
         white-space: nowrap;
-        transition: .2s;
+        transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
     }
 
-    .btn-whatsapp:hover {
+    .btn-whatsapp:hover:not(:disabled) {
         transform: translateY(-1px);
-        box-shadow: 0 12px 25px rgba(34,197,94,.25);
+        box-shadow: 0 12px 25px rgba(34, 197, 94, 0.25);
+    }
+
+    .btn-whatsapp:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
     }
 
     .sessao-info {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
         background: linear-gradient(135deg, #f8fafc, #ecfdf5);
         padding: 16px;
         border-radius: 16px;
@@ -75,7 +90,6 @@
         border-radius: 999px;
         font-size: 13px;
         font-weight: 900;
-        margin-left: 8px;
     }
 
     .status-conectado {
@@ -99,18 +113,24 @@
     }
 
     .qrcode-area img {
-        max-width: 290px;
+        display: block;
         width: 100%;
+        max-width: 290px;
+        margin: 18px auto;
         border-radius: 18px;
-        background: white;
+        background: #ffffff;
         padding: 12px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 12px 25px rgba(15,23,42,.08);
+        box-shadow: 0 12px 25px rgba(15, 23, 42, 0.08);
     }
 
     .qrcode-area h3 {
-        margin-top: 0;
+        margin: 0;
         color: #0f172a;
+    }
+
+    .qrcode-area p {
+        margin-bottom: 0;
     }
 
     .badge-contador {
@@ -123,14 +143,46 @@
         white-space: nowrap;
     }
 
+    .aviso-formato {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 16px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #1e3a8a;
+    }
+
+    .aviso-formato strong {
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .aviso-formato p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .aviso-icone {
+        font-size: 22px;
+        line-height: 1;
+    }
+
     .grid-envio {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 22px;
         margin-bottom: 20px;
     }
 
-    label {
+    .campo-formulario {
+        min-width: 0;
+    }
+
+    .campo-label {
         display: block;
         font-weight: 900;
         color: #334155;
@@ -139,64 +191,138 @@
 
     .textarea-numeros,
     .textarea-mensagem {
+        display: block;
         width: 100%;
         border: 1px solid #cbd5e1;
         background: #f8fafc;
         border-radius: 18px;
         padding: 16px;
         outline: none;
+        font-family: inherit;
         font-size: 15px;
+        line-height: 1.5;
         color: #0f172a;
         resize: vertical;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
     }
 
     .textarea-numeros {
-        min-height: 240px;
+        min-height: 260px;
     }
 
     .textarea-mensagem {
-        min-height: 165px;
+        min-height: 180px;
     }
 
     .textarea-numeros:focus,
     .textarea-mensagem:focus {
         border-color: #22c55e;
         background: #ffffff;
-        box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
     }
 
-    small {
+    .campo-ajuda {
         display: block;
         margin-top: 8px;
         color: #64748b;
+        font-size: 13px;
+        line-height: 1.45;
+    }
+
+    .exemplo-contato {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 8px 10px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        color: #475569;
+        font-family: monospace;
+        font-size: 12px;
     }
 
     .preview-whatsapp {
+        position: relative;
+        overflow: hidden;
         background:
-            radial-gradient(circle at top left, rgba(34,197,94,.16), transparent 32%),
+            radial-gradient(
+                circle at top left,
+                rgba(34, 197, 94, 0.16),
+                transparent 32%
+            ),
             linear-gradient(135deg, #e7f8ee, #f8fafc);
         border: 1px solid #dbeafe;
         border-radius: 20px;
-        min-height: 240px;
+        min-height: 260px;
         padding: 20px;
         display: flex;
         align-items: flex-end;
     }
 
+    .preview-whatsapp::before {
+        content: "Prévia";
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(255, 255, 255, 0.82);
+        color: #64748b;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .preview-bolha {
+        position: relative;
         background: #dcf8c6;
         color: #0f172a;
-        padding: 14px 16px;
+        padding: 14px 16px 20px;
         border-radius: 18px 18px 5px 18px;
+        width: fit-content;
         max-width: 92%;
+        min-width: 170px;
+        min-height: 54px;
         white-space: pre-wrap;
-        box-shadow: 0 6px 15px rgba(15,23,42,.10);
+        overflow-wrap: anywhere;
+        box-shadow: 0 6px 15px rgba(15, 23, 42, 0.10);
         font-size: 15px;
         line-height: 1.45;
     }
 
+    .preview-horario {
+        position: absolute;
+        right: 9px;
+        bottom: 5px;
+        color: #64748b;
+        font-size: 10px;
+    }
+
     .campo-mensagem {
         margin-bottom: 18px;
+    }
+
+    .atalhos-mensagem {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .atalho {
+        border: 1px solid #bbf7d0;
+        background: #f0fdf4;
+        color: #166534;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .atalho:hover {
+        background: #dcfce7;
     }
 
     .btn-enviar-massa {
@@ -211,8 +337,9 @@
     .campanha-finalizada {
         padding: 15px;
         border-radius: 16px;
-        font-weight: 900;
+        font-weight: 800;
         margin-bottom: 18px;
+        overflow-wrap: anywhere;
     }
 
     .alerta-sucesso {
@@ -237,8 +364,15 @@
         gap: 12px;
     }
 
-    .campanha-finalizada span {
+    .campanha-finalizada > span {
         font-size: 28px;
+    }
+
+    .campanha-finalizada small {
+        display: block;
+        margin-top: 4px;
+        color: #166534;
+        font-weight: 700;
     }
 
     .loading-envio {
@@ -251,6 +385,28 @@
         color: #334155;
         font-weight: 800;
         text-align: center;
+    }
+
+    .loading-conteudo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid #bbf7d0;
+        border-top-color: #16a34a;
+        border-radius: 50%;
+        animation: girar 0.8s linear infinite;
+    }
+
+    @keyframes girar {
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     @media (max-width: 850px) {
@@ -267,19 +423,49 @@
         .btn-whatsapp {
             width: 100%;
         }
+
+        .badge-contador {
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .box-whatsapp {
+            padding: 18px;
+            border-radius: 19px;
+        }
+
+        .whatsapp-header h2,
+        .envio-topo h2 {
+            font-size: 21px;
+        }
+
+        .textarea-numeros {
+            min-height: 220px;
+        }
+
+        .preview-whatsapp {
+            min-height: 220px;
+        }
     }
 </style>
 
 <div class="campanha-container">
 
+    <!-- CONEXÃO COM WHATSAPP -->
     <div class="box-whatsapp">
         <div class="whatsapp-header">
             <div>
                 <h2>WhatsApp da Campanha</h2>
-                <p>Crie ou conecte uma sessão para enviar mensagens pelo CRM.</p>
+                <p>
+                    Crie ou conecte uma sessão para enviar mensagens pelo CRM.
+                </p>
             </div>
 
-            <form method="POST" action="/campanhas/criar-sessao-whatsapp">
+            <form
+                method="POST"
+                action="/campanhas/criar-sessao-whatsapp"
+            >
                 <button type="submit" class="btn-whatsapp">
                     + Criar / Conectar Sessão
                 </button>
@@ -287,144 +473,460 @@
         </div>
 
         {% if erro_whatsapp %}
-            <div class="erro-whatsapp">{{ erro_whatsapp }}</div>
+            <div class="erro-whatsapp">
+                {{ erro_whatsapp }}
+            </div>
         {% endif %}
 
         {% if nome_instancia %}
             <div class="sessao-info">
-                <strong>Instância:</strong> {{ nome_instancia }}
+                <strong>Instância:</strong>
+                <span>{{ nome_instancia }}</span>
 
                 {% if qrcode %}
-                    <span class="status-aguardando">Aguardando conexão</span>
+                    <span class="status-aguardando">
+                        Aguardando conexão
+                    </span>
                 {% else %}
-                    <span class="status-conectado">Conectado</span>
+                    <span class="status-conectado">
+                        Conectado
+                    </span>
                 {% endif %}
             </div>
         {% else %}
             <div class="sem-sessao">
-                Nenhuma sessão criada ainda. Clique em <strong>Criar / Conectar Sessão</strong>.
+                Nenhuma sessão criada ainda.
+                Clique em
+                <strong>Criar / Conectar Sessão</strong>.
             </div>
         {% endif %}
 
         {% if qrcode %}
             <div class="qrcode-area">
                 <h3>Escaneie o QR Code</h3>
-                <img src="{{ qrcode }}" alt="QR Code WhatsApp">
-                <p>Abra o WhatsApp → Dispositivos conectados → Conectar dispositivo</p>
-                <small>A tela atualiza sozinha quando conectar.</small>
+
+                <img
+                    src="{{ qrcode }}"
+                    alt="QR Code para conectar o WhatsApp"
+                >
+
+                <p>
+                    Abra o WhatsApp →
+                    Dispositivos conectados →
+                    Conectar dispositivo
+                </p>
+
+                <small class="campo-ajuda">
+                    A página será atualizada automaticamente após a conexão.
+                </small>
             </div>
 
             <script>
-                setTimeout(function () {
+                window.setTimeout(function () {
                     window.location.reload();
                 }, 5000);
             </script>
         {% endif %}
     </div>
 
+    <!-- ÁREA DE DISPARO -->
     {% if nome_instancia and not qrcode %}
-    <div class="box-whatsapp envio-massa">
-        <div class="envio-topo">
-            <div>
-                <h2>Disparo de Mensagens</h2>
-                <p>Cole vários números, um por linha, e envie sua mensagem.</p>
-            </div>
-
-            <span class="badge-contador">
-                <span id="contadorNumeros">0</span> destinatário(s)
-            </span>
-        </div>
-
-        {% if campanha_finalizada %}
-            <div class="campanha-finalizada">
-                <span>✅</span>
+        <div class="box-whatsapp envio-massa">
+            <div class="envio-topo">
                 <div>
-                    Campanha finalizada!<br>
-                    <small>{{ campanha_finalizada }}</small>
+                    <h2>Disparo de Mensagens</h2>
+                    <p>
+                        Informe os contatos e escreva uma mensagem personalizada.
+                    </p>
                 </div>
+
+                <span class="badge-contador">
+                    <span id="contadorNumeros">0</span>
+                    destinatário(s)
+                </span>
             </div>
-        {% endif %}
 
-        {% if sucesso_envio %}
-            <div class="alerta-sucesso">{{ sucesso_envio }}</div>
-        {% endif %}
+            {% if campanha_finalizada %}
+                <div class="campanha-finalizada">
+                    <span>✅</span>
 
-        {% if erro_envio %}
-            <div class="alerta-erro">{{ erro_envio }}</div>
-        {% endif %}
+                    <div>
+                        Campanha finalizada!
 
-        <form method="POST" action="/campanhas/enviar-teste-whatsapp" id="formCampanha">
-            <div class="grid-envio">
-                <div>
-                    <label>Contatos</label>
-<textarea 
-    name="numeros" 
-    id="numeros"
-    class="textarea-numeros"
-    placeholder="João;5511999999999&#10;Maria;5511988888888&#10;Carlos;5511977777777"
-    required
-></textarea>
-<small>Digite um contato por linha no formato: Nome;Telefone</small>
-                <div>
-                    <label>Prévia da mensagem</label>
-                    <div class="preview-whatsapp">
-                        <div class="preview-bolha" id="previewMensagem">
-                            Sua mensagem aparecerá aqui...
-                        </div>
+                        <small>
+                            {{ campanha_finalizada }}
+                        </small>
                     </div>
                 </div>
+            {% endif %}
+
+            {% if sucesso_envio %}
+                <div class="alerta-sucesso">
+                    {{ sucesso_envio }}
+                </div>
+            {% endif %}
+
+            {% if erro_envio %}
+                <div class="alerta-erro">
+                    {{ erro_envio }}
+                </div>
+            {% endif %}
+
+            <div class="aviso-formato">
+                <div class="aviso-icone">💡</div>
+
+                <div>
+                    <strong>Como preencher os contatos</strong>
+
+                    <p>
+                        Use um contato por linha no formato
+                        <strong>Nome;Telefone</strong>.
+                        Na mensagem, utilize
+                        <strong>{nome}</strong>
+                        para inserir o nome automaticamente.
+                    </p>
+                </div>
             </div>
 
-            <div class="campo-mensagem">
-                <label>Mensagem</label>
-                <textarea 
-                    name="mensagem" 
-                    id="mensagem"
-                    class="textarea-mensagem"
-                    placeholder="Olá {name}, tudo bem? Tenho uma ótima oportunidade de imóvel para você."
-                    required
-                ></textarea>
-            </div>
+            <form
+                method="POST"
+                action="/campanhas/enviar-teste-whatsapp"
+                id="formCampanha"
+            >
+                <div class="grid-envio">
 
-            <button type="submit" class="btn-whatsapp btn-enviar-massa" id="btnEnviar">
-                📤 Enviar para todos
-            </button>
+                    <!-- CONTATOS -->
+                    <div class="campo-formulario">
+                        <label for="numeros" class="campo-label">
+                            Contatos
+                        </label>
 
-            <div class="loading-envio" id="loadingEnvio">
-                Enviando campanha... não feche esta página.
-            </div>
-        </form>
-    </div>
+                        <textarea
+                            name="numeros"
+                            id="numeros"
+                            class="textarea-numeros"
+                            placeholder="João;62999999999&#10;Maria;62988888888&#10;Carlos;62977777777"
+                            autocomplete="off"
+                            required
+                        ></textarea>
 
-    <script>
-        const numeros = document.getElementById("numeros");
-        const mensagem = document.getElementById("mensagem");
-        const contador = document.getElementById("contadorNumeros");
-        const preview = document.getElementById("previewMensagem");
-        const formCampanha = document.getElementById("formCampanha");
-        const btnEnviar = document.getElementById("btnEnviar");
-        const loadingEnvio = document.getElementById("loadingEnvio");
+                        <small class="campo-ajuda">
+                            Digite um contato por linha.
+                            O código 55 será incluído automaticamente quando necessário.
+                        </small>
 
-        function atualizarTela() {
-            const lista = numeros.value
-                .split("\n")
-                .map(n => n.trim())
-                .filter(n => n.length > 0);
+                        <span class="exemplo-contato">
+                            Exemplo: João;62999999999
+                        </span>
+                    </div>
 
-            contador.innerText = lista.length;
-            preview.innerText = mensagem.value.trim() || "Sua mensagem aparecerá aqui...";
-        }
+                    <!-- PRÉVIA -->
+                    <div class="campo-formulario">
+                        <label class="campo-label">
+                            Prévia da mensagem
+                        </label>
 
-        numeros.addEventListener("input", atualizarTela);
-        mensagem.addEventListener("input", atualizarTela);
+                        <div class="preview-whatsapp">
+                            <div
+                                class="preview-bolha"
+                                id="previewMensagem"
+                            >
+                                Sua mensagem aparecerá aqui...
+                                <span
+                                    class="preview-horario"
+                                    id="previewHorario"
+                                ></span>
+                            </div>
+                        </div>
 
-        formCampanha.addEventListener("submit", function () {
-            btnEnviar.disabled = true;
-            btnEnviar.innerText = "Enviando...";
-            loadingEnvio.style.display = "block";
-        });
-    </script>
+                        <small class="campo-ajuda">
+                            A prévia utiliza o primeiro nome da lista.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- MENSAGEM -->
+                <div class="campo-mensagem">
+                    <label for="mensagem" class="campo-label">
+                        Mensagem
+                    </label>
+
+                    <textarea
+                        name="mensagem"
+                        id="mensagem"
+                        class="textarea-mensagem"
+                        placeholder="Olá, {nome}! Tudo bem? Tenho uma ótima oportunidade de imóvel para você."
+                        maxlength="4000"
+                        required
+                    ></textarea>
+
+                    <div class="atalhos-mensagem">
+                        <button
+                            type="button"
+                            class="atalho"
+                            data-texto="{nome}"
+                        >
+                            + Nome
+                        </button>
+
+                        <button
+                            type="button"
+                            class="atalho"
+                            data-texto="{telefone}"
+                        >
+                            + Telefone
+                        </button>
+                    </div>
+
+                    <small class="campo-ajuda">
+                        Variáveis disponíveis:
+                        <strong>{nome}</strong>,
+                        <strong>{name}</strong>,
+                        <strong>{telefone}</strong>
+                        e
+                        <strong>{phone}</strong>.
+                    </small>
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn-whatsapp btn-enviar-massa"
+                    id="btnEnviar"
+                >
+                    📤 Enviar para todos
+                </button>
+
+                <div
+                    class="loading-envio"
+                    id="loadingEnvio"
+                    aria-live="polite"
+                >
+                    <div class="loading-conteudo">
+                        <span class="loading-spinner"></span>
+
+                        <span>
+                            Enviando campanha. Não feche esta página.
+                        </span>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const numeros = document.getElementById("numeros");
+                const mensagem = document.getElementById("mensagem");
+                const contador = document.getElementById("contadorNumeros");
+                const preview = document.getElementById("previewMensagem");
+                const formCampanha = document.getElementById("formCampanha");
+                const btnEnviar = document.getElementById("btnEnviar");
+                const loadingEnvio = document.getElementById("loadingEnvio");
+                const atalhos = document.querySelectorAll(".atalho");
+
+                if (
+                    !numeros ||
+                    !mensagem ||
+                    !contador ||
+                    !preview ||
+                    !formCampanha ||
+                    !btnEnviar ||
+                    !loadingEnvio
+                ) {
+                    return;
+                }
+
+                function obterListaContatos() {
+                    return numeros.value
+                        .split(/\r?\n/)
+                        .map(function (linha) {
+                            return linha.trim();
+                        })
+                        .filter(function (linha) {
+                            return linha.length > 0;
+                        });
+                }
+
+                function obterDadosPrimeiroContato(lista) {
+                    const primeiraLinha = lista[0] || "";
+
+                    let nome = "cliente";
+                    let telefone = "5511999999999";
+
+                    if (primeiraLinha.includes(";")) {
+                        const partes = primeiraLinha.split(";", 2);
+
+                        nome = partes[0].trim() || "cliente";
+                        telefone = partes[1]
+                            ? partes[1].replace(/\D/g, "")
+                            : telefone;
+                    } else if (primeiraLinha.includes(",")) {
+                        const partes = primeiraLinha.split(",", 2);
+
+                        nome = partes[0].trim() || "cliente";
+                        telefone = partes[1]
+                            ? partes[1].replace(/\D/g, "")
+                            : telefone;
+                    } else if (primeiraLinha) {
+                        telefone = primeiraLinha.replace(/\D/g, "");
+                    }
+
+                    if (!telefone) {
+                        telefone = "5511999999999";
+                    }
+
+                    if (!telefone.startsWith("55")) {
+                        telefone = "55" + telefone;
+                    }
+
+                    return {
+                        nome: nome,
+                        telefone: telefone
+                    };
+                }
+
+                function substituirVariaveis(
+                    texto,
+                    nome,
+                    telefone
+                ) {
+                    return texto
+                        .replaceAll("{nome}", nome)
+                        .replaceAll("{name}", nome)
+                        .replaceAll("{telefone}", telefone)
+                        .replaceAll("{phone}", telefone);
+                }
+
+                function atualizarHorario() {
+                    const agora = new Date();
+
+                    return agora.toLocaleTimeString(
+                        "pt-BR",
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    );
+                }
+
+                function atualizarTela() {
+                    const lista = obterListaContatos();
+                    const contato = obterDadosPrimeiroContato(lista);
+
+                    contador.textContent = lista.length;
+
+                    const textoOriginal = mensagem.value.trim();
+
+                    const textoFinal = substituirVariaveis(
+                        textoOriginal,
+                        contato.nome,
+                        contato.telefone
+                    );
+
+                    preview.textContent = textoFinal ||
+                        "Sua mensagem aparecerá aqui...";
+
+                    const horario = document.createElement("span");
+                    horario.className = "preview-horario";
+                    horario.textContent = atualizarHorario();
+
+                    preview.appendChild(horario);
+                }
+
+                function inserirTextoNoCursor(textarea, texto) {
+                    const inicio = textarea.selectionStart;
+                    const fim = textarea.selectionEnd;
+                    const valorAtual = textarea.value;
+
+                    textarea.value =
+                        valorAtual.substring(0, inicio) +
+                        texto +
+                        valorAtual.substring(fim);
+
+                    const novaPosicao = inicio + texto.length;
+
+                    textarea.focus();
+                    textarea.setSelectionRange(
+                        novaPosicao,
+                        novaPosicao
+                    );
+
+                    atualizarTela();
+                }
+
+                numeros.addEventListener(
+                    "input",
+                    atualizarTela
+                );
+
+                mensagem.addEventListener(
+                    "input",
+                    atualizarTela
+                );
+
+                atalhos.forEach(function (botao) {
+                    botao.addEventListener(
+                        "click",
+                        function () {
+                            const texto = botao.dataset.texto || "";
+
+                            inserirTextoNoCursor(
+                                mensagem,
+                                texto
+                            );
+                        }
+                    );
+                });
+
+                formCampanha.addEventListener(
+                    "submit",
+                    function (evento) {
+                        const lista = obterListaContatos();
+                        const textoMensagem = mensagem.value.trim();
+
+                        if (lista.length === 0) {
+                            evento.preventDefault();
+
+                            alert(
+                                "Informe pelo menos um contato."
+                            );
+
+                            numeros.focus();
+                            return;
+                        }
+
+                        if (!textoMensagem) {
+                            evento.preventDefault();
+
+                            alert(
+                                "Digite a mensagem da campanha."
+                            );
+
+                            mensagem.focus();
+                            return;
+                        }
+
+                        const confirmar = window.confirm(
+                            "Confirma o envio para " +
+                            lista.length +
+                            " destinatário(s)?"
+                        );
+
+                        if (!confirmar) {
+                            evento.preventDefault();
+                            return;
+                        }
+
+                        btnEnviar.disabled = true;
+                        btnEnviar.textContent =
+                            "⏳ Enviando campanha...";
+
+                        loadingEnvio.style.display = "block";
+                    }
+                );
+
+                atualizarTela();
+            });
+        </script>
     {% endif %}
-
 </div>
 {% endblock %}
