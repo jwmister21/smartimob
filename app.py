@@ -1004,6 +1004,20 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# ===========================
+# SUPER ADMIN
+# ===========================
+
+def super_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("super_admin"):
+            return redirect(url_for("superadmin_login"))
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
 def salvar_status_whatsapp(sessao, status):
 
     conn = sqlite3.connect(DB_PATH)
@@ -7259,13 +7273,6 @@ def atualizar_banco_superadmin():
 atualizar_banco_superadmin()
 
 
-def super_admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get("super_admin"):
-            return redirect("/superadmin/login")
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 @app.route("/superadmin/login", methods=["GET", "POST"])
