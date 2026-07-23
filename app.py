@@ -4386,18 +4386,27 @@ def verificar_login():
 @verificar_sessao
 def campanhas_enviar_teste_whatsapp():
     """
-    Envia mensagens personalizadas pela Evolution API.
-
     Formatos aceitos:
-        João;62999999999
-        Maria,62988888888
-        62977777777
 
-    Variáveis aceitas:
-        {nome}
-        {name}
-        {telefone}
-        {phone}
+    João;62999999999
+    João,62999999999
+    João.62999999999
+    João|62999999999
+    João:62999999999
+    João/62999999999
+    João-62999999999
+    João=62999999999
+    João => 62999999999
+    João 62999999999
+    João (62) 99999-9999
+    62999999999
+
+    Variáveis da mensagem:
+
+    {nome}
+    {name}
+    {telefone}
+    {phone}
     """
 
     nome_instancia = str(
@@ -4407,7 +4416,7 @@ def campanhas_enviar_teste_whatsapp():
     contatos_texto = request.form.get("numeros", "").strip()
     mensagem_base = request.form.get("mensagem", "").strip()
 
-    # Limpa mensagens antigas antes de iniciar.
+    # Limpa os avisos da campanha anterior.
     session.pop("erro_envio", None)
     session.pop("sucesso_envio", None)
     session.pop("campanha_finalizada", None)
@@ -4431,8 +4440,8 @@ def campanhas_enviar_teste_whatsapp():
         session["erro_envio"] = "Digite a mensagem da campanha."
         return redirect("/campanhas")
 
-    evolution_url = str(EVOLUTION_URL).rstrip("/")
-    evolution_api_key = str(EVOLUTION_API_KEY).strip()
+    evolution_url = str(EVOLUTION_URL or "").rstrip("/")
+    evolution_api_key = str(EVOLUTION_API_KEY or "").strip()
 
     if not evolution_url or not evolution_api_key:
         logger.error("Evolution API não configurada corretamente.")
@@ -4448,16 +4457,15 @@ def campanhas_enviar_teste_whatsapp():
         "Accept": "application/json"
     }
 
-    # Limite para evitar que uma requisição Flask permaneça aberta
-    # durante muito tempo e seja encerrada pelo Railway.
+    # Evita deixar uma requisição aberta por tempo demais.
     LIMITE_CONTATOS = 30
 
-    # Intervalo entre os envios.
+    # Pausa entre as mensagens.
     INTERVALO_MINIMO = 4
     INTERVALO_MAXIMO = 7
 
     # =========================================================
-    # VERIFICA O ESTADO REAL DA INSTÂNCIA
+    # VERIFICA SE A INSTÂNCIA ESTÁ CONECTADA
     # =========================================================
 
     try:
@@ -4471,7 +4479,7 @@ def campanhas_enviar_teste_whatsapp():
         )
 
         logger.info(
-            "CONEXÃO EVOLUTION | instância=%s | status=%s | resposta=%s",
+            "CONEXÃO EVOLUTION | instancia=%s | status=%s | resposta=%s",
             nome_instancia,
             resposta_conexao.status_code,
             resposta_conexao.text[:500]
@@ -4480,7 +4488,8 @@ def campanhas_enviar_teste_whatsapp():
         if resposta_conexao.status_code not in (200, 201):
             session["erro_envio"] = (
                 "Não foi possível confirmar a conexão do WhatsApp. "
-                f"Evolution retornou HTTP {resposta_conexao.status_code}."
+                f"A Evolution retornou HTTP "
+                f"{resposta_conexao.status_code}."
             )
             return redirect("/campanhas")
 
@@ -4489,15 +4498,12 @@ def campanhas_enviar_teste_whatsapp():
         except ValueError:
             dados_conexao = {}
 
-        # A Evolution pode retornar:
-        # {"instance": {"state": "open"}}
-        # ou {"state": "open"}
         estado = str(
             dados_conexao.get("instance", {}).get("state")
             or dados_conexao.get("state")
             or dados_conexao.get("status")
             or ""
-        ).lower().strip()
+        ).strip().lower()
 
         estados_conectados = {
             "open",
@@ -4508,32 +4514,35 @@ def campanhas_enviar_teste_whatsapp():
         if estado not in estados_conectados:
             session["erro_envio"] = (
                 "O WhatsApp não está conectado neste momento. "
-                f"Estado informado pela Evolution: {estado or 'desconhecido'}. "
+                f"Estado atual: {estado or 'desconhecido'}. "
                 "Reconecte a sessão e tente novamente."
             )
             return redirect("/campanhas")
 
     except requests.ConnectTimeout:
-        logger.exception("Timeout ao conectar com a Evolution API.")
+        logger.exception(
+            "Timeout ao conectar com a Evolution API."
+        )
 
         session["erro_envio"] = (
             "A Evolution API demorou para aceitar a conexão. "
-            "Tente novamente em alguns instantes."
+            "Tente novamente."
         )
         return redirect("/campanhas")
 
     except requests.ConnectionError:
-        logger.exception("Não foi possível acessar a Evolution API.")
+        logger.exception(
+            "Não foi possível acessar a Evolution API."
+        )
 
         session["erro_envio"] = (
-            "O servidor da Evolution API está indisponível. "
-            "Verifique se ele está ativo."
+            "O servidor da Evolution API está indisponível."
         )
         return redirect("/campanhas")
 
     except requests.RequestException as erro:
         logger.exception(
-            "Erro ao verificar conexão da instância: %s",
+            "Erro ao consultar a conexão da Evolution: %s",
             erro
         )
 
@@ -4543,7 +4552,7 @@ def campanhas_enviar_teste_whatsapp():
         return redirect("/campanhas")
 
     # =========================================================
-    # NORMALIZAÇÃO DOS CONTATOS
+    # LEITURA E NORMALIZAÇÃO DOS CONTATOS
     # =========================================================
 
     contatos = []
@@ -4562,38 +4571,62 @@ def campanhas_enviar_teste_whatsapp():
         nome = ""
         telefone_digitado = ""
 
-        if ";" in linha:
-            nome, telefone_digitado = linha.split(";", 1)
+        # Procura um telefone no final da linha.
+        # Aceita números com espaços, parênteses, pontos e hífens.
+        telefone_encontrado = re.search(
+            r"(\+?\d[\d\s().-]{8,}\d)$",
+            linha
+        )
 
-        elif "," in linha:
-            nome, telefone_digitado = linha.split(",", 1)
+        if telefone_encontrado:
+            telefone_digitado = telefone_encontrado.group(1)
+
+            # Tudo que estiver antes do telefone será tratado como nome.
+            nome = linha[:telefone_encontrado.start()].strip()
+
+            # Remove separadores deixados no final do nome.
+            nome = re.sub(
+                r"[\s;,.\|:/=\->]+$",
+                "",
+                nome
+            ).strip()
 
         else:
-            telefone_digitado = linha
+            # Caso não encontre pelo padrão anterior, verifica se
+            # a linha inteira contém somente um número.
+            somente_digitos = re.sub(r"\D", "", linha)
 
-        nome = nome.strip()
+            if len(somente_digitos) in (10, 11, 12, 13):
+                telefone_digitado = linha
+                nome = ""
+            else:
+                linhas_invalidas.append(
+                    f"Linha {numero_linha}: {linha_original.strip()}"
+                )
+                continue
+
+        # Deixa somente os números.
         telefone = re.sub(r"\D", "", telefone_digitado)
 
-        # Remove 00 usado antes do código do país.
+        # Remove o prefixo internacional 00.
         if telefone.startswith("00"):
             telefone = telefone[2:]
 
-        # Remove zero antes do DDD.
+        # Remove zeros antes do DDD.
         telefone = telefone.lstrip("0")
 
-        # Adiciona código do Brasil.
+        # Adiciona o código do Brasil quando necessário.
         if telefone and not telefone.startswith("55"):
             telefone = f"55{telefone}"
 
-        # Brasil:
-        # 55 + DDD + telefone = normalmente 12 ou 13 dígitos.
+        # 55 + DDD + número:
+        # normalmente 12 ou 13 dígitos.
         if len(telefone) not in (12, 13):
             linhas_invalidas.append(
-                f"Linha {numero_linha}: {linha_original.strip()}"
+                f"Linha {numero_linha}: telefone inválido"
             )
             continue
 
-        # DDD não pode começar com zero.
         ddd = telefone[2:4]
 
         if len(ddd) != 2 or ddd.startswith("0"):
@@ -4602,8 +4635,12 @@ def campanhas_enviar_teste_whatsapp():
             )
             continue
 
-        # Evita enviar duas vezes para o mesmo número.
+        # Evita disparar duas vezes para o mesmo telefone.
         if telefone in numeros_adicionados:
+            logger.info(
+                "CONTATO DUPLICADO IGNORADO | telefone=%s",
+                telefone
+            )
             continue
 
         numeros_adicionados.add(telefone)
@@ -4616,15 +4653,14 @@ def campanhas_enviar_teste_whatsapp():
     if not contatos:
         session["erro_envio"] = (
             "Nenhum contato válido foi encontrado. "
-            "Use o formato Nome;Telefone. "
             "Exemplo: João;62999999999"
         )
         return redirect("/campanhas")
 
     if len(contatos) > LIMITE_CONTATOS:
         session["erro_envio"] = (
-            f"Esta versão permite até {LIMITE_CONTATOS} contatos "
-            "por campanha. Divida a lista em grupos menores."
+            f"Envie no máximo {LIMITE_CONTATOS} contatos por campanha. "
+            "Divida a lista em grupos menores."
         )
         return redirect("/campanhas")
 
@@ -4659,7 +4695,10 @@ def campanhas_enviar_teste_whatsapp():
         }
 
         logger.info(
-            "INICIANDO ENVIO | %s/%s | nome=%s | telefone=%s",
+            (
+                "INICIANDO ENVIO | atual=%s | total=%s | "
+                "nome=%s | telefone=%s"
+            ),
             indice,
             total_contatos,
             nome,
@@ -4677,7 +4716,10 @@ def campanhas_enviar_teste_whatsapp():
             corpo_resposta = resposta.text[:1000]
 
             logger.info(
-                "RESPOSTA ENVIO | telefone=%s | status=%s | resposta=%s",
+                (
+                    "RESPOSTA ENVIO | telefone=%s | "
+                    "status=%s | resposta=%s"
+                ),
                 telefone,
                 resposta.status_code,
                 corpo_resposta
@@ -4689,21 +4731,17 @@ def campanhas_enviar_teste_whatsapp():
                 except ValueError:
                     dados_envio = {}
 
-                # Algumas respostas podem retornar erro dentro do JSON,
-                # mesmo com um status HTTP inesperadamente positivo.
                 erro_interno = (
                     dados_envio.get("error")
                     or dados_envio.get("errors")
                 )
 
                 if erro_interno:
-                    falhas.append(
-                        {
-                            "nome": nome,
-                            "telefone": telefone,
-                            "motivo": str(erro_interno)[:180]
-                        }
-                    )
+                    falhas.append({
+                        "nome": nome,
+                        "telefone": telefone,
+                        "motivo": str(erro_interno)[:180]
+                    })
                 else:
                     enviados.append({
                         "nome": nome,
@@ -4717,7 +4755,7 @@ def campanhas_enviar_teste_whatsapp():
                     "motivo": "Chave da Evolution API inválida."
                 })
 
-                # Não adianta tentar os próximos com uma chave inválida.
+                # Interrompe, pois todos os próximos terão o mesmo erro.
                 break
 
             elif resposta.status_code == 404:
@@ -4729,7 +4767,6 @@ def campanhas_enviar_teste_whatsapp():
                     )
                 })
 
-                # Provável problema global da instância.
                 break
 
             elif resposta.status_code == 429:
@@ -4737,12 +4774,10 @@ def campanhas_enviar_teste_whatsapp():
                     "nome": nome,
                     "telefone": telefone,
                     "motivo": (
-                        "Evolution recusou temporariamente por excesso "
-                        "de requisições."
+                        "Muitas requisições em pouco tempo."
                     )
                 })
 
-                # Pausa maior antes de continuar.
                 time.sleep(15)
 
             elif resposta.status_code >= 500:
@@ -4769,7 +4804,7 @@ def campanhas_enviar_teste_whatsapp():
 
         except requests.ConnectTimeout:
             logger.exception(
-                "Timeout de conexão ao enviar para %s",
+                "Timeout de conexão ao enviar para %s.",
                 telefone
             )
 
@@ -4777,30 +4812,29 @@ def campanhas_enviar_teste_whatsapp():
                 "nome": nome,
                 "telefone": telefone,
                 "motivo": (
-                    "Timeout ao conectar com a Evolution API."
+                    "Tempo esgotado ao conectar com a Evolution."
                 )
             })
 
         except requests.ReadTimeout:
             logger.exception(
-                "Timeout de resposta ao enviar para %s",
+                "Timeout de resposta ao enviar para %s.",
                 telefone
             )
 
-            # Não repetimos automaticamente nesse caso.
-            # A Evolution pode ter enviado e apenas demorado para responder.
+            # Não repete automaticamente para evitar mensagem duplicada.
             falhas.append({
                 "nome": nome,
                 "telefone": telefone,
                 "motivo": (
                     "A Evolution demorou para responder. "
-                    "Confira no WhatsApp antes de reenviar."
+                    "Confira se a mensagem foi enviada antes de repetir."
                 )
             })
 
         except requests.ConnectionError:
             logger.exception(
-                "Conexão perdida durante envio para %s",
+                "Conexão perdida durante o envio para %s.",
                 telefone
             )
 
@@ -4812,13 +4846,11 @@ def campanhas_enviar_teste_whatsapp():
                 )
             })
 
-            # Se o servidor caiu, interrompe para não marcar
-            # dezenas de contatos com o mesmo erro.
             break
 
         except requests.RequestException as erro:
             logger.exception(
-                "Erro de requisição no envio para %s: %s",
+                "Erro ao enviar para %s: %s",
                 telefone,
                 erro
             )
@@ -4857,7 +4889,7 @@ def campanhas_enviar_teste_whatsapp():
             time.sleep(intervalo)
 
     # =========================================================
-    # RESULTADO DA CAMPANHA
+    # RESULTADO FINAL
     # =========================================================
 
     quantidade_enviados = len(enviados)
@@ -4879,7 +4911,9 @@ def campanhas_enviar_teste_whatsapp():
     mensagens_erro = []
 
     if linhas_invalidas:
-        resumo_invalidos = " | ".join(linhas_invalidas[:5])
+        resumo_invalidos = " | ".join(
+            linhas_invalidas[:5]
+        )
 
         if len(linhas_invalidas) > 5:
             resumo_invalidos += (
@@ -4902,7 +4936,9 @@ def campanhas_enviar_teste_whatsapp():
         texto_falhas = " | ".join(resumo_falhas)
 
         if len(falhas) > 5:
-            texto_falhas += f" | e mais {len(falhas) - 5}"
+            texto_falhas += (
+                f" | e mais {len(falhas) - 5}"
+            )
 
         mensagens_erro.append(
             f"Falhas no envio: {texto_falhas}."
@@ -4913,8 +4949,8 @@ def campanhas_enviar_teste_whatsapp():
 
     logger.info(
         (
-            "CAMPANHA FINALIZADA | instância=%s | "
-            "enviados=%s | falhas=%s | inválidos=%s"
+            "CAMPANHA FINALIZADA | instancia=%s | "
+            "enviados=%s | falhas=%s | invalidos=%s"
         ),
         nome_instancia,
         quantidade_enviados,
@@ -4923,20 +4959,7 @@ def campanhas_enviar_teste_whatsapp():
     )
 
     return redirect("/campanhas")
-@app.route("/api/session/create", methods=["POST"])
-def create_session():
-    data = request.json
-    session = data.get("session")
-
-    # chama WPPConnect
-    url = f"{WPP_URL}/api/{session}/start-session"
-
-    res = requests.post(url, headers={
-        "Authorization": f"Bearer {TOKEN}"
-    }, json={"waitQrCode": True})
-
-    return jsonify(res.json())
-
+    
 @app.route("/api/session/<session>/status")
 def session_status(session):
 
