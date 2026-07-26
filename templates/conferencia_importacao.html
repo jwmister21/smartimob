@@ -1,0 +1,843 @@
+{% extends 'base.html' %}
+
+{% block title %}Conferir Importação{% endblock %}
+{% block pagina %}Conferir Importação{% endblock %}
+
+{% block content %}
+
+<style>
+    .conferencia-container {
+        max-width: 1450px;
+        margin: 0 auto;
+    }
+
+    .resumo-topo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 22px;
+        padding: 24px;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        background: #ffffff;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .resumo-topo h2 {
+        margin: 0 0 5px;
+        color: #0f172a;
+        font-size: 23px;
+        font-weight: 800;
+    }
+
+    .resumo-topo p {
+        margin: 0;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .contador-imoveis {
+        min-width: 150px;
+        padding: 14px 20px;
+        text-align: center;
+        border-radius: 17px;
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .contador-imoveis strong {
+        display: block;
+        font-size: 25px;
+    }
+
+    .contador-imoveis span {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .barra-acoes {
+        position: sticky;
+        top: 92px;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 14px 18px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.07);
+    }
+
+    .acoes-selecao {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+    }
+
+    .btn-secundario,
+    .btn-importar {
+        border: none;
+        border-radius: 12px;
+        padding: 11px 16px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .btn-secundario {
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+    }
+
+    .btn-secundario:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+    }
+
+    .btn-importar {
+        min-width: 210px;
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        color: #ffffff;
+        box-shadow: 0 11px 23px rgba(22, 163, 74, 0.2);
+    }
+
+    .btn-importar:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-importar:disabled {
+        opacity: 0.65;
+        cursor: wait;
+        transform: none;
+    }
+
+    .lista-imoveis {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .imovel-card {
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        border-radius: 22px;
+        background: #ffffff;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+        transition: 0.22s ease;
+    }
+
+    .imovel-card.desmarcado {
+        opacity: 0.62;
+    }
+
+    .imovel-cabecalho {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 17px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        background: linear-gradient(135deg, #f8fafc, #eff6ff);
+    }
+
+    .seletor-imovel {
+        position: relative;
+        width: 26px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+
+    .seletor-imovel input {
+        width: 26px;
+        height: 26px;
+        accent-color: #2563eb;
+        cursor: pointer;
+    }
+
+    .cabecalho-texto {
+        flex: 1;
+    }
+
+    .cabecalho-texto strong {
+        display: block;
+        color: #0f172a;
+        font-size: 16px;
+    }
+
+    .cabecalho-texto span {
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .status-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .status-link.com-fotos {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-link.sem-fotos {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .imovel-conteudo {
+        padding: 22px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .campo-box {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .campo-box.coluna-2 {
+        grid-column: span 2;
+    }
+
+    .campo-box.coluna-4 {
+        grid-column: span 4;
+    }
+
+    .campo-box label {
+        color: #64748b;
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .campo-box input,
+    .campo-box select,
+    .campo-box textarea {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #0f172a;
+        font-size: 12px;
+        outline: none;
+        transition: 0.2s;
+        box-sizing: border-box;
+    }
+
+    .campo-box input:focus,
+    .campo-box select:focus,
+    .campo-box textarea:focus {
+        border-color: #2563eb;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.09);
+    }
+
+    .campo-box textarea {
+        min-height: 115px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+
+    .link-fotos-input {
+        color: #1d4ed8 !important;
+        text-transform: none !important;
+    }
+
+    .rodape-conferencia {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-top: 24px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        background: #ffffff;
+    }
+
+    .rodape-conferencia p {
+        margin: 0;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .processando-texto {
+        display: none;
+    }
+
+    .btn-importar.processando .texto-normal {
+        display: none;
+    }
+
+    .btn-importar.processando .processando-texto {
+        display: inline;
+    }
+
+    @media (max-width: 1100px) {
+        .form-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .campo-box.coluna-4 {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: 700px) {
+        .resumo-topo,
+        .barra-acoes,
+        .rodape-conferencia {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .campo-box.coluna-2,
+        .campo-box.coluna-4 {
+            grid-column: span 1;
+        }
+
+        .imovel-cabecalho {
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .btn-importar {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="conferencia-container">
+
+    <div class="resumo-topo">
+        <div>
+            <h2>Confira os imóveis encontrados</h2>
+            <p>
+                Arquivo: <strong>{{ arquivo_original }}</strong>.
+                Corrija qualquer informação antes de confirmar.
+            </p>
+        </div>
+
+        <div class="contador-imoveis">
+            <strong>{{ imoveis|length }}</strong>
+            <span>Imóveis encontrados</span>
+        </div>
+    </div>
+
+    <form
+        id="form-confirmacao"
+        action="{{ url_for('confirmar_importacao_pdf') }}"
+        method="POST"
+    >
+        <input
+            type="hidden"
+            name="token_importacao"
+            value="{{ token_importacao }}"
+        >
+
+        <div class="barra-acoes">
+            <div class="acoes-selecao">
+                <button
+                    type="button"
+                    class="btn-secundario"
+                    onclick="marcarTodos(true)"
+                >
+                    ✅ Marcar todos
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-secundario"
+                    onclick="marcarTodos(false)"
+                >
+                    ⬜ Desmarcar todos
+                </button>
+            </div>
+
+            <button
+                type="submit"
+                class="btn-importar"
+                id="btn-importar"
+            >
+                <span class="texto-normal">
+                    💾 Importar selecionados
+                </span>
+
+                <span class="processando-texto">
+                    ⏳ Importando imóveis e fotos...
+                </span>
+            </button>
+        </div>
+
+        <div class="lista-imoveis">
+
+            {% for imovel in imoveis %}
+                {% set indice = loop.index0 %}
+
+                <div
+                    class="imovel-card"
+                    id="card-imovel-{{ indice }}"
+                >
+                    <div class="imovel-cabecalho">
+
+                        <div class="seletor-imovel">
+                            <input
+                                type="checkbox"
+                                name="selecionados"
+                                value="{{ indice }}"
+                                id="selecionado-{{ indice }}"
+                                checked
+                                onchange="atualizarCard({{ indice }})"
+                            >
+                        </div>
+
+                        <div class="cabecalho-texto">
+                            <strong>
+                                {{ imovel.titulo or 'Imóvel sem título' }}
+                            </strong>
+
+                            <span>
+                                Página {{ imovel.pagina }}
+                                • {{ imovel.bairro or 'Bairro não identificado' }}
+                                • R$ {{ imovel.valor or 'Valor não identificado' }}
+                            </span>
+                        </div>
+
+                        {% if imovel.link_fotos %}
+                            <div class="status-link com-fotos">
+                                📷 Link de fotos encontrado
+                            </div>
+                        {% else %}
+                            <div class="status-link sem-fotos">
+                                ⚠️ Sem link de fotos
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="imovel-conteudo">
+
+                        <div class="form-grid">
+
+                            <div class="campo-box coluna-2">
+                                <label>Título</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_titulo"
+                                    value="{{ imovel.titulo }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Tipo</label>
+
+                                <select name="imovel_{{ indice }}_tipo">
+                                    {% for tipo in [
+                                        'Apartamento',
+                                        'Casa',
+                                        'Terreno',
+                                        'Duplex',
+                                        'Triplex',
+                                        'Kitnet',
+                                        'Bangalo',
+                                        'Ponto Comercial'
+                                    ] %}
+                                        <option
+                                            value="{{ tipo }}"
+                                            {% if imovel.tipo == tipo %}selected{% endif %}
+                                        >
+                                            {{ tipo }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Comercialização</label>
+
+                                <select name="imovel_{{ indice }}_status">
+                                    <option
+                                        value="Venda"
+                                        {% if imovel.status == 'Venda' %}selected{% endif %}
+                                    >
+                                        Venda
+                                    </option>
+
+                                    <option
+                                        value="Aluguel"
+                                        {% if imovel.status == 'Aluguel' %}selected{% endif %}
+                                    >
+                                        Aluguel
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Valor</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_valor"
+                                    value="{{ imovel.valor }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>CEP</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_cep"
+                                    value="{{ imovel.cep }}"
+                                >
+                            </div>
+
+                            <div class="campo-box coluna-2">
+                                <label>Rua / endereço</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_rua"
+                                    value="{{ imovel.rua }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Bairro</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_bairro"
+                                    value="{{ imovel.bairro }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Cidade</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_cidade"
+                                    value="{{ imovel.cidade }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Área útil (m²)</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_area"
+                                    value="{{ imovel.area }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Quartos</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    name="imovel_{{ indice }}_quartos"
+                                    value="{{ imovel.quartos }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Suítes</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    name="imovel_{{ indice }}_suites"
+                                    value="{{ imovel.suites }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Banheiros</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    name="imovel_{{ indice }}_banheiros"
+                                    value="{{ imovel.banheiros }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Lavabo</label>
+
+                                <select name="imovel_{{ indice }}_lavabo">
+                                    <option
+                                        value="0"
+                                        {% if not imovel.lavabo %}selected{% endif %}
+                                    >
+                                        Não
+                                    </option>
+
+                                    <option
+                                        value="1"
+                                        {% if imovel.lavabo %}selected{% endif %}
+                                    >
+                                        Sim
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Vagas de garagem</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    name="imovel_{{ indice }}_vaga_garagem"
+                                    value="{{ imovel.vaga_garagem }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Sacada</label>
+
+                                <select name="imovel_{{ indice }}_sacada">
+                                    <option
+                                        value="0"
+                                        {% if not imovel.sacada %}selected{% endif %}
+                                    >
+                                        Não
+                                    </option>
+
+                                    <option
+                                        value="1"
+                                        {% if imovel.sacada %}selected{% endif %}
+                                    >
+                                        Sim
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Mobília</label>
+
+                                <select name="imovel_{{ indice }}_mobilia">
+                                    <option value="">Não identificado</option>
+
+                                    <option
+                                        value="Semi mobiliado"
+                                        {% if imovel.mobilia == 'Semi mobiliado' %}selected{% endif %}
+                                    >
+                                        Semi mobiliado
+                                    </option>
+
+                                    <option
+                                        value="Porteira Fechada"
+                                        {% if imovel.mobilia == 'Porteira Fechada' %}selected{% endif %}
+                                    >
+                                        Porteira Fechada
+                                    </option>
+
+                                    <option
+                                        value="Sem Mobilia"
+                                        {% if imovel.mobilia == 'Sem Mobilia' %}selected{% endif %}
+                                    >
+                                        Sem Mobilia
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="campo-box coluna-2">
+                                <label>Lazer</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_lazer"
+                                    value="{{ imovel.lazer }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Condomínio</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_condominio"
+                                    value="{{ imovel.condominio }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>IPTU</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_iptu"
+                                    value="{{ imovel.iptu }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Entrada</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_entrada"
+                                    value="{{ imovel.entrada }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Parcela</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_parcela"
+                                    value="{{ imovel.parcela }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Anuais</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_anuais"
+                                    value="{{ imovel.anuais }}"
+                                >
+                            </div>
+
+                            <div class="campo-box">
+                                <label>Prazo</label>
+                                <input
+                                    type="text"
+                                    name="imovel_{{ indice }}_prazo"
+                                    value="{{ imovel.prazo }}"
+                                >
+                            </div>
+
+                            <div class="campo-box coluna-4">
+                                <label>Link da pasta de fotos</label>
+                                <input
+                                    class="link-fotos-input"
+                                    type="text"
+                                    name="imovel_{{ indice }}_link_fotos"
+                                    value="{{ imovel.link_fotos }}"
+                                    placeholder="Imóvel será cadastrado sem fotos caso esteja vazio"
+                                >
+                            </div>
+
+                            <div class="campo-box coluna-4">
+                                <label>Descrição</label>
+                                <textarea
+                                    name="imovel_{{ indice }}_descricao"
+                                >{{ imovel.descricao }}</textarea>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="rodape-conferencia">
+            <p>
+                Cada imóvel será processado separadamente. Uma falha não misturará
+                as fotos nem apagará os imóveis importados anteriormente.
+            </p>
+
+            <button
+                type="submit"
+                class="btn-importar"
+                id="btn-importar-final"
+            >
+                <span class="texto-normal">
+                    💾 Confirmar importação
+                </span>
+
+                <span class="processando-texto">
+                    ⏳ Importando imóveis e fotos...
+                </span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    function atualizarCard(indice) {
+        const checkbox = document.getElementById(
+            `selecionado-${indice}`
+        );
+
+        const card = document.getElementById(
+            `card-imovel-${indice}`
+        );
+
+        if (checkbox.checked) {
+            card.classList.remove("desmarcado");
+        } else {
+            card.classList.add("desmarcado");
+        }
+    }
+
+    function marcarTodos(marcar) {
+        const checkboxes = document.querySelectorAll(
+            'input[name="selecionados"]'
+        );
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = marcar;
+
+            const indice = checkbox.value;
+            atualizarCard(indice);
+        });
+    }
+
+    const formulario = document.getElementById("form-confirmacao");
+
+    formulario.addEventListener("submit", function (evento) {
+        const selecionados = document.querySelectorAll(
+            'input[name="selecionados"]:checked'
+        );
+
+        if (!selecionados.length) {
+            evento.preventDefault();
+
+            alert(
+                "Selecione pelo menos um imóvel para importar."
+            );
+
+            return;
+        }
+
+        const confirmar = window.confirm(
+            `Confirma a importação de ${selecionados.length} imóvel(is)?\n\n` +
+            "O download das fotos pode levar alguns minutos."
+        );
+
+        if (!confirmar) {
+            evento.preventDefault();
+            return;
+        }
+
+        const botoes = document.querySelectorAll(".btn-importar");
+
+        botoes.forEach(function (botao) {
+            botao.disabled = true;
+            botao.classList.add("processando");
+        });
+    });
+</script>
+
+{% endblock %}
