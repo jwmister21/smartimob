@@ -545,111 +545,7 @@ def limpar_imovel(imovel):
 
     return imovel
 
-def extrair_imoveis(texto):
-    imoveis = []
-    blocos = texto.split("ED.")
-    print(f"DEBUG: Total de blocos encontrados: {len(blocos)-1}")
-    
-    for i, bloco in enumerate(blocos[1:], 1):
-        bloco = bloco.strip()
-        if not bloco:
-            continue
 
-        linhas = bloco.split("\n")
-        titulo = "ED. " + linhas[0].strip()
-
-        if "Tabela de imóveis" in titulo:
-            print(f"DEBUG: Bloco {i} ignorado (Tabela)")
-            continue
-
-        # VALOR
-        valores = re.findall(r'R\$\s*([\d\.\,]+)', bloco)
-        valor = ""
-        for v in valores:
-            try:
-                numero = float(v.replace(".", "").replace(",", "."))
-                if numero > 10000:
-                    valor = v
-                    break
-            except:
-                pass
-        if not valor:
-            print(f"DEBUG: Bloco {i} ({titulo}) - Valor não capturado")
-
-        # QUARTOS
-        m = re.search(r'(\d+)\s*DORMIT', bloco, re.IGNORECASE)
-        quartos = m.group(1) if m else ""
-
-        # ÁREA
-        m = re.search(r'(\d+)m²', bloco)
-        area = m.group(1) if m else ""
-
-        # RUA
-        rua = ""
-        for linha in linhas:
-            if "Rua" in linha or "Av." in linha:
-                rua = linha.strip()
-                break
-        if not rua:
-            print(f"DEBUG: Bloco {i} ({titulo}) - Rua não encontrada")
-
-        # BAIRRO
-        m = re.search(r',\s*(.*?)\s*-\s*Praia Grande', bloco)
-        bairro = m.group(1) if m else ""
-
-        # CONDOMINIO
-        m = re.search(r'Condomínio\s*R\$\s*([\d\.\,]+)', bloco, re.IGNORECASE)
-        condominio = m.group(1) if m else ""
-
-        # IPTU
-        m = re.search(r'IPTU\s*R\$\s*([\d\.\,]+)', bloco, re.IGNORECASE)
-        iptu = m.group(1) if m else ""
-
-        # VAGA
-        m = re.search(r'(\d+)\s*vaga', bloco, re.IGNORECASE)
-        vaga = m.group(1) if m else ""
-
-        imoveis.append({
-            "titulo": titulo, "valor": valor, "quartos": quartos,
-            "area": area, "rua": rua, "bairro": bairro,
-            "condominio": condominio, "iptu": iptu, "vaga": vaga
-        })
-
-    print(f"DEBUG: Total de imóveis extraídos com sucesso: {len(imoveis)}")
-    return [limpar_imovel(i) for i in imoveis]
-
-def extrair_links_pdf(caminho):
-
-    from pypdf import PdfReader
-
-    links = []
-
-    reader = PdfReader(caminho)
-
-
-    for pagina in reader.pages:
-
-
-        if "/Annots" not in pagina:
-            continue
-
-
-        for anotacao in pagina["/Annots"]:
-
-            obj = anotacao.get_object()
-
-
-            if obj.get("/A"):
-
-                uri = obj["/A"].get("/URI")
-
-
-                if uri and "drive.google.com" in str(uri):
-
-                    links.append(str(uri))
-
-
-    return links
 
 from functools import wraps
 from flask import session, flash, redirect, url_for
@@ -817,134 +713,7 @@ def get_usuario():
         "whatsapp_sessao": usuario["whatsapp_sessao"]
     }
 
-def baixar_fotos_drive(link, imovel_id):
-
-    import os
-    import shutil
-    import gdown
-    from datetime import datetime
-    from werkzeug.utils import secure_filename
-
-
-    pasta_final = app.config['UPLOAD_FOLDER_IMOVEIS']
-
-
-    os.makedirs(
-        pasta_final,
-        exist_ok=True
-    )
-
-
-    pasta_temp = os.path.join(
-        pasta_final,
-        f"temp_{imovel_id}"
-    )
-
-
-    os.makedirs(
-        pasta_temp,
-        exist_ok=True
-    )
-
-
-    print(
-        "BAIXANDO DRIVE:",
-        link
-    )
-
-
-    try:
-
-        gdown.download_folder(
-            url=link,
-            output=pasta_temp,
-            quiet=False
-        )
-
-
-    except Exception as e:
-
-        print(
-            "ERRO DRIVE (IGNORADO):",
-            e
-        )
-
-
-
-    fotos = []
-
-
-    # varre o que conseguiu baixar
-
-    for raiz, diretorios, arquivos in os.walk(pasta_temp):
-
-
-        for arquivo in arquivos:
-
-
-            if not arquivo.lower().endswith(
-                (
-                ".jpg",
-                ".jpeg",
-                ".png",
-                ".webp"
-                )
-            ):
-                continue
-
-
-
-            origem = os.path.join(
-                raiz,
-                arquivo
-            )
-
-
-            novo_nome = (
-                f"{imovel_id}_"
-                f"{int(datetime.now().timestamp())}_"
-                f"{secure_filename(arquivo)}"
-            )
-
-
-            destino = os.path.join(
-                pasta_final,
-                novo_nome
-            )
-
-
-            shutil.move(
-                origem,
-                destino
-            )
-
-
-            fotos.append(
-                novo_nome
-            )
-
-
-            print(
-                "FOTO SALVA:",
-                novo_nome
-            )
-
-
-
-    shutil.rmtree(
-        pasta_temp,
-        ignore_errors=True
-    )
-
-
-    print(
-        "TOTAL FOTOS:",
-        len(fotos)
-    )
-
-
-    return fotos
-     
+         
 def atualizar_banco():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -1723,10 +1492,6 @@ def atualizar_cliente(id):
     
     return "Cliente atualizado com sucesso! <a href='/'>Voltar</a>"
 
-@app.route("/importar_pdf")
-@verificar_sessao
-def importar_pdf():
-    return render_template("importar_pdf.html")
 
 # ==========================================================
 # ASSISTENTE IA DO CRM
@@ -5521,172 +5286,1703 @@ def criar_campanha():
         clientes=clientes
     )
  
-@app.route("/importar_imoveis_pdf", methods=["POST"])
-@verificar_sessao
-def importar_imoveis_pdf():
+# ==========================================================
+# NOVO IMPORTADOR DE IMÓVEIS POR PDF
+# COLE ANTES DO if __name__ == "__main__":
+# ==========================================================
 
-    import json
-    import sqlite3
+import os
+import re
+import json
+import uuid
+import shutil
+import sqlite3
+import tempfile
+import logging
+
+import gdown
+import pdfplumber
+
+from pypdf import PdfReader
+from werkzeug.utils import secure_filename
+from flask import (
+    request,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    session
+)
 
 
-    dados = json.loads(
-        request.form["dados"]
+logger_importador = logging.getLogger("importador_pdf")
+
+
+# ==========================================================
+# CONFIGURAÇÕES
+# ==========================================================
+
+EXTENSOES_FOTOS_IMPORTADOR = (
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp"
+)
+
+EXTENSOES_VIDEO_IMPORTADOR = (
+    ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+    ".webm"
+)
+
+
+def obter_pasta_importacoes():
+    """
+    Railway:
+        /data/importacoes_pdf
+
+    Computador local:
+        uploads/importacoes_pdf
+    """
+
+    if os.path.exists("/data"):
+        pasta = "/data/importacoes_pdf"
+    else:
+        pasta = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            "uploads",
+            "importacoes_pdf"
+        )
+
+    os.makedirs(pasta, exist_ok=True)
+
+    return pasta
+
+
+def obter_pasta_fotos_imoveis():
+    """
+    Usa a mesma pasta já configurada no SmartZen.
+    """
+
+    pasta = app.config.get(
+        "UPLOAD_FOLDER_IMOVEIS",
+        "/data/uploads/imoveis"
+    )
+
+    os.makedirs(pasta, exist_ok=True)
+
+    return pasta
+
+
+# ==========================================================
+# FUNÇÕES DE LIMPEZA
+# ==========================================================
+
+def limpar_texto_importador(texto):
+    if texto is None:
+        return ""
+
+    texto = str(texto)
+
+    texto = texto.replace("\x00", " ")
+    texto = texto.replace("\r", "\n")
+    texto = re.sub(r"[ \t]+", " ", texto)
+    texto = re.sub(r"\n{3,}", "\n\n", texto)
+
+    return texto.strip()
+
+
+def somente_numeros_importador(valor):
+    return re.sub(r"\D", "", str(valor or ""))
+
+
+def normalizar_valor_importador(valor):
+    """
+    Mantém o padrão já usado no seu banco:
+    270.000
+    385,47
+    """
+
+    if not valor:
+        return ""
+
+    valor = str(valor).strip()
+
+    valor = valor.replace("R$", "").strip()
+
+    return valor
+
+
+def valor_numerico_importador(valor):
+    """
+    Usado somente para verificar se o preço é realmente
+    um valor de imóvel e não condomínio/IPTU.
+    """
+
+    if not valor:
+        return 0.0
+
+    valor = str(valor).replace("R$", "").strip()
+
+    if "," in valor:
+        valor = valor.replace(".", "").replace(",", ".")
+    else:
+        valor = valor.replace(".", "")
+
+    valor = re.sub(r"[^0-9.]", "", valor)
+
+    try:
+        return float(valor)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def primeiro_match_importador(padroes, texto, flags=re.IGNORECASE):
+    for padrao in padroes:
+        resultado = re.search(
+            padrao,
+            texto,
+            flags
+        )
+
+        if resultado:
+            return resultado.group(1).strip()
+
+    return ""
+
+
+def limpar_titulo_importador(titulo):
+    titulo = limpar_texto_importador(titulo)
+
+    titulo = re.sub(
+        r"\s*CLIQUE\s+AQUI.*$",
+        "",
+        titulo,
+        flags=re.IGNORECASE
+    )
+
+    titulo = re.sub(
+        r"\s*FOTOS?\s+EM\s+BREVE.*$",
+        "",
+        titulo,
+        flags=re.IGNORECASE
+    )
+
+    titulo = titulo.replace("📷", "").strip()
+
+    return titulo
+
+
+# ==========================================================
+# EXTRAÇÃO DOS LINKS POR PÁGINA
+# ==========================================================
+
+def extrair_links_por_pagina(caminho_pdf):
+    """
+    Retorna os links em ordem visual, página por página.
+
+    Não junta todos os links do PDF em uma única lista.
+    Isso impede que um QR Code ou link extra desloque
+    os links dos imóveis das páginas seguintes.
+    """
+
+    reader = PdfReader(caminho_pdf)
+
+    resultado = {}
+
+    for numero_pagina, pagina in enumerate(
+        reader.pages,
+        start=1
+    ):
+        links_pagina = []
+
+        anotacoes = pagina.get("/Annots", [])
+
+        altura_pagina = float(
+            pagina.mediabox.height
+        )
+
+        for anotacao_ref in anotacoes:
+            try:
+                anotacao = anotacao_ref.get_object()
+
+                acao = anotacao.get("/A")
+
+                if not acao:
+                    continue
+
+                uri = acao.get("/URI")
+
+                if not uri:
+                    continue
+
+                uri = str(uri).strip()
+
+                # Aceita apenas links do Google Drive.
+                if "drive.google.com" not in uri.lower():
+                    continue
+
+                retangulo = anotacao.get("/Rect")
+
+                if retangulo and len(retangulo) == 4:
+                    x1 = float(retangulo[0])
+                    y1 = float(retangulo[1])
+                    x2 = float(retangulo[2])
+                    y2 = float(retangulo[3])
+
+                    # PDF começa embaixo.
+                    # Convertemos para posição começando no topo.
+                    topo = altura_pagina - max(y1, y2)
+                    base = altura_pagina - min(y1, y2)
+
+                else:
+                    x1 = 0
+                    x2 = 0
+                    topo = 99999
+                    base = 99999
+
+                links_pagina.append({
+                    "url": uri,
+                    "topo": topo,
+                    "base": base,
+                    "x1": x1,
+                    "x2": x2
+                })
+
+            except Exception as erro:
+                logger_importador.warning(
+                    "Não foi possível ler uma anotação da página %s: %s",
+                    numero_pagina,
+                    erro
+                )
+
+        # Ordem visual: de cima para baixo.
+        links_pagina.sort(
+            key=lambda item: (
+                item["topo"],
+                item["x1"]
+            )
+        )
+
+        resultado[numero_pagina] = links_pagina
+
+    return resultado
+
+
+# ==========================================================
+# SEPARAÇÃO DOS IMÓVEIS DE CADA PÁGINA
+# ==========================================================
+
+def localizar_titulos_pagina(pagina_pdfplumber):
+    """
+    Localiza os títulos iniciados por ED. e retorna
+    a posição vertical de cada um.
+    """
+
+    palavras = pagina_pdfplumber.extract_words(
+        use_text_flow=True,
+        keep_blank_chars=False
+    )
+
+    linhas = {}
+
+    for palavra in palavras:
+        topo = round(
+            float(palavra.get("top", 0)),
+            1
+        )
+
+        # Agrupa palavras próximas na mesma linha.
+        chave = None
+
+        for topo_existente in linhas:
+            if abs(topo_existente - topo) <= 3:
+                chave = topo_existente
+                break
+
+        if chave is None:
+            chave = topo
+            linhas[chave] = []
+
+        linhas[chave].append(palavra)
+
+    titulos = []
+
+    for topo, palavras_linha in linhas.items():
+        palavras_linha.sort(
+            key=lambda item: float(item.get("x0", 0))
+        )
+
+        texto_linha = " ".join(
+            palavra.get("text", "")
+            for palavra in palavras_linha
+        )
+
+        texto_linha = limpar_texto_importador(
+            texto_linha
+        )
+
+        if re.match(
+            r"^\s*ED\.?\s*",
+            texto_linha,
+            flags=re.IGNORECASE
+        ):
+            titulos.append({
+                "titulo_linha": texto_linha,
+                "topo": topo,
+                "x0": min(
+                    float(p.get("x0", 0))
+                    for p in palavras_linha
+                )
+            })
+
+    titulos.sort(
+        key=lambda item: item["topo"]
+    )
+
+    return titulos
+
+
+def extrair_blocos_pagina(pagina_pdfplumber):
+    """
+    Recorta cada imóvel usando a posição vertical dos títulos.
+    """
+
+    titulos = localizar_titulos_pagina(
+        pagina_pdfplumber
+    )
+
+    blocos = []
+
+    if not titulos:
+        return blocos
+
+    altura = float(pagina_pdfplumber.height)
+
+    for indice, titulo in enumerate(titulos):
+        topo = max(
+            float(titulo["topo"]) - 5,
+            0
+        )
+
+        if indice + 1 < len(titulos):
+            base = max(
+                float(titulos[indice + 1]["topo"]) - 5,
+                topo + 1
+            )
+        else:
+            base = altura
+
+        recorte = pagina_pdfplumber.crop(
+            (
+                0,
+                topo,
+                float(pagina_pdfplumber.width),
+                base
+            )
+        )
+
+        texto = limpar_texto_importador(
+            recorte.extract_text() or ""
+        )
+
+        if not texto:
+            continue
+
+        blocos.append({
+            "titulo_linha": titulo["titulo_linha"],
+            "topo": topo,
+            "base": base,
+            "texto": texto
+        })
+
+    return blocos
+
+
+# ==========================================================
+# ASSOCIAÇÃO SEGURA ENTRE IMÓVEL E LINK
+# ==========================================================
+
+def link_pertence_ao_bloco(link, bloco):
+    """
+    Verifica se o centro vertical do hyperlink está
+    dentro da área daquele imóvel.
+    """
+
+    centro = (
+        float(link["topo"]) +
+        float(link["base"])
+    ) / 2
+
+    margem = 18
+
+    return (
+        centro >= float(bloco["topo"]) - margem
+        and
+        centro < float(bloco["base"]) + margem
     )
 
 
-    links = json.loads(
-        request.form["links"]
+def escolher_link_do_imovel(bloco, links_pagina):
+    """
+    Busca apenas links localizados dentro do bloco visual
+    daquele imóvel.
+
+    Não usa índice global.
+    """
+
+    texto = bloco["texto"].upper()
+
+    if "FOTOS EM BREVE" in texto:
+        return ""
+
+    candidatos = [
+        link
+        for link in links_pagina
+        if link_pertence_ao_bloco(
+            link,
+            bloco
+        )
+    ]
+
+    if not candidatos:
+        return ""
+
+    # Preferimos links de pasta.
+    for candidato in candidatos:
+        url = candidato["url"]
+
+        if "/folders/" in url:
+            return url
+
+    # Depois aceitamos links que contenham folderview.
+    for candidato in candidatos:
+        url = candidato["url"]
+
+        if "folderview" in url.lower():
+            return url
+
+    # Última opção: primeiro link do Drive dentro do bloco.
+    return candidatos[0]["url"]
+
+
+# ==========================================================
+# EXTRAÇÃO DOS CAMPOS
+# ==========================================================
+
+def extrair_titulo_importador(bloco):
+    primeira_linha = bloco["titulo_linha"]
+
+    return limpar_titulo_importador(
+        primeira_linha
     )
 
 
-    selecionados = request.form.getlist(
-        "selecionados"
+def extrair_endereco_importador(texto):
+    linhas = [
+        limpar_texto_importador(linha)
+        for linha in texto.splitlines()
+        if limpar_texto_importador(linha)
+    ]
+
+    for linha in linhas:
+        if re.match(
+            r"^(RUA|AVENIDA|AV\.|ALAMEDA|TRAVESSA|ESTRADA)\s",
+            linha,
+            flags=re.IGNORECASE
+        ):
+            linha = re.sub(
+                r"\s+",
+                " ",
+                linha
+            )
+
+            return linha.strip()
+
+    return ""
+
+
+def separar_endereco_importador(endereco):
+    resultado = {
+        "rua": "",
+        "bairro": "",
+        "cidade": "Praia Grande"
+    }
+
+    if not endereco:
+        return resultado
+
+    texto = endereco.strip()
+
+    # Exemplo:
+    # Rua Campinas nº 500, Boqueirão - Praia Grande/SP
+
+    match = re.search(
+        r"^(.*?),\s*([^,\-]+?)\s*-\s*Praia\s+Grande(?:/SP)?",
+        texto,
+        flags=re.IGNORECASE
     )
 
+    if match:
+        resultado["rua"] = match.group(1).strip()
+        resultado["bairro"] = match.group(2).strip()
+        resultado["cidade"] = "Praia Grande"
+
+        return resultado
+
+    # Caso não consiga separar, guarda tudo em rua.
+    resultado["rua"] = texto
+
+    return resultado
+
+
+def extrair_valor_imovel_importador(texto):
+    """
+    Busca valores acima de R$ 10.000.
+
+    Quando houver preço à vista e preço para permuta,
+    usa o primeiro valor informado no bloco.
+    """
+
+    valores = re.findall(
+        r"R\$\s*([\d\.]+(?:,\d{1,2})?)",
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    candidatos = []
+
+    for valor in valores:
+        numero = valor_numerico_importador(
+            valor
+        )
+
+        if numero >= 10000:
+            candidatos.append(valor)
+
+    if not candidatos:
+        return ""
+
+    return normalizar_valor_importador(
+        candidatos[0]
+    )
+
+
+def extrair_quartos_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"(\d+)\s*DORMITÓRIOS?",
+            r"(\d+)\s*QUARTOS?"
+        ],
+        texto
+    )
+
+
+def extrair_suites_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"SENDO\s+(\d+)\s*SUÍTES?",
+            r"(\d+)\s*SUÍTES?"
+        ],
+        texto
+    )
+
+
+def extrair_vagas_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"(\d+)\s*VAGAS?\s+DE\s+GARAGEM",
+            r"(\d+)\s*VAGAS?",
+            r"(\d+)\s*VAGA\s+DE\s+GARAGEM"
+        ],
+        texto
+    )
+
+
+def extrair_area_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"(\d+(?:[.,]\d+)?)\s*m[²2]\s*DE\s+ÁREA\s+ÚTIL",
+            r"(\d+(?:[.,]\d+)?)\s*m[²2]\s*DE\s+ÁREA"
+        ],
+        texto
+    )
+
+
+def extrair_condominio_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"CONDOMÍNIO\s*R\$\s*([\d\.,]+)",
+            r"CONDOMINIO\s*R\$\s*([\d\.,]+)"
+        ],
+        texto
+    )
+
+
+def extrair_iptu_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"IPTU\s*R\$\s*([\d\.,]+)"
+        ],
+        texto
+    )
+
+
+def extrair_lazer_importador(texto):
+    resultado = re.search(
+        r"LAZER(?:\s*\([^)]+\))?(?:\s+COMPLETO)?\s*:\s*(.*?)(?:;|\n✓|\n|PERMITE|LOCALIZAÇÃO|LOCALIZACAO|\d+\s*METROS)",
+        texto,
+        flags=re.IGNORECASE | re.DOTALL
+    )
+
+    if not resultado:
+        return ""
+
+    lazer = resultado.group(1)
+
+    lazer = re.sub(
+        r"\s+",
+        " ",
+        lazer
+    )
+
+    return lazer.strip(" .;-")
+
+
+def extrair_mobilia_importador(texto):
+    texto_upper = texto.upper()
+
+    if "MOBILIADO" in texto_upper:
+        return "Porteira Fechada"
+
+    if "SEM MOBÍLIA" in texto_upper or "SEM MOBILIA" in texto_upper:
+        return "Sem Mobilia"
+
+    return ""
+
+
+def extrair_sacada_importador(texto):
+    if "SACADA" in texto.upper():
+        return 1
+
+    return 0
+
+
+def extrair_lavabo_importador(texto):
+    if "LAVABO" in texto.upper():
+        return 1
+
+    return 0
+
+
+def extrair_banheiros_importador(texto, suites):
+    """
+    O PDF geralmente informa WC social e quantidade de suítes.
+    Calculamos:
+        1 WC social + suítes
+    """
+
+    total = 0
+
+    if re.search(
+        r"\bWC\s+SOCIAL\b|BANHEIRO\s+SOCIAL",
+        texto,
+        flags=re.IGNORECASE
+    ):
+        total += 1
+
+    try:
+        total += int(suites or 0)
+    except (TypeError, ValueError):
+        pass
+
+    return total
+
+
+def detectar_tipo_importador(titulo, texto):
+    conteudo = f"{titulo} {texto}".upper()
+
+    if "TERRENO" in conteudo:
+        return "Terreno"
+
+    if "KITNET" in conteudo:
+        return "Kitnet"
+
+    if "DUPLEX" in conteudo:
+        return "Duplex"
+
+    if "TRIPLEX" in conteudo:
+        return "Triplex"
+
+    if "CASA" in conteudo:
+        return "Casa"
+
+    if "COMERCIAL" in conteudo:
+        return "Ponto Comercial"
+
+    return "Apartamento"
+
+
+def montar_descricao_importador(texto):
+    """
+    Guarda o texto do anúncio sem repetir o título
+    e o endereço nas primeiras linhas.
+    """
+
+    linhas = [
+        limpar_texto_importador(linha)
+        for linha in texto.splitlines()
+        if limpar_texto_importador(linha)
+    ]
+
+    linhas_limpas = []
+
+    for indice, linha in enumerate(linhas):
+        if indice == 0 and re.match(
+            r"^\s*ED\.?",
+            linha,
+            flags=re.IGNORECASE
+        ):
+            continue
+
+        if re.match(
+            r"^(RUA|AVENIDA|AV\.|ALAMEDA|TRAVESSA|ESTRADA)\s",
+            linha,
+            flags=re.IGNORECASE
+        ):
+            continue
+
+        linhas_limpas.append(linha)
+
+    descricao = "\n".join(
+        linhas_limpas
+    )
+
+    descricao = descricao.replace("✓", "•")
+
+    return descricao.strip()
+
+
+def transformar_bloco_em_imovel(
+    bloco,
+    numero_pagina,
+    links_pagina
+):
+    texto = bloco["texto"]
+
+    titulo = extrair_titulo_importador(
+        bloco
+    )
+
+    endereco_completo = extrair_endereco_importador(
+        texto
+    )
+
+    endereco = separar_endereco_importador(
+        endereco_completo
+    )
+
+    suites = extrair_suites_importador(
+        texto
+    )
+
+    link_fotos = escolher_link_do_imovel(
+        bloco,
+        links_pagina
+    )
+
+    fotos_em_breve = (
+        "FOTOS EM BREVE" in texto.upper()
+    )
+
+    return {
+        "pagina": numero_pagina,
+        "titulo": titulo,
+        "tipo": detectar_tipo_importador(
+            titulo,
+            texto
+        ),
+        "status": "Venda",
+        "valor": extrair_valor_imovel_importador(
+            texto
+        ),
+        "rua": endereco["rua"],
+        "bairro": endereco["bairro"],
+        "cidade": endereco["cidade"],
+        "cep": "",
+        "area": extrair_area_importador(
+            texto
+        ),
+        "quartos": extrair_quartos_importador(
+            texto
+        ),
+        "suites": suites,
+        "banheiros": extrair_banheiros_importador(
+            texto,
+            suites
+        ),
+        "lavabo": extrair_lavabo_importador(
+            texto
+        ),
+        "vaga_garagem": extrair_vagas_importador(
+            texto
+        ),
+        "sacada": extrair_sacada_importador(
+            texto
+        ),
+        "lazer": extrair_lazer_importador(
+            texto
+        ),
+        "mobilia": extrair_mobilia_importador(
+            texto
+        ),
+        "condominio": extrair_condominio_importador(
+            texto
+        ),
+        "iptu": extrair_iptu_importador(
+            texto
+        ),
+        "entrada": "",
+        "parcela": "",
+        "anuais": "",
+        "prazo": "",
+        "descricao": montar_descricao_importador(
+            texto
+        ),
+        "link_fotos": link_fotos,
+        "fotos_em_breve": fotos_em_breve
+    }
+
+
+def analisar_pdf_imoveis(caminho_pdf):
+    links_por_pagina = extrair_links_por_pagina(
+        caminho_pdf
+    )
+
+    imoveis = []
+
+    with pdfplumber.open(caminho_pdf) as pdf:
+        for numero_pagina, pagina in enumerate(
+            pdf.pages,
+            start=1
+        ):
+            blocos = extrair_blocos_pagina(
+                pagina
+            )
+
+            links_pagina = links_por_pagina.get(
+                numero_pagina,
+                []
+            )
+
+            for bloco in blocos:
+                try:
+                    imovel = transformar_bloco_em_imovel(
+                        bloco,
+                        numero_pagina,
+                        links_pagina
+                    )
+
+                    if not imovel["titulo"]:
+                        continue
+
+                    # Página final com QR Codes não começa com ED.
+                    if not re.match(
+                        r"^ED\.?",
+                        imovel["titulo"],
+                        flags=re.IGNORECASE
+                    ):
+                        continue
+
+                    imoveis.append(
+                        imovel
+                    )
+
+                except Exception as erro:
+                    logger_importador.exception(
+                        "Erro ao interpretar imóvel da página %s: %s",
+                        numero_pagina,
+                        erro
+                    )
+
+    return imoveis
+
+
+# ==========================================================
+# DOWNLOAD ISOLADO DAS FOTOS
+# ==========================================================
+
+def baixar_fotos_drive_seguro(link, imovel_id):
+    """
+    Cada imóvel recebe uma pasta temporária exclusiva.
+
+    Nunca reutiliza a pasta do imóvel anterior.
+    """
+
+    if not link:
+        return []
+
+    if "drive.google.com" not in link.lower():
+        return []
+
+    # gdown.download_folder trabalha com pastas.
+    if (
+        "/folders/" not in link
+        and
+        "folderview" not in link.lower()
+    ):
+        logger_importador.warning(
+            "O link do imóvel %s não parece ser uma pasta: %s",
+            imovel_id,
+            link
+        )
+
+        return []
+
+    pasta_importacoes = obter_pasta_importacoes()
+
+    identificador = uuid.uuid4().hex
+
+    pasta_temporaria = os.path.join(
+        pasta_importacoes,
+        f"imovel_{imovel_id}_{identificador}"
+    )
+
+    pasta_final = obter_pasta_fotos_imoveis()
+
+    os.makedirs(
+        pasta_temporaria,
+        exist_ok=True
+    )
+
+    arquivos_salvos = []
+
+    try:
+        logger_importador.info(
+            "Baixando fotos do imóvel %s",
+            imovel_id
+        )
+
+        gdown.download_folder(
+            url=link,
+            output=pasta_temporaria,
+            quiet=False,
+            use_cookies=False
+        )
+
+        contador = 0
+
+        for raiz, diretorios, arquivos in os.walk(
+            pasta_temporaria
+        ):
+            for nome_original in arquivos:
+                extensao = os.path.splitext(
+                    nome_original
+                )[1].lower()
+
+                # Nesta primeira versão salvamos apenas fotos.
+                if extensao not in EXTENSOES_FOTOS_IMPORTADOR:
+                    continue
+
+                contador += 1
+
+                origem = os.path.join(
+                    raiz,
+                    nome_original
+                )
+
+                nome_seguro = secure_filename(
+                    nome_original
+                )
+
+                novo_nome = (
+                    f"{imovel_id}_"
+                    f"{identificador}_"
+                    f"{contador:03d}_"
+                    f"{nome_seguro}"
+                )
+
+                destino = os.path.join(
+                    pasta_final,
+                    novo_nome
+                )
+
+                shutil.move(
+                    origem,
+                    destino
+                )
+
+                arquivos_salvos.append(
+                    novo_nome
+                )
+
+        logger_importador.info(
+            "Imóvel %s: %s fotos baixadas",
+            imovel_id,
+            len(arquivos_salvos)
+        )
+
+        return arquivos_salvos
+
+    except Exception as erro:
+        logger_importador.exception(
+            "Erro ao baixar fotos do imóvel %s: %s",
+            imovel_id,
+            erro
+        )
+
+        # Remove qualquer arquivo que tenha sido movido
+        # antes do erro.
+        for nome_arquivo in arquivos_salvos:
+            caminho = os.path.join(
+                pasta_final,
+                nome_arquivo
+            )
+
+            try:
+                if os.path.exists(caminho):
+                    os.remove(caminho)
+            except OSError:
+                pass
+
+        raise
+
+    finally:
+        shutil.rmtree(
+            pasta_temporaria,
+            ignore_errors=True
+        )
+
+
+def apagar_fotos_importacao(arquivos):
+    pasta = obter_pasta_fotos_imoveis()
+
+    for nome in arquivos:
+        caminho = os.path.join(
+            pasta,
+            nome
+        )
+
+        try:
+            if os.path.exists(caminho):
+                os.remove(caminho)
+        except OSError:
+            pass
+
+
+# ==========================================================
+# VERIFICAÇÃO DAS COLUNAS DO BANCO
+# ==========================================================
+
+def colunas_tabela_importador(cursor, tabela):
+    cursor.execute(
+        f"PRAGMA table_info({tabela})"
+    )
+
+    return {
+        linha[1]
+        for linha in cursor.fetchall()
+    }
+
+
+def garantir_colunas_importador():
+    """
+    Adiciona somente as colunas que estiverem faltando.
+    """
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-
-    print("TOTAL IMOVEIS:", len(dados))
-    print("TOTAL LINKS:", len(links))
-
-
-
-    for x in selecionados:
-
-
-        i = dados[int(x)]
-
-
-
-        # ======================
-        # CADASTRA IMOVEL
-        # ======================
-
-        cursor.execute("""
-        INSERT INTO imoveis
-        (
-        titulo,
-        empresa_id,
-        tipo,
-        valor,
-        cidade,
-        bairro,
-        quartos,
-        area,
-        status,
-        usuario_id,
-        rua,
-        iptu,
-        condominio,
-        vaga_garagem
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fotos_imoveis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            imovel_id INTEGER,
+            nome_arquivo TEXT,
+            FOREIGN KEY(imovel_id) REFERENCES imoveis(id)
         )
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        """,
-        (
-        i.get("titulo"),
-        session["empresa_id"],
-        "Apartamento",
-        i.get("valor"),
-        "Praia Grande",
-        i.get("bairro"),
-        i.get("quartos"),
-        i.get("area"),
-        "Disponível",
-        session["usuario_id"],
-        i.get("rua"),
-        i.get("iptu"),
-        i.get("condominio"),
-        i.get("vaga")
-        ))
+    """)
 
+    colunas_imoveis = colunas_tabela_importador(
+        cursor,
+        "imoveis"
+    )
 
+    colunas_necessarias = {
+        "cep": "TEXT",
+        "rua": "TEXT",
+        "bairro": "TEXT",
+        "cidade": "TEXT",
+        "tipo": "TEXT",
+        "status": "TEXT",
+        "valor": "TEXT",
+        "area": "TEXT",
+        "quartos": "INTEGER",
+        "banheiros": "INTEGER",
+        "suites": "INTEGER",
+        "lavabo": "INTEGER DEFAULT 0",
+        "vaga_garagem": "INTEGER",
+        "sacada": "INTEGER DEFAULT 0",
+        "lazer": "TEXT",
+        "mobilia": "TEXT",
+        "condominio": "TEXT",
+        "iptu": "TEXT",
+        "entrada": "TEXT",
+        "parcela": "TEXT",
+        "anuais": "TEXT",
+        "prazo": "TEXT",
+        "descricao": "TEXT",
+        "link": "TEXT",
+        "usuario_id": "INTEGER",
+        "empresa_id": "INTEGER"
+    }
 
-        imovel_id = cursor.lastrowid
-
-
-
-        print(
-            "IMOVEL CRIADO:",
-            imovel_id
-        )
-
-
-
-        # ======================
-        # PEGA DRIVE
-        # ======================
-
-        link_drive = ""
-
-
-        if int(x) < len(links):
-
-            link_drive = links[int(x)]
-
-
-
-        fotos = []
-
-
-
-        if (
-            link_drive
-            and "drive.google.com" in link_drive
-        ):
-
-
-            fotos = baixar_fotos_drive(
-                link_drive,
-                imovel_id
+    for nome_coluna, tipo_coluna in colunas_necessarias.items():
+        if nome_coluna not in colunas_imoveis:
+            cursor.execute(
+                f"""
+                ALTER TABLE imoveis
+                ADD COLUMN {nome_coluna} {tipo_coluna}
+                """
             )
 
-
-
-        else:
-
-            print(
-                "SEM LINK DRIVE"
+            logger_importador.info(
+                "Coluna criada: imoveis.%s",
+                nome_coluna
             )
-
-
-
-        # ======================
-        # SALVA FOTOS NO BANCO
-        # ======================
-
-        for foto in fotos:
-
-
-            cursor.execute("""
-            INSERT INTO fotos_imoveis
-            (
-            imovel_id,
-            nome_arquivo
-            )
-            VALUES (?,?)
-            """,
-            (
-            imovel_id,
-            foto
-            ))
-
-
-
-            print(
-                "FOTO BANCO:",
-                foto
-            )
-
-
 
     conn.commit()
     conn.close()
 
 
-    return redirect("/imoveis")
+garantir_colunas_importador()
 
+
+# ==========================================================
+# INSERT DINÂMICO
+# ==========================================================
+
+def cadastrar_imovel_importado(
+    cursor,
+    imovel,
+    empresa_id,
+    usuario_id
+):
+    """
+    Monta o INSERT usando apenas colunas existentes.
+    Evita quebrar caso o banco de uma instalação tenha
+    pequenas diferenças.
+    """
+
+    colunas_existentes = colunas_tabela_importador(
+        cursor,
+        "imoveis"
+    )
+
+    dados = {
+        "titulo": imovel.get("titulo"),
+        "empresa_id": empresa_id,
+        "usuario_id": usuario_id,
+        "tipo": imovel.get("tipo") or "Apartamento",
+        "status": imovel.get("status") or "Venda",
+        "valor": imovel.get("valor"),
+        "cep": imovel.get("cep"),
+        "rua": imovel.get("rua"),
+        "bairro": imovel.get("bairro"),
+        "cidade": imovel.get("cidade") or "Praia Grande",
+        "area": imovel.get("area"),
+        "quartos": imovel.get("quartos") or 0,
+        "suites": imovel.get("suites") or 0,
+        "banheiros": imovel.get("banheiros") or 0,
+        "lavabo": imovel.get("lavabo") or 0,
+        "vaga_garagem": imovel.get("vaga_garagem") or 0,
+        "sacada": imovel.get("sacada") or 0,
+        "lazer": imovel.get("lazer"),
+        "mobilia": imovel.get("mobilia"),
+        "condominio": imovel.get("condominio"),
+        "iptu": imovel.get("iptu"),
+        "entrada": imovel.get("entrada"),
+        "parcela": imovel.get("parcela"),
+        "anuais": imovel.get("anuais"),
+        "prazo": imovel.get("prazo"),
+        "descricao": imovel.get("descricao"),
+        "link": imovel.get("link_fotos")
+    }
+
+    dados = {
+        coluna: valor
+        for coluna, valor in dados.items()
+        if coluna in colunas_existentes
+    }
+
+    colunas = list(
+        dados.keys()
+    )
+
+    valores = [
+        dados[coluna]
+        for coluna in colunas
+    ]
+
+    placeholders = ",".join(
+        ["?"] * len(colunas)
+    )
+
+    sql = f"""
+        INSERT INTO imoveis
+        ({", ".join(colunas)})
+        VALUES ({placeholders})
+    """
+
+    cursor.execute(
+        sql,
+        valores
+    )
+
+    return cursor.lastrowid
+
+
+# ==========================================================
+# ROTA 1: TELA PARA ENVIAR PDF
+# ==========================================================
+
+@app.route(
+    "/importar_pdf",
+    methods=["GET"]
+)
+@verificar_sessao
+def importar_pdf():
+    return render_template(
+        "importar_pdf.html"
+    )
+
+
+# ==========================================================
+# ROTA 2: ANALISAR O PDF
+# ==========================================================
+
+@app.route(
+    "/importar_pdf/analisar",
+    methods=["POST"]
+)
+@verificar_sessao
+def analisar_pdf_rota():
+    arquivo = request.files.get(
+        "pdf"
+    )
+
+    if not arquivo or not arquivo.filename:
+        flash(
+            "Selecione um arquivo PDF.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    nome_seguro = secure_filename(
+        arquivo.filename
+    )
+
+    if not nome_seguro.lower().endswith(".pdf"):
+        flash(
+            "O arquivo enviado precisa ser um PDF.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    pasta_importacoes = obter_pasta_importacoes()
+
+    identificador = uuid.uuid4().hex
+
+    caminho_pdf = os.path.join(
+        pasta_importacoes,
+        f"{identificador}_{nome_seguro}"
+    )
+
+    try:
+        arquivo.save(
+            caminho_pdf
+        )
+
+        imoveis = analisar_pdf_imoveis(
+            caminho_pdf
+        )
+
+        if not imoveis:
+            flash(
+                "Nenhum imóvel foi identificado nesse PDF.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("importar_pdf")
+            )
+
+        token_importacao = uuid.uuid4().hex
+
+        caminho_json = os.path.join(
+            pasta_importacoes,
+            f"{token_importacao}.json"
+        )
+
+        pacote = {
+            "empresa_id": session.get("empresa_id"),
+            "usuario_id": session.get("usuario_id"),
+            "arquivo_original": nome_seguro,
+            "imoveis": imoveis
+        }
+
+        with open(
+            caminho_json,
+            "w",
+            encoding="utf-8"
+        ) as arquivo_json:
+            json.dump(
+                pacote,
+                arquivo_json,
+                ensure_ascii=False,
+                indent=2
+            )
+
+        return render_template(
+            "conferencia_importacao.html",
+            imoveis=imoveis,
+            token_importacao=token_importacao,
+            arquivo_original=nome_seguro
+        )
+
+    except Exception as erro:
+        logger_importador.exception(
+            "Erro ao analisar PDF: %s",
+            erro
+        )
+
+        flash(
+            f"Erro ao analisar o PDF: {erro}",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    finally:
+        try:
+            if os.path.exists(caminho_pdf):
+                os.remove(caminho_pdf)
+        except OSError:
+            pass
+
+
+# ==========================================================
+# ROTA 3: CONFIRMAR E CADASTRAR
+# ==========================================================
+
+@app.route(
+    "/importar_pdf/confirmar",
+    methods=["POST"]
+)
+@verificar_sessao
+def confirmar_importacao_pdf():
+    token_importacao = request.form.get(
+        "token_importacao",
+        ""
+    ).strip()
+
+    if not re.fullmatch(
+        r"[a-f0-9]{32}",
+        token_importacao
+    ):
+        flash(
+            "Importação inválida ou expirada.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    pasta_importacoes = obter_pasta_importacoes()
+
+    caminho_json = os.path.join(
+        pasta_importacoes,
+        f"{token_importacao}.json"
+    )
+
+    if not os.path.exists(caminho_json):
+        flash(
+            "Os dados dessa importação não foram encontrados.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    try:
+        with open(
+            caminho_json,
+            "r",
+            encoding="utf-8"
+        ) as arquivo_json:
+            pacote = json.load(
+                arquivo_json
+            )
+
+    except Exception as erro:
+        flash(
+            f"Não foi possível abrir os dados da importação: {erro}",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    empresa_id_sessao = session.get(
+        "empresa_id"
+    )
+
+    usuario_id_sessao = session.get(
+        "usuario_id"
+    )
+
+    # Segurança para uma empresa não importar pacote de outra.
+    if str(pacote.get("empresa_id")) != str(empresa_id_sessao):
+        flash(
+            "Essa importação não pertence à empresa logada.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    selecionados = request.form.getlist(
+        "selecionados"
+    )
+
+    if not selecionados:
+        flash(
+            "Selecione pelo menos um imóvel.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    imoveis_pacote = pacote.get(
+        "imoveis",
+        []
+    )
+
+    resultado = []
+
+    for indice_texto in selecionados:
+        arquivos_movidos = []
+
+        conn = None
+
+        try:
+            indice = int(
+                indice_texto
+            )
+
+            if indice < 0 or indice >= len(imoveis_pacote):
+                continue
+
+            imovel_original = imoveis_pacote[
+                indice
+            ]
+
+            # Recebe os campos corrigidos na tela de conferência.
+            imovel = dict(
+                imovel_original
+            )
+
+            campos_editaveis = [
+                "titulo",
+                "tipo",
+                "status",
+                "valor",
+                "cep",
+                "rua",
+                "bairro",
+                "cidade",
+                "area",
+                "quartos",
+                "suites",
+                "banheiros",
+                "lavabo",
+                "vaga_garagem",
+                "sacada",
+                "lazer",
+                "mobilia",
+                "condominio",
+                "iptu",
+                "entrada",
+                "parcela",
+                "anuais",
+                "prazo",
+                "descricao",
+                "link_fotos"
+            ]
+
+            for campo in campos_editaveis:
+                nome_formulario = (
+                    f"imovel_{indice}_{campo}"
+                )
+
+                if nome_formulario in request.form:
+                    imovel[campo] = request.form.get(
+                        nome_formulario,
+                        ""
+                    ).strip()
+
+            conn = sqlite3.connect(
+                DB_PATH
+            )
+
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "BEGIN"
+            )
+
+            imovel_id = cadastrar_imovel_importado(
+                cursor=cursor,
+                imovel=imovel,
+                empresa_id=empresa_id_sessao,
+                usuario_id=usuario_id_sessao
+            )
+
+            link_fotos = imovel.get(
+                "link_fotos",
+                ""
+            ).strip()
+
+            if link_fotos:
+                arquivos_movidos = baixar_fotos_drive_seguro(
+                    link=link_fotos,
+                    imovel_id=imovel_id
+                )
+
+                for nome_arquivo in arquivos_movidos:
+                    cursor.execute("""
+                        INSERT INTO fotos_imoveis
+                        (
+                            imovel_id,
+                            nome_arquivo
+                        )
+                        VALUES (?, ?)
+                    """, (
+                        imovel_id,
+                        nome_arquivo
+                    ))
+
+                # Mantém compatibilidade com telas antigas
+                # que utilizam imoveis.foto.
+                colunas_imoveis = colunas_tabela_importador(
+                    cursor,
+                    "imoveis"
+                )
+
+                if (
+                    arquivos_movidos
+                    and
+                    "foto" in colunas_imoveis
+                ):
+                    cursor.execute("""
+                        UPDATE imoveis
+                        SET foto = ?
+                        WHERE id = ?
+                    """, (
+                        arquivos_movidos[0],
+                        imovel_id
+                    ))
+
+            conn.commit()
+
+            resultado.append({
+                "sucesso": True,
+                "titulo": imovel.get("titulo"),
+                "imovel_id": imovel_id,
+                "total_fotos": len(arquivos_movidos),
+                "erro": ""
+            })
+
+        except Exception as erro:
+            logger_importador.exception(
+                "Erro ao importar imóvel do índice %s: %s",
+                indice_texto,
+                erro
+            )
+
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+
+            apagar_fotos_importacao(
+                arquivos_movidos
+            )
+
+            titulo_erro = ""
+
+            try:
+                titulo_erro = imovel.get(
+                    "titulo",
+                    ""
+                )
+            except Exception:
+                pass
+
+            resultado.append({
+                "sucesso": False,
+                "titulo": titulo_erro or f"Imóvel {indice_texto}",
+                "imovel_id": None,
+                "total_fotos": 0,
+                "erro": str(erro)
+            })
+
+        finally:
+            if conn:
+                conn.close()
+
+    # Só remove o arquivo temporário depois do processamento.
+    try:
+        os.remove(
+            caminho_json
+        )
+    except OSError:
+        pass
+
+    total_sucesso = sum(
+        1
+        for item in resultado
+        if item["sucesso"]
+    )
+
+    total_erros = sum(
+        1
+        for item in resultado
+        if not item["sucesso"]
+    )
+
+    return render_template(
+        "resultado_importacao.html",
+        resultado=resultado,
+        total_sucesso=total_sucesso,
+        total_erros=total_erros
+    )
 
 @app.route('/admin/configurar-site', methods=['POST'])
 def salvar_configuracoes():
