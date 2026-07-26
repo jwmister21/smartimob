@@ -1,0 +1,9683 @@
+import os
+import sqlite3
+import secrets
+import requests 
+import math
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, session, url_for, flash
+from werkzeug.utils import secure_filename
+from google import genai
+from werkzeug.security import generate_password_hash, check_password_hash
+from functools import wraps
+from whatsapp_manager import WhatsAppManager
+from moviepy.video.VideoClip import ColorClip 
+from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+from moviepy.video.VideoClip import TextClip
+from moviepy.audio.io.AudioFileClip import AudioFileClip 
+from moviepy.video.VideoClip import ImageClip# Se precisar de outros, adicione aqui
+from moviepy import concatenate_videoclips
+from routes.whatsapp_v2 import whatsapp_v2
+import google.generativeai as genai
+import json
+import pdfplumber
+import re
+from openai import OpenAI
+from flask import send_from_directory
+from flask_socketio import SocketIO
+import pandas as pd
+import base64
+from pypdf import PdfReader
+import gdown
+import uuid
+import logging
+import random
+import re
+import time
+
+import requests
+from flask import request, redirect, session
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+app.register_blueprint(whatsapp_v2)
+socketio = SocketIO(app, cors_allowed_origins="*")
+DB_DIR = "/data"
+HEADERS = {"User-Agent": "SMARTZEN IMOB"}
+UPLOAD_FOLDER_IMOVEIS = "/data/uploads/imoveis"
+ 
+os.makedirs(UPLOAD_FOLDER_IMOVEIS, exist_ok=True)
+
+app.config['UPLOAD_FOLDER_IMOVEIS'] = UPLOAD_FOLDER_IMOVEIS
+app.config['UPLOAD_FOLDER_PERFIL'] = 'static/uploads/perfil'
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# O modelo Flash atual é o 'gemini-1.5-flash'
+model = genai.GenerativeModel('gemini-2.5-flash')
+app.secret_key = 'uma_chave_muito_secreta_e_unica'
+client = OpenAI(
+    api_key=os.getenv("GROQ_API_KEY"), # Pegue em console.groq.com
+    base_url="https://api.groq.com/openai/v1"
+)
+
+
+# --- CONFIGURAÇÕES DE DIRETÓRIOS ---
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# Banco persistente no Volume Railway
+DB_DIR = "/data"
+os.makedirs(DB_DIR, exist_ok=True)
+
+DB_PATH = os.path.join(DB_DIR, "imobiliaria.db")
+
+
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Inicialização do Banco
+def init_db():
+    conn = get_db()
+    conn.execute('''CREATE TABLE IF NOT EXISTS usuarios 
+                    (id INTEGER PRIMARY KEY, nome TEXT, email TEXT UNIQUE, senha TEXT, empresa_id INTEGER, is_admin INTEGER)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS clientes 
+                    (id INTEGER PRIMARY KEY, nome TEXT, telefone TEXT, empresa_id INTEGER)''')
+    conn.commit()
+    conn.close()
+
+# Roda a inicialização ao subir
+init_db()
+
+api_key = os.getenv('GCP_API_KEY')
+
+@app.context_processor
+def injetar_lembretes():
+
+    if "usuario_id" not in session:
+        return dict(lembretes=[])
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+
+    conn = get_db()
+
+    lembretes = conn.execute("""
+        SELECT *
+        FROM clientes
+        WHERE date(data_visita) = ?
+          AND empresa_id = ?
+    """, (
+        hoje,
+        session["usuario_id"]
+    )).fetchall()
+
+    conn.close()
+
+    return dict(lembretes=lembretes)
+ 
+
+def buscar_coordenadas(cep):
+
+    cep = str(cep).replace("-", "").strip()
+
+    try:
+
+        r = requests.get(
+            f"https://viacep.com.br/ws/{cep}/json/",
+            timeout=10
+        )
+
+        if r.status_code != 200:
+            return None
+
+        endereco = r.json()
+
+        if "erro" in endereco:
+            return None
+
+        consulta = (
+            f"{endereco.get('logradouro','')}, "
+            f"{endereco.get('bairro','')}, "
+            f"{endereco.get('localidade','')}, "
+            f"{endereco.get('uf','')}, Brasil"
+        )
+
+        geo = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={
+                "q": consulta,
+                "format": "json",
+                "limit": 1
+            },
+            headers=HEADERS,
+            timeout=20
+        )
+
+        resultado = geo.json()
+
+        if not resultado:
+            return None
+
+        return (
+            float(resultado[0]["lat"]),
+            float(resultado[0]["lon"])
+        )
+
+    except Exception as erro:
+        print("Erro:", erro)
+        return None
+
+
+def calcular_distancia(lat1, lon1, lat2, lon2):
+
+    R = 6371000  # metros
+
+    lat1 = math.radians(lat1)
+    lon1 = math.radians(lon1)
+
+    lat2 = math.radians(lat2)
+    lon2 = math.radians(lon2)
+
+
+    delta_lat = lat2 - lat1
+    delta_lon = lon2 - lon1
+
+
+    a = (
+        math.sin(delta_lat / 2) ** 2
+        +
+        math.cos(lat1)
+        *
+        math.cos(lat2)
+        *
+        math.sin(delta_lon / 2) ** 2
+    )
+
+
+    c = 2 * math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a)
+    )
+
+
+    distancia = R * c
+
+
+    return int(distancia)
+
+
+def buscar_referencias(imovel_id, latitude, longitude, cursor):
+
+    try:
+
+        consulta = f"""
+        [out:json][timeout:20];
+
+        (
+          nwr(around:2000,{latitude},{longitude})["natural"="beach"];
+          nwr(around:2000,{latitude},{longitude})["shop"="supermarket"];
+          nwr(around:2000,{latitude},{longitude})["shop"="convenience"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="pharmacy"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="fuel"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="hospital"];
+          nwr(around:2000,{latitude},{longitude})["amenity"="school"];
+        );
+
+        out center;
+        """
+
+
+        resposta = requests.post(
+            "https://overpass-api.de/api/interpreter",
+            data={
+                "data": consulta
+            },
+            headers={
+                "User-Agent": "SMARTZEN IMOB",
+                "Accept": "application/json"
+            },
+            timeout=60
+        )
+
+
+        if resposta.status_code != 200:
+            print("Erro Overpass:", resposta.text[:300])
+            return
+
+
+        dados = resposta.json()
+
+
+        referencias = []
+
+
+        for local in dados.get("elements", []):
+
+            tags = local.get("tags", {})
+
+
+            nome = tags.get(
+                "name",
+                None
+            )
+
+
+            if not nome:
+                continue
+
+
+
+            categoria = None
+
+
+
+            if tags.get("natural") == "beach":
+
+                categoria = "Praia"
+
+
+            elif tags.get("shop") in [
+                "supermarket",
+                "convenience"
+            ]:
+
+                categoria = "Mercado"
+
+
+
+            elif tags.get("amenity") == "pharmacy":
+
+                categoria = "Farmácia"
+
+
+
+            elif tags.get("amenity") == "fuel":
+
+                categoria = "Posto de combustível"
+
+
+
+            elif tags.get("amenity") == "hospital":
+
+                categoria = "Hospital"
+
+
+
+            elif tags.get("amenity") == "school":
+
+                categoria = "Escola"
+
+
+
+            if not categoria:
+                continue
+
+
+
+            lat_local = local.get("lat")
+            lon_local = local.get("lon")
+
+
+
+            if not lat_local:
+
+                centro = local.get("center")
+
+                if centro:
+
+                    lat_local = centro.get("lat")
+                    lon_local = centro.get("lon")
+
+
+
+            if lat_local and lon_local:
+
+
+                distancia = calcular_distancia(
+                    latitude,
+                    longitude,
+                    lat_local,
+                    lon_local
+                )
+
+
+                referencias.append({
+
+                    "nome": nome,
+                    "categoria": categoria,
+                    "distancia": distancia,
+                    "latitude": lat_local,
+                    "longitude": lon_local
+
+                })
+
+
+
+        # pega somente o mais próximo de cada categoria
+
+        categorias_salvas = set()
+
+
+        referencias.sort(
+            key=lambda x: x["distancia"]
+        )
+
+
+
+        for ref in referencias:
+
+
+            if ref["categoria"] in categorias_salvas:
+                continue
+
+
+
+            cursor.execute("""
+                INSERT INTO referencias_imovel
+                (
+                    imovel_id,
+                    nome,
+                    categoria,
+                    distancia,
+                    latitude,
+                    longitude
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                imovel_id,
+                ref["nome"],
+                ref["categoria"],
+                ref["distancia"],
+                ref["latitude"],
+                ref["longitude"]
+            ))
+
+
+            categorias_salvas.add(
+                ref["categoria"]
+            )
+
+
+
+        print(
+            "REFERÊNCIAS SALVAS:",
+            len(categorias_salvas)
+        )
+
+
+
+    except Exception as erro:
+
+        print(
+            "Erro ao buscar referências:",
+            erro
+        )
+def limpar_prefixo_fotos_func():
+
+    import os
+
+    pasta = app.config['UPLOAD_FOLDER_IMOVEIS']
+
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT id, nome_arquivo
+        FROM fotos_imoveis
+    """)
+
+    fotos = cursor.fetchall()
+
+    total = 0
+
+
+    for foto_id, nome in fotos:
+
+        antigo = os.path.join(
+            pasta,
+            nome
+        )
+
+
+        if not os.path.exists(antigo):
+            continue
+
+
+        partes = nome.split("_")
+
+
+        # 68_1782103932_33_1781639570_foto.jpg
+        if len(partes) >= 5:
+
+            novo_nome = "_".join(partes[2:])
+
+
+            novo = os.path.join(
+                pasta,
+                novo_nome
+            )
+
+
+            if os.path.exists(novo):
+                continue
+
+
+            os.rename(
+                antigo,
+                novo
+            )
+
+
+            cursor.execute("""
+                UPDATE fotos_imoveis
+                SET nome_arquivo = ?
+                WHERE id = ?
+            """,
+            (
+                novo_nome,
+                foto_id
+            ))
+
+
+            total += 1
+
+
+    conn.commit()
+    conn.close()
+
+
+    print(
+        "ARQUIVOS LIMPOS:",
+        total
+    )
+
+def get_usuario_logado():
+    from flask import session
+    return session.get("usuario_id")
+
+def get_usuario():
+    usuario_id = get_usuario_logado()
+
+    cursor.execute("""
+        SELECT * FROM usuarios WHERE id = %s
+    """, (usuario_id,))
+
+    return cursor.fetchone()
+
+
+
+
+@app.route("/limpar_prefixo_fotos")
+def limpar_prefixo_fotos_rota():
+
+    limpar_prefixo_fotos_func()
+
+    return "Fotos limpas"
+
+
+def limpar_imovel(imovel):
+    print(f"DEBUG: Limpando imovel: {imovel.get('titulo')}")
+    
+    rua = imovel.get("rua", "")
+    if "✓" in rua or "CHAVES" in rua or "metros" in rua.lower():
+        print(f"DEBUG: Rua descartada: {rua}")
+        imovel["rua"] = ""
+
+    bairro = imovel.get("bairro", "")
+    if bairro == "Forte":
+        print("DEBUG: Bairro corrigido para Canto do Forte")
+        imovel["bairro"] = "Canto do Forte"
+
+    vaga = imovel.get("vaga", "")
+    if vaga:
+        imovel["vaga"] = vaga.replace("0", "", 1)
+
+    if not imovel.get("valor"):
+        print(f"DEBUG: Valor não encontrado para {imovel.get('titulo')}")
+        imovel["valor"] = "Consultar"
+
+    return imovel
+
+
+
+from functools import wraps
+from flask import session, flash, redirect, url_for
+
+def somente_ceo(func):
+
+    @wraps(func)
+
+    def wrapper(*args, **kwargs):
+
+        if "usuario_id" not in session:
+            return redirect(url_for("login"))
+
+        if session.get("perfil") != "CEO":
+
+            flash("Você não possui permissão para acessar esta área.", "danger")
+
+            return redirect(url_for("dashboard_v2"))
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def verificar_sessao(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "usuario_id" not in session:
+            return redirect("/login")
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+# ... (seus imports e DB_NAME = 'seu_banco.db')
+
+def init_db():
+
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 1. Tabela de empresas
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS empresas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL
+        )
+    """)
+
+    # 2. Tabela de usuários
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            senha TEXT NOT NULL,
+            empresa_id INTEGER,
+            status_assinatura TEXT DEFAULT 'ativo',
+            session_token TEXT,
+            FOREIGN KEY(empresa_id) REFERENCES empresas(id)
+        )
+    """)
+
+    # 3. Tabela de clientes (A que faltava!)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS clientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT,
+            telefone TEXT,
+            email TEXT,
+            empresa_id INTEGER,
+            FOREIGN KEY(empresa_id) REFERENCES empresas(id)
+        )
+    """)
+
+    # 4. Tabela de imóveis
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS imoveis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            titulo TEXT,
+            empresa_id INTEGER,
+            FOREIGN KEY(empresa_id) REFERENCES empresas(id)
+        )
+    """)
+
+    # Adicione isso logo antes do seu cursor.execute no app.py
+    cursor.execute("PRAGMA table_info(imoveis)")
+    colunas_reais = cursor.fetchall()
+    print("Colunas reais no banco:", colunas_reais)
+
+# Verifica as colunas da tabela clientes
+    cursor.execute("PRAGMA table_info(clientes)")
+    colunas_clientes = [c[1] for c in cursor.fetchall()]
+    if "data_visita" not in colunas_clientes:
+        cursor.execute("ALTER TABLE clientes ADD COLUMN data_visita TEXT")
+
+    
+
+    # 3. Migração da tabela USUARIOS (É aqui que estava o erro!)
+    cursor.execute("PRAGMA table_info(usuarios)")
+    colunas_usuarios = [c[1] for c in cursor.fetchall()]
+    
+    if "status_assinatura" not in colunas_usuarios:
+        cursor.execute("ALTER TABLE usuarios ADD COLUMN status_assinatura TEXT DEFAULT 'ativo'")
+        
+    if "session_token" not in colunas_usuarios:
+        cursor.execute("ALTER TABLE usuarios ADD COLUMN session_token TEXT")
+
+
+    cursor.execute("PRAGMA table_info(imoveis)")
+    colunas_imoveis = [c[1] for c in cursor.fetchall()]
+    
+    colunas_novas = ["cidade", "bairro", "rua", "iptu"]
+    
+    for coluna in colunas_novas:
+        if coluna not in colunas_imoveis:
+            cursor.execute(f"ALTER TABLE imoveis ADD COLUMN {coluna} TEXT")
+
+    cursor.execute("PRAGMA table_info(clientes)")
+    colunas_clientes = [c[1] for c in cursor.fetchall()]
+    
+    # Lista de colunas necessárias na tabela clientes
+    colunas_necessarias = ["email", "interesse", "faixa_preco", "bairro", "data_visita"]
+    
+    for coluna in colunas_necessarias:
+        if coluna not in colunas_clientes:
+            # Adiciona a coluna se ela não existir
+            cursor.execute(f"ALTER TABLE clientes ADD COLUMN {coluna} TEXT")
+            print(f"Coluna {coluna} adicionada à tabela clientes.")
+
+    conn.commit()
+    conn.close()
+    print("Banco de dados atualizado com sucesso!")
+    print(f"Banco utilizado: {DB_PATH}")
+
+def get_usuario():
+
+    usuario_id = session.get("usuario_id")
+
+    if not usuario_id:
+        return None
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome, email, empresa_id, whatsapp_sessao
+        FROM usuarios
+        WHERE id = ?
+    """, (usuario_id,))
+
+    usuario = cursor.fetchone()
+
+    conn.close()
+
+    if not usuario:
+        return None
+
+    return {
+        "id": usuario["id"],
+        "nome": usuario["nome"],
+        "email": usuario["email"],
+        "empresa_id": usuario["empresa_id"],
+        "whatsapp_sessao": usuario["whatsapp_sessao"]
+    }
+
+         
+def atualizar_banco():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    comandos = [
+
+        # USUÁRIOS
+        "ALTER TABLE usuarios ADD COLUMN foto_url TEXT",
+        "ALTER TABLE usuarios ADD COLUMN cargo TEXT DEFAULT 'Corretor'",
+        "ALTER TABLE usuarios ADD COLUMN is_admin INTEGER DEFAULT 0",
+        "ALTER TABLE usuarios ADD COLUMN validade_assinatura TEXT",
+
+        # CLIENTES
+        "ALTER TABLE clientes ADD COLUMN interesse TEXT",
+        "ALTER TABLE clientes ADD COLUMN faixa_preco TEXT",
+        "ALTER TABLE clientes ADD COLUMN bairro TEXT",
+        "ALTER TABLE clientes ADD COLUMN status_funil TEXT DEFAULT 'Lead Novo'",
+        "ALTER TABLE clientes ADD COLUMN cpf TEXT",
+        "ALTER TABLE clientes ADD COLUMN endereco TEXT",
+        "ALTER TABLE clientes ADD COLUMN usuario_id INTEGER",
+
+        # IMÓVEIS
+        "ALTER TABLE imoveis ADD COLUMN tipo TEXT",
+        "ALTER TABLE imoveis ADD COLUMN valor TEXT",
+        "ALTER TABLE imoveis ADD COLUMN cidade TEXT",
+        "ALTER TABLE imoveis ADD COLUMN bairro TEXT",
+        "ALTER TABLE imoveis ADD COLUMN quartos INTEGER",
+        "ALTER TABLE imoveis ADD COLUMN banheiros INTEGER",
+        "ALTER TABLE imoveis ADD COLUMN area TEXT",
+        "ALTER TABLE imoveis ADD COLUMN status TEXT",
+        "ALTER TABLE imoveis ADD COLUMN descricao TEXT",
+        "ALTER TABLE imoveis ADD COLUMN foto TEXT",
+        "ALTER TABLE imoveis ADD COLUMN usuario_id INTEGER",
+
+    ]
+
+    for sql in comandos:
+        try:
+            cursor.execute(sql)
+            print(f"OK: {sql}")
+        except sqlite3.OperationalError:
+            pass
+
+    # TABELA DE FOTOS
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS fotos_imoveis (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        imovel_id INTEGER,
+        nome_arquivo TEXT,
+        FOREIGN KEY(imovel_id) REFERENCES imoveis(id)
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+    print("Banco atualizado com sucesso!")
+
+
+init_db()
+atualizar_banco()
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Supondo que você salve o is_admin na sessão durante o login
+        if session.get('is_admin') != 1:
+            return "Acesso Negado: Apenas administradores.", 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+# ===========================
+# SUPER ADMIN
+# ===========================
+
+def super_admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("super_admin"):
+            return redirect(url_for("superadmin_login"))
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def salvar_status_whatsapp(sessao, status):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET whatsapp_status = ?
+        WHERE whatsapp_sessao = ?
+    """, (status, sessao))
+
+    conn.commit()
+    conn.close()
+
+@app.route('/uploads/imoveis/<filename>')
+def foto_imovel(filename):
+    return send_from_directory(
+        '/data/uploads/imoveis',
+        filename
+    )
+
+
+
+@app.route("/capturar_lead", methods=["POST"])
+def capturar_lead():
+
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    mensagem = request.form.get("mensagem")
+    id_imovel = request.form.get("id_imovel")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO lead_site
+        (
+            nome,
+            telefone,
+            mensagem,
+            id_imovel
+        )
+        VALUES (?, ?, ?, ?)
+    """, (
+        nome,
+        telefone,
+        mensagem,
+        id_imovel
+    ))
+
+    conn.commit()
+    conn.close()
+
+    flash("Recebemos seu interesse. Em breve entraremos em contato!")
+
+    return redirect(request.referrer)
+
+
+@app.route("/excluir_cliente/<int:cliente_id>", methods=["POST"])
+def excluir_cliente(cliente_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # apaga possíveis dados relacionados primeiro
+    cursor.execute("""
+        DELETE FROM clientes
+        WHERE id = ?
+    """,(cliente_id,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return redirect("/clientes")
+
+def criar_tabela_whatsapp():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS whatsapp_sessoes (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        empresa_id INTEGER,
+
+        usuario_id INTEGER,
+
+        session_name TEXT,
+
+        status TEXT DEFAULT 'disconnected',
+
+        telefone TEXT,
+
+        qr_code TEXT,
+
+        criado_em DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        atualizado_em DATETIME DEFAULT CURRENT_TIMESTAMP
+
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+criar_tabela_whatsapp()
+
+
+@app.route("/leads_site")
+@verificar_sessao
+def leads_site():
+
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            l.*,
+            i.titulo
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id = l.id_imovel
+        WHERE i.empresa_id = ?
+        ORDER BY l.id DESC
+    """, (empresa_id,))
+
+    leads = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "leads_site.html",
+        leads=leads
+    )
+
+
+@app.route("/enviar_imovel_link/<int:imovel_id>/<telefone>")
+@verificar_sessao
+def enviar_imovel_link(imovel_id, telefone):
+
+    WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    cursor.execute(
+        """
+        SELECT *
+        FROM imoveis
+        WHERE id = ?
+        """,
+        (imovel_id,)
+    )
+
+
+    imovel = cursor.fetchone()
+
+    conn.close()
+
+
+
+    if not imovel:
+
+        return jsonify({
+
+            "sucesso":False,
+            "erro":"Imóvel não encontrado"
+
+        })
+
+
+
+    link_imovel = (
+        f"https://smartimob-production.up.railway.app/"
+        f"informa-imovel/{imovel_id}"
+    )
+
+
+
+    mensagem = f"""
+🏡 *OPORTUNIDADE DE IMÓVEL*
+
+✨ *{imovel['titulo']}*
+
+━━━━━━━━━━━━━━
+
+📍 *Localização*
+{imovel['rua'] or ''} 
+{imovel['bairro']} - {imovel['cidade']}
+
+💰 *Valor*
+R$ {imovel['valor']}
+
+🏠 *Detalhes do imóvel*
+
+🛏 Quartos: {imovel['quartos']}
+🚿 Banheiros: {imovel['banheiros']}
+🚗 Vagas: {imovel['vaga_garagem']}
+📐 Área: {imovel['area']} m²
+
+{"🚽 Lavabo: Sim" if imovel['lavabo'] else ""}
+{"🌴 Lazer: " + str(imovel['lazer']) if imovel['lazer'] else ""}
+{"🌅 Sacada: Sim" if imovel['sacada'] else ""}
+
+━━━━━━━━━━━━━━
+
+💳 *Condições*
+
+🏦 Financiamento:
+{"Sim" if imovel['financiamento'] else "Não"}
+
+📄 Condomínio:
+R$ {imovel['condominio'] or 'Não informado'}
+
+🏛 IPTU:
+R$ {imovel['iptu'] or 'Não informado'}
+
+━━━━━━━━━━━━━━
+
+📝 *Descrição*
+
+{imovel['descricao'] or 'Consulte detalhes'}
+
+━━━━━━━━━━━━━━
+
+Veja fotos, localização e mais informações:
+
+🔗 {link_imovel}
+
+
+💬 Gostou desse imóvel?
+Posso te ajudar com mais informações 😊
+"""
+
+
+    telefone = (
+        telefone
+        .replace(" ","")
+        .replace("-","")
+        .replace("+","")
+    )
+
+
+
+    try:
+
+
+        resp = requests.post(
+
+            f"{WPP_URL}/enviar-imovel",
+
+            json={
+
+                "sessao":
+                f"corretor_{session.get('usuario_id')}",
+
+
+                "numero":
+                telefone,
+
+
+                "mensagem":
+                mensagem
+
+            },
+
+            timeout=30
+
+        )
+
+
+        return jsonify(resp.json())
+
+
+
+    except Exception as e:
+
+
+        print("ERRO IMOVEL:", e)
+
+
+        return jsonify({
+
+            "sucesso":False,
+
+            "erro":str(e)
+
+        })
+
+
+@app.route("/editar_cliente/<int:id>", methods=["GET"])
+def pagina_editar(id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # Busca o cliente específico pelo ID
+    cursor.execute("SELECT * FROM clientes WHERE id = ?", (id,))
+    cliente = cursor.fetchone()
+    conn.close()
+    
+    # Retorna o template do formulário com os dados do cliente
+    return render_template("perfil_cliente.html", cliente=cliente)
+
+
+
+
+@app.route("/admin/gestao")
+@verificar_sessao
+@admin_required
+def tela_gestao():
+    empresa_id = session.get("empresa_id")
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Totais
+    cursor.execute("SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?", (empresa_id,))
+    total_usuarios = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM imoveis WHERE empresa_id = ?", (empresa_id,))
+    total_imoveis = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM clientes WHERE empresa_id = ?", (empresa_id,))
+    total_clientes = cursor.fetchone()[0]
+
+    # Ranking com tratamento de dados
+    cursor.execute("SELECT id, nome FROM usuarios WHERE empresa_id = ? AND nome IS NOT NULL", (empresa_id,))
+    usuarios = cursor.fetchall()
+    
+    corretores = []
+    for u in usuarios:
+        u_id, u_nome = u
+        cursor.execute("SELECT status_funil, COUNT(*) FROM clientes WHERE usuario_id = ? GROUP BY status_funil", (u_id,))
+        contagem = dict(cursor.fetchall())
+        
+        corretores.append({
+            'nome': u_nome,
+            'total': sum(contagem.values()),
+            'novo': contagem.get('Lead Novo', 0) + contagem.get('Novo Contato', 0),
+            'negoc': contagem.get('Negociação', 0),
+            'visita': contagem.get('Visita Agendada', 0),
+            'venda': contagem.get('Concluido', 0),
+            'desist': contagem.get('Desistencia', 0)
+        })
+
+    conn.close()
+    return render_template("gestao.html", total_usuarios=total_usuarios, total_imoveis=total_imoveis, 
+                           total_clientes=total_clientes, corretores=corretores)
+# Decorator para o Super Admin
+
+
+@app.route("/simulador_financiamento")
+def simulador_financiamento():
+    return render_template("simulador_financiamento.html")
+
+
+
+
+
+@app.route("/fifit")
+@verificar_sessao
+def fifit():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # ============================
+    # FILTROS
+    # ============================
+
+    busca = request.args.get("busca", "").strip()
+    tipo = request.args.get("tipo", "").strip()
+    cidade = request.args.get("cidade", "").strip()
+    bairro = request.args.get("bairro", "").strip()
+    empreendimento = request.args.get("empreendimento", "").strip()
+    quartos = request.args.get("quartos", "").strip()
+    corretor = request.args.get("corretor", "").strip()
+    status = request.args.get("status", "").strip()
+    ordenar = request.args.get("ordenar", "recentes")
+
+    sql = """
+        SELECT
+            i.*,
+            u.nome AS corretor_nome,
+            u.telefone AS corretor_telefone,
+            u.foto_url AS corretor_foto
+        FROM imoveis i
+        LEFT JOIN usuarios u
+            ON u.id = i.usuario_id
+        WHERE i.compartilhar_fifit = 1
+    """
+
+    params = []
+
+    # ============================
+    # BUSCA
+    # ============================
+
+    if busca:
+        sql += """
+        AND (
+            i.titulo LIKE ?
+            OR i.descricao LIKE ?
+            OR i.cidade LIKE ?
+            OR i.bairro LIKE ?
+            OR i.tipo LIKE ?
+            OR i.empreendimento LIKE ?
+            OR u.nome LIKE ?
+        )
+        """
+
+        termo = f"%{busca}%"
+
+        params.extend([
+            termo,
+            termo,
+            termo,
+            termo,
+            termo,
+            termo,
+            termo
+        ])
+
+    # ============================
+    # FILTROS
+    # ============================
+
+    if tipo:
+        sql += " AND i.tipo = ?"
+        params.append(tipo)
+
+    if cidade:
+        sql += " AND i.cidade = ?"
+        params.append(cidade)
+
+    if bairro:
+        sql += " AND i.bairro = ?"
+        params.append(bairro)
+
+    if empreendimento:
+        sql += " AND i.empreendimento = ?"
+        params.append(empreendimento)
+
+    if quartos:
+        sql += " AND i.quartos >= ?"
+        params.append(quartos)
+
+    if corretor:
+        sql += " AND u.nome = ?"
+        params.append(corretor)
+
+    if status:
+        sql += " AND i.status = ?"
+        params.append(status)
+
+    # ============================
+    # ORDENAÇÃO
+    # ============================
+
+    if ordenar == "menor_preco":
+        sql += " ORDER BY i.valor ASC"
+
+    elif ordenar == "maior_preco":
+        sql += " ORDER BY i.valor DESC"
+
+    elif ordenar == "maior_area":
+        sql += " ORDER BY i.area DESC"
+
+    elif ordenar == "mais_quartos":
+        sql += " ORDER BY i.quartos DESC"
+
+    else:
+        sql += " ORDER BY i.id DESC"
+
+    # ============================
+    # CONSULTA PRINCIPAL
+    # ============================
+
+    cursor.execute(sql, params)
+
+    imoveis = cursor.fetchall()
+
+    imoveis_com_fotos = []
+
+    for imovel in imoveis:
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id
+        """, (imovel["id"],))
+
+        fotos = [
+            foto["nome_arquivo"]
+            for foto in cursor.fetchall()
+        ]
+
+        imovel_dict = dict(imovel)
+        imovel_dict["fotos"] = fotos
+
+        imoveis_com_fotos.append(imovel_dict)
+
+    # ============================
+    # DADOS DOS FILTROS
+    # ============================
+
+    cursor.execute("""
+        SELECT DISTINCT tipo
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY tipo
+    """)
+    tipos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT cidade
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY cidade
+    """)
+    cidades = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT bairro
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY bairro
+    """)
+    bairros = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT empreendimento
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+          AND empreendimento IS NOT NULL
+          AND empreendimento <> ''
+        ORDER BY empreendimento
+    """)
+    empreendimentos = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT status
+        FROM imoveis
+        WHERE compartilhar_fifit = 1
+        ORDER BY status
+    """)
+    status_lista = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT DISTINCT u.nome
+        FROM usuarios u
+        INNER JOIN imoveis i
+            ON i.usuario_id = u.id
+        WHERE i.compartilhar_fifit = 1
+        ORDER BY u.nome
+    """)
+    corretores = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "fifit.html",
+
+        imoveis=imoveis_com_fotos,
+
+        tipos=tipos,
+        cidades=cidades,
+        bairros=bairros,
+        empreendimentos=empreendimentos,
+        corretores=corretores,
+        status_lista=status_lista,
+
+        busca=busca,
+        tipo=tipo,
+        cidade=cidade,
+        bairro=bairro,
+        empreendimento=empreendimento,
+        quartos=quartos,
+        corretor=corretor,
+        status=status,
+        ordenar=ordenar
+    )
+
+NODE_API = "https://lucky-analysis-production-e497.up.railway.app"
+
+
+
+@app.route("/catalogo")
+def catalogo():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM imoveis ORDER BY id DESC")
+    imoveis = cursor.fetchall()
+
+    conn.close()
+
+    return render_template("catalogo.html", imoveis=imoveis)
+
+
+
+
+
+ 
+@app.route("/excluir_lead/<int:lead_id>", methods=["POST"])
+@verificar_sessao
+def excluir_lead(lead_id):
+
+    empresa_id = session.get("empresa_id")
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    # verifica se o lead pertence à empresa atual
+
+    cursor.execute("""
+        SELECT 
+            l.id
+        FROM lead_site l
+        LEFT JOIN imoveis i
+            ON i.id = l.id_imovel
+        WHERE l.id = ?
+        AND i.empresa_id = ?
+    """, (lead_id, empresa_id))
+
+
+    lead = cursor.fetchone()
+
+
+    if not lead:
+
+        conn.close()
+
+        return jsonify({
+            "sucesso": False,
+            "erro": "Lead não encontrado"
+        })
+
+
+
+    cursor.execute("""
+        DELETE FROM lead_site
+        WHERE id = ?
+    """, (lead_id,))
+
+
+    conn.commit()
+    conn.close()
+
+
+    return jsonify({
+        "sucesso": True
+    })
+
+ 
+@app.route("/atualizar_cliente/<int:id>", methods=["POST"])
+def atualizar_cliente(id):
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    email = request.form.get("email")
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Atualiza o registro no banco
+    cursor.execute("""
+        UPDATE clientes 
+        SET nome = ?, telefone = ?, email = ? 
+        WHERE id = ?
+    """, (nome, telefone, email, id))
+    
+    conn.commit()
+    conn.close()
+    
+    return "Cliente atualizado com sucesso! <a href='/'>Voltar</a>"
+
+
+# ==========================================================
+# ASSISTENTE IA DO CRM
+# Coloque este bloco antes da rota /analisar_cliente
+# ==========================================================
+
+import html
+import json
+import re
+import sqlite3
+from flask import request, jsonify, session
+
+
+def limpar_json_ia(texto):
+    """
+    Extrai e converte o JSON retornado pelo Llama.
+    """
+
+    if not texto:
+        return {}
+
+    texto = (
+        texto
+        .replace("```json", "")
+        .replace("```JSON", "")
+        .replace("```", "")
+        .strip()
+    )
+
+    try:
+        return json.loads(texto)
+
+    except json.JSONDecodeError:
+        pass
+
+    match = re.search(r"\{.*\}", texto, re.DOTALL)
+
+    if not match:
+        return {}
+
+    try:
+        return json.loads(match.group())
+
+    except json.JSONDecodeError:
+        return {}
+
+
+def valor_para_float(valor):
+    """
+    Converte valores como:
+    R$ 500.000,00
+    500000
+    500.000
+    500 mil
+    1 milhão
+    """
+
+    if valor is None:
+        return 0.0
+
+    if isinstance(valor, (int, float)):
+        return float(valor)
+
+    texto = str(valor).lower().strip()
+
+    multiplicador = 1
+
+    if "milhão" in texto or "milhao" in texto:
+        multiplicador = 1000000
+
+    elif "mil" in texto:
+        multiplicador = 1000
+
+    texto = (
+        texto
+        .replace("r$", "")
+        .replace("\xa0", "")
+        .replace("milhões", "")
+        .replace("milhoes", "")
+        .replace("milhão", "")
+        .replace("milhao", "")
+        .replace("mil", "")
+        .replace(" ", "")
+        .strip()
+    )
+
+    # Valor brasileiro com vírgula.
+    if "," in texto:
+        texto = texto.replace(".", "").replace(",", ".")
+
+    else:
+        # Se possuir apenas um ponto e até duas casas depois dele,
+        # tratamos como decimal. Caso contrário, como separador de milhar.
+        partes = texto.split(".")
+
+        if len(partes) > 2:
+            texto = texto.replace(".", "")
+
+        elif len(partes) == 2 and len(partes[1]) > 2:
+            texto = texto.replace(".", "")
+
+    texto = re.sub(r"[^0-9.]", "", texto)
+
+    try:
+        return float(texto) * multiplicador
+
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def inteiro_seguro(valor):
+    try:
+        return int(float(valor or 0))
+
+    except (ValueError, TypeError):
+        return 0
+
+
+def obter_valor_linha(linha, coluna, padrao=None):
+    """
+    Evita erro quando alguma coluna ainda não existir
+    ou estiver vazia.
+    """
+
+    try:
+        valor = linha[coluna]
+
+        if valor is None:
+            return padrao
+
+        return valor
+
+    except (KeyError, IndexError):
+        return padrao
+
+
+def montar_historico_ia(historico):
+    """
+    Transforma o histórico recebido do frontend
+    em mensagens aceitas pela Groq.
+    """
+
+    mensagens = []
+
+    if not isinstance(historico, list):
+        return mensagens
+
+    # Mantém somente as últimas 10 mensagens.
+    for item in historico[-10:]:
+
+        if not isinstance(item, dict):
+            continue
+
+        papel = item.get("role") or item.get("papel")
+        conteudo = item.get("content") or item.get("mensagem")
+
+        if not conteudo:
+            continue
+
+        if papel in ["user", "usuario"]:
+            role = "user"
+
+        elif papel in ["assistant", "assistente", "ia"]:
+            role = "assistant"
+
+        else:
+            continue
+
+        # Evita enviar HTML dos cards para a IA.
+        conteudo_limpo = re.sub(
+            r"<[^>]+>",
+            " ",
+            str(conteudo)
+        )
+
+        conteudo_limpo = re.sub(
+            r"\s+",
+            " ",
+            conteudo_limpo
+        ).strip()
+
+        mensagens.append({
+            "role": role,
+            "content": conteudo_limpo[:3000]
+        })
+
+    return mensagens
+
+
+def identificar_intencao_e_filtros(mensagem, historico):
+    """
+    Identifica o que o usuário deseja e extrai os filtros.
+    A IA não recebe acesso ao banco.
+    """
+
+    historico_texto = ""
+
+    if isinstance(historico, list):
+
+        partes = []
+
+        for item in historico[-6:]:
+
+            if not isinstance(item, dict):
+                continue
+
+            papel = item.get("role") or item.get("papel") or "usuario"
+            conteudo = item.get("content") or item.get("mensagem") or ""
+
+            conteudo = re.sub(
+                r"<[^>]+>",
+                " ",
+                str(conteudo)
+            )
+
+            partes.append(
+                f"{papel}: {conteudo[:1000]}"
+            )
+
+        historico_texto = "\n".join(partes)
+
+    prompt_sistema = """
+Você é o classificador do assistente de um CRM imobiliário.
+
+Sua função é identificar a intenção da mensagem e extrair filtros.
+
+Ações permitidas:
+
+buscar_imoveis
+criar_abordagem
+criar_followup
+criar_legenda
+buscar_clientes
+conversa
+
+Regras:
+
+1. Use buscar_imoveis quando o usuário quiser procurar, mostrar,
+listar, encontrar ou filtrar imóveis.
+
+2. Use criar_abordagem quando quiser uma mensagem comercial,
+abordagem de venda ou mensagem para WhatsApp.
+
+3. Use criar_followup quando pedir uma mensagem de retorno,
+cobrança de resposta ou acompanhamento.
+
+4. Use criar_legenda quando pedir legenda para Instagram,
+Facebook, anúncio ou publicação.
+
+5. Use buscar_clientes quando quiser pesquisar ou listar clientes.
+
+6. Use conversa para dúvidas gerais relacionadas ao CRM,
+imóveis, vendas ou atendimento.
+
+Filtros possíveis para imóveis:
+
+titulo
+tipo
+cidade
+bairro
+valor_minimo
+valor_maximo
+quartos
+banheiros
+suites
+vagas
+area_minima
+status
+empreendimento
+mobilia
+financiamento
+
+Tipos comuns:
+
+apartamento
+casa
+sobrado
+terreno
+comercial
+kitnet
+studio
+cobertura
+chácara
+
+Filtros possíveis para clientes:
+
+nome
+telefone
+interesse
+bairro
+faixa_preco
+status_funil
+
+Considere o histórico para entender frases como:
+
+"agora somente apartamentos"
+"mostre os mais baratos"
+"faça uma abordagem para esses imóveis"
+"somente com duas vagas"
+
+Retorne SOMENTE JSON válido neste formato:
+
+{
+  "acao": "buscar_imoveis",
+  "filtros": {
+    "tipo": null,
+    "cidade": null,
+    "bairro": null,
+    "valor_minimo": null,
+    "valor_maximo": null,
+    "quartos": null,
+    "banheiros": null,
+    "suites": null,
+    "vagas": null,
+    "area_minima": null,
+    "status": null,
+    "empreendimento": null,
+    "mobilia": null,
+    "financiamento": null
+  }
+}
+
+Não escreva explicações.
+Não use markdown.
+"""
+
+    mensagens = [
+        {
+            "role": "system",
+            "content": prompt_sistema
+        },
+        {
+            "role": "user",
+            "content": f"""
+HISTÓRICO:
+{historico_texto or "Sem histórico"}
+
+MENSAGEM ATUAL:
+{mensagem}
+"""
+        }
+    ]
+
+    try:
+
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0,
+            response_format={"type": "json_object"},
+            messages=mensagens
+        )
+
+        texto = resposta.choices[0].message.content
+
+        dados = limpar_json_ia(texto)
+
+        if not isinstance(dados, dict):
+            dados = {}
+
+        acao = dados.get("acao", "conversa")
+        filtros = dados.get("filtros", {})
+
+        acoes_permitidas = [
+            "buscar_imoveis",
+            "criar_abordagem",
+            "criar_followup",
+            "criar_legenda",
+            "buscar_clientes",
+            "conversa"
+        ]
+
+        if acao not in acoes_permitidas:
+            acao = "conversa"
+
+        if not isinstance(filtros, dict):
+            filtros = {}
+
+        return {
+            "acao": acao,
+            "filtros": filtros
+        }
+
+    except Exception as erro:
+
+        print("ERRO AO IDENTIFICAR INTENÇÃO:", erro)
+
+        # Fallback simples caso a IA fique indisponível.
+        mensagem_lower = mensagem.lower()
+
+        palavras_imovel = [
+            "imóvel",
+            "imovel",
+            "apartamento",
+            "casa",
+            "terreno",
+            "sobrado",
+            "cobertura",
+            "studio",
+            "kitnet"
+        ]
+
+        if any(palavra in mensagem_lower for palavra in palavras_imovel):
+            acao = "buscar_imoveis"
+
+        elif "abordagem" in mensagem_lower:
+            acao = "criar_abordagem"
+
+        elif "follow" in mensagem_lower:
+            acao = "criar_followup"
+
+        elif "legenda" in mensagem_lower:
+            acao = "criar_legenda"
+
+        elif "cliente" in mensagem_lower:
+            acao = "buscar_clientes"
+
+        else:
+            acao = "conversa"
+
+        return {
+            "acao": acao,
+            "filtros": {}
+        }
+
+
+def imovel_combina_com_filtros(imovel, filtros):
+    """
+    Faz os filtros em Python porque o campo valor
+    do seu banco atualmente pode estar salvo como texto.
+    """
+
+    titulo = str(
+        obter_valor_linha(imovel, "titulo", "")
+    ).lower()
+
+    tipo = str(
+        obter_valor_linha(imovel, "tipo", "")
+    ).lower()
+
+    cidade = str(
+        obter_valor_linha(imovel, "cidade", "")
+    ).lower()
+
+    bairro = str(
+        obter_valor_linha(imovel, "bairro", "")
+    ).lower()
+
+    status = str(
+        obter_valor_linha(imovel, "status", "")
+    ).lower()
+
+    empreendimento = str(
+        obter_valor_linha(imovel, "empreendimento", "")
+    ).lower()
+
+    mobilia = str(
+        obter_valor_linha(imovel, "mobilia", "")
+    ).lower()
+
+    valor = valor_para_float(
+        obter_valor_linha(imovel, "valor", 0)
+    )
+
+    quartos = inteiro_seguro(
+        obter_valor_linha(imovel, "quartos", 0)
+    )
+
+    banheiros = inteiro_seguro(
+        obter_valor_linha(imovel, "banheiros", 0)
+    )
+
+    suites = inteiro_seguro(
+        obter_valor_linha(imovel, "suites", 0)
+        or obter_valor_linha(imovel, "suite", 0)
+    )
+
+    vagas = inteiro_seguro(
+        obter_valor_linha(imovel, "vaga_garagem", 0)
+        or obter_valor_linha(imovel, "vagas", 0)
+    )
+
+    area = valor_para_float(
+        obter_valor_linha(imovel, "area", 0)
+    )
+
+    filtro_titulo = filtros.get("titulo")
+    filtro_tipo = filtros.get("tipo")
+    filtro_cidade = filtros.get("cidade")
+    filtro_bairro = filtros.get("bairro")
+    filtro_status = filtros.get("status")
+    filtro_empreendimento = filtros.get("empreendimento")
+    filtro_mobilia = filtros.get("mobilia")
+
+    if filtro_titulo:
+        if str(filtro_titulo).lower() not in titulo:
+            return False
+
+    if filtro_tipo:
+        filtro_tipo = str(filtro_tipo).lower()
+
+        # Usa "in" para aceitar "apartamento cobertura",
+        # "casa em condomínio", etc.
+        if filtro_tipo not in tipo:
+            return False
+
+    if filtro_cidade:
+        if str(filtro_cidade).lower() not in cidade:
+            return False
+
+    if filtro_bairro:
+        if str(filtro_bairro).lower() not in bairro:
+            return False
+
+    if filtro_status:
+        if str(filtro_status).lower() not in status:
+            return False
+
+    if filtro_empreendimento:
+        if str(filtro_empreendimento).lower() not in empreendimento:
+            return False
+
+    if filtro_mobilia:
+        if str(filtro_mobilia).lower() not in mobilia:
+            return False
+
+    valor_minimo = valor_para_float(
+        filtros.get("valor_minimo")
+    )
+
+    valor_maximo = valor_para_float(
+        filtros.get("valor_maximo")
+    )
+
+    if valor_minimo > 0 and valor < valor_minimo:
+        return False
+
+    if valor_maximo > 0 and valor > valor_maximo:
+        return False
+
+    quartos_minimos = inteiro_seguro(
+        filtros.get("quartos")
+    )
+
+    banheiros_minimos = inteiro_seguro(
+        filtros.get("banheiros")
+    )
+
+    suites_minimas = inteiro_seguro(
+        filtros.get("suites")
+    )
+
+    vagas_minimas = inteiro_seguro(
+        filtros.get("vagas")
+    )
+
+    area_minima = valor_para_float(
+        filtros.get("area_minima")
+    )
+
+    if quartos_minimos > 0 and quartos < quartos_minimos:
+        return False
+
+    if banheiros_minimos > 0 and banheiros < banheiros_minimos:
+        return False
+
+    if suites_minimas > 0 and suites < suites_minimas:
+        return False
+
+    if vagas_minimas > 0 and vagas < vagas_minimas:
+        return False
+
+    if area_minima > 0 and area < area_minima:
+        return False
+
+    filtro_financiamento = filtros.get("financiamento")
+
+    if filtro_financiamento is not None:
+
+        financiamento = obter_valor_linha(
+            imovel,
+            "financiamento",
+            None
+        )
+
+        quer_financiamento = str(
+            filtro_financiamento
+        ).lower() in [
+            "true",
+            "1",
+            "sim",
+            "aceita",
+            "aceitado"
+        ]
+
+        aceita_financiamento = str(
+            financiamento
+        ).lower() in [
+            "true",
+            "1",
+            "sim",
+            "aceita",
+            "aceitado"
+        ]
+
+        if quer_financiamento != aceita_financiamento:
+            return False
+
+    return True
+
+
+def calcular_score_imovel(imovel, filtros):
+    """
+    Calcula apenas uma indicação visual.
+    Não interfere na segurança ou no filtro.
+    """
+
+    filtros_ativos = 0
+    filtros_atendidos = 0
+
+    verificacoes_texto = [
+        ("tipo", "tipo"),
+        ("cidade", "cidade"),
+        ("bairro", "bairro"),
+        ("status", "status"),
+        ("empreendimento", "empreendimento"),
+        ("mobilia", "mobilia")
+    ]
+
+    for filtro_nome, coluna in verificacoes_texto:
+
+        filtro = filtros.get(filtro_nome)
+
+        if not filtro:
+            continue
+
+        filtros_ativos += 1
+
+        valor_imovel = str(
+            obter_valor_linha(imovel, coluna, "")
+        ).lower()
+
+        if str(filtro).lower() in valor_imovel:
+            filtros_atendidos += 1
+
+    verificacoes_numero = [
+        ("quartos", "quartos"),
+        ("banheiros", "banheiros"),
+        ("vagas", "vaga_garagem")
+    ]
+
+    for filtro_nome, coluna in verificacoes_numero:
+
+        filtro = inteiro_seguro(
+            filtros.get(filtro_nome)
+        )
+
+        if filtro <= 0:
+            continue
+
+        filtros_ativos += 1
+
+        valor_imovel = inteiro_seguro(
+            obter_valor_linha(imovel, coluna, 0)
+        )
+
+        if valor_imovel >= filtro:
+            filtros_atendidos += 1
+
+    if filtros.get("valor_maximo"):
+        filtros_ativos += 1
+
+        if valor_para_float(
+            obter_valor_linha(imovel, "valor", 0)
+        ) <= valor_para_float(filtros.get("valor_maximo")):
+            filtros_atendidos += 1
+
+    if filtros_ativos == 0:
+        return 85
+
+    score = int(
+        (filtros_atendidos / filtros_ativos) * 100
+    )
+
+    return max(50, min(score, 100))
+
+
+def formatar_valor_imovel(valor):
+    numero = valor_para_float(valor)
+
+    if numero <= 0:
+        return "Valor sob consulta"
+
+    return (
+        f"R$ {numero:,.2f}"
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
+    )
+
+
+def buscar_imoveis_assistente(empresa_id, filtros):
+    """
+    Busca somente imóveis da empresa logada.
+    Depois aplica os filtros em Python.
+    """
+
+    conn = get_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+        LIMIT 1000
+    """, (empresa_id,))
+
+    todos_imoveis = cursor.fetchall()
+
+    encontrados = []
+
+    for imovel in todos_imoveis:
+
+        if not imovel_combina_com_filtros(
+            imovel,
+            filtros
+        ):
+            continue
+
+        imovel_dict = dict(imovel)
+
+        imovel_dict["score_ia"] = calcular_score_imovel(
+            imovel,
+            filtros
+        )
+
+        imovel_dict["valor_numero"] = valor_para_float(
+            obter_valor_linha(imovel, "valor", 0)
+        )
+
+        encontrados.append(imovel_dict)
+
+    conn.close()
+
+    # Ordena do menor para o maior preço.
+    encontrados.sort(
+        key=lambda item: (
+            item.get("valor_numero", 0) <= 0,
+            item.get("valor_numero", 0)
+        )
+    )
+
+    return encontrados[:20]
+
+
+def montar_html_imoveis(imoveis):
+    """
+    Cria os cards sem permitir HTML vindo da IA.
+    """
+
+    if not imoveis:
+        return """
+        <div class="card-msg-imovel">
+            <strong>Nenhum imóvel encontrado.</strong>
+            <div style="margin-top:6px;color:#94a3b8;">
+                Tente alterar o bairro, cidade, valor ou quantidade de quartos.
+            </div>
+        </div>
+        """
+
+    resultado = f"""
+    <div class="card-msg-imovel">
+        Encontrei <strong>{len(imoveis)}</strong>
+        imóvel{"is" if len(imoveis) != 1 else ""}
+        dentro dos critérios.
+    </div>
+    """
+
+    for imovel in imoveis:
+
+        imovel_id = inteiro_seguro(
+            imovel.get("id")
+        )
+
+        titulo = html.escape(
+            str(imovel.get("titulo") or "Imóvel sem título")
+        )
+
+        tipo = html.escape(
+            str(imovel.get("tipo") or "Não informado")
+        )
+
+        bairro = html.escape(
+            str(imovel.get("bairro") or "")
+        )
+
+        cidade = html.escape(
+            str(imovel.get("cidade") or "")
+        )
+
+        quartos = inteiro_seguro(
+            imovel.get("quartos")
+        )
+
+        vagas = inteiro_seguro(
+            imovel.get("vaga_garagem")
+            or imovel.get("vagas")
+        )
+
+        banheiros = inteiro_seguro(
+            imovel.get("banheiros")
+        )
+
+        area = html.escape(
+            str(imovel.get("area") or "")
+        )
+
+        valor_formatado = formatar_valor_imovel(
+            imovel.get("valor")
+        )
+
+        score = inteiro_seguro(
+            imovel.get("score_ia")
+        )
+
+        localizacao = " - ".join(
+            parte
+            for parte in [bairro, cidade]
+            if parte
+        )
+
+        detalhes = []
+
+        if quartos:
+            detalhes.append(
+                f"🛏 {quartos} quarto{'s' if quartos != 1 else ''}"
+            )
+
+        if banheiros:
+            detalhes.append(
+                f"🚿 {banheiros} banheiro{'s' if banheiros != 1 else ''}"
+            )
+
+        if vagas:
+            detalhes.append(
+                f"🚗 {vagas} vaga{'s' if vagas != 1 else ''}"
+            )
+
+        if area:
+            detalhes.append(
+                f"📐 {area} m²"
+            )
+
+        detalhes_html = "<br>".join(detalhes)
+
+        resultado += f"""
+        <div class="card-msg-imovel">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:10px;
+                margin-bottom:10px;
+            ">
+                <span style="
+                    color:#facc15;
+                    font-weight:800;
+                    font-size:13px;
+                ">
+                    ⭐ Match IA: {score}%
+                </span>
+
+                <span style="
+                    background:rgba(16,185,129,.12);
+                    color:#10b981;
+                    padding:5px 9px;
+                    border-radius:999px;
+                    font-size:11px;
+                    font-weight:700;
+                ">
+                    {tipo}
+                </span>
+            </div>
+
+            <h3 style="
+                color:#ffffff;
+                margin:0 0 8px;
+                font-size:17px;
+                line-height:1.3;
+            ">
+                {titulo}
+            </h3>
+
+            <div style="
+                color:#10b981;
+                font-size:19px;
+                font-weight:800;
+                margin-bottom:8px;
+            ">
+                {valor_formatado}
+            </div>
+
+            <div style="
+                color:#cbd5e1;
+                font-size:13px;
+                line-height:1.65;
+            ">
+                {"📍 " + localizacao + "<br>" if localizacao else ""}
+                {detalhes_html}
+            </div>
+
+            <a
+                href="/imovel/{imovel_id}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:inline-flex;
+                    align-items:center;
+                    justify-content:center;
+                    margin-top:13px;
+                    padding:9px 13px;
+                    border-radius:9px;
+                    background:#10b981;
+                    color:#052e25;
+                    font-size:13px;
+                    font-weight:800;
+                    text-decoration:none;
+                "
+            >
+                Ver imóvel →
+            </a>
+
+        </div>
+        """
+
+    return resultado
+
+
+def buscar_clientes_assistente(empresa_id, filtros):
+    """
+    Pesquisa somente clientes da empresa logada.
+    """
+
+    conn = get_db()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    query = """
+        SELECT *
+        FROM clientes
+        WHERE empresa_id = ?
+    """
+
+    parametros = [empresa_id]
+
+    nome = filtros.get("nome")
+    telefone = filtros.get("telefone")
+    interesse = filtros.get("interesse")
+    bairro = filtros.get("bairro")
+    faixa_preco = filtros.get("faixa_preco")
+    status_funil = filtros.get("status_funil")
+
+    if nome:
+        query += " AND LOWER(nome) LIKE ?"
+        parametros.append(
+            f"%{str(nome).lower()}%"
+        )
+
+    if telefone:
+        telefone_limpo = re.sub(
+            r"\D",
+            "",
+            str(telefone)
+        )
+
+        query += """
+            AND REPLACE(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(telefone, ' ', ''),
+                    '-', ''),
+                '(', ''),
+            ')', '') LIKE ?
+        """
+
+        parametros.append(
+            f"%{telefone_limpo}%"
+        )
+
+    if interesse:
+        query += " AND LOWER(interesse) LIKE ?"
+        parametros.append(
+            f"%{str(interesse).lower()}%"
+        )
+
+    if bairro:
+        query += " AND LOWER(bairro) LIKE ?"
+        parametros.append(
+            f"%{str(bairro).lower()}%"
+        )
+
+    if faixa_preco:
+        query += " AND LOWER(faixa_preco) LIKE ?"
+        parametros.append(
+            f"%{str(faixa_preco).lower()}%"
+        )
+
+    if status_funil:
+        query += " AND LOWER(status_funil) LIKE ?"
+        parametros.append(
+            f"%{str(status_funil).lower()}%"
+        )
+
+    query += " ORDER BY id DESC LIMIT 30"
+
+    cursor.execute(query, parametros)
+
+    clientes = [
+        dict(cliente)
+        for cliente in cursor.fetchall()
+    ]
+
+    conn.close()
+
+    return clientes
+
+
+def montar_html_clientes(clientes):
+    if not clientes:
+        return """
+        <div class="card-msg-imovel">
+            Nenhum cliente encontrado com esses critérios.
+        </div>
+        """
+
+    resultado = f"""
+    <div class="card-msg-imovel">
+        Encontrei <strong>{len(clientes)}</strong>
+        cliente{"s" if len(clientes) != 1 else ""}.
+    </div>
+    """
+
+    for cliente in clientes:
+
+        cliente_id = inteiro_seguro(
+            cliente.get("id")
+        )
+
+        nome = html.escape(
+            str(cliente.get("nome") or "Cliente sem nome")
+        )
+
+        telefone = html.escape(
+            str(cliente.get("telefone") or "Não informado")
+        )
+
+        interesse = html.escape(
+            str(cliente.get("interesse") or "Não informado")
+        )
+
+        status_funil = html.escape(
+            str(cliente.get("status_funil") or "Sem status")
+        )
+
+        resultado += f"""
+        <div class="card-msg-imovel">
+
+            <h3 style="
+                color:#ffffff;
+                margin:0 0 8px;
+                font-size:16px;
+            ">
+                👤 {nome}
+            </h3>
+
+            <div style="
+                color:#cbd5e1;
+                font-size:13px;
+                line-height:1.6;
+            ">
+                📱 {telefone}<br>
+                🏠 Interesse: {interesse}<br>
+                📊 Status: {status_funil}
+            </div>
+
+            <a
+                href="/editar_cliente/{cliente_id}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:inline-block;
+                    margin-top:11px;
+                    color:#10b981;
+                    font-weight:700;
+                    text-decoration:none;
+                "
+            >
+                Abrir cliente →
+            </a>
+
+        </div>
+        """
+
+    return resultado
+
+
+def gerar_texto_assistente(
+    mensagem,
+    historico,
+    tipo_resposta="conversa"
+):
+    """
+    Gera textos, abordagens, follow-ups e legendas.
+    Não consulta nem altera o banco.
+    """
+
+    instrucoes = {
+        "criar_abordagem": """
+Crie uma abordagem comercial pronta para enviar pelo WhatsApp.
+Use português do Brasil.
+Seja natural, profissional e persuasivo.
+Não invente dados de imóveis, clientes, preços ou condições.
+Quando o nome do cliente não tiver sido informado, use {nome}.
+Entregue somente a mensagem pronta.
+""",
+
+        "criar_followup": """
+Crie uma mensagem de follow-up pronta para WhatsApp.
+A mensagem deve ser educada, curta e incentivar uma resposta.
+Não seja insistente.
+Não invente informações.
+Quando o nome não for informado, use {nome}.
+Entregue somente a mensagem pronta.
+""",
+
+        "criar_legenda": """
+Crie uma legenda comercial para uma publicação imobiliária.
+Use português do Brasil.
+Use emojis com moderação.
+Inclua uma chamada para ação.
+Não invente endereço, preço ou características.
+Entregue somente a legenda pronta.
+""",
+
+        "conversa": """
+Você é o assistente do CRM imobiliário SMARTZEN IMOB.
+
+Ajude o usuário com:
+
+vendas imobiliárias
+atendimento de clientes
+organização do CRM
+mensagens comerciais
+follow-ups
+descrições de imóveis
+ideias de divulgação
+uso do sistema
+
+Regras:
+
+Não diga que encontrou dados no banco.
+Não invente clientes ou imóveis.
+Quando o usuário pedir imóveis ou clientes,
+explique que ele pode informar os filtros.
+Responda em português do Brasil.
+Seja direto e útil.
+"""
+    }
+
+    mensagens = [
+        {
+            "role": "system",
+            "content": instrucoes.get(
+                tipo_resposta,
+                instrucoes["conversa"]
+            )
+        }
+    ]
+
+    mensagens.extend(
+        montar_historico_ia(historico)
+    )
+
+    mensagens.append({
+        "role": "user",
+        "content": mensagem
+    })
+
+    try:
+
+        resposta = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0.5,
+            messages=mensagens
+        )
+
+        texto = resposta.choices[0].message.content.strip()
+
+        # Escapa o texto para evitar que uma resposta da IA
+        # injete tags HTML na página.
+        texto_seguro = html.escape(texto)
+
+        texto_seguro = texto_seguro.replace(
+            "\n",
+            "<br>"
+        )
+
+        return f"""
+        <div class="card-msg-imovel">
+            {texto_seguro}
+        </div>
+        """
+
+    except Exception as erro:
+
+        print("ERRO AO GERAR TEXTO:", erro)
+
+        return """
+        <div class="card-msg-imovel">
+            Não consegui gerar a resposta neste momento.
+            Tente novamente.
+        </div>
+        """
+
+
+# ==========================================================
+# ROTA PRINCIPAL DO ASSISTENTE
+# Substitua sua rota /analisar_cliente atual por esta
+# ==========================================================
+
+@app.route("/analisar_cliente", methods=["POST"])
+@verificar_sessao
+def analisar_cliente():
+
+    try:
+
+        dados = request.get_json(silent=True) or {}
+
+        mensagem = str(
+            dados.get("mensagem", "")
+        ).strip()
+
+        historico = dados.get(
+            "historico",
+            []
+        )
+
+        if not mensagem:
+
+            return jsonify({
+                "sucesso": False,
+                "tipo": "erro",
+                "resultado": """
+                <div class="card-msg-imovel">
+                    Digite uma mensagem para o assistente.
+                </div>
+                """
+            }), 400
+
+        empresa_id = session.get("empresa_id")
+        usuario_id = session.get("usuario_id")
+
+        if not empresa_id or not usuario_id:
+
+            return jsonify({
+                "sucesso": False,
+                "tipo": "erro",
+                "resultado": """
+                <div class="card-msg-imovel">
+                    Sua sessão expirou. Entre novamente no sistema.
+                </div>
+                """
+            }), 401
+
+        interpretacao = identificar_intencao_e_filtros(
+            mensagem,
+            historico
+        )
+
+        acao = interpretacao.get(
+            "acao",
+            "conversa"
+        )
+
+        filtros = interpretacao.get(
+            "filtros",
+            {}
+        )
+
+        print("================ ASSISTENTE IA ================")
+        print("USUÁRIO:", usuario_id)
+        print("EMPRESA:", empresa_id)
+        print("MENSAGEM:", mensagem)
+        print("AÇÃO:", acao)
+        print("FILTROS:", filtros)
+        print("================================================")
+
+        # ==============================================
+        # BUSCAR IMÓVEIS
+        # ==============================================
+
+        if acao == "buscar_imoveis":
+
+            imoveis = buscar_imoveis_assistente(
+                empresa_id,
+                filtros
+            )
+
+            resultado_html = montar_html_imoveis(
+                imoveis
+            )
+
+            imoveis_json = []
+
+            for imovel in imoveis:
+
+                imoveis_json.append({
+                    "id": imovel.get("id"),
+                    "titulo": imovel.get("titulo"),
+                    "tipo": imovel.get("tipo"),
+                    "valor": imovel.get("valor"),
+                    "cidade": imovel.get("cidade"),
+                    "bairro": imovel.get("bairro"),
+                    "quartos": imovel.get("quartos"),
+                    "banheiros": imovel.get("banheiros"),
+                    "vagas": (
+                        imovel.get("vaga_garagem")
+                        or imovel.get("vagas")
+                    ),
+                    "area": imovel.get("area"),
+                    "score_ia": imovel.get("score_ia"),
+                    "url": f"/imovel/{imovel.get('id')}"
+                })
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "imoveis",
+                "acao": acao,
+                "filtros": filtros,
+                "quantidade": len(imoveis_json),
+                "imoveis": imoveis_json,
+                "resultado": resultado_html
+            })
+
+        # ==============================================
+        # BUSCAR CLIENTES
+        # ==============================================
+
+        if acao == "buscar_clientes":
+
+            clientes = buscar_clientes_assistente(
+                empresa_id,
+                filtros
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "clientes",
+                "acao": acao,
+                "filtros": filtros,
+                "quantidade": len(clientes),
+                "clientes": clientes,
+                "resultado": montar_html_clientes(clientes)
+            })
+
+        # ==============================================
+        # CRIAR ABORDAGEM
+        # ==============================================
+
+        if acao == "criar_abordagem":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_abordagem"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CRIAR FOLLOW-UP
+        # ==============================================
+
+        if acao == "criar_followup":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_followup"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CRIAR LEGENDA
+        # ==============================================
+
+        if acao == "criar_legenda":
+
+            resultado = gerar_texto_assistente(
+                mensagem,
+                historico,
+                "criar_legenda"
+            )
+
+            return jsonify({
+                "sucesso": True,
+                "tipo": "texto",
+                "acao": acao,
+                "resultado": resultado
+            })
+
+        # ==============================================
+        # CONVERSA NORMAL
+        # ==============================================
+
+        resultado = gerar_texto_assistente(
+            mensagem,
+            historico,
+            "conversa"
+        )
+
+        return jsonify({
+            "sucesso": True,
+            "tipo": "texto",
+            "acao": "conversa",
+            "resultado": resultado
+        })
+
+    except Exception as erro:
+
+        print("ERRO GERAL DO ASSISTENTE:", erro)
+
+        return jsonify({
+            "sucesso": False,
+            "tipo": "erro",
+            "resultado": """
+            <div class="card-msg-imovel">
+                Ocorreu um erro ao processar sua solicitação.
+            </div>
+            """,
+            "erro": str(erro)
+        }), 500
+
+
+
+
+@app.context_processor
+def total_leads_site():
+
+    try:
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM lead_site
+        """)
+
+        total = cursor.fetchone()[0]
+
+        conn.close()
+
+        return {
+            "total_leads_site": total
+        }
+
+    except:
+        return {
+            "total_leads_site": 0
+        }
+
+
+
+
+@app.route('/data/uploads/imoveis/<filename>')
+def servir_video_do_volume(filename):
+    # Verifica se o arquivo realmente existe no seu volume /data/
+    caminho_completo = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], filename)
+    if os.path.exists(caminho_completo):
+        return send_from_directory(app.config['UPLOAD_FOLDER_IMOVEIS'], filename)
+    else:
+        abort(404)
+
+
+
+
+    
+@app.route("/admin/usuario/senha/<int:id>", methods=["POST"])
+@verificar_sessao
+@admin_required
+def alterar_senha_usuario(id):
+
+    nova_senha = request.form.get("senha")
+
+    senha_hash = generate_password_hash(nova_senha)
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET senha=?
+        WHERE id=?
+        AND empresa_id=?
+    """, (
+        senha_hash,
+        id,
+        session.get("empresa_id")
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/admin/usuarios")
+
+
+@app.route("/analisar_pdf", methods=["POST"])
+@verificar_sessao
+def analisar_pdf():
+    arquivo = request.files.get("pdf")
+
+    if not arquivo:
+        return "PDF não enviado", 400
+
+    # Configuração de diretório
+    pasta = "data/uploads/pdf"
+    os.makedirs(pasta, exist_ok=True)
+    caminho = os.path.join(pasta, arquivo.filename)
+
+    # Salva o arquivo temporariamente
+    arquivo.save(caminho)
+
+    texto = ""
+    print("COMEÇOU EXTRAÇÃO PDF")
+    
+    try:
+        with pdfplumber.open(caminho, laparams={"detect_vertical": False}) as pdf:
+            for pagina in pdf.pages:
+                conteudo = pagina.extract_text()
+                if conteudo:
+                    texto += conteudo + "\n"
+        
+        # Processa a extração
+        imoveis = extrair_imoveis(texto)
+        print(f"Foram encontrados {len(imoveis)} imóveis.")
+        links = extrair_links_pdf(caminho)
+
+        print("LINKS ENCONTRADOS:")
+        print(links)
+
+    finally:
+        # Garante que o arquivo será deletado mesmo que ocorra um erro
+        if os.path.exists(caminho):
+            os.remove(caminho)
+
+    return render_template(
+        "preview_importacao.html",
+        imoveis=imoveis,
+        links=links
+    )
+
+
+@app.route("/site/<slug>")
+def site_publico(slug):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    try:
+
+        # ==========================
+        # BUSCAR CONFIGURAÇÃO DO SITE
+        # ==========================
+
+        cursor.execute("""
+            SELECT *
+            FROM configuracoes_site
+            WHERE subdominio = ?
+        """, (slug,))
+
+        empresa = cursor.fetchone()
+
+
+        if not empresa:
+            return "Site não encontrado", 404
+
+
+
+        # ==========================
+        # BUSCAR IMÓVEIS
+        # ==========================
+
+        cursor.execute("""
+            SELECT *
+            FROM imoveis
+            WHERE empresa_id = ?
+            ORDER BY id DESC
+        """,
+        (empresa["empresa_id"],))
+
+
+        rows = cursor.fetchall()
+
+
+        imoveis = []
+
+
+
+        for row in rows:
+
+            imovel = dict(row)
+
+
+
+            # ==========================
+            # BUSCAR FOTOS
+            # ==========================
+
+            cursor.execute("""
+                SELECT nome_arquivo
+                FROM fotos_imoveis
+                WHERE imovel_id = ?
+                ORDER BY id ASC
+            """,
+            (imovel["id"],))
+
+
+            fotos = cursor.fetchall()
+
+
+            imovel["fotos"] = []
+
+
+
+            for foto in fotos:
+
+
+                caminho = foto["nome_arquivo"]
+
+
+                # remove caminhos antigos
+                caminho = caminho.replace("\\","/")
+
+
+                nome_foto = caminho.split("/")[-1]
+
+
+                imovel["fotos"].append(
+                    nome_foto
+                )
+
+
+
+            if imovel["fotos"]:
+
+                imovel["foto_capa"] = imovel["fotos"][0]
+
+            else:
+
+                imovel["foto_capa"] = None
+
+
+
+
+            # ==========================
+            # REFERÊNCIAS
+            # ==========================
+
+            try:
+
+                cursor.execute("""
+                    SELECT
+                        nome,
+                        categoria,
+                        distancia
+                    FROM referencias_imovel
+                    WHERE imovel_id = ?
+                    ORDER BY distancia ASC
+                """,
+                (imovel["id"],))
+
+
+                referencias = cursor.fetchall()
+
+
+
+                imovel["referencias"] = [
+
+                    {
+                        "nome": ref["nome"],
+                        "categoria": ref["categoria"],
+                        "distancia": ref["distancia"]
+                    }
+
+                    for ref in referencias
+
+                ]
+
+            except:
+
+                imovel["referencias"] = []
+
+
+
+            print(
+                "IMÓVEL",
+                imovel["id"],
+                "FOTOS:",
+                imovel["fotos"]
+            )
+
+
+
+            imoveis.append(imovel)
+
+
+
+
+        return render_template(
+            "template_site.html",
+            empresa=empresa,
+            imoveis=imoveis
+        )
+
+
+    except Exception as erro:
+
+        print(
+            "ERRO SITE PUBLICO:",
+            erro
+        )
+
+        return "Erro ao carregar site"
+
+
+    finally:
+
+        conn.close()
+
+
+import requests
+from flask import render_template, request, redirect, session
+
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+EVOLUTION_API_KEY = "123456789"
+
+
+@app.route("/whatsapp/sessoes")
+def whatsapp_sessoes():
+    # depois vamos buscar do banco
+    return render_template("campanhas.html")
+
+
+
+
+@app.route("/campanhas/criar-sessao-whatsapp", methods=["POST"])
+def campanhas_criar_sessao_whatsapp():
+    usuario_id = session.get("usuario_id", 1)
+    nome_instancia = f"usuario_{usuario_id}"
+
+    headers = {
+        "apikey": EVOLUTION_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "instanceName": nome_instancia,
+        "qrcode": True,
+        "integration": "WHATSAPP-BAILEYS"
+    }
+
+    resposta = requests.post(
+        f"{EVOLUTION_URL}/instance/create",
+        json=payload,
+        headers=headers,
+        timeout=30
+    )
+
+    session["whatsapp_instancia"] = nome_instancia
+
+    return redirect("/campanhas")
+     
+@app.route("/admin/ativar-usuario", methods=["POST"])
+@verificar_sessao
+def ativar_usuario():
+
+    user_id = request.form["user_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.execute(
+        "UPDATE usuarios SET ativo = 1 WHERE id = ?",
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    flash("Usuário ativado com sucesso.")
+
+    return redirect("/admin/novo-usuario")
+
+
+@app.route("/admin/desativar-usuario", methods=["POST"])
+@verificar_sessao
+def desativar_usuario():
+
+    user_id = request.form["user_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.execute(
+        "UPDATE usuarios SET ativo = 0 WHERE id = ?",
+        (user_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    flash("Usuário desativado com sucesso.")
+
+    return redirect("/admin/novo-usuario")
+
+@app.route("/clientes")
+@verificar_sessao
+def listar_clientes():
+
+    empresa_id = session.get("empresa_id")
+
+    data_inicio = request.args.get("data_inicio")
+    data_fim = request.args.get("data_fim")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if data_inicio and data_fim:
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE empresa_id = ?
+            AND data_criacao BETWEEN ? AND ?
+            ORDER BY id DESC
+        """, (
+            empresa_id,
+            data_inicio,
+            data_fim
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE empresa_id = ?
+            ORDER BY id DESC
+        """, (empresa_id,))
+
+    clientes = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "clientes.html",
+        clientes=clientes,
+        data_inicio=data_inicio,
+        data_fim=data_fim
+    )
+ 
+
+
+
+@app.route("/superadmin/usuario/editar/<int:user_id>", methods=["POST"])
+@super_admin_required
+def editar_usuario(user_id):
+    dados = request.json
+    # Exemplo: Desativar login ou alterar senha
+    if 'nova_senha' in dados:
+        db.execute("UPDATE usuarios SET senha = ? WHERE id = ?", (gerar_hash(dados['nova_senha']), user_id))
+    if 'ativo' in dados:
+        db.execute("UPDATE usuarios SET status = ? WHERE id = ?", (dados['ativo'], user_id))
+    db.commit()
+    return jsonify({"status": "sucesso"})
+
+
+@app.route("/ceo/usuarios")
+@verificar_sessao
+@somente_ceo
+def ceo_usuarios():
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM usuarios
+        ORDER BY nome
+    """)
+
+    usuarios = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "ceo/usuarios.html",
+        usuarios=usuarios
+    )
+
+@app.route("/admin/usuarios")
+@verificar_sessao
+@admin_required
+def admin_usuarios():
+
+    empresa_id = session.get("empresa_id")
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id,nome,email,is_admin,status
+        FROM usuarios
+        WHERE empresa_id=?
+    """, (empresa_id,))
+
+    usuarios = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "admin_usuarios.html",
+        usuarios=usuarios
+    )
+
+
+
+@app.route("/importar_clientes", methods=["GET", "POST"])
+@verificar_sessao
+def importar_clientes():
+
+    if request.method == "POST":
+
+        import pandas as pd
+        import sqlite3
+
+        arquivo = request.files["arquivo"]
+
+        if not arquivo:
+            flash("Selecione um arquivo.")
+            return redirect("/importar_clientes")
+
+        nome_arquivo = arquivo.filename.lower()
+
+        try:
+
+            if nome_arquivo.endswith(".xlsx"):
+                df = pd.read_excel(arquivo, engine="openpyxl")
+
+            elif nome_arquivo.endswith(".csv"):
+                df = pd.read_csv(arquivo)
+
+            else:
+                flash("Envie um arquivo XLSX ou CSV.")
+                return redirect("/importar_clientes")
+
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            adicionados = 0
+            duplicados = 0
+
+            for _, row in df.iterrows():
+
+                nome = str(row.get("nome", "")).strip()
+
+                telefone = str(row.get("telefone", "")).strip()
+
+                interesse = str(row.get("interesse", "")).strip()
+
+                faixa_preco = str(row.get("faixa_preco", "")).strip()
+
+                if not telefone:
+                    continue
+
+                telefone = (
+                    telefone
+                    .replace(".0", "")
+                    .replace(" ", "")
+                    .replace("-", "")
+                    .replace("(", "")
+                    .replace(")", "")
+                )
+
+                cursor.execute("""
+                    SELECT id
+                    FROM clientes
+                    WHERE telefone = ?
+                    AND empresa_id = ?
+                """, (
+                    telefone,
+                    session["empresa_id"]
+                ))
+
+                if cursor.fetchone():
+                    duplicados += 1
+                    continue
+
+                cursor.execute("""
+                    INSERT INTO clientes
+                    (
+                        nome,
+                        telefone,
+                        email,
+                        interesse,
+                        faixa_preco,
+                        bairro,
+                        sobre,
+                        entrada,
+                        pagamento,
+                        usuario_id,
+                        empresa_id
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    nome,
+                    telefone,
+                    "",
+                    interesse,
+                    faixa_preco,
+                    "",
+                    "",
+                    "",
+                    "",
+                    session["usuario_id"],
+                    session["empresa_id"]
+                ))
+
+                adicionados += 1
+
+            conn.commit()
+            conn.close()
+
+            flash(
+                f"{adicionados} clientes importados | {duplicados} duplicados ignorados"
+            )
+
+            return redirect("/clientes")
+
+        except Exception as e:
+
+            flash(f"Erro ao importar: {str(e)}")
+            return redirect("/importar_clientes")
+
+    return render_template("importar_clientes.html")
+
+
+
+
+@app.route("/privacidade")
+def privacidade():
+    return render_template("privacidade.html")
+
+@app.route("/superadmin/usuario/promover/<int:usuario_id>", methods=["POST"])
+@super_admin_required
+def tornar_admin(usuario_id):
+    db.execute("UPDATE usuarios SET is_admin = 1 WHERE id = ?", (usuario_id,))
+    db.commit()
+    return jsonify({"status": "sucesso", "mensagem": "Usuário agora é Administrador!"})    
+
+
+# --- FUNÇÃO DE LOGIN ---
+def verificar_login():
+    if "usuario_id" not in session: return "redirect_login"
+    if session.get("is_admin") == 1: return "ativo"
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT status_assinatura, validade_assinatura FROM usuarios WHERE id = ?", (session["usuario_id"],))
+    user = cursor.fetchone()
+    conn.close()
+
+    if not user: return "redirect_login"
+    if user[0] == "bloqueado": return "bloqueado"
+    if user[1]:
+        if datetime.now() > datetime.strptime(user[1], "%Y-%m-%d"): return "vencido"
+    return "ativo"
+
+# --- ROTA CONFIGURAÇÕES (CORRIGIDA) ---
+
+    # Busca os dados atuais garantindo o escopo da empresa
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT nome, foto_url FROM usuarios 
+        WHERE id = ? AND empresa_id = ?
+    """, (session["usuario_id"], session["empresa_id"]))
+    usuario = cursor.fetchone()
+    conn.close()
+
+    return render_template("configuracoes.html", usuario=usuario)
+
+# --- ROTA CADASTRAR IMOVEL (CORRIGIDA) ---
+import os
+from flask import jsonify, request
+
+@app.route("/renderizar-video", methods=["POST"])
+@verificar_sessao
+def renderizar_video():
+    dados = request.json
+    imovel_id = dados.get('imovel_id')
+
+    pasta_fotos = app.config['UPLOAD_FOLDER_IMOVEIS']
+    arquivos = [f for f in os.listdir(pasta_fotos) if f.startswith(f"{imovel_id}_")]
+
+    if not arquivos:
+        return jsonify({"status": "erro", "mensagem": "Nenhuma foto encontrada."})
+
+    arquivos.sort()
+
+    # 1. Cria os clips das fotos
+    clips = []
+    for nome_arquivo in arquivos:
+        caminho_foto = os.path.join(pasta_fotos, nome_arquivo)
+        clip = ImageClip(caminho_foto).resized(height=720).with_duration(3)
+        clips.append(clip)
+
+    # 2. Junta os clips
+    video = concatenate_videoclips(clips, method="compose")
+
+    # 3. Adiciona o áudio (Processamento único)
+    caminho_audio = os.path.join('static', 'assets', 'musicas', 'fundo_imobiliaria.mp3')
+    if os.path.exists(caminho_audio):
+        audio_clip = AudioFileClip(caminho_audio).with_duration(video.duration)
+        audio_clip = audio_clip.audio_fadein(1).audio_fadeout(1)
+        video = video.with_audio(audio_clip)
+
+    # 4. Renderiza o vídeo final uma única vez
+    nome_video = f"video_imovel_{imovel_id}.mp4"
+    caminho_video = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], nome_video)
+
+    video.write_videofile(caminho_video, codec="libx264", audio_codec="aac", fps=24)
+
+    # 5. Limpa a memória fechando o vídeo
+    video.close()
+
+    return jsonify({
+        "status": "sucesso", 
+        # A URL deve começar com /data/uploads... para bater com a rota que criamos
+        "url_video": f"/data/uploads/imoveis/{nome_video}"
+        })
+
+
+@app.route("/ceo")
+@verificar_sessao
+@somente_ceo
+def dashboard_ceo():
+
+    return render_template("ceo/dashboard_ceo.html")
+     
+
+
+@app.route("/excluir-foto/<int:foto_id>")
+@verificar_sessao
+def excluir_foto(foto_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # Busca a foto
+    cursor.execute("""
+        SELECT *
+        FROM fotos_imoveis
+        WHERE id = ?
+    """, (foto_id,))
+
+    foto = cursor.fetchone()
+
+    if not foto:
+        conn.close()
+        return redirect(request.referrer)
+
+    # Caminho do arquivo
+    caminho_foto = os.path.join(
+        app.config['UPLOAD_FOLDER_IMOVEIS'],
+        foto["nome_arquivo"]
+    )
+
+    # Remove arquivo físico
+    if os.path.exists(caminho_foto):
+        os.remove(caminho_foto)
+
+    # Remove do banco
+    cursor.execute("""
+        DELETE FROM fotos_imoveis
+        WHERE id = ?
+    """, (foto_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(request.referrer)
+
+
+@app.route("/campanhas")
+def campanhas():
+    nome_instancia = session.get("whatsapp_instancia")
+    qrcode = None
+    erro_whatsapp = None
+
+    sucesso_envio = session.pop("sucesso_envio", None)
+    erro_envio = session.pop("erro_envio", None)
+    campanha_finalizada = session.pop("campanha_finalizada", None)
+
+    if nome_instancia:
+        try:
+            headers = {"apikey": EVOLUTION_API_KEY}
+
+            resposta_qr = requests.get(
+                f"{EVOLUTION_URL}/instance/connect/{nome_instancia}",
+                headers=headers,
+                timeout=30
+            )
+
+            dados = resposta_qr.json()
+            qrcode = dados.get("base64")
+
+        except Exception as e:
+            erro_whatsapp = f"Erro ao buscar QR Code: {e}"
+
+    return render_template(
+        "campanhas.html",
+        nome_instancia=nome_instancia,
+        qrcode=qrcode,
+        erro_whatsapp=erro_whatsapp,
+        sucesso_envio=sucesso_envio,
+        erro_envio=erro_envio,
+        campanha_finalizada=campanha_finalizada
+    )     
+
+
+@app.route('/termos')
+def termos():
+    return render_template('termos.html')
+
+
+
+
+
+WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+TOKEN = "THISISMYSECURETOKEN"
+
+
+
+     
+@app.route("/enviar_imovel_match", methods=["POST"])
+@verificar_sessao
+def enviar_imovel_match():
+
+    try:
+
+        data = request.get_json()
+
+        cliente_id = data.get("cliente_id")
+        imovel_id = data.get("imovel_id")
+
+        empresa_id = session["empresa_id"]
+        usuario_id = session["usuario_id"]
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+
+        cursor = conn.cursor()
+
+        # CLIENTE
+
+        cursor.execute("""
+            SELECT *
+            FROM clientes
+            WHERE id = ?
+            AND empresa_id = ?
+        """, (cliente_id, empresa_id))
+
+        cliente = cursor.fetchone()
+
+        if not cliente:
+
+            conn.close()
+
+            return jsonify({
+                "status":"error",
+                "erro":"Cliente não encontrado"
+            })
+
+        # IMÓVEL
+
+        cursor.execute("""
+            SELECT *
+            FROM imoveis
+            WHERE id = ?
+            AND empresa_id = ?
+        """, (imovel_id, empresa_id))
+
+        imovel = cursor.fetchone()
+
+        if not imovel:
+
+            conn.close()
+
+            return jsonify({
+                "status":"error",
+                "erro":"Imóvel não encontrado"
+            })
+
+        # SESSÃO WPP
+
+        cursor.execute("""
+            SELECT whatsapp_sessao
+            FROM usuarios
+            WHERE id = ?
+        """, (usuario_id,))
+
+        usuario = cursor.fetchone()
+
+        conn.close()
+
+        # TELEFONE
+
+        telefone = str(cliente["telefone"])
+
+        telefone = ''.join(
+            filter(str.isdigit, telefone)
+        )
+
+        if not telefone.startswith("55"):
+            telefone = "55" + telefone
+
+        # MENSAGEM
+
+        mensagem = f"""
+🏠 *{imovel['titulo']}*
+
+💰 Valor: {imovel['valor']}
+
+📍 {imovel['bairro']} - {imovel['cidade']}
+
+🚗 Vagas > {imovel['vaga_garagem']} - 🛏️ Quartos > {imovel['quartos']}
+
+Olá {cliente['nome']}!
+
+Encontrei um imóvel que combina com seu perfil.
+
+Quer ver mais detalhes e fotos > { imovel['link']}?
+Estou aqui para esclarecer duvidas !
+"""
+
+        WPP_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+
+        resp = requests.post(
+
+            f"{WPP_URL}/enviar",
+
+            json={
+
+                "sessao":
+                    usuario["whatsapp_sessao"],
+
+                "numero":
+                    telefone,
+
+                "mensagem":
+                    mensagem
+
+            },
+
+            timeout=120
+
+        )
+
+        return jsonify(
+            resp.json()
+        )
+
+    except Exception as e:
+
+        print("ERRO MATCH:", e)
+
+        return jsonify({
+
+            "status":"error",
+
+            "erro":str(e)
+
+        })
+
+
+@app.route("/cadastrar_imovel", methods=["GET", "POST"])
+@verificar_sessao
+def cadastrar_imovel():
+
+    if request.method == "POST":
+
+        empresa_id = session.get("empresa_id")
+        user_id = session.get("usuario_id")
+        data_criacao = datetime.now().strftime("%Y-%m-%d")
+
+        valor = request.form.get("valor", "")
+
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+
+        try:
+
+            # ==========================
+            # CADASTRAR IMÓVEL
+            # ==========================
+
+            cursor.execute("""
+                INSERT INTO imoveis (
+                    titulo, tipo, valor, cidade, bairro,
+                    quartos, banheiros, area, status, descricao,
+                    rua, iptu, condominio, link, cep,
+                    vaga_garagem, lazer, sacada, lavabo,
+                    prazo, parcela, anuais, entrada,
+                    banheiros21, proprietario1, telefone2, mobilia,
+                    usuario_id, empresa_id, data_criacao
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?)
+            """, (
+
+                request.form.get("titulo"),
+                request.form.get("tipo"),
+                valor,
+                request.form.get("cidade"),
+                request.form.get("bairro"),
+
+                request.form.get("quartos"),
+                request.form.get("banheiros"),
+                request.form.get("area"),
+                request.form.get("status"),
+                request.form.get("descricao"),
+
+                request.form.get("rua"),
+                request.form.get("iptu"),
+                request.form.get("condominio"),
+                request.form.get("link"),
+                request.form.get("cep"),
+
+                request.form.get("vaga_garagem"),
+                request.form.get("lazer"),
+                request.form.get("sacada"),
+                request.form.get("lavabo"),
+
+                request.form.get("prazo"),
+                request.form.get("parcela"),
+                request.form.get("anuais"),
+                request.form.get("entrada"),
+
+                request.form.get("banheiros21"),
+                request.form.get("proprietario1"),
+                request.form.get("telefone2"),
+                request.form.get("mobilia"),
+
+                user_id,
+                empresa_id,
+                data_criacao
+            ))
+
+
+            imovel_id = cursor.lastrowid
+
+
+
+            # ==========================
+            # BUSCAR COORDENADAS PELO CEP
+            # ==========================
+
+            coordenadas = buscar_coordenadas(
+                request.form.get("cep")
+            )
+
+
+            if coordenadas:
+
+                latitude = coordenadas[0]
+                longitude = coordenadas[1]
+
+
+                print("==========================")
+                print("LOCALIZAÇÃO ENCONTRADA")
+                print("Latitude:", latitude)
+                print("Longitude:", longitude)
+                print("==========================")
+
+
+                # ==========================
+                # BUSCAR REFERÊNCIAS
+                # ==========================
+
+                buscar_referencias(
+                    imovel_id,
+                    latitude,
+                    longitude,
+                    cursor
+                )
+
+
+            else:
+
+                print("Não foi possível localizar o CEP")
+
+
+
+            # ==========================
+            # SALVAR FOTOS
+            # ==========================
+
+            arquivos = request.files.getlist("fotos[]")
+
+
+            for file in arquivos:
+
+                if file and file.filename != "":
+
+                    nome_seguro = secure_filename(
+                        file.filename
+                    )
+
+
+                    nome_foto = (
+                        f"{imovel_id}_"
+                        f"{int(datetime.now().timestamp())}_"
+                        f"{nome_seguro}"
+                    )
+
+
+                    caminho_salvamento = os.path.join(
+                        app.config['UPLOAD_FOLDER_IMOVEIS'],
+                        nome_foto
+                    )
+
+
+                    file.save(caminho_salvamento)
+
+
+                    cursor.execute("""
+                        INSERT INTO fotos_imoveis
+                        (
+                            imovel_id,
+                            nome_arquivo
+                        )
+                        VALUES (?, ?)
+                    """, (
+                        imovel_id,
+                        nome_foto
+                    ))
+
+
+
+            # ==========================
+            # FINALIZAR BANCO
+            # ==========================
+
+            conn.commit()
+
+
+        except Exception as erro:
+
+            conn.rollback()
+
+            print(
+                "ERRO AO CADASTRAR IMÓVEL:",
+                erro
+            )
+
+
+        finally:
+
+            conn.close()
+
+
+
+        return redirect("/imoveis")
+
+
+    return render_template(
+        "cadastrar_imovel.html"
+    )
+    
+# (Mantenha o restante das suas outras rotas abaixo aqui...)
+
+
+api_key=os.getenv('GCP_API_KEY')
+
+# ==========================================
+# FUNÇÃO AUXILIAR: VERIFICAÇÃO DE ASSINATURA
+# ==========================================
+def verificar_login():
+    """Retorna o status do usuário ou redirecionamento se não logado."""
+    if "usuario_id" not in session:
+        return "redirect_login"
+
+    # Se for o Administrador Master, ele está sempre liberado
+    if session.get("is_admin") == 1:
+        return "ativo"
+
+    # Consulta o status direto no banco de dados para segurança máxima
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT status_assinatura, validade_assinatura FROM usuarios WHERE id = ?",
+        (session["usuario_id"],),
+    )
+    user = cursor.fetchone()
+    conn.close()
+
+    if not user:
+        return "redirect_login"
+
+    status, validade = user[0], user[1]
+
+    # 1. Se estiver bloqueado manualmente pelo Admin
+    if status == "bloqueado":
+        return "bloqueado"
+
+    # 2. Se a data de validade expirou
+    if validade:
+        data_vencimento = datetime.strptime(validade, "%Y-%m-%d")
+        if datetime.now() > data_vencimento:
+            return "vencido"
+
+    return "ativo"
+
+
+@app.route("/campanhas/enviar-teste-whatsapp", methods=["POST"])
+@verificar_sessao
+def campanhas_enviar_teste_whatsapp():
+    """
+    Formatos aceitos:
+
+    João;62999999999
+    João,62999999999
+    João.62999999999
+    João|62999999999
+    João:62999999999
+    João/62999999999
+    João-62999999999
+    João=62999999999
+    João => 62999999999
+    João 62999999999
+    João (62) 99999-9999
+    62999999999
+
+    Variáveis da mensagem:
+
+    {nome}
+    {name}
+    {telefone}
+    {phone}
+    """
+
+    nome_instancia = str(
+        session.get("whatsapp_instancia", "")
+    ).strip()
+
+    contatos_texto = request.form.get("numeros", "").strip()
+    mensagem_base = request.form.get("mensagem", "").strip()
+
+    # Limpa os avisos da campanha anterior.
+    session.pop("erro_envio", None)
+    session.pop("sucesso_envio", None)
+    session.pop("campanha_finalizada", None)
+
+    # =========================================================
+    # VALIDAÇÕES INICIAIS
+    # =========================================================
+
+    if not nome_instancia:
+        session["erro_envio"] = (
+            "Nenhuma sessão WhatsApp foi encontrada. "
+            "Conecte o WhatsApp antes de enviar."
+        )
+        return redirect("/campanhas")
+
+    if not contatos_texto:
+        session["erro_envio"] = "Informe pelo menos um contato."
+        return redirect("/campanhas")
+
+    if not mensagem_base:
+        session["erro_envio"] = "Digite a mensagem da campanha."
+        return redirect("/campanhas")
+
+    evolution_url = str(EVOLUTION_URL or "").rstrip("/")
+    evolution_api_key = str(EVOLUTION_API_KEY or "").strip()
+
+    if not evolution_url or not evolution_api_key:
+        logger.error("Evolution API não configurada corretamente.")
+
+        session["erro_envio"] = (
+            "A integração com o WhatsApp não está configurada corretamente."
+        )
+        return redirect("/campanhas")
+
+    headers = {
+        "apikey": evolution_api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+    # Evita deixar uma requisição aberta por tempo demais.
+    LIMITE_CONTATOS = 30
+
+    # Pausa entre as mensagens.
+    INTERVALO_MINIMO = 4
+    INTERVALO_MAXIMO = 7
+
+    # =========================================================
+    # VERIFICA SE A INSTÂNCIA ESTÁ CONECTADA
+    # =========================================================
+
+    try:
+        resposta_conexao = requests.get(
+            (
+                f"{evolution_url}/instance/connectionState/"
+                f"{nome_instancia}"
+            ),
+            headers=headers,
+            timeout=(5, 15)
+        )
+
+        logger.info(
+            "CONEXÃO EVOLUTION | instancia=%s | status=%s | resposta=%s",
+            nome_instancia,
+            resposta_conexao.status_code,
+            resposta_conexao.text[:500]
+        )
+
+        if resposta_conexao.status_code not in (200, 201):
+            session["erro_envio"] = (
+                "Não foi possível confirmar a conexão do WhatsApp. "
+                f"A Evolution retornou HTTP "
+                f"{resposta_conexao.status_code}."
+            )
+            return redirect("/campanhas")
+
+        try:
+            dados_conexao = resposta_conexao.json()
+        except ValueError:
+            dados_conexao = {}
+
+        estado = str(
+            dados_conexao.get("instance", {}).get("state")
+            or dados_conexao.get("state")
+            or dados_conexao.get("status")
+            or ""
+        ).strip().lower()
+
+        estados_conectados = {
+            "open",
+            "connected",
+            "conectado"
+        }
+
+        if estado not in estados_conectados:
+            session["erro_envio"] = (
+                "O WhatsApp não está conectado neste momento. "
+                f"Estado atual: {estado or 'desconhecido'}. "
+                "Reconecte a sessão e tente novamente."
+            )
+            return redirect("/campanhas")
+
+    except requests.ConnectTimeout:
+        logger.exception(
+            "Timeout ao conectar com a Evolution API."
+        )
+
+        session["erro_envio"] = (
+            "A Evolution API demorou para aceitar a conexão. "
+            "Tente novamente."
+        )
+        return redirect("/campanhas")
+
+    except requests.ConnectionError:
+        logger.exception(
+            "Não foi possível acessar a Evolution API."
+        )
+
+        session["erro_envio"] = (
+            "O servidor da Evolution API está indisponível."
+        )
+        return redirect("/campanhas")
+
+    except requests.RequestException as erro:
+        logger.exception(
+            "Erro ao consultar a conexão da Evolution: %s",
+            erro
+        )
+
+        session["erro_envio"] = (
+            "Não foi possível verificar a conexão do WhatsApp."
+        )
+        return redirect("/campanhas")
+
+    # =========================================================
+    # LEITURA E NORMALIZAÇÃO DOS CONTATOS
+    # =========================================================
+
+    contatos = []
+    linhas_invalidas = []
+    numeros_adicionados = set()
+
+    for numero_linha, linha_original in enumerate(
+        contatos_texto.splitlines(),
+        start=1
+    ):
+        linha = linha_original.strip()
+
+        if not linha:
+            continue
+
+        nome = ""
+        telefone_digitado = ""
+
+        # Procura um telefone no final da linha.
+        # Aceita números com espaços, parênteses, pontos e hífens.
+        telefone_encontrado = re.search(
+            r"(\+?\d[\d\s().-]{8,}\d)$",
+            linha
+        )
+
+        if telefone_encontrado:
+            telefone_digitado = telefone_encontrado.group(1)
+
+            # Tudo que estiver antes do telefone será tratado como nome.
+            nome = linha[:telefone_encontrado.start()].strip()
+
+            # Remove separadores deixados no final do nome.
+            nome = re.sub(
+                r"[\s;,.\|:/=\->]+$",
+                "",
+                nome
+            ).strip()
+
+        else:
+            # Caso não encontre pelo padrão anterior, verifica se
+            # a linha inteira contém somente um número.
+            somente_digitos = re.sub(r"\D", "", linha)
+
+            if len(somente_digitos) in (10, 11, 12, 13):
+                telefone_digitado = linha
+                nome = ""
+            else:
+                linhas_invalidas.append(
+                    f"Linha {numero_linha}: {linha_original.strip()}"
+                )
+                continue
+
+        # Deixa somente os números.
+        telefone = re.sub(r"\D", "", telefone_digitado)
+
+        # Remove o prefixo internacional 00.
+        if telefone.startswith("00"):
+            telefone = telefone[2:]
+
+        # Remove zeros antes do DDD.
+        telefone = telefone.lstrip("0")
+
+        # Adiciona o código do Brasil quando necessário.
+        if telefone and not telefone.startswith("55"):
+            telefone = f"55{telefone}"
+
+        # 55 + DDD + número:
+        # normalmente 12 ou 13 dígitos.
+        if len(telefone) not in (12, 13):
+            linhas_invalidas.append(
+                f"Linha {numero_linha}: telefone inválido"
+            )
+            continue
+
+        ddd = telefone[2:4]
+
+        if len(ddd) != 2 or ddd.startswith("0"):
+            linhas_invalidas.append(
+                f"Linha {numero_linha}: DDD inválido"
+            )
+            continue
+
+        # Evita disparar duas vezes para o mesmo telefone.
+        if telefone in numeros_adicionados:
+            logger.info(
+                "CONTATO DUPLICADO IGNORADO | telefone=%s",
+                telefone
+            )
+            continue
+
+        numeros_adicionados.add(telefone)
+
+        contatos.append({
+            "nome": nome or "cliente",
+            "telefone": telefone
+        })
+
+    if not contatos:
+        session["erro_envio"] = (
+            "Nenhum contato válido foi encontrado. "
+            "Exemplo: João;62999999999"
+        )
+        return redirect("/campanhas")
+
+    if len(contatos) > LIMITE_CONTATOS:
+        session["erro_envio"] = (
+            f"Envie no máximo {LIMITE_CONTATOS} contatos por campanha. "
+            "Divida a lista em grupos menores."
+        )
+        return redirect("/campanhas")
+
+    # =========================================================
+    # ENVIO DAS MENSAGENS
+    # =========================================================
+
+    enviados = []
+    falhas = []
+
+    endpoint_envio = (
+        f"{evolution_url}/message/sendText/{nome_instancia}"
+    )
+
+    total_contatos = len(contatos)
+
+    for indice, contato in enumerate(contatos, start=1):
+        nome = contato["nome"]
+        telefone = contato["telefone"]
+
+        mensagem_final = (
+            mensagem_base
+            .replace("{nome}", nome)
+            .replace("{name}", nome)
+            .replace("{telefone}", telefone)
+            .replace("{phone}", telefone)
+        )
+
+        payload = {
+            "number": telefone,
+            "text": mensagem_final
+        }
+
+        logger.info(
+            (
+                "INICIANDO ENVIO | atual=%s | total=%s | "
+                "nome=%s | telefone=%s"
+            ),
+            indice,
+            total_contatos,
+            nome,
+            telefone
+        )
+
+        try:
+            resposta = requests.post(
+                endpoint_envio,
+                json=payload,
+                headers=headers,
+                timeout=(10, 40)
+            )
+
+            corpo_resposta = resposta.text[:1000]
+
+            logger.info(
+                (
+                    "RESPOSTA ENVIO | telefone=%s | "
+                    "status=%s | resposta=%s"
+                ),
+                telefone,
+                resposta.status_code,
+                corpo_resposta
+            )
+
+            if resposta.status_code in (200, 201):
+                try:
+                    dados_envio = resposta.json()
+                except ValueError:
+                    dados_envio = {}
+
+                erro_interno = (
+                    dados_envio.get("error")
+                    or dados_envio.get("errors")
+                )
+
+                if erro_interno:
+                    falhas.append({
+                        "nome": nome,
+                        "telefone": telefone,
+                        "motivo": str(erro_interno)[:180]
+                    })
+                else:
+                    enviados.append({
+                        "nome": nome,
+                        "telefone": telefone
+                    })
+
+            elif resposta.status_code == 401:
+                falhas.append({
+                    "nome": nome,
+                    "telefone": telefone,
+                    "motivo": "Chave da Evolution API inválida."
+                })
+
+                # Interrompe, pois todos os próximos terão o mesmo erro.
+                break
+
+            elif resposta.status_code == 404:
+                falhas.append({
+                    "nome": nome,
+                    "telefone": telefone,
+                    "motivo": (
+                        "Instância ou endpoint não encontrado."
+                    )
+                })
+
+                break
+
+            elif resposta.status_code == 429:
+                falhas.append({
+                    "nome": nome,
+                    "telefone": telefone,
+                    "motivo": (
+                        "Muitas requisições em pouco tempo."
+                    )
+                })
+
+                time.sleep(15)
+
+            elif resposta.status_code >= 500:
+                falhas.append({
+                    "nome": nome,
+                    "telefone": telefone,
+                    "motivo": (
+                        f"Erro interno da Evolution "
+                        f"(HTTP {resposta.status_code})."
+                    )
+                })
+
+                time.sleep(8)
+
+            else:
+                falhas.append({
+                    "nome": nome,
+                    "telefone": telefone,
+                    "motivo": (
+                        f"HTTP {resposta.status_code}: "
+                        f"{corpo_resposta[:180]}"
+                    )
+                })
+
+        except requests.ConnectTimeout:
+            logger.exception(
+                "Timeout de conexão ao enviar para %s.",
+                telefone
+            )
+
+            falhas.append({
+                "nome": nome,
+                "telefone": telefone,
+                "motivo": (
+                    "Tempo esgotado ao conectar com a Evolution."
+                )
+            })
+
+        except requests.ReadTimeout:
+            logger.exception(
+                "Timeout de resposta ao enviar para %s.",
+                telefone
+            )
+
+            # Não repete automaticamente para evitar mensagem duplicada.
+            falhas.append({
+                "nome": nome,
+                "telefone": telefone,
+                "motivo": (
+                    "A Evolution demorou para responder. "
+                    "Confira se a mensagem foi enviada antes de repetir."
+                )
+            })
+
+        except requests.ConnectionError:
+            logger.exception(
+                "Conexão perdida durante o envio para %s.",
+                telefone
+            )
+
+            falhas.append({
+                "nome": nome,
+                "telefone": telefone,
+                "motivo": (
+                    "A conexão com a Evolution API foi perdida."
+                )
+            })
+
+            break
+
+        except requests.RequestException as erro:
+            logger.exception(
+                "Erro ao enviar para %s: %s",
+                telefone,
+                erro
+            )
+
+            falhas.append({
+                "nome": nome,
+                "telefone": telefone,
+                "motivo": str(erro)[:180]
+            })
+
+        except Exception as erro:
+            logger.exception(
+                "Erro inesperado no envio para %s: %s",
+                telefone,
+                erro
+            )
+
+            falhas.append({
+                "nome": nome,
+                "telefone": telefone,
+                "motivo": "Erro inesperado durante o envio."
+            })
+
+        # Não espera depois do último contato.
+        if indice < total_contatos:
+            intervalo = random.uniform(
+                INTERVALO_MINIMO,
+                INTERVALO_MAXIMO
+            )
+
+            logger.info(
+                "AGUARDANDO %.1f segundos antes do próximo envio.",
+                intervalo
+            )
+
+            time.sleep(intervalo)
+
+    # =========================================================
+    # RESULTADO FINAL
+    # =========================================================
+
+    quantidade_enviados = len(enviados)
+    quantidade_falhas = len(falhas)
+    quantidade_invalidos = len(linhas_invalidas)
+
+    session["campanha_finalizada"] = (
+        f"{quantidade_enviados} enviada(s), "
+        f"{quantidade_falhas} falha(s) e "
+        f"{quantidade_invalidos} contato(s) inválido(s)."
+    )
+
+    if quantidade_enviados:
+        session["sucesso_envio"] = (
+            f"{quantidade_enviados} mensagem(ns) aceita(s) "
+            "pela Evolution API."
+        )
+
+    mensagens_erro = []
+
+    if linhas_invalidas:
+        resumo_invalidos = " | ".join(
+            linhas_invalidas[:5]
+        )
+
+        if len(linhas_invalidas) > 5:
+            resumo_invalidos += (
+                f" | e mais {len(linhas_invalidas) - 5}"
+            )
+
+        mensagens_erro.append(
+            f"Contatos inválidos: {resumo_invalidos}."
+        )
+
+    if falhas:
+        resumo_falhas = []
+
+        for falha in falhas[:5]:
+            resumo_falhas.append(
+                f'{falha["nome"]} ({falha["telefone"]}): '
+                f'{falha["motivo"]}'
+            )
+
+        texto_falhas = " | ".join(resumo_falhas)
+
+        if len(falhas) > 5:
+            texto_falhas += (
+                f" | e mais {len(falhas) - 5}"
+            )
+
+        mensagens_erro.append(
+            f"Falhas no envio: {texto_falhas}."
+        )
+
+    if mensagens_erro:
+        session["erro_envio"] = " ".join(mensagens_erro)
+
+    logger.info(
+        (
+            "CAMPANHA FINALIZADA | instancia=%s | "
+            "enviados=%s | falhas=%s | invalidos=%s"
+        ),
+        nome_instancia,
+        quantidade_enviados,
+        quantidade_falhas,
+        quantidade_invalidos
+    )
+
+    return redirect("/campanhas")
+    
+@app.route("/api/session/<session>/status")
+def session_status(session):
+
+    url = f"{WPP_URL}/api/{session}/start-session"
+
+    res = requests.post(url, headers={
+        "Authorization": f"Bearer {TOKEN}"
+    }, json={})
+
+    return jsonify(res.json())
+
+logs = {}
+
+@app.route("/api/session/<session>/logs")
+def get_logs(session):
+    return jsonify(logs.get(session, []))
+
+@app.route("/api/session/<session>/qr")
+def get_qr(session):
+
+    url = f"{WPP_URL}/api/{session}/start-session"
+
+    res = requests.post(url, headers={
+        "Authorization": f"Bearer {TOKEN}"
+    }, json={"waitQrCode": True})
+
+    data = res.json()
+
+    return jsonify({
+        "qrcode": data.get("qrcode"),
+        "status": data.get("status")
+    })
+
+@app.route("/atualizar_senha", methods=["POST"])
+def atualizar_senha():
+    senha_atual = request.form.get("senha_atual")
+    nova_senha = request.form.get("nova_senha")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT senha FROM usuarios WHERE id = ?", (session["usuario_id"],))
+    hash_atual = cursor.fetchone()[0]
+
+    if check_password_hash(hash_atual, senha_atual):
+        novo_hash = generate_password_hash(nova_senha)
+        cursor.execute("UPDATE usuarios SET senha = ? WHERE id = ?", (novo_hash, session["usuario_id"]))
+        conn.commit()
+        flash("Senha atualizada com sucesso!", "success") # <--- A MENSAGEM
+    else:
+        flash("Senha atual incorreta.", "danger") # <--- ERRO# Aqui você pode adicionar um flash("Senha atualizada!")
+
+    conn.close()
+    return redirect("/configuracoes")
+
+
+@app.route("/sistema")
+@verificar_sessao
+def index():
+
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
+        (empresa_id,)
+    )
+
+    total_clientes = cursor.fetchone()[0]
+
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
+        (empresa_id,)
+    )
+
+    total_imoveis = cursor.fetchone()[0]
+
+
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id=?
+    """,(empresa_id,))
+
+
+    site = cursor.fetchone()
+
+
+    conn.close()
+
+
+    return render_template(
+        "index.html",
+        total_clientes=total_clientes,
+        total_imoveis=total_imoveis,
+        site=site
+    )
+
+@app.route("/")
+def landing():
+
+    return render_template("landing.html")
+# ==========================================
+# 2. SISTEMA DE LOGIN, USUÁRIOS E LOGOUT
+# ==========================================
+@app.route("/match_ia")
+@verificar_sessao
+def match_ia():
+    # Bloqueio extra para admin não entrar aqui
+
+
+    empresa_id = session.get("empresa_id")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # ISOLAMENTO: Puxa apenas dados vinculados à empresa do usuário logado
+    cursor.execute("""
+        SELECT id, nome, interesse, faixa_preco, bairro, telefone 
+        FROM clientes WHERE empresa_id = ?
+    """, (empresa_id,))
+    clientes = cursor.fetchall()
+
+    cursor.execute("""
+SELECT
+    i.id,
+    i.titulo,
+    i.tipo,
+    i.valor,
+    i.cidade,
+    i.bairro,
+    (
+        SELECT nome_arquivo
+        FROM fotos_imoveis f
+        WHERE f.imovel_id = i.id
+        LIMIT 1
+    ) as foto
+FROM imoveis i
+WHERE i.empresa_id = ?
+""", (empresa_id,))
+    imoveis = cursor.fetchall()
+    conn.close()
+
+    matches = []
+    # ... (lógica de match permanece a mesma, agora operando em um ambiente isolado)
+    for c in clientes:
+        c_id, c_nome, c_interesse, c_faixa, c_bairro, c_telefone = c
+        c_bairro_txt = str(c_bairro).lower().strip() if c_bairro else ""
+        interesse_txt = str(c_interesse).lower().strip() if c_interesse else ""
+
+        for i in imoveis:
+            i_id, i_titulo, i_tipo, i_valor, i_cidade, i_bairro, i_foto = i
+            i_bairro_txt = str(i_bairro).lower().strip() if i_bairro else ""
+
+            porcentagem = 0
+            if i_bairro_txt and (i_bairro_txt == c_bairro_txt or i_bairro_txt in interesse_txt):
+                porcentagem += 50
+
+            try:
+                imovel_num = float(''.join(filter(str.isdigit, str(i_valor))))
+                cliente_num = float(''.join(filter(str.isdigit, str(c_faixa))))
+                if imovel_num <= (cliente_num * 1.10):
+                    porcentagem += 50
+            except:
+                if c_faixa and str(i_valor).strip() in str(c_faixa).strip():
+                    porcentagem += 50
+
+            if porcentagem >= 50:
+                matches.append({
+                    "cliente_nome": c_nome,
+                    "cliente_telefone": c_telefone,
+                    "imovel_id": i_id,
+                    "imovel_titulo": i_titulo,
+                    "imovel_foto": i_foto,
+                    "imovel_valor": i_valor,
+                    "imovel_local": f"{i_bairro}, {i_cidade}" if i_bairro else i_cidade,
+                    "porcentagem": porcentagem
+                })
+
+    matches = sorted(matches, key=lambda x: x["porcentagem"], reverse=True)
+    return render_template("match_ia.html", matches=matches)
+
+
+
+     
+@app.route("/uploads/logos/<path:arquivo>")
+def logo_empresa(arquivo):
+    return send_from_directory(
+        "/data/uploads/logos",
+        arquivo
+    )
+from collections import defaultdict
+
+@app.route("/dashboard_v2")
+@verificar_sessao
+def dashboard_v2():
+
+    empresa_id = session.get("empresa_id")
+    hoje = datetime.now()
+
+    mes_atual = hoje.strftime("%m")
+    ano_atual = hoje.strftime("%Y")
+
+    if hoje.month == 1:
+        mes_anterior = "12"
+        ano_anterior = str(hoje.year - 1)
+    else:
+        mes_anterior = f"{hoje.month-1:02}"
+        ano_anterior = str(hoje.year)
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # =====================================================
+    # FUNÇÃO AUXILIAR
+    # =====================================================
+
+    def calcular_percentual(atual, anterior):
+        if anterior == 0:
+            return 100 if atual > 0 else 0
+        return round(((atual - anterior) / anterior) * 100)
+
+    # =====================================================
+    # TOTAIS
+    # =====================================================
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM clientes WHERE empresa_id=?",
+        (empresa_id,)
+    )
+    total_clientes = cursor.fetchone()[0]
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM imoveis WHERE empresa_id=?",
+        (empresa_id,)
+    )
+    total_imoveis = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id = l.id_imovel
+        WHERE i.empresa_id = ?
+    """, (empresa_id,))
+    total_leads = cursor.fetchone()[0]
+
+    # =====================================================
+    # CLIENTES MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_atual, ano_atual))
+
+    clientes_mes = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_anterior, ano_anterior))
+
+    clientes_mes_anterior = cursor.fetchone()[0]
+
+    pct_clientes = calcular_percentual(
+        clientes_mes,
+        clientes_mes_anterior
+    )
+
+    # =====================================================
+    # IMÓVEIS MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_atual, ano_atual))
+
+    imoveis_mes = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM imoveis
+        WHERE empresa_id=?
+        AND strftime('%m',data_criacao)=?
+        AND strftime('%Y',data_criacao)=?
+    """, (empresa_id, mes_anterior, ano_anterior))
+
+    imoveis_mes_anterior = cursor.fetchone()[0]
+
+    pct_imoveis = calcular_percentual(
+        imoveis_mes,
+        imoveis_mes_anterior
+    )
+
+    # =====================================================
+    # LEADS MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id=l.id_imovel
+        WHERE i.empresa_id=?
+        AND strftime('%m',l.data_criacao)=?
+        AND strftime('%Y',l.data_criacao)=?
+    """, (empresa_id, mes_atual, ano_atual))
+
+    leads_mes = cursor.fetchone()[0]
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM lead_site l
+        INNER JOIN imoveis i
+            ON i.id=l.id_imovel
+        WHERE i.empresa_id=?
+        AND strftime('%m',l.data_criacao)=?
+        AND strftime('%Y',l.data_criacao)=?
+    """, (empresa_id, mes_anterior, ano_anterior))
+
+    leads_mes_anterior = cursor.fetchone()[0]
+
+    pct_leads = calcular_percentual(
+        leads_mes,
+        leads_mes_anterior
+    )
+
+    # =====================================================
+    # MATCH IA
+    # Clientes com interesse preenchido
+    # =====================================================
+
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM clientes
+        WHERE empresa_id=?
+        AND interesse IS NOT NULL
+        AND interesse <> ''
+    """, (empresa_id,))
+
+    total_matchs = cursor.fetchone()[0]
+
+    # =====================================================
+    # BARRAS
+    # =====================================================
+
+    progresso_clientes = min(total_clientes, 100)
+    progresso_imoveis = min(total_imoveis, 100)
+    progresso_leads = min(total_leads, 100)
+    progresso_match = min(total_matchs, 100)
+
+    # =====================================================
+    # CONFIGURAÇÕES
+    # =====================================================
+
+    cursor.execute(
+        "SELECT * FROM configuracoes_site WHERE empresa_id=?",
+        (empresa_id,)
+    )
+
+    site = cursor.fetchone()
+
+    # =====================================================
+    # CLIENTES POR MÊS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            strftime('%m',data_criacao) AS mes,
+            COUNT(*) AS total
+        FROM clientes
+        WHERE empresa_id=?
+        GROUP BY mes
+        ORDER BY mes
+    """, (empresa_id,))
+
+    meses_clientes = {
+        f"{i:02}":0
+        for i in range(1,13)
+    }
+
+    for row in cursor.fetchall():
+        meses_clientes[row["mes"]] = row["total"]
+
+    labels_clientes = [
+        "Jan","Fev","Mar","Abr","Mai","Jun",
+        "Jul","Ago","Set","Out","Nov","Dez"
+    ]
+
+    dados_clientes = list(meses_clientes.values())
+
+        # =====================================================
+    # IMÓVEIS POR TIPO
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            LOWER(tipo) AS tipo,
+            COUNT(*) AS total
+        FROM imoveis
+        WHERE empresa_id=?
+        GROUP BY LOWER(tipo)
+        ORDER BY total DESC
+    """, (empresa_id,))
+
+    rows = cursor.fetchall()
+
+    labels_tipo = []
+    dados_tipo = []
+    imoveis_por_tipo = []
+
+    casas = 0
+    apartamentos = 0
+    terrenos = 0
+
+    for row in rows:
+
+        tipo = row["tipo"] or "Não informado"
+        total = row["total"]
+
+        labels_tipo.append(tipo.capitalize())
+        dados_tipo.append(total)
+
+        percentual = round(
+            (total / total_imoveis) * 100,
+            1
+        ) if total_imoveis else 0
+
+        imoveis_por_tipo.append({
+            "tipo": tipo.capitalize(),
+            "total": total,
+            "percentual": percentual
+        })
+
+        if tipo == "casa":
+            casas = total
+
+        elif tipo == "apartamento":
+            apartamentos = total
+
+        elif tipo == "terreno":
+            terrenos = total
+
+    # =====================================================
+    # ÚLTIMOS CLIENTES
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            nome,
+            interesse
+        FROM clientes
+        WHERE empresa_id=?
+        ORDER BY id DESC
+        LIMIT 3
+    """, (empresa_id,))
+
+    ultimos_clientes = cursor.fetchall()
+
+    conn.close()
+
+    # =====================================================
+    # RENDER
+    # =====================================================
+
+    return render_template(
+
+        "dashboard_v2.html",
+
+        # Totais
+        total_clientes=total_clientes,
+        total_imoveis=total_imoveis,
+        total_leads=total_leads,
+        total_matchs=total_matchs,
+
+        # Crescimento
+        crescimento_clientes=pct_clientes,
+        crescimento_imoveis=pct_imoveis,
+        crescimento_leads=pct_leads,
+
+        # Barras
+        progresso_clientes=progresso_clientes,
+        progresso_imoveis=progresso_imoveis,
+        progresso_leads=progresso_leads,
+        progresso_match=progresso_match,
+
+        # Configuração do site
+        site=site,
+
+        # Gráfico Clientes
+        labels_clientes=labels_clientes,
+        dados_clientes=dados_clientes,
+
+        # Gráfico Tipos
+        labels_tipo=labels_tipo,
+        dados_tipo=dados_tipo,
+
+        # Cards por tipo
+        casas=casas,
+        apartamentos=apartamentos,
+        terrenos=terrenos,
+
+        imoveis_por_tipo=imoveis_por_tipo,
+
+        # Últimos clientes
+        ultimos_clientes=ultimos_clientes
+    )
+
+
+@app.route("/CriarCampanha")
+def criar_campanha():
+
+    import sqlite3
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT
+            id,
+            nome,
+            telefone,
+            faixa_preco
+        FROM clientes
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+    """,
+    (
+        session.get("empresa_id"),
+    ))
+
+
+    clientes = cursor.fetchall()
+
+
+    conn.close()
+
+
+    return render_template(
+        "CriarCampanha.html",
+        clientes=clientes
+    )
+ 
+# ==========================================================
+# NOVO IMPORTADOR DE IMÓVEIS POR PDF
+# COLE ANTES DO if __name__ == "__main__":
+# ==========================================================
+
+import os
+import re
+import json
+import uuid
+import shutil
+import sqlite3
+import tempfile
+import logging
+
+import gdown
+import pdfplumber
+
+from pypdf import PdfReader
+from werkzeug.utils import secure_filename
+from flask import (
+    request,
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    session
+)
+
+
+logger_importador = logging.getLogger("importador_pdf")
+
+
+# ==========================================================
+# CONFIGURAÇÕES
+# ==========================================================
+
+EXTENSOES_FOTOS_IMPORTADOR = (
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp"
+)
+
+EXTENSOES_VIDEO_IMPORTADOR = (
+    ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+    ".webm"
+)
+
+
+def obter_pasta_importacoes():
+    """
+    Railway:
+        /data/importacoes_pdf
+
+    Computador local:
+        uploads/importacoes_pdf
+    """
+
+    if os.path.exists("/data"):
+        pasta = "/data/importacoes_pdf"
+    else:
+        pasta = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            "uploads",
+            "importacoes_pdf"
+        )
+
+    os.makedirs(pasta, exist_ok=True)
+
+    return pasta
+
+
+def obter_pasta_fotos_imoveis():
+    """
+    Usa a mesma pasta já configurada no SmartZen.
+    """
+
+    pasta = app.config.get(
+        "UPLOAD_FOLDER_IMOVEIS",
+        "/data/uploads/imoveis"
+    )
+
+    os.makedirs(pasta, exist_ok=True)
+
+    return pasta
+
+
+# ==========================================================
+# FUNÇÕES DE LIMPEZA
+# ==========================================================
+
+def limpar_texto_importador(texto):
+    if texto is None:
+        return ""
+
+    texto = str(texto)
+
+    texto = texto.replace("\x00", " ")
+    texto = texto.replace("\r", "\n")
+    texto = re.sub(r"[ \t]+", " ", texto)
+    texto = re.sub(r"\n{3,}", "\n\n", texto)
+
+    return texto.strip()
+
+
+def somente_numeros_importador(valor):
+    return re.sub(r"\D", "", str(valor or ""))
+
+
+def normalizar_valor_importador(valor):
+    """
+    Mantém o padrão já usado no seu banco:
+    270.000
+    385,47
+    """
+
+    if not valor:
+        return ""
+
+    valor = str(valor).strip()
+
+    valor = valor.replace("R$", "").strip()
+
+    return valor
+
+
+def valor_numerico_importador(valor):
+    """
+    Usado somente para verificar se o preço é realmente
+    um valor de imóvel e não condomínio/IPTU.
+    """
+
+    if not valor:
+        return 0.0
+
+    valor = str(valor).replace("R$", "").strip()
+
+    if "," in valor:
+        valor = valor.replace(".", "").replace(",", ".")
+    else:
+        valor = valor.replace(".", "")
+
+    valor = re.sub(r"[^0-9.]", "", valor)
+
+    try:
+        return float(valor)
+    except (ValueError, TypeError):
+        return 0.0
+
+
+def primeiro_match_importador(padroes, texto, flags=re.IGNORECASE):
+    for padrao in padroes:
+        resultado = re.search(
+            padrao,
+            texto,
+            flags
+        )
+
+        if resultado:
+            return resultado.group(1).strip()
+
+    return ""
+
+
+def limpar_titulo_importador(titulo):
+    titulo = limpar_texto_importador(titulo)
+
+    titulo = re.sub(
+        r"\s*CLIQUE\s+AQUI.*$",
+        "",
+        titulo,
+        flags=re.IGNORECASE
+    )
+
+    titulo = re.sub(
+        r"\s*FOTOS?\s+EM\s+BREVE.*$",
+        "",
+        titulo,
+        flags=re.IGNORECASE
+    )
+
+    titulo = titulo.replace("📷", "").strip()
+
+    return titulo
+
+
+# ==========================================================
+# EXTRAÇÃO DOS LINKS POR PÁGINA
+# ==========================================================
+
+def extrair_links_por_pagina(caminho_pdf):
+    """
+    Retorna os links em ordem visual, página por página.
+
+    Não junta todos os links do PDF em uma única lista.
+    Isso impede que um QR Code ou link extra desloque
+    os links dos imóveis das páginas seguintes.
+    """
+
+    reader = PdfReader(caminho_pdf)
+
+    resultado = {}
+
+    for numero_pagina, pagina in enumerate(
+        reader.pages,
+        start=1
+    ):
+        links_pagina = []
+
+        anotacoes = pagina.get("/Annots", [])
+
+        altura_pagina = float(
+            pagina.mediabox.height
+        )
+
+        for anotacao_ref in anotacoes:
+            try:
+                anotacao = anotacao_ref.get_object()
+
+                acao = anotacao.get("/A")
+
+                if not acao:
+                    continue
+
+                uri = acao.get("/URI")
+
+                if not uri:
+                    continue
+
+                uri = str(uri).strip()
+
+                # Aceita apenas links do Google Drive.
+                if "drive.google.com" not in uri.lower():
+                    continue
+
+                retangulo = anotacao.get("/Rect")
+
+                if retangulo and len(retangulo) == 4:
+                    x1 = float(retangulo[0])
+                    y1 = float(retangulo[1])
+                    x2 = float(retangulo[2])
+                    y2 = float(retangulo[3])
+
+                    # PDF começa embaixo.
+                    # Convertemos para posição começando no topo.
+                    topo = altura_pagina - max(y1, y2)
+                    base = altura_pagina - min(y1, y2)
+
+                else:
+                    x1 = 0
+                    x2 = 0
+                    topo = 99999
+                    base = 99999
+
+                links_pagina.append({
+                    "url": uri,
+                    "topo": topo,
+                    "base": base,
+                    "x1": x1,
+                    "x2": x2
+                })
+
+            except Exception as erro:
+                logger_importador.warning(
+                    "Não foi possível ler uma anotação da página %s: %s",
+                    numero_pagina,
+                    erro
+                )
+
+        # Ordem visual: de cima para baixo.
+        links_pagina.sort(
+            key=lambda item: (
+                item["topo"],
+                item["x1"]
+            )
+        )
+
+        resultado[numero_pagina] = links_pagina
+
+    return resultado
+
+
+# ==========================================================
+# SEPARAÇÃO DOS IMÓVEIS DE CADA PÁGINA
+# ==========================================================
+
+def localizar_titulos_pagina(pagina_pdfplumber):
+    """
+    Localiza os títulos iniciados por ED. e retorna
+    a posição vertical de cada um.
+    """
+
+    palavras = pagina_pdfplumber.extract_words(
+        use_text_flow=True,
+        keep_blank_chars=False
+    )
+
+    linhas = {}
+
+    for palavra in palavras:
+        topo = round(
+            float(palavra.get("top", 0)),
+            1
+        )
+
+        # Agrupa palavras próximas na mesma linha.
+        chave = None
+
+        for topo_existente in linhas:
+            if abs(topo_existente - topo) <= 3:
+                chave = topo_existente
+                break
+
+        if chave is None:
+            chave = topo
+            linhas[chave] = []
+
+        linhas[chave].append(palavra)
+
+    titulos = []
+
+    for topo, palavras_linha in linhas.items():
+        palavras_linha.sort(
+            key=lambda item: float(item.get("x0", 0))
+        )
+
+        texto_linha = " ".join(
+            palavra.get("text", "")
+            for palavra in palavras_linha
+        )
+
+        texto_linha = limpar_texto_importador(
+            texto_linha
+        )
+
+        if re.match(
+            r"^\s*ED\.?\s*",
+            texto_linha,
+            flags=re.IGNORECASE
+        ):
+            titulos.append({
+                "titulo_linha": texto_linha,
+                "topo": topo,
+                "x0": min(
+                    float(p.get("x0", 0))
+                    for p in palavras_linha
+                )
+            })
+
+    titulos.sort(
+        key=lambda item: item["topo"]
+    )
+
+    return titulos
+
+
+def extrair_blocos_pagina(pagina_pdfplumber):
+    """
+    Recorta cada imóvel usando a posição vertical dos títulos.
+    """
+
+    titulos = localizar_titulos_pagina(
+        pagina_pdfplumber
+    )
+
+    blocos = []
+
+    if not titulos:
+        return blocos
+
+    altura = float(pagina_pdfplumber.height)
+
+    for indice, titulo in enumerate(titulos):
+        topo = max(
+            float(titulo["topo"]) - 5,
+            0
+        )
+
+        if indice + 1 < len(titulos):
+            base = max(
+                float(titulos[indice + 1]["topo"]) - 5,
+                topo + 1
+            )
+        else:
+            base = altura
+
+        recorte = pagina_pdfplumber.crop(
+            (
+                0,
+                topo,
+                float(pagina_pdfplumber.width),
+                base
+            )
+        )
+
+        texto = limpar_texto_importador(
+            recorte.extract_text() or ""
+        )
+
+        if not texto:
+            continue
+
+        blocos.append({
+            "titulo_linha": titulo["titulo_linha"],
+            "topo": topo,
+            "base": base,
+            "texto": texto
+        })
+
+    return blocos
+
+
+# ==========================================================
+# ASSOCIAÇÃO SEGURA ENTRE IMÓVEL E LINK
+# ==========================================================
+
+def link_pertence_ao_bloco(link, bloco):
+    """
+    Verifica se o centro vertical do hyperlink está
+    dentro da área daquele imóvel.
+    """
+
+    centro = (
+        float(link["topo"]) +
+        float(link["base"])
+    ) / 2
+
+    margem = 18
+
+    return (
+        centro >= float(bloco["topo"]) - margem
+        and
+        centro < float(bloco["base"]) + margem
+    )
+
+
+def escolher_link_do_imovel(bloco, links_pagina):
+    """
+    Busca apenas links localizados dentro do bloco visual
+    daquele imóvel.
+
+    Não usa índice global.
+    """
+
+    texto = bloco["texto"].upper()
+
+    if "FOTOS EM BREVE" in texto:
+        return ""
+
+    candidatos = [
+        link
+        for link in links_pagina
+        if link_pertence_ao_bloco(
+            link,
+            bloco
+        )
+    ]
+
+    if not candidatos:
+        return ""
+
+    # Preferimos links de pasta.
+    for candidato in candidatos:
+        url = candidato["url"]
+
+        if "/folders/" in url:
+            return url
+
+    # Depois aceitamos links que contenham folderview.
+    for candidato in candidatos:
+        url = candidato["url"]
+
+        if "folderview" in url.lower():
+            return url
+
+    # Última opção: primeiro link do Drive dentro do bloco.
+    return candidatos[0]["url"]
+
+
+# ==========================================================
+# EXTRAÇÃO DOS CAMPOS
+# ==========================================================
+
+def extrair_titulo_importador(bloco):
+    primeira_linha = bloco["titulo_linha"]
+
+    return limpar_titulo_importador(
+        primeira_linha
+    )
+
+
+def extrair_endereco_importador(texto):
+    linhas = [
+        limpar_texto_importador(linha)
+        for linha in texto.splitlines()
+        if limpar_texto_importador(linha)
+    ]
+
+    for linha in linhas:
+        if re.match(
+            r"^(RUA|AVENIDA|AV\.|ALAMEDA|TRAVESSA|ESTRADA)\s",
+            linha,
+            flags=re.IGNORECASE
+        ):
+            linha = re.sub(
+                r"\s+",
+                " ",
+                linha
+            )
+
+            return linha.strip()
+
+    return ""
+
+
+def separar_endereco_importador(endereco):
+    resultado = {
+        "rua": "",
+        "bairro": "",
+        "cidade": "Praia Grande"
+    }
+
+    if not endereco:
+        return resultado
+
+    texto = endereco.strip()
+
+    # Exemplo:
+    # Rua Campinas nº 500, Boqueirão - Praia Grande/SP
+
+    match = re.search(
+        r"^(.*?),\s*([^,\-]+?)\s*-\s*Praia\s+Grande(?:/SP)?",
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    if match:
+        resultado["rua"] = match.group(1).strip()
+        resultado["bairro"] = match.group(2).strip()
+        resultado["cidade"] = "Praia Grande"
+
+        return resultado
+
+    # Caso não consiga separar, guarda tudo em rua.
+    resultado["rua"] = texto
+
+    return resultado
+
+
+def extrair_valor_imovel_importador(texto):
+    """
+    Busca valores acima de R$ 10.000.
+
+    Quando houver preço à vista e preço para permuta,
+    usa o primeiro valor informado no bloco.
+    """
+
+    valores = re.findall(
+        r"R\$\s*([\d\.]+(?:,\d{1,2})?)",
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    candidatos = []
+
+    for valor in valores:
+        numero = valor_numerico_importador(
+            valor
+        )
+
+        if numero >= 10000:
+            candidatos.append(valor)
+
+    if not candidatos:
+        return ""
+
+    return normalizar_valor_importador(
+        candidatos[0]
+    )
+
+
+def extrair_quartos_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"(\d+)\s*DORMITÓRIOS?",
+            r"(\d+)\s*QUARTOS?"
+        ],
+        texto
+    )
+
+
+def extrair_suites_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"SENDO\s+(\d+)\s*SUÍTES?",
+            r"(\d+)\s*SUÍTES?"
+        ],
+        texto
+    )
+
+
+def extrair_vagas_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"(\d+)\s*VAGAS?\s+DE\s+GARAGEM",
+            r"(\d+)\s*VAGAS?",
+            r"(\d+)\s*VAGA\s+DE\s+GARAGEM"
+        ],
+        texto
+    )
+
+
+def extrair_area_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"(\d+(?:[.,]\d+)?)\s*m[²2]\s*DE\s+ÁREA\s+ÚTIL",
+            r"(\d+(?:[.,]\d+)?)\s*m[²2]\s*DE\s+ÁREA"
+        ],
+        texto
+    )
+
+
+def extrair_condominio_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"CONDOMÍNIO\s*R\$\s*([\d\.,]+)",
+            r"CONDOMINIO\s*R\$\s*([\d\.,]+)"
+        ],
+        texto
+    )
+
+
+def extrair_iptu_importador(texto):
+    return primeiro_match_importador(
+        [
+            r"IPTU\s*R\$\s*([\d\.,]+)"
+        ],
+        texto
+    )
+
+
+def extrair_lazer_importador(texto):
+    resultado = re.search(
+        r"LAZER(?:\s*\([^)]+\))?(?:\s+COMPLETO)?\s*:\s*(.*?)(?:;|\n✓|\n|PERMITE|LOCALIZAÇÃO|LOCALIZACAO|\d+\s*METROS)",
+        texto,
+        flags=re.IGNORECASE | re.DOTALL
+    )
+
+    if not resultado:
+        return ""
+
+    lazer = resultado.group(1)
+
+    lazer = re.sub(
+        r"\s+",
+        " ",
+        lazer
+    )
+
+    return lazer.strip(" .;-")
+
+
+def extrair_mobilia_importador(texto):
+    texto_upper = texto.upper()
+
+    if "MOBILIADO" in texto_upper:
+        return "Porteira Fechada"
+
+    if "SEM MOBÍLIA" in texto_upper or "SEM MOBILIA" in texto_upper:
+        return "Sem Mobilia"
+
+    return ""
+
+
+def extrair_sacada_importador(texto):
+    if "SACADA" in texto.upper():
+        return 1
+
+    return 0
+
+
+def extrair_lavabo_importador(texto):
+    if "LAVABO" in texto.upper():
+        return 1
+
+    return 0
+
+
+def extrair_banheiros_importador(texto, suites):
+    """
+    O PDF geralmente informa WC social e quantidade de suítes.
+    Calculamos:
+        1 WC social + suítes
+    """
+
+    total = 0
+
+    if re.search(
+        r"\bWC\s+SOCIAL\b|BANHEIRO\s+SOCIAL",
+        texto,
+        flags=re.IGNORECASE
+    ):
+        total += 1
+
+    try:
+        total += int(suites or 0)
+    except (TypeError, ValueError):
+        pass
+
+    return total
+
+
+def detectar_tipo_importador(titulo, texto):
+    conteudo = f"{titulo} {texto}".upper()
+
+    if "TERRENO" in conteudo:
+        return "Terreno"
+
+    if "KITNET" in conteudo:
+        return "Kitnet"
+
+    if "DUPLEX" in conteudo:
+        return "Duplex"
+
+    if "TRIPLEX" in conteudo:
+        return "Triplex"
+
+    if "CASA" in conteudo:
+        return "Casa"
+
+    if "COMERCIAL" in conteudo:
+        return "Ponto Comercial"
+
+    return "Apartamento"
+
+
+def montar_descricao_importador(texto):
+    """
+    Guarda o texto do anúncio sem repetir o título
+    e o endereço nas primeiras linhas.
+    """
+
+    linhas = [
+        limpar_texto_importador(linha)
+        for linha in texto.splitlines()
+        if limpar_texto_importador(linha)
+    ]
+
+    linhas_limpas = []
+
+    for indice, linha in enumerate(linhas):
+        if indice == 0 and re.match(
+            r"^\s*ED\.?",
+            linha,
+            flags=re.IGNORECASE
+        ):
+            continue
+
+        if re.match(
+            r"^(RUA|AVENIDA|AV\.|ALAMEDA|TRAVESSA|ESTRADA)\s",
+            linha,
+            flags=re.IGNORECASE
+        ):
+            continue
+
+        linhas_limpas.append(linha)
+
+    descricao = "\n".join(
+        linhas_limpas
+    )
+
+    descricao = descricao.replace("✓", "•")
+
+    return descricao.strip()
+
+
+def transformar_bloco_em_imovel(
+    bloco,
+    numero_pagina,
+    links_pagina
+):
+    texto = bloco["texto"]
+
+    titulo = extrair_titulo_importador(
+        bloco
+    )
+
+    endereco_completo = extrair_endereco_importador(
+        texto
+    )
+
+    endereco = separar_endereco_importador(
+        endereco_completo
+    )
+
+    suites = extrair_suites_importador(
+        texto
+    )
+
+    link_fotos = escolher_link_do_imovel(
+        bloco,
+        links_pagina
+    )
+
+    fotos_em_breve = (
+        "FOTOS EM BREVE" in texto.upper()
+    )
+
+    return {
+        "pagina": numero_pagina,
+        "titulo": titulo,
+        "tipo": detectar_tipo_importador(
+            titulo,
+            texto
+        ),
+        "status": "Venda",
+        "valor": extrair_valor_imovel_importador(
+            texto
+        ),
+        "rua": endereco["rua"],
+        "bairro": endereco["bairro"],
+        "cidade": endereco["cidade"],
+        "cep": "",
+        "area": extrair_area_importador(
+            texto
+        ),
+        "quartos": extrair_quartos_importador(
+            texto
+        ),
+        "suites": suites,
+        "banheiros": extrair_banheiros_importador(
+            texto,
+            suites
+        ),
+        "lavabo": extrair_lavabo_importador(
+            texto
+        ),
+        "vaga_garagem": extrair_vagas_importador(
+            texto
+        ),
+        "sacada": extrair_sacada_importador(
+            texto
+        ),
+        "lazer": extrair_lazer_importador(
+            texto
+        ),
+        "mobilia": extrair_mobilia_importador(
+            texto
+        ),
+        "condominio": extrair_condominio_importador(
+            texto
+        ),
+        "iptu": extrair_iptu_importador(
+            texto
+        ),
+        "entrada": "",
+        "parcela": "",
+        "anuais": "",
+        "prazo": "",
+        "descricao": montar_descricao_importador(
+            texto
+        ),
+        "link_fotos": link_fotos,
+        "fotos_em_breve": fotos_em_breve
+    }
+
+
+def analisar_pdf_imoveis(caminho_pdf):
+    links_por_pagina = extrair_links_por_pagina(
+        caminho_pdf
+    )
+
+    imoveis = []
+
+    with pdfplumber.open(caminho_pdf) as pdf:
+        for numero_pagina, pagina in enumerate(
+            pdf.pages,
+            start=1
+        ):
+            blocos = extrair_blocos_pagina(
+                pagina
+            )
+
+            links_pagina = links_por_pagina.get(
+                numero_pagina,
+                []
+            )
+
+            for bloco in blocos:
+                try:
+                    imovel = transformar_bloco_em_imovel(
+                        bloco,
+                        numero_pagina,
+                        links_pagina
+                    )
+
+                    if not imovel["titulo"]:
+                        continue
+
+                    # Página final com QR Codes não começa com ED.
+                    if not re.match(
+                        r"^ED\.?",
+                        imovel["titulo"],
+                        flags=re.IGNORECASE
+                    ):
+                        continue
+
+                    imoveis.append(
+                        imovel
+                    )
+
+                except Exception as erro:
+                    logger_importador.exception(
+                        "Erro ao interpretar imóvel da página %s: %s",
+                        numero_pagina,
+                        erro
+                    )
+
+    return imoveis
+
+
+# ==========================================================
+# DOWNLOAD ISOLADO DAS FOTOS
+# ==========================================================
+
+def baixar_fotos_drive_seguro(link, imovel_id):
+    """
+    Cada imóvel recebe uma pasta temporária exclusiva.
+
+    Nunca reutiliza a pasta do imóvel anterior.
+    """
+
+    if not link:
+        return []
+
+    if "drive.google.com" not in link.lower():
+        return []
+
+    # gdown.download_folder trabalha com pastas.
+    if (
+        "/folders/" not in link
+        and
+        "folderview" not in link.lower()
+    ):
+        logger_importador.warning(
+            "O link do imóvel %s não parece ser uma pasta: %s",
+            imovel_id,
+            link
+        )
+
+        return []
+
+    pasta_importacoes = obter_pasta_importacoes()
+
+    identificador = uuid.uuid4().hex
+
+    pasta_temporaria = os.path.join(
+        pasta_importacoes,
+        f"imovel_{imovel_id}_{identificador}"
+    )
+
+    pasta_final = obter_pasta_fotos_imoveis()
+
+    os.makedirs(
+        pasta_temporaria,
+        exist_ok=True
+    )
+
+    arquivos_salvos = []
+
+    try:
+        logger_importador.info(
+            "Baixando fotos do imóvel %s",
+            imovel_id
+        )
+
+        gdown.download_folder(
+            url=link,
+            output=pasta_temporaria,
+            quiet=False,
+            use_cookies=False
+        )
+
+        contador = 0
+
+        for raiz, diretorios, arquivos in os.walk(
+            pasta_temporaria
+        ):
+            for nome_original in arquivos:
+                extensao = os.path.splitext(
+                    nome_original
+                )[1].lower()
+
+                # Nesta primeira versão salvamos apenas fotos.
+                if extensao not in EXTENSOES_FOTOS_IMPORTADOR:
+                    continue
+
+                contador += 1
+
+                origem = os.path.join(
+                    raiz,
+                    nome_original
+                )
+
+                nome_seguro = secure_filename(
+                    nome_original
+                )
+
+                novo_nome = (
+                    f"{imovel_id}_"
+                    f"{identificador}_"
+                    f"{contador:03d}_"
+                    f"{nome_seguro}"
+                )
+
+                destino = os.path.join(
+                    pasta_final,
+                    novo_nome
+                )
+
+                shutil.move(
+                    origem,
+                    destino
+                )
+
+                arquivos_salvos.append(
+                    novo_nome
+                )
+
+        logger_importador.info(
+            "Imóvel %s: %s fotos baixadas",
+            imovel_id,
+            len(arquivos_salvos)
+        )
+
+        return arquivos_salvos
+
+    except Exception as erro:
+        logger_importador.exception(
+            "Erro ao baixar fotos do imóvel %s: %s",
+            imovel_id,
+            erro
+        )
+
+        # Remove qualquer arquivo que tenha sido movido
+        # antes do erro.
+        for nome_arquivo in arquivos_salvos:
+            caminho = os.path.join(
+                pasta_final,
+                nome_arquivo
+            )
+
+            try:
+                if os.path.exists(caminho):
+                    os.remove(caminho)
+            except OSError:
+                pass
+
+        raise
+
+    finally:
+        shutil.rmtree(
+            pasta_temporaria,
+            ignore_errors=True
+        )
+
+
+def apagar_fotos_importacao(arquivos):
+    pasta = obter_pasta_fotos_imoveis()
+
+    for nome in arquivos:
+        caminho = os.path.join(
+            pasta,
+            nome
+        )
+
+        try:
+            if os.path.exists(caminho):
+                os.remove(caminho)
+        except OSError:
+            pass
+
+
+# ==========================================================
+# VERIFICAÇÃO DAS COLUNAS DO BANCO
+# ==========================================================
+
+def colunas_tabela_importador(cursor, tabela):
+    cursor.execute(
+        f"PRAGMA table_info({tabela})"
+    )
+
+    return {
+        linha[1]
+        for linha in cursor.fetchall()
+    }
+
+
+def garantir_colunas_importador():
+    """
+    Adiciona somente as colunas que estiverem faltando.
+    """
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS fotos_imoveis (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            imovel_id INTEGER,
+            nome_arquivo TEXT,
+            FOREIGN KEY(imovel_id) REFERENCES imoveis(id)
+        )
+    """)
+
+    colunas_imoveis = colunas_tabela_importador(
+        cursor,
+        "imoveis"
+    )
+
+    colunas_necessarias = {
+        "cep": "TEXT",
+        "rua": "TEXT",
+        "bairro": "TEXT",
+        "cidade": "TEXT",
+        "tipo": "TEXT",
+        "status": "TEXT",
+        "valor": "TEXT",
+        "area": "TEXT",
+        "quartos": "INTEGER",
+        "banheiros": "INTEGER",
+        "suites": "INTEGER",
+        "lavabo": "INTEGER DEFAULT 0",
+        "vaga_garagem": "INTEGER",
+        "sacada": "INTEGER DEFAULT 0",
+        "lazer": "TEXT",
+        "mobilia": "TEXT",
+        "condominio": "TEXT",
+        "iptu": "TEXT",
+        "entrada": "TEXT",
+        "parcela": "TEXT",
+        "anuais": "TEXT",
+        "prazo": "TEXT",
+        "descricao": "TEXT",
+        "link": "TEXT",
+        "usuario_id": "INTEGER",
+        "empresa_id": "INTEGER"
+    }
+
+    for nome_coluna, tipo_coluna in colunas_necessarias.items():
+        if nome_coluna not in colunas_imoveis:
+            cursor.execute(
+                f"""
+                ALTER TABLE imoveis
+                ADD COLUMN {nome_coluna} {tipo_coluna}
+                """
+            )
+
+            logger_importador.info(
+                "Coluna criada: imoveis.%s",
+                nome_coluna
+            )
+
+    conn.commit()
+    conn.close()
+
+
+garantir_colunas_importador()
+
+
+# ==========================================================
+# INSERT DINÂMICO
+# ==========================================================
+
+def cadastrar_imovel_importado(
+    cursor,
+    imovel,
+    empresa_id,
+    usuario_id
+):
+    """
+    Monta o INSERT usando apenas colunas existentes.
+    Evita quebrar caso o banco de uma instalação tenha
+    pequenas diferenças.
+    """
+
+    colunas_existentes = colunas_tabela_importador(
+        cursor,
+        "imoveis"
+    )
+
+    dados = {
+        "titulo": imovel.get("titulo"),
+        "empresa_id": empresa_id,
+        "usuario_id": usuario_id,
+        "tipo": imovel.get("tipo") or "Apartamento",
+        "status": imovel.get("status") or "Venda",
+        "valor": imovel.get("valor"),
+        "cep": imovel.get("cep"),
+        "rua": imovel.get("rua"),
+        "bairro": imovel.get("bairro"),
+        "cidade": imovel.get("cidade") or "Praia Grande",
+        "area": imovel.get("area"),
+        "quartos": imovel.get("quartos") or 0,
+        "suites": imovel.get("suites") or 0,
+        "banheiros": imovel.get("banheiros") or 0,
+        "lavabo": imovel.get("lavabo") or 0,
+        "vaga_garagem": imovel.get("vaga_garagem") or 0,
+        "sacada": imovel.get("sacada") or 0,
+        "lazer": imovel.get("lazer"),
+        "mobilia": imovel.get("mobilia"),
+        "condominio": imovel.get("condominio"),
+        "iptu": imovel.get("iptu"),
+        "entrada": imovel.get("entrada"),
+        "parcela": imovel.get("parcela"),
+        "anuais": imovel.get("anuais"),
+        "prazo": imovel.get("prazo"),
+        "descricao": imovel.get("descricao"),
+        "link": imovel.get("link_fotos")
+    }
+
+    dados = {
+        coluna: valor
+        for coluna, valor in dados.items()
+        if coluna in colunas_existentes
+    }
+
+    colunas = list(
+        dados.keys()
+    )
+
+    valores = [
+        dados[coluna]
+        for coluna in colunas
+    ]
+
+    placeholders = ",".join(
+        ["?"] * len(colunas)
+    )
+
+    sql = f"""
+        INSERT INTO imoveis
+        ({", ".join(colunas)})
+        VALUES ({placeholders})
+    """
+
+    cursor.execute(
+        sql,
+        valores
+    )
+
+    return cursor.lastrowid
+
+
+# ==========================================================
+# ROTA 1: TELA PARA ENVIAR PDF
+# ==========================================================
+
+@app.route(
+    "/importar_pdf",
+    methods=["GET"]
+)
+@verificar_sessao
+def importar_pdf():
+    return render_template(
+        "importar_pdf.html"
+    )
+
+
+# ==========================================================
+# ROTA 2: ANALISAR O PDF
+# ==========================================================
+
+@app.route(
+    "/importar_pdf/analisar",
+    methods=["POST"]
+)
+@verificar_sessao
+def analisar_pdf_rota():
+    arquivo = request.files.get(
+        "pdf"
+    )
+
+    if not arquivo or not arquivo.filename:
+        flash(
+            "Selecione um arquivo PDF.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    nome_seguro = secure_filename(
+        arquivo.filename
+    )
+
+    if not nome_seguro.lower().endswith(".pdf"):
+        flash(
+            "O arquivo enviado precisa ser um PDF.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    pasta_importacoes = obter_pasta_importacoes()
+
+    identificador = uuid.uuid4().hex
+
+    caminho_pdf = os.path.join(
+        pasta_importacoes,
+        f"{identificador}_{nome_seguro}"
+    )
+
+    try:
+        arquivo.save(
+            caminho_pdf
+        )
+
+        imoveis = analisar_pdf_imoveis(
+            caminho_pdf
+        )
+
+        if not imoveis:
+            flash(
+                "Nenhum imóvel foi identificado nesse PDF.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("importar_pdf")
+            )
+
+        token_importacao = uuid.uuid4().hex
+
+        caminho_json = os.path.join(
+            pasta_importacoes,
+            f"{token_importacao}.json"
+        )
+
+        pacote = {
+            "empresa_id": session.get("empresa_id"),
+            "usuario_id": session.get("usuario_id"),
+            "arquivo_original": nome_seguro,
+            "imoveis": imoveis
+        }
+
+        with open(
+            caminho_json,
+            "w",
+            encoding="utf-8"
+        ) as arquivo_json:
+            json.dump(
+                pacote,
+                arquivo_json,
+                ensure_ascii=False,
+                indent=2
+            )
+
+        return render_template(
+            "conferencia_importacao.html",
+            imoveis=imoveis,
+            token_importacao=token_importacao,
+            arquivo_original=nome_seguro
+        )
+
+    except Exception as erro:
+        logger_importador.exception(
+            "Erro ao analisar PDF: %s",
+            erro
+        )
+
+        flash(
+            f"Erro ao analisar o PDF: {erro}",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    finally:
+        try:
+            if os.path.exists(caminho_pdf):
+                os.remove(caminho_pdf)
+        except OSError:
+            pass
+
+
+# ==========================================================
+# ROTA 3: CONFIRMAR E CADASTRAR
+# ==========================================================
+
+@app.route(
+    "/importar_pdf/confirmar",
+    methods=["POST"]
+)
+@verificar_sessao
+def confirmar_importacao_pdf():
+    token_importacao = request.form.get(
+        "token_importacao",
+        ""
+    ).strip()
+
+    if not re.fullmatch(
+        r"[a-f0-9]{32}",
+        token_importacao
+    ):
+        flash(
+            "Importação inválida ou expirada.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    pasta_importacoes = obter_pasta_importacoes()
+
+    caminho_json = os.path.join(
+        pasta_importacoes,
+        f"{token_importacao}.json"
+    )
+
+    if not os.path.exists(caminho_json):
+        flash(
+            "Os dados dessa importação não foram encontrados.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    try:
+        with open(
+            caminho_json,
+            "r",
+            encoding="utf-8"
+        ) as arquivo_json:
+            pacote = json.load(
+                arquivo_json
+            )
+
+    except Exception as erro:
+        flash(
+            f"Não foi possível abrir os dados da importação: {erro}",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    empresa_id_sessao = session.get(
+        "empresa_id"
+    )
+
+    usuario_id_sessao = session.get(
+        "usuario_id"
+    )
+
+    # Segurança para uma empresa não importar pacote de outra.
+    if str(pacote.get("empresa_id")) != str(empresa_id_sessao):
+        flash(
+            "Essa importação não pertence à empresa logada.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    selecionados = request.form.getlist(
+        "selecionados"
+    )
+
+    if not selecionados:
+        flash(
+            "Selecione pelo menos um imóvel.",
+            "warning"
+        )
+
+        return redirect(
+            url_for("importar_pdf")
+        )
+
+    imoveis_pacote = pacote.get(
+        "imoveis",
+        []
+    )
+
+    resultado = []
+
+    for indice_texto in selecionados:
+        arquivos_movidos = []
+
+        conn = None
+
+        try:
+            indice = int(
+                indice_texto
+            )
+
+            if indice < 0 or indice >= len(imoveis_pacote):
+                continue
+
+            imovel_original = imoveis_pacote[
+                indice
+            ]
+
+            # Recebe os campos corrigidos na tela de conferência.
+            imovel = dict(
+                imovel_original
+            )
+
+            campos_editaveis = [
+                "titulo",
+                "tipo",
+                "status",
+                "valor",
+                "cep",
+                "rua",
+                "bairro",
+                "cidade",
+                "area",
+                "quartos",
+                "suites",
+                "banheiros",
+                "lavabo",
+                "vaga_garagem",
+                "sacada",
+                "lazer",
+                "mobilia",
+                "condominio",
+                "iptu",
+                "entrada",
+                "parcela",
+                "anuais",
+                "prazo",
+                "descricao",
+                "link_fotos"
+            ]
+
+            for campo in campos_editaveis:
+                nome_formulario = (
+                    f"imovel_{indice}_{campo}"
+                )
+
+                if nome_formulario in request.form:
+                    imovel[campo] = request.form.get(
+                        nome_formulario,
+                        ""
+                    ).strip()
+
+            conn = sqlite3.connect(
+                DB_PATH
+            )
+
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "BEGIN"
+            )
+
+            imovel_id = cadastrar_imovel_importado(
+                cursor=cursor,
+                imovel=imovel,
+                empresa_id=empresa_id_sessao,
+                usuario_id=usuario_id_sessao
+            )
+
+            link_fotos = imovel.get(
+                "link_fotos",
+                ""
+            ).strip()
+
+            if link_fotos:
+                arquivos_movidos = baixar_fotos_drive_seguro(
+                    link=link_fotos,
+                    imovel_id=imovel_id
+                )
+
+                for nome_arquivo in arquivos_movidos:
+                    cursor.execute("""
+                        INSERT INTO fotos_imoveis
+                        (
+                            imovel_id,
+                            nome_arquivo
+                        )
+                        VALUES (?, ?)
+                    """, (
+                        imovel_id,
+                        nome_arquivo
+                    ))
+
+                # Mantém compatibilidade com telas antigas
+                # que utilizam imoveis.foto.
+                colunas_imoveis = colunas_tabela_importador(
+                    cursor,
+                    "imoveis"
+                )
+
+                if (
+                    arquivos_movidos
+                    and
+                    "foto" in colunas_imoveis
+                ):
+                    cursor.execute("""
+                        UPDATE imoveis
+                        SET foto = ?
+                        WHERE id = ?
+                    """, (
+                        arquivos_movidos[0],
+                        imovel_id
+                    ))
+
+            conn.commit()
+
+            resultado.append({
+                "sucesso": True,
+                "titulo": imovel.get("titulo"),
+                "imovel_id": imovel_id,
+                "total_fotos": len(arquivos_movidos),
+                "erro": ""
+            })
+
+        except Exception as erro:
+            logger_importador.exception(
+                "Erro ao importar imóvel do índice %s: %s",
+                indice_texto,
+                erro
+            )
+
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+
+            apagar_fotos_importacao(
+                arquivos_movidos
+            )
+
+            titulo_erro = ""
+
+            try:
+                titulo_erro = imovel.get(
+                    "titulo",
+                    ""
+                )
+            except Exception:
+                pass
+
+            resultado.append({
+                "sucesso": False,
+                "titulo": titulo_erro or f"Imóvel {indice_texto}",
+                "imovel_id": None,
+                "total_fotos": 0,
+                "erro": str(erro)
+            })
+
+        finally:
+            if conn:
+                conn.close()
+
+    # Só remove o arquivo temporário depois do processamento.
+    try:
+        os.remove(
+            caminho_json
+        )
+    except OSError:
+        pass
+
+    total_sucesso = sum(
+        1
+        for item in resultado
+        if item["sucesso"]
+    )
+
+    total_erros = sum(
+        1
+        for item in resultado
+        if not item["sucesso"]
+    )
+
+    return render_template(
+        "resultado_importacao.html",
+        resultado=resultado,
+        total_sucesso=total_sucesso,
+        total_erros=total_erros
+    )
+
+@app.route('/admin/configurar-site', methods=['POST'])
+def salvar_configuracoes():
+    if not session.get('is_admin'):
+        return "Acesso negado", 403
+    
+    empresa_id = session.get('empresa_id')
+    nome = request.form.get('nome_imobiliaria')
+    cor = request.form.get('cor_primaria')
+    subdominio = request.form.get('subdominio')
+    
+    # Aqui entraria a lógica de upload da logo (salve apenas o caminho da imagem)
+    
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    cursor = conn.cursor()
+    
+    # Usamos INSERT OR REPLACE para atualizar se já existir
+    cursor.execute("""
+        INSERT OR REPLACE INTO configuracoes_site (empresa_id, nome_imobiliaria, cor_primaria, subdominio)
+        VALUES (?, ?, ?, ?)
+    """, (empresa_id, nome, cor, subdominio))
+    
+    conn.commit()
+    conn.close()
+    return "Site configurado com sucesso!"
+
+@app.route("/manutencao")
+def manutencao():
+    return render_template("manutencao.html")
+
+
+
+
+EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
+EVOLUTION_API_KEY = "123456789"
+EVOLUTION_INSTANCE = "smartcrm"  # coloque exatamente o nome da sua instância
+
+
+@app.route("/whatsapp", methods=["GET", "POST"])
+def whatsapp():
+    sucesso = None
+    erro = None
+
+    if request.method == "POST":
+        numero = request.form.get("numero", "").strip()
+        mensagem = request.form.get("mensagem", "").strip()
+
+        url = f"{EVOLUTION_URL}/message/sendText/{EVOLUTION_INSTANCE}"
+
+        payload = {
+            "number": numero,
+            "text": mensagem
+        }
+
+        headers = {
+            "apikey": EVOLUTION_API_KEY,
+            "Content-Type": "application/json"
+        }
+
+        try:
+            resposta = requests.post(url, json=payload, headers=headers, timeout=30)
+
+            if resposta.status_code in [200, 201]:
+                sucesso = "Mensagem enviada com sucesso!"
+            else:
+                erro = f"Erro {resposta.status_code}: {resposta.text}"
+
+        except Exception as e:
+            erro = f"Erro ao conectar na Evolution: {e}"
+
+    return render_template("whatsapp.html", sucesso=sucesso, erro=erro)
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+
+@app.route("/suspenso")
+def suspenso():
+    return """
+    <div style='text-align:center; margin-top:100px; color:white; background:#0b0f19; font-family:sans-serif; height:100vh; padding-top:50px;'>
+        <h1>Acesso Suspenso 🛑</h1>
+        <p style='color:#9ca3af;'>Sua assinatura SMARTZEN expirou ou foi pausada pelo administrador.</p>
+        <a href='/logout' style='color:#0ea5e9; font-weight:bold; text-decoration:none;'>Clique aqui para Sair</a>
+    </div>
+    """
+
+
+# ==@app.route("/configuracoes", methods=["GET", "POST"])
+@app.route("/configuracoes", methods=["GET", "POST"])
+@verificar_sessao
+def configuracoes():
+
+    UPLOAD_FOLDER = app.config['UPLOAD_FOLDER_PERFIL']
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+
+        nome = request.form.get("nome", "").strip()
+        telefone = request.form.get("telefone", "").strip()
+
+        # Atualiza nome e telefone
+        cursor.execute("""
+            UPDATE usuarios
+            SET nome = ?,
+                telefone = ?
+            WHERE id = ?
+            AND empresa_id = ?
+        """, (
+            nome,
+            telefone,
+            session["usuario_id"],
+            session["empresa_id"]
+        ))
+
+        # Foto
+        file = request.files.get("foto")
+
+        if file and file.filename != "":
+
+            filename = f"usuario_{session['usuario_id']}.jpg"
+
+            if not os.path.exists(UPLOAD_FOLDER):
+                os.makedirs(UPLOAD_FOLDER)
+
+            save_path = os.path.join(
+                UPLOAD_FOLDER,
+                filename
+            )
+
+            file.save(save_path)
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET foto_url = ?
+                WHERE id = ?
+                AND empresa_id = ?
+            """, (
+                f"uploads/perfil/{filename}",
+                session["usuario_id"],
+                session["empresa_id"]
+            ))
+
+        conn.commit()
+
+        return redirect("/configuracoes")
+
+    # usuário
+    cursor.execute("""
+        SELECT
+            nome,
+            foto_url,
+            is_admin,
+            telefone
+        FROM usuarios
+        WHERE id = ?
+        AND empresa_id = ?
+    """, (
+        session["usuario_id"],
+        session["empresa_id"]
+    ))
+
+    usuario = cursor.fetchone()
+
+    # empresa / site
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+    """, (
+        session["empresa_id"],
+    ))
+
+    empresa = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "configuracoes.html",
+        usuario=usuario,
+        empresa=empresa
+    )
+
+
+@app.route("/salvar_logo_imobiliaria", methods=["POST"])
+@verificar_sessao
+def salvar_logo_imobiliaria():
+
+    arquivo = request.files.get("logo")
+
+    if not arquivo or arquivo.filename == "":
+        return redirect("/configuracoes")
+
+    pasta = "/data/uploads/logos"
+
+    if not os.path.exists(pasta):
+        os.makedirs(pasta)
+
+    ext = arquivo.filename.rsplit(".", 1)[1].lower()
+
+    nome_arquivo = (
+        f"logo_empresa_{session['empresa_id']}.{ext}"
+    )
+
+    caminho = os.path.join(
+        pasta,
+        nome_arquivo
+    )
+
+    arquivo.save(caminho)
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE configuracoes_site
+        SET logo = ?
+        WHERE empresa_id = ?
+    """, (
+        f"/uploads/logos/{nome_arquivo}",
+        session["empresa_id"]
+    ))
+    conn.commit()
+    conn.close()
+
+    return redirect("/configuracoes")
+# 3. PAINEL ADMINISTRATIVO (CONTROLE DO DONO)
+# =========================================
+
+@app.route("/teste_whatsapp")
+def teste_whatsapp():
+    return render_template("teste_whatsapp.html")
+
+@app.route("/admin")
+@verificar_sessao
+def admin():
+    # 1. Verifica se o usuário é admin da empresa (proteção básica)
+    if session.get('is_admin') != 1:
+        return "Acesso Negado.", 403
+
+    # 2. SE FOR VOCÊ: Acesso ao painel global completo
+    if session.get('user_email') == 'jacksonwillyan8@gmail.com':
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Métricas globais de todo o sistema
+        total_imoveis = cursor.execute("SELECT COUNT(*) FROM imoveis").fetchone()[0]
+        total_clientes = cursor.execute("SELECT COUNT(*) FROM clientes").fetchone()[0]
+        
+        # Lista de todos os usuários do sistema
+        corretores = cursor.execute("SELECT id, nome, email, empresa_id, status_assinatura, validade_assinatura, is_admin FROM usuaris").fetchall()
+        
+        conn.close()
+        return render_template("admin.html", 
+                               corretores=corretores, 
+                               total_imoveis=total_imoveis, 
+                               total_clientes=total_clientes)
+
+    # 3. SE FOR OUTRO ADMIN: Redireciona para o painel restrito da empresa dele
+    else:
+        # Tente redirecionar para uma rota que não exija permissões especiais
+        # ou apenas retorne uma mensagem clara.
+        return render_template("acesso_restrito.html")
+
+# Rota para processar as ações (Promover, Bloquear, Resetar Senha)
+@app.route("/admin/acao/<int:user_id>", methods=["POST"])
+@verificar_sessao
+def admin_acao(user_id):
+    if session.get('is_admin') != 1:
+        return "Acesso Negado.", 403
+
+    acao = request.form.get('acao')
+
+    if acao == 'promover_admin':
+        db.execute("UPDATE usuarios SET is_admin = 1 WHERE id = ?", (user_id,))
+    elif acao == 'bloquear':
+        db.execute("UPDATE usuarios SET status_assinatura = 'bloqueado' WHERE id = ?", (user_id,))
+    elif acao == 'ativar':
+        db.execute("UPDATE usuarios SET status_assinatura = 'ativo' WHERE id = ?", (user_id,))
+    elif acao == 'resetar_senha':
+        nova_senha = request.form.get('nova_senha')
+        db.execute("UPDATE usuarios SET senha = ? WHERE id = ?", (nova_senha, user_id))
+
+    db.commit()
+    return redirect(url_for('admin'))
+
+
+
+@app.route("/admin/bloquear/<int:id>")
+def admin_bloquear(id):
+    if session.get("is_admin") != 1:
+        return "Negado", 403
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE usuarios SET status_assinatura='bloqueado' WHERE id=?", (id,)
+    )
+    conn.commit()
+    conn.close()
+    return redirect("/admin")
+
+
+@app.route('/admin/criar-login', methods=['POST'])
+def criar_login():
+
+    if not session.get('is_admin'):
+        return "Acesso negado", 403
+
+    email = request.form.get('email')
+    senha_raw = request.form.get('senha')
+    nome = request.form.get('nome')
+    telefone = request.form.get('telefone')
+    empresa_id = session.get('empresa_id')
+
+    senha_hash = generate_password_hash(senha_raw)
+
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    cursor = conn.cursor()
+
+    try:
+
+        # Cria usuário
+        cursor.execute("""
+            INSERT INTO usuarios
+            (
+                email,
+                senha,
+                telefone,
+                empresa_id,
+                nome
+            )
+            VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            email,
+            senha_hash,
+            telefone,
+            empresa_id,
+            nome
+        ))
+
+        # ID gerado
+        usuario_id = cursor.lastrowid
+
+        # Cria sessão WhatsApp automática
+        whatsapp_sessao = f"corretor_{usuario_id}"
+
+        cursor.execute("""
+            UPDATE usuarios
+            SET whatsapp_sessao = ?
+            WHERE id = ?
+        """,
+        (
+            whatsapp_sessao,
+            usuario_id
+        ))
+
+        conn.commit()
+
+        print(
+            f"Usuário criado: {nome} | Sessão: {whatsapp_sessao}"
+        )
+
+        return redirect("/admin/novo-usuario")
+
+    except Exception as e:
+
+        conn.rollback()
+
+        print("ERRO:", e)
+
+        return f"Erro ao criar usuário: {e}"
+
+    finally:
+
+        conn.close()
+
+
+
+@app.route('/admin/novo-usuario')
+def exibir_novo_usuario():
+
+    empresa_id = session.get('empresa_id')
+
+    if not empresa_id:
+        return "Acesso negado: você não está logado como empresa.", 403
+
+    conn = sqlite3.connect('/data/imobiliaria.db')
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, nome, email, ativo
+        FROM usuarios
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    usuarios_db = cursor.fetchall()
+
+    conn.close()
+
+    lista_usuarios = [
+        {
+            "id": u[0],
+            "nome": u[1],
+            "email": u[2],
+            "ativo": u[3]
+        }
+        for u in usuarios_db
+    ]
+
+    return render_template(
+        'novo-usuario.html',
+        usuarios=lista_usuarios
+    )
+@app.route("/admin/liberar/<int:id>", methods=["POST"])
+def admin_liberar(id):
+    if session.get("is_admin") != 1:
+        return "Negado", 403
+    nova_data = request.form["validade"]
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE usuarios SET status_assinatura='ativo', validade_assinatura=? WHERE id=?",
+        (nova_data, id),
+    )
+    conn.commit()
+    conn.close()
+    return redirect("/admin")
+
+
+
+@app.route("/admin/resetar_senha/<int:id>", methods=["POST"])
+def admin_resetar_senha(id):
+    # Verificação de segurança: Apenas admins podem acessar
+    if session.get("is_admin") != 1:
+        return "Acesso negado", 403
+
+    nova_senha_plain = request.form["nova_senha"]
+    # SEMPRE HASH: Nunca guarde senhas em texto puro no banco
+    senha_hash = generate_password_hash(nova_senha_plain)
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Atualização com segurança extra:
+    # Mesmo como admin, garantimos que o ID do usuário é válido
+    cursor.execute("UPDATE usuarios SET senha = ? WHERE id = ?", (senha_hash, id))
+
+    # Se você quiser garantir que o admin só mude senhas da própria empresa, 
+    # bastaria adicionar: AND empresa_id = ? (pegando da sessão do admin)
+
+    conn.commit()
+    conn.close()
+
+    flash("Senha alterada com sucesso!", "success")
+    return redirect("/admin")
+
+
+# ==========================================
+# 4. ROTAS DE CLIENTE
+
+
+@app.route("/cadastrar_cliente", methods=["GET", "POST"])
+@verificar_sessao
+def cadastrar_cliente():
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+
+        nome = request.form["nome"]
+        telefone = request.form["telefone"]
+        interesse = request.form["interesse"]
+        faixa_preco = request.form["faixa_preco"]
+        bairro = request.form.get("bairro", "")
+        sobre = request.form.get("sobre", "")
+        entrada = request.form.get("entrada", "")
+        pagamento = request.form.get("pagamento", "")
+        origem = request.form.get("origem", "")
+        empreendimento = request.form.get("empreendimento", "")
+        construtora = request.form.get("construtora", "")
+
+        user_id = session["usuario_id"]
+        empresa_id = session["empresa_id"]
+
+        data_criacao = datetime.now().strftime("%Y-%m-%d")
+
+        cursor.execute("""
+            INSERT INTO clientes (
+                nome,
+                telefone,
+                interesse,
+                faixa_preco,
+                bairro,
+                sobre,
+                entrada,
+                pagamento,
+                origem,
+                empreendimento,
+                construtora,
+                usuario_id,
+                empresa_id,
+                data_criacao
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            nome,
+            telefone,
+            interesse,
+            faixa_preco,
+            bairro,
+            sobre,
+            entrada,
+            pagamento,
+            origem,
+            empreendimento,
+            construtora,
+            user_id,
+            empresa_id,
+            data_criacao
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return redirect("/clientes")
+
+    # =========================
+    # GET (LISTAGEM OU FORM)
+    # =========================
+
+    cursor.execute("""
+        SELECT 
+            c.*,
+            u.nome AS nome_criador
+        FROM clientes c
+        LEFT JOIN usuarios u ON u.id = c.usuario_id
+        WHERE c.empresa_id = ?
+        ORDER BY c.id DESC
+    """, (session["empresa_id"],))
+
+    clientes = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "cadastrar_cliente.html",
+        clientes=clientes
+    )
+# ==========================================
+# 5. ROTAS DE IMÓVEIS
+# ==========================================
+@app.route("/converter_lead/<int:lead_id>")
+@verificar_sessao
+def converter_lead(lead_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM lead_site
+        WHERE id = ?
+    """, (lead_id,))
+
+    lead = cursor.fetchone()
+
+    if lead:
+
+        cursor.execute("""
+            INSERT INTO clientes
+            (
+                nome,
+                telefone,
+                email,
+                interesse,
+                faixa_preco,
+                bairro,
+                sobre,
+                entrada,
+                pagamento,
+                usuario_id,
+                empresa_id
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lead["nome"],
+            lead["telefone"],
+            "",
+            "",
+            "",
+            "",
+            lead["mensagem"] if "mensagem" in lead.keys() else "",
+            "",
+            "",
+            session["usuario_id"],
+            session["empresa_id"]
+        ))
+
+        cursor.execute("""
+            DELETE FROM lead_site
+            WHERE id = ?
+        """, (lead_id,))
+
+        conn.commit()
+
+    conn.close()
+
+    flash("Lead adicionado ao sistema com sucesso!")
+
+    return redirect("/leads_site")
+
+@app.route("/imoveis")
+@verificar_sessao
+def imoveis():
+
+    empresa_id = session.get("empresa_id")
+
+
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+
+
+    # Busca imóveis da empresa
+    # Mais novos aparecem primeiro
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE empresa_id = ?
+        ORDER BY id DESC
+    """,
+    (
+        empresa_id,
+    ))
+
+
+
+    imoveis_db = cursor.fetchall()
+
+
+
+    lista_final = []
+
+
+
+    for row in imoveis_db:
+
+
+        imovel = dict(row)
+
+
+
+        # Busca fotos do imóvel
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+        """,
+        (
+            imovel["id"],
+        ))
+
+
+
+        fotos = [
+            foto["nome_arquivo"]
+            for foto in cursor.fetchall()
+        ]
+
+
+
+        imovel["fotos"] = fotos
+
+
+
+        # ==========================
+        # BUSCAR REFERÊNCIAS DO IMÓVEL
+        # ==========================
+
+        cursor.execute("""
+            SELECT
+                nome,
+                categoria,
+                distancia
+            FROM referencias_imovel
+            WHERE imovel_id = ?
+            ORDER BY distancia ASC
+        """,
+        (
+            imovel["id"],
+        ))
+
+
+        referencias = cursor.fetchall()
+
+
+        imovel["referencias"] = [
+            {
+                "nome": ref["nome"],
+                "categoria": ref["categoria"],
+                "distancia": ref["distancia"]
+            }
+            for ref in referencias
+        ]
+
+
+        print(
+            "IMOVEL",
+            imovel["id"],
+            "REFERENCIAS:",
+            imovel["referencias"]
+        )
+
+
+
+        lista_final.append(imovel)
+
+
+
+
+    total_imoveis = len(lista_final)
+
+
+
+    conn.close()
+
+
+
+    return render_template(
+        "imoveis.html",
+        imoveis=lista_final,
+        total_imoveis=total_imoveis
+    )
+
+@app.route("/excluir_imovel/<int:id>")
+@verificar_sessao
+def excluir_imovel(id):
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # 1. Buscamos o imóvel apenas se ele pertencer à empresa logada
+    cursor.execute("SELECT foto FROM imoveis WHERE id=? AND empresa_id=?", (id, empresa_id))
+    resultado = cursor.fetchone()
+
+    if resultado and resultado[0]:
+        foto_nome = resultado[0]
+        caminho_foto = os.path.join(app.config['UPLOAD_FOLDER_IMOVEIS'], foto_nome)
+
+        # Apaga o arquivo físico da pasta
+        if os.path.exists(caminho_foto):
+            os.remove(caminho_foto)
+
+    # 2. Excluímos o registro do banco de dados com segurança
+    cursor.execute("DELETE FROM imoveis WHERE id=? AND empresa_id=?", (id, empresa_id))
+    conn.commit()
+    conn.close()
+
+    flash("Imóvel excluído com sucesso!", "success")
+    return redirect("/imoveis")
+
+
+# --- ROTA DE DETALHES UNIFICADA (Substitua as antigas por esta) ---
+
+@app.route("/imovel/<int:imovel_id>")
+@app.route("/detalhes_imovel/<int:imovel_id>")
+@verificar_sessao # Usando o decorador de segurança unificado
+def ver_imovel(imovel_id):
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row 
+    cursor = conn.cursor()
+
+    # 1. Busca o imóvel filtrando pela empresa_id
+    cursor.execute("""
+        SELECT * FROM imoveis 
+        WHERE id = ? AND empresa_id = ?
+    """, (imovel_id, empresa_id))
+    imovel_row = cursor.fetchone()
+
+    if not imovel_row:
+        conn.close()
+        return "Imóvel não encontrado ou sem permissão de acesso.", 404
+
+    imovel = dict(imovel_row)
+
+    # 2. Busca todas as fotos deste imóvel
+    # Como o imovel_id é único, a segurança já foi validada no passo acima
+    cursor.execute("SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ?", (imovel_id,))
+    fotos = [row['nome_arquivo'] for row in cursor.fetchall()]
+
+    imovel['fotos'] = fotos
+    conn.close()
+
+    return render_template("detalhes_imovel.html", imovel=imovel)
+
+
+@app.route("/funil")
+@verificar_sessao
+def funil():
+
+    empresa_id = session.get("empresa_id")
+
+    # ==========================
+    # FILTROS
+    # ==========================
+
+    pesquisa = request.args.get("pesquisa", "").strip()
+    corretor = request.args.get("corretor", "")
+    origem = request.args.get("origem", "")
+    empreendimento = request.args.get("empreendimento", "")
+    data_inicio = request.args.get("data_inicio", "")
+    data_fim = request.args.get("data_fim", "")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # ==========================
+    # CONSULTA PRINCIPAL
+    # ==========================
+
+    sql = """
+        SELECT
+            c.*,
+            u.nome AS nome_corretor,
+            u_cria.nome AS nome_criador
+
+        FROM clientes c
+
+        LEFT JOIN usuarios u
+            ON u.id = c.atendido_por
+            
+        LEFT JOIN usuarios u_cria
+            ON u_cria.id = c.usuario_id    
+
+        WHERE c.empresa_id = ?
+    """
+
+    parametros = [empresa_id]
+
+    # Pesquisa
+    if pesquisa:
+        sql += """
+            AND (
+                c.nome LIKE ?
+                OR c.telefone LIKE ?
+            )
+        """
+        parametros.extend([
+            f"%{pesquisa}%",
+            f"%{pesquisa}%"
+        ])
+
+    # Corretor
+    if corretor:
+        sql += " AND c.atendido_por = ? "
+        parametros.append(corretor)
+
+    # Origem
+    if origem:
+        sql += " AND c.origem = ? "
+        parametros.append(origem)
+
+    # Empreendimento
+    if empreendimento:
+        sql += " AND c.empreendimento = ? "
+        parametros.append(empreendimento)
+
+    # Data inicial
+    if data_inicio:
+        sql += " AND DATE(c.data_criacao) >= DATE(?) "
+        parametros.append(data_inicio)
+
+    # Data final
+    if data_fim:
+        sql += " AND DATE(c.data_criacao) <= DATE(?) "
+        parametros.append(data_fim)
+
+    sql += " ORDER BY c.id DESC "
+
+    cursor.execute(sql, parametros)
+
+    clientes = cursor.fetchall()
+
+    # ==========================
+    # LISTA DE CORRETORES
+    # ==========================
+
+    cursor.execute("""
+        SELECT id, nome
+        FROM usuarios
+        WHERE empresa_id = ?
+        ORDER BY nome
+    """, (empresa_id,))
+
+    corretores = cursor.fetchall()
+
+    # ==========================
+    # ORIGENS
+    # ==========================
+
+    cursor.execute("""
+        SELECT DISTINCT origem
+        FROM clientes
+        WHERE empresa_id = ?
+        AND origem IS NOT NULL
+        AND origem <> ''
+        ORDER BY origem
+    """, (empresa_id,))
+
+    origens = [x["origem"] for x in cursor.fetchall()]
+
+    # ==========================
+    # EMPREENDIMENTOS
+    # ==========================
+
+    cursor.execute("""
+        SELECT DISTINCT empreendimento
+        FROM clientes
+        WHERE empresa_id = ?
+        AND empreendimento IS NOT NULL
+        AND empreendimento <> ''
+        ORDER BY empreendimento
+    """, (empresa_id,))
+
+    empreendimentos = [x["empreendimento"] for x in cursor.fetchall()]
+
+    conn.close()
+
+    # ==========================
+    # ETAPAS
+    # ==========================
+
+    etapas = [
+        "Lead Novo",
+        "Visita Agendada",
+        "Negociação",
+        "Concluido",
+        "Desistencia"
+    ]
+
+    funil_dados = {
+        etapa: []
+        for etapa in etapas
+    }
+
+    for cliente in clientes:
+
+        status = cliente["status_funil"] or "Lead Novo"
+
+        if status not in funil_dados:
+            status = "Lead Novo"
+
+        funil_dados[status].append(cliente)
+
+    # ==========================
+    # INDICADORES
+    # ==========================
+
+    total_leads = len(clientes)
+    atendimento = len(funil_dados["Lead Novo"])
+    visitas = len(funil_dados["Visita Agendada"])
+    propostas = len(funil_dados["Negociação"])
+    vendas = len(funil_dados["Concluido"])
+
+    return render_template(
+        "funil.html",
+        funil_dados=funil_dados,
+        etapas=etapas,
+
+        corretores=corretores,
+        origens=origens,
+        empreendimentos=empreendimentos,
+
+        total_leads=total_leads,
+        atendimento=atendimento,
+        visitas=visitas,
+        propostas=propostas,
+        vendas=vendas,
+
+        pesquisa=pesquisa,
+        corretor=corretor,
+        origem=origem,
+        empreendimento=empreendimento,
+        data_inicio=data_inicio,
+        data_fim=data_fim
+    )
+
+@app.route("/editar_imovel/<int:id>", methods=["GET", "POST"])
+@verificar_sessao
+def editar_imovel(id):
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+
+        titulo = request.form.get("titulo", "")
+        tipo = request.form.get("tipo", "Casa")
+        valor = request.form.get("valor", 0)
+        cidade = request.form.get("cidade", "")
+        bairro = request.form.get("bairro", "")
+        quartos = request.form.get("quartos") or 0
+        banheiros = request.form.get("banheiros") or 0
+        area = request.form.get("area") or 0
+        status = request.form.get("status", "Venda")
+        descricao = request.form.get("descricao", "")
+        condominio = request.form.get("condominio", "")
+        link = request.form.get("link", "")
+        cep = request.form.get("cep", "")
+        lavabo  = request.form.get("lavabo", "")
+        vaga_garagem = request.form.get("vaga_garagem", "")
+        lazer = request.form.get("lazer", "")
+        sacada = request.form.get("sacada", "")
+        rua = request.form.get("rua", "")
+        iptu = request.form.get("iptu", "")
+        parcela = request.form.get("parcela", "")
+        prazo = request.form.get("prazo", "")
+        anuais = request.form.get("anuais", "")
+        entrada = request.form.get("entrada", "")
+        banheiros21 = request.form.get("banheiros21", "")
+        proprietario1 = request.form.get("proprietario1", "")
+        telefone2 = request.form.get("telefone2", "")
+        mobilia = request.form.get("mobilia", "")
+        compartilhar_fifit = int(request.form.get("compartilhar_fifit", 0))
+
+        # Atualiza os dados do imóvel
+        cursor.execute("""
+            UPDATE imoveis
+            SET titulo=?,
+                tipo=?,
+                valor=?,
+                cidade=?,
+                bairro=?,
+                quartos=?,
+                banheiros=?,
+                area=?,
+                status=?,
+                descricao=?,
+                condominio=?,
+                link=?,
+                cep=?,
+                lavabo=?,                
+                vaga_garagem=?,
+                lazer=?,
+                sacada=?,
+                rua=?,
+                iptu=?,
+                parcela=?,
+                prazo=?,
+                anuais=?,
+                entrada=?,
+                banheiros21=?,
+                proprietario1=?,
+                telefone2=?,
+                mobilia=?,
+                compartilhar_fifit=?
+            WHERE id=? AND empresa_id=?
+        """, (
+            titulo,
+            tipo,
+            valor,
+            cidade,
+            bairro,
+            quartos,
+            banheiros,
+            area,
+            status,
+            descricao,
+            condominio,
+            link,
+            cep,
+            lavabo,
+            vaga_garagem,
+            lazer,
+            sacada,
+            rua,
+            iptu,
+            parcela,
+            prazo,
+            anuais,
+            entrada,
+            banheiros21,
+            proprietario1,
+            telefone2,
+            mobilia,
+            compartilhar_fifit,
+            id,
+            empresa_id
+        ))
+
+        # ==========================
+        # NOVAS FOTOS
+        # ==========================
+        arquivos = request.files.getlist("fotos[]")
+
+        for file in arquivos:
+
+            if file and file.filename != "":
+
+                nome_seguro = secure_filename(file.filename)
+
+                nome_foto = (
+                    f"{id}_"
+                    f"{int(datetime.now().timestamp())}_"
+                    f"{nome_seguro}"
+                )
+
+                caminho_salvamento = os.path.join(
+                    app.config["UPLOAD_FOLDER_IMOVEIS"],
+                    nome_foto
+                )
+
+                file.save(caminho_salvamento)
+
+                cursor.execute("""
+                    INSERT INTO fotos_imoveis
+                    (imovel_id, nome_arquivo)
+                    VALUES (?, ?)
+                """, (
+                    id,
+                    nome_foto
+                ))
+
+        conn.commit()
+        conn.close()
+
+        return redirect("/imoveis")
+
+    # ==========================
+    # BUSCAR IMÓVEL
+    # ==========================
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id=? AND empresa_id=?
+    """, (id, empresa_id))
+
+    imovel = cursor.fetchone()
+
+    if not imovel:
+        conn.close()
+        return "Imóvel não encontrado ou sem permissão de acesso.", 404
+
+    # ==========================
+    # BUSCAR FOTOS
+    # ==========================
+    cursor.execute("""
+        SELECT *
+        FROM fotos_imoveis
+        WHERE imovel_id=?
+        ORDER BY id DESC
+    """, (id,))
+
+    fotos = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "editar_imovel.html",
+        imovel=imovel,
+        fotos=fotos
+    )
+
+
+
+@app.route("/gerar_site")
+def gerar_site():
+
+    empresa_id = session["empresa_id"]
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # busca empresa
+    cursor.execute("""
+        SELECT * FROM empresas WHERE id = ?
+    """, (empresa_id,))
+
+    empresa = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "gerar_site.html",
+        empresa=empresa
+    )
+# ==========================================
+# 6. INTELIGÊNCIA ARTIFICIAL / ANÚNCIOS
+# ==========================================
+
+@app.route("/gerar_site/salvar", methods=["POST"])
+def salvar_site():
+
+    import re
+    import sqlite3
+
+    empresa_id = session["empresa_id"]
+
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+
+    # verifica se já existe site da empresa
+
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+    """,(empresa_id,))
+
+
+    site = cursor.fetchone()
+
+
+    if site:
+
+        conn.close()
+
+        return redirect("/dashboard_v2")
+
+
+
+
+    # busca nome da empresa
+
+    cursor.execute("""
+        SELECT nome
+        FROM empresas
+        WHERE id = ?
+    """,(empresa_id,))
+
+
+    empresa = cursor.fetchone()
+
+
+
+    nome = empresa["nome"]
+
+
+
+    # cria slug automático
+
+    slug = re.sub(
+        r'[^a-z0-9]+',
+        '-',
+        nome.lower()
+    ).strip("-")
+
+
+
+    cor = "#22c55e"
+
+
+
+    cursor.execute("""
+        INSERT INTO configuracoes_site
+        (
+        empresa_id,
+        nome_imobiliaria,
+        cor_primaria,
+        subdominio
+        )
+        VALUES (?,?,?,?)
+    """,
+    (
+        empresa_id,
+        nome,
+        cor,
+        slug
+    ))
+
+
+
+    conn.commit()
+    conn.close()
+
+
+
+    return redirect(f"/site/{slug}")
+
+
+@app.route("/gerar_anuncio", methods=["GET", "POST"])
+@verificar_sessao
+def gerar_anuncio():
+    empresa_id = session.get("empresa_id")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Busca imóveis da empresa
+    cursor.execute("SELECT * FROM imoveis WHERE empresa_id=?", (empresa_id,))
+    lista_imoveis = cursor.fetchall()
+
+    anuncio, imovel_selecionado = None, None
+
+    if request.method == "POST":
+        id_imovel = request.form["imovel_id"]
+
+        cursor.execute(
+            "SELECT * FROM imoveis WHERE id=? AND empresa_id=?",
+            (id_imovel, empresa_id),
+        )
+        imovel_selecionado = cursor.fetchone()
+
+        if imovel_selecionado:
+            try:
+                # Montagem do prompt com os dados do imóvel
+                prompt = prompt = f"""
+Crie um anúncio de venda imobiliária atraente e persuasivo para o imóvel abaixo.
+
+REGRAS IMPORTANTES:
+1. NÃO use asteriscos (*), hashtags (#) ou qualquer caractere de formatação Markdown.
+2. Use apenas texto simples, quebras de linha e emojis nativos para organizar o texto.
+3. Estruture o anúncio com: Título chamativo, lista de benefícios, valor e um convite para ação (Call-to-Action).
+4. Mantenha um tom profissional e entusiasmado.
+
+DADOS DO IMÓVEL:
+{imovel_selecionado}
+
+Gere o anúncio agora:"""
+
+                
+                # Chamada direta usando o objeto 'model' configurado no topo
+                response = model.generate_content(prompt)
+                anuncio = response.text
+                
+            except Exception as e:
+                anuncio = f"Erro ao conectar com a IA: {e}"
+
+    conn.close()
+    return render_template(
+        "gerar_anuncio.html",
+        imoveis=lista_imoveis,
+        anuncio=anuncio,
+        imovel=imovel_selecionado,
+    )
+@app.route("/cliente/<int:id>")
+@verificar_sessao
+def perfil_cliente(id):
+
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # ==========================
+    # CLIENTE
+    # ==========================
+
+    cursor.execute("""
+        SELECT
+            c.*,
+            u.nome AS nome_corretor
+        FROM clientes c
+        LEFT JOIN usuarios u
+            ON u.id = c.atendido_por
+        WHERE c.id = ?
+        AND c.empresa_id = ?
+    """, (id, empresa_id))
+
+    cliente = cursor.fetchone()
+
+    if not cliente:
+        conn.close()
+        return "Cliente não encontrado ou não pertence a esta empresa.", 404
+
+
+    # ==========================
+    # OCORRÊNCIAS
+    # ==========================
+
+    cursor.execute("""
+        SELECT
+            o.*,
+            u.nome as usuario_nome
+        FROM ocorrencias_clientes o
+        LEFT JOIN usuarios u
+            ON u.id = o.usuario_id
+        WHERE o.cliente_id = ?
+        ORDER BY o.id DESC
+    """, (id,))
+
+    ocorrencias = cursor.fetchall()
+
+
+    # ==========================
+    # HISTÓRICO
+    # ==========================
+
+    cursor.execute("""
+        SELECT
+            h.*,
+            u.nome AS nome_usuario
+        FROM cliente_historico h
+        LEFT JOIN usuarios u
+            ON u.id = h.usuario_id
+        WHERE h.cliente_id = ?
+        ORDER BY h.id DESC
+    """, (id,))
+
+    historico = cursor.fetchall()
+
+
+    # ==========================
+    # IMÓVEIS DA EMPRESA
+    # ==========================
+
+    cursor.execute("""
+        SELECT
+            id,
+            titulo,
+            tipo,
+            valor,
+            cidade,
+            bairro,
+            foto
+        FROM imoveis
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    imoveis = cursor.fetchall()
+
+    conn.close()
+
+
+    # ==========================
+    # MATCH IA
+    # ==========================
+
+    matches_cliente = []
+
+    c_interesse = cliente["interesse"]
+    c_faixa = cliente["faixa_preco"]
+    c_bairro = cliente["bairro"]
+
+    c_bairro_txt = (
+        str(c_bairro).lower().strip()
+        if c_bairro else ""
+    )
+
+    interesse_txt = (
+        str(c_interesse).lower().strip()
+        if c_interesse else ""
+    )
+
+
+    for i in imoveis:
+
+        i_id = i["id"]
+        i_titulo = i["titulo"]
+        i_valor = i["valor"]
+        i_bairro = i["bairro"]
+        i_cidade = i["cidade"]
+        i_foto = i["foto"]
+
+        i_bairro_txt = (
+            str(i_bairro).lower().strip()
+            if i_bairro else ""
+        )
+
+        porcentagem = 0
+
+        if (
+            i_bairro_txt and
+            (
+                i_bairro_txt == c_bairro_txt
+                or i_bairro_txt in interesse_txt
+            )
+        ):
+            porcentagem += 50
+
+
+        try:
+
+            imovel_num = float(
+                ''.join(
+                    filter(
+                        str.isdigit,
+                        str(i_valor)
+                    )
+                )
+            )
+
+            cliente_num = float(
+                ''.join(
+                    filter(
+                        str.isdigit,
+                        str(c_faixa)
+                    )
+                )
+            )
+
+            if imovel_num <= (cliente_num * 1.10):
+                porcentagem += 50
+
+        except:
+
+            if (
+                c_faixa and
+                str(i_valor).strip()
+                in str(c_faixa).strip()
+            ):
+                porcentagem += 50
+
+
+        if porcentagem >= 50:
+
+            matches_cliente.append({
+                "id": i_id,
+                "titulo": i_titulo,
+                "valor": i_valor,
+                "local": f"{i_bairro}, {i_cidade}",
+                "foto": i_foto,
+                "porcentagem": porcentagem
+            })
+
+
+    return render_template(
+        "perfil_cliente.html",
+        cliente=cliente,
+        matches=matches_cliente,
+        ocorrencias=ocorrencias,
+        historico=historico
+    )
+
+
+
+@app.route(
+    "/cliente/adicionar_ocorrencia/<int:cliente_id>",
+    methods=["POST"]
+)
+@verificar_sessao
+def adicionar_ocorrencia(cliente_id):
+
+    ocorrencia = request.form.get("ocorrencia")
+    usuario_id = session["usuario_id"]
+
+    if ocorrencia and ocorrencia.strip():
+
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO ocorrencias_clientes
+            (
+                cliente_id,
+                usuario_id,
+                ocorrencia
+            )
+            VALUES (?, ?, ?)
+        """, (
+            cliente_id,
+            usuario_id,
+            ocorrencia
+        ))
+
+        conn.commit()
+        conn.close()
+
+    return redirect(f"/cliente/{cliente_id}")
+
+@app.route("/cliente/atualizar_status/<int:id>", methods=["POST"])
+@verificar_sessao
+def atualizar_status_cliente(id):
+
+    novo_status = request.form.get("status_funil")
+    data_visita = request.form.get("data_visita")
+
+    empresa_id = session.get("empresa_id")
+    usuario_id = session.get("usuario_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    # Atualiza cliente
+    cursor.execute("""
+        UPDATE clientes
+        SET
+            status_funil = ?,
+            data_visita = ?,
+            atendido_por = ?
+        WHERE id = ?
+        AND empresa_id = ?
+    """,
+    (
+        novo_status,
+        data_visita,
+        usuario_id,
+        id,
+        empresa_id
+    ))
+
+
+    # Grava histórico
+    cursor.execute("""
+        INSERT INTO cliente_historico
+        (
+            cliente_id,
+            usuario_id,
+            status,
+            observacao
+        )
+        VALUES (?,?,?,?)
+    """,
+    (
+        id,
+        usuario_id,
+        novo_status,
+        "Status alterado"
+    ))
+
+
+    conn.commit()
+    conn.close()
+
+    return redirect(f"/cliente/{id}")
+
+
+
+@app.route("/cliente/atualizar_dados/<int:id>", methods=["POST"])
+@verificar_sessao
+def atualizar_dados_cliente(id):
+
+    nome = request.form.get("nome")
+    telefone = request.form.get("telefone")
+    email = request.form.get("email")
+    cpf = request.form.get("cpf")
+    endereco = request.form.get("endereco")
+    bairro = request.form.get("bairro")
+    interesse = request.form.get("interesse")
+    faixa_preco = request.form.get("faixa_preco")
+    entrada = request.form.get("entrada")
+    pagamento = request.form.get("pagamento")
+    origem = request.form.get("origem")
+    sobre = request.form.get("sobre")
+
+    empresa_id = session.get("empresa_id")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE clientes
+        SET
+            nome = ?,
+            telefone = ?,
+            email = ?,
+            cpf = ?,
+            endereco = ?,
+            bairro = ?,
+            interesse = ?,
+            faixa_preco = ?,
+            entrada = ?,
+            pagamento = ?,
+            origem = ?,
+            sobre = ?
+        WHERE id = ?
+        AND empresa_id = ?
+    """, (
+        nome,
+        telefone,
+        email,
+        cpf,
+        endereco,
+        bairro,
+        interesse,
+        faixa_preco,
+        entrada,
+        pagamento,
+        origem,
+        sobre,
+        id,
+        empresa_id
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(f"/cliente/{id}")
+
+
+@app.route("/informa-imovel/<int:imovel_id>")
+def informa_imovel(imovel_id):
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+
+    # ==========================
+    # IMÓVEL PRINCIPAL
+    # ==========================
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id = ?
+    """, (imovel_id,))
+
+
+    imovel = cursor.fetchone()
+
+
+    if not imovel:
+
+        conn.close()
+
+        return "Imóvel não encontrado",404
+
+
+
+    imovel = dict(imovel)
+
+
+
+
+
+    # ==========================
+    # FOTOS DO IMÓVEL
+    # ==========================
+
+
+    cursor.execute("""
+        SELECT nome_arquivo
+        FROM fotos_imoveis
+        WHERE imovel_id = ?
+        ORDER BY id ASC
+    """,(imovel_id,))
+
+
+    fotos = cursor.fetchall()
+
+
+
+    imovel["fotos"] = [
+
+        foto["nome_arquivo"]
+
+        for foto in fotos
+
+    ]
+
+
+
+
+
+
+
+    # ==========================
+    # IMÓVEIS SEMELHANTES
+    # ==========================
+
+
+    semelhantes=[]
+
+
+
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id != ?
+        AND empresa_id = ?
+        ORDER BY RANDOM()
+        LIMIT 6
+    """,
+    (
+        imovel_id,
+        imovel.get("empresa_id")
+    ))
+
+
+
+    semelhantes_db = cursor.fetchall()
+
+
+
+
+
+    for item in semelhantes_db:
+
+
+        item = dict(item)
+
+
+
+        cursor.execute("""
+            SELECT nome_arquivo
+            FROM fotos_imoveis
+            WHERE imovel_id = ?
+            ORDER BY id ASC
+            LIMIT 1
+        """,
+        (item["id"],))
+
+
+
+        foto = cursor.fetchone()
+
+
+
+        if foto:
+
+            item["foto"] = foto["nome_arquivo"]
+
+        else:
+
+            item["foto"] = None
+
+
+
+
+        semelhantes.append(item)
+
+
+
+
+
+ 
+
+
+    # ==========================
+    # EMPRESA / HEADER
+    # ==========================
+
+
+    empresa = None
+
+
+
+    cursor.execute("""
+        SELECT *
+        FROM configuracoes_site
+        WHERE empresa_id = ?
+        LIMIT 1
+    """,
+    (
+        imovel.get("empresa_id"),
+    ))
+
+
+
+    empresa_db = cursor.fetchone()
+
+
+
+
+    if empresa_db:
+
+
+        empresa = dict(empresa_db)
+
+
+
+    else:
+
+
+        empresa = {
+
+            "nome_imobiliaria":"SMARTZEN IMOB",
+
+            "logo":None
+
+        }
+
+
+
+
+
+
+
+    conn.close()
+
+
+
+
+
+
+    return render_template(
+
+        "informa_imovel.html",
+
+        imovel=imovel,
+
+        semelhantes=semelhantes,
+
+        empresa=empresa
+
+    )
+
+# ==========================================================
+# ASSINATURA POR EMPRESA + SUPER ADMIN
+# Bloco integrado sem remover as rotas originais do sistema
+# ==========================================================
+
+def atualizar_banco_superadmin():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    def adicionar_coluna(tabela, coluna, definicao):
+        cursor.execute(f"PRAGMA table_info({tabela})")
+        existentes = [linha[1] for linha in cursor.fetchall()]
+        if coluna not in existentes:
+            cursor.execute(f"ALTER TABLE {tabela} ADD COLUMN {coluna} {definicao}")
+
+    # Empresas
+    adicionar_coluna("empresas", "data_cadastro", "TEXT")
+    adicionar_coluna("empresas", "inicio_teste", "TEXT")
+    adicionar_coluna("empresas", "data_vencimento", "TEXT")
+    adicionar_coluna("empresas", "status_assinatura", "TEXT DEFAULT 'ativo'")
+    adicionar_coluna("empresas", "plano", "TEXT DEFAULT 'mensal'")
+    adicionar_coluna("empresas", "observacao_assinatura", "TEXT")
+
+    # Usuários
+    adicionar_coluna("usuarios", "telefone", "TEXT")
+    adicionar_coluna("usuarios", "cargo", "TEXT DEFAULT 'Corretor'")
+    adicionar_coluna("usuarios", "ativo", "INTEGER DEFAULT 1")
+    adicionar_coluna("usuarios", "data_inicio", "TEXT")
+    adicionar_coluna("usuarios", "data_vencimento", "TEXT")
+
+    agora = datetime.now().isoformat(timespec="seconds")
+
+    cursor.execute("""
+        UPDATE empresas
+        SET data_cadastro = COALESCE(data_cadastro, ?),
+            status_assinatura = COALESCE(status_assinatura, 'ativo'),
+            plano = COALESCE(plano, 'mensal')
+    """, (agora,))
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET ativo = COALESCE(ativo, 1),
+            cargo = COALESCE(cargo, 'Corretor')
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+atualizar_banco_superadmin()
+
+
+
+
+@app.route("/superadmin/login", methods=["GET", "POST"])
+def superadmin_login():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        senha = request.form.get("senha") or ""
+
+        email_master = (os.getenv("SUPERADMIN_EMAIL") or "").strip().lower()
+        senha_master = os.getenv("SUPERADMIN_PASSWORD") or ""
+
+        if not email_master or not senha_master:
+            return render_template(
+                "superadmin_login.html",
+                erro="Configure SUPERADMIN_EMAIL e SUPERADMIN_PASSWORD no Railway."
+            )
+
+        if (
+            secrets.compare_digest(email, email_master)
+            and secrets.compare_digest(senha, senha_master)
+        ):
+            session.clear()
+            session["super_admin"] = True
+            session["super_admin_email"] = email_master
+            return redirect("/superadmin")
+
+        return render_template(
+            "superadmin_login.html",
+            erro="Credenciais inválidas."
+        )
+
+    return render_template("superadmin_login.html")
+
+
+@app.route("/superadmin/logout")
+def superadmin_logout():
+    session.clear()
+    return redirect("/superadmin/login")
+
+
+@app.route("/superadmin")
+@app.route("/superadmin/dashboard")
+@super_admin_required
+def super_dashboard():
+    conn = get_db()
+
+    empresas_db = conn.execute("""
+        SELECT
+            e.id,
+            e.nome,
+            e.data_cadastro,
+            e.inicio_teste,
+            e.data_vencimento,
+            e.status_assinatura,
+            e.plano,
+            e.observacao_assinatura,
+            (SELECT COUNT(*) FROM usuarios u WHERE u.empresa_id = e.id) AS total_usuarios,
+            (SELECT COUNT(*) FROM imoveis i WHERE i.empresa_id = e.id) AS total_imoveis,
+            (SELECT COUNT(*) FROM clientes c WHERE c.empresa_id = e.id) AS total_clientes,
+            (
+                SELECT u.nome
+                FROM usuarios u
+                WHERE u.empresa_id = e.id
+                ORDER BY u.is_admin DESC, u.id ASC
+                LIMIT 1
+            ) AS admin_nome,
+            (
+                SELECT u.email
+                FROM usuarios u
+                WHERE u.empresa_id = e.id
+                ORDER BY u.is_admin DESC, u.id ASC
+                LIMIT 1
+            ) AS admin_email
+        FROM empresas e
+        ORDER BY e.id DESC
+    """).fetchall()
+
+    conn.close()
+
+    empresas = []
+    agora = datetime.now()
+
+    for item in empresas_db:
+        empresa = dict(item)
+        empresa["horas_restantes"] = None
+
+        if empresa.get("data_vencimento"):
+            try:
+                vencimento = datetime.fromisoformat(
+                    empresa["data_vencimento"]
+                )
+                empresa["horas_restantes"] = int(
+                    (vencimento - agora).total_seconds() // 3600
+                )
+
+                if (
+                    vencimento < agora
+                    and empresa.get("status_assinatura")
+                    not in ("bloqueado", "vencido")
+                ):
+                    empresa["status_assinatura"] = "vencido"
+            except (ValueError, TypeError):
+                pass
+
+        empresas.append(empresa)
+
+    return render_template(
+        "superadmin.html",
+        empresas=empresas
+    )
+
+
+@app.route("/superadmin/empresa/<int:empresa_id>/usuarios")
+@super_admin_required
+def superadmin_empresa_usuarios(empresa_id):
+    conn = get_db()
+
+    empresa = conn.execute(
+        "SELECT * FROM empresas WHERE id = ?",
+        (empresa_id,)
+    ).fetchone()
+
+    if not empresa:
+        conn.close()
+        flash("Empresa não encontrada.", "warning")
+        return redirect("/superadmin")
+
+    usuarios = conn.execute("""
+        SELECT
+            id,
+            nome,
+            email,
+            telefone,
+            cargo,
+            is_admin,
+            ativo,
+            status_assinatura,
+            data_inicio,
+            data_vencimento
+        FROM usuarios
+        WHERE empresa_id = ?
+        ORDER BY is_admin DESC, nome COLLATE NOCASE ASC
+    """, (empresa_id,)).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "superadmin_usuarios.html",
+        empresa=empresa,
+        usuarios=usuarios
+    )
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/novo",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_criar_usuario_empresa(empresa_id):
+    nome = (request.form.get("nome") or "").strip()
+    email = (request.form.get("email") or "").strip().lower()
+    senha = request.form.get("senha") or ""
+    telefone = (request.form.get("telefone") or "").strip()
+    cargo = (request.form.get("cargo") or "Corretor").strip()
+    is_admin = 1 if request.form.get("is_admin") == "1" else 0
+
+    destino = url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    )
+
+    if not nome or not email or not senha:
+        flash("Preencha nome, e-mail e senha.", "warning")
+        return redirect(destino)
+
+    if len(senha) < 6:
+        flash("A senha precisa ter pelo menos 6 caracteres.", "warning")
+        return redirect(destino)
+
+    conn = get_db()
+
+    empresa = conn.execute(
+        "SELECT id FROM empresas WHERE id = ?",
+        (empresa_id,)
+    ).fetchone()
+
+    if not empresa:
+        conn.close()
+        flash("Empresa não encontrada.", "warning")
+        return redirect("/superadmin")
+
+    existente = conn.execute(
+        "SELECT id FROM usuarios WHERE LOWER(email) = LOWER(?)",
+        (email,)
+    ).fetchone()
+
+    if existente:
+        conn.close()
+        flash("Já existe um usuário com este e-mail.", "warning")
+        return redirect(destino)
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+
+    cursor = conn.execute("""
+        INSERT INTO usuarios (
+            nome,
+            email,
+            senha,
+            empresa_id,
+            telefone,
+            cargo,
+            is_admin,
+            ativo,
+            status_assinatura,
+            data_inicio
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'ativo', ?)
+    """, (
+        nome,
+        email,
+        generate_password_hash(senha),
+        empresa_id,
+        telefone,
+        cargo,
+        is_admin,
+        hoje
+    ))
+
+    usuario_id = cursor.lastrowid
+
+    # Mantém a lógica original de sessão individual do WhatsApp.
+    try:
+        conn.execute(
+            "UPDATE usuarios SET whatsapp_sessao = ? WHERE id = ?",
+            (f"corretor_{usuario_id}", usuario_id)
+        )
+    except sqlite3.OperationalError:
+        pass
+
+    conn.commit()
+    conn.close()
+
+    flash(
+        f"Usuário {nome} criado para esta empresa.",
+        "success"
+    )
+    return redirect(destino)
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/status",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_status_usuario(empresa_id, usuario_id):
+    acao = request.form.get("acao")
+    ativo = 1 if acao == "ativar" else 0
+    status = "ativo" if ativo else "bloqueado"
+
+    conn = get_db()
+
+    usuario = conn.execute("""
+        SELECT id
+        FROM usuarios
+        WHERE id = ? AND empresa_id = ?
+    """, (usuario_id, empresa_id)).fetchone()
+
+    if not usuario:
+        conn.close()
+        flash("Usuário não encontrado nesta empresa.", "warning")
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET ativo = ?, status_assinatura = ?
+        WHERE id = ? AND empresa_id = ?
+    """, (ativo, status, usuario_id, empresa_id))
+
+    conn.commit()
+    conn.close()
+
+    flash("Status do usuário atualizado.", "success")
+    return redirect(url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    ))
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/senha",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_redefinir_senha_usuario(empresa_id, usuario_id):
+    nova_senha = request.form.get("nova_senha") or ""
+
+    if len(nova_senha) < 6:
+        flash(
+            "A nova senha precisa ter pelo menos 6 caracteres.",
+            "warning"
+        )
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    conn = get_db()
+
+    cursor = conn.execute("""
+        UPDATE usuarios
+        SET senha = ?
+        WHERE id = ? AND empresa_id = ?
+    """, (
+        generate_password_hash(nova_senha),
+        usuario_id,
+        empresa_id
+    ))
+
+    conn.commit()
+    alterado = cursor.rowcount
+    conn.close()
+
+    flash(
+        "Senha redefinida com sucesso."
+        if alterado
+        else "Usuário não encontrado.",
+        "success" if alterado else "warning"
+    )
+
+    return redirect(url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    ))
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/usuario/<int:usuario_id>/excluir",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_excluir_usuario(empresa_id, usuario_id):
+    conn = get_db()
+
+    usuario = conn.execute("""
+        SELECT nome
+        FROM usuarios
+        WHERE id = ? AND empresa_id = ?
+    """, (usuario_id, empresa_id)).fetchone()
+
+    if not usuario:
+        conn.close()
+        flash("Usuário não encontrado nesta empresa.", "warning")
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    total = conn.execute("""
+        SELECT COUNT(*)
+        FROM usuarios
+        WHERE empresa_id = ?
+    """, (empresa_id,)).fetchone()[0]
+
+    if total <= 1:
+        conn.close()
+        flash(
+            "Não é possível excluir o único usuário da empresa.",
+            "warning"
+        )
+        return redirect(url_for(
+            "superadmin_empresa_usuarios",
+            empresa_id=empresa_id
+        ))
+
+    conn.execute("""
+        DELETE FROM usuarios
+        WHERE id = ? AND empresa_id = ?
+    """, (usuario_id, empresa_id))
+
+    conn.commit()
+    conn.close()
+
+    flash(f'Usuário {usuario["nome"]} excluído.', "success")
+    return redirect(url_for(
+        "superadmin_empresa_usuarios",
+        empresa_id=empresa_id
+    ))
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/renovar",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_renovar_empresa(empresa_id):
+    try:
+        dias = int(request.form.get("dias") or 30)
+    except ValueError:
+        dias = 30
+
+    plano = (request.form.get("plano") or "mensal").strip()
+    observacao = (
+        request.form.get("observacao") or ""
+    ).strip()
+    data_personalizada = (
+        request.form.get("data_vencimento") or ""
+    ).strip()
+
+    if data_personalizada:
+        try:
+            vencimento = datetime.fromisoformat(data_personalizada)
+        except ValueError:
+            flash("Data de vencimento inválida.", "warning")
+            return redirect("/superadmin")
+    else:
+        vencimento = datetime.now() + timedelta(days=dias)
+
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE empresas
+        SET
+            data_vencimento = ?,
+            status_assinatura = 'ativo',
+            plano = ?,
+            observacao_assinatura = ?
+        WHERE id = ?
+    """, (
+        vencimento.isoformat(timespec="seconds"),
+        plano,
+        observacao,
+        empresa_id
+    ))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET ativo = 1, status_assinatura = 'ativo'
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Assinatura da empresa renovada.", "success")
+    return redirect("/superadmin")
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/bloquear",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_bloquear_empresa(empresa_id):
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE empresas
+        SET status_assinatura = 'bloqueado'
+        WHERE id = ?
+    """, (empresa_id,))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET status_assinatura = 'bloqueado'
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Empresa bloqueada.", "warning")
+    return redirect("/superadmin")
+
+
+@app.route(
+    "/superadmin/empresa/<int:empresa_id>/reativar",
+    methods=["POST"]
+)
+@super_admin_required
+def superadmin_reativar_empresa(empresa_id):
+    conn = get_db()
+
+    conn.execute("""
+        UPDATE empresas
+        SET status_assinatura = 'ativo'
+        WHERE id = ?
+    """, (empresa_id,))
+
+    conn.execute("""
+        UPDATE usuarios
+        SET ativo = 1, status_assinatura = 'ativo'
+        WHERE empresa_id = ?
+    """, (empresa_id,))
+
+    conn.commit()
+    conn.close()
+
+    flash("Empresa reativada.", "success")
+    return redirect("/superadmin")
+
+
+@app.route("/assinatura-vencida")
+def assinatura_vencida():
+    return render_template("assinatura_vencida.html")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        senha = request.form.get("senha") or ""
+
+        if not email or not senha:
+            return render_template(
+                "login.html",
+                erro="Preencha todos os campos."
+            )
+
+        conn = get_db()
+
+        usuario = conn.execute("""
+            SELECT
+                u.*,
+                e.status_assinatura AS empresa_status,
+                e.data_vencimento AS empresa_vencimento
+            FROM usuarios u
+            LEFT JOIN empresas e ON e.id = u.empresa_id
+            WHERE LOWER(u.email) = ?
+        """, (email,)).fetchone()
+
+        if (
+            not usuario
+            or not check_password_hash(usuario["senha"], senha)
+        ):
+            conn.close()
+            return render_template(
+                "login.html",
+                erro="E-mail ou senha incorretos."
+            )
+
+        chaves = usuario.keys()
+        ativo = usuario["ativo"] if "ativo" in chaves else 1
+
+        if int(ativo or 0) != 1:
+            conn.close()
+            return render_template(
+                "login.html",
+                erro="Seu usuário está bloqueado."
+            )
+
+        status_empresa = (
+            usuario["empresa_status"] or "ativo"
+        ).lower()
+
+        vencimento = None
+        vencimento_texto = usuario["empresa_vencimento"]
+
+        if vencimento_texto:
+            try:
+                vencimento = datetime.fromisoformat(vencimento_texto)
+            except (ValueError, TypeError):
+                vencimento = None
+
+        if vencimento and vencimento < datetime.now():
+            conn.execute("""
+                UPDATE empresas
+                SET status_assinatura = 'vencido'
+                WHERE id = ?
+            """, (usuario["empresa_id"],))
+            conn.commit()
+            conn.close()
+            return redirect("/assinatura-vencida")
+
+        if status_empresa in ("bloqueado", "vencido"):
+            conn.close()
+            return redirect("/assinatura-vencida")
+
+        novo_token = secrets.token_hex(16)
+
+        conn.execute("""
+            UPDATE usuarios
+            SET session_token = ?
+            WHERE id = ?
+        """, (novo_token, usuario["id"]))
+
+        conn.commit()
+        conn.close()
+
+        session.clear()
+        session["usuario_id"] = usuario["id"]
+        session["empresa_id"] = usuario["empresa_id"]
+        session["usuario_nome"] = usuario["nome"]
+        session["nome"] = usuario["nome"]
+        session["user_email"] = usuario["email"]
+        session["email"] = usuario["email"]
+        session["perfil"] = (
+            usuario["perfil"] if "perfil" in chaves else ""
+        )
+        session["is_admin"] = (
+            usuario["is_admin"] if "is_admin" in chaves else 0
+        )
+        session["session_token"] = novo_token
+
+        return redirect("/dashboard_v2")
+
+    return render_template("login.html")
+
+
+@app.route("/cadastrar_usuario", methods=["GET", "POST"])
+def cadastrar_usuario():
+    if request.method == "POST":
+        nome = (request.form.get("nome") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        senha_pura = request.form.get("senha") or ""
+        nome_empresa = (
+            request.form.get("nome_empresa")
+            or "Minha Imobiliária"
+        ).strip()
+
+        if not nome or not email or len(senha_pura) < 6:
+            return render_template(
+                "cadastrar_usuario.html",
+                erro=(
+                    "Preencha todos os campos e use uma senha "
+                    "com pelo menos 6 caracteres."
+                )
+            )
+
+        agora = datetime.now()
+        vencimento = agora + timedelta(hours=24)
+
+        conn = get_db()
+
+        try:
+            existente = conn.execute("""
+                SELECT id
+                FROM usuarios
+                WHERE LOWER(email) = ?
+            """, (email,)).fetchone()
+
+            if existente:
+                return render_template(
+                    "cadastrar_usuario.html",
+                    erro="Este e-mail já está cadastrado."
+                )
+
+            cursor = conn.execute("""
+                INSERT INTO empresas (
+                    nome,
+                    data_cadastro,
+                    inicio_teste,
+                    data_vencimento,
+                    status_assinatura,
+                    plano
+                )
+                VALUES (?, ?, ?, ?, 'teste', 'teste_24h')
+            """, (
+                nome_empresa,
+                agora.isoformat(timespec="seconds"),
+                agora.isoformat(timespec="seconds"),
+                vencimento.isoformat(timespec="seconds")
+            ))
+
+            empresa_id = cursor.lastrowid
+
+            cursor = conn.execute("""
+                INSERT INTO usuarios (
+                    nome,
+                    email,
+                    senha,
+                    empresa_id,
+                    status_assinatura,
+                    is_admin,
+                    ativo,
+                    cargo,
+                    data_inicio
+                )
+                VALUES (?, ?, ?, ?, 'ativo', 1, 1, 'Administrador', ?)
+            """, (
+                nome,
+                email,
+                generate_password_hash(senha_pura),
+                empresa_id,
+                agora.strftime("%Y-%m-%d")
+            ))
+
+            usuario_id = cursor.lastrowid
+
+            try:
+                conn.execute("""
+                    UPDATE usuarios
+                    SET whatsapp_sessao = ?
+                    WHERE id = ?
+                """, (
+                    f"corretor_{usuario_id}",
+                    usuario_id
+                ))
+            except sqlite3.OperationalError:
+                pass
+
+            conn.commit()
+
+        except sqlite3.IntegrityError:
+            conn.rollback()
+            return render_template(
+                "cadastrar_usuario.html",
+                erro="Este e-mail já está cadastrado."
+            )
+
+        except sqlite3.Error as erro:
+            conn.rollback()
+            print("ERRO NO CADASTRO:", erro)
+            return render_template(
+                "cadastrar_usuario.html",
+                erro="Não foi possível criar sua conta."
+            )
+
+        finally:
+            conn.close()
+
+        flash(
+            "Conta criada! Seu teste gratuito de 24 horas começou.",
+            "success"
+        )
+        return redirect("/login")
+
+    return render_template("cadastrar_usuario.html")
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=port)
