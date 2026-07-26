@@ -6377,12 +6377,19 @@ def apagar_fotos_importacao(arquivos):
 # ==========================================================
 
 def colunas_tabela_importador(cursor, tabela):
+    """
+    Retorna os nomes das colunas normalizados em minúsculas.
+
+    O SQLite não diferencia maiúsculas de minúsculas em nomes de
+    colunas. Assim, uma coluna existente chamada "Mobilia" também
+    precisa ser reconhecida quando o código procura por "mobilia".
+    """
     cursor.execute(
         f"PRAGMA table_info({tabela})"
     )
 
     return {
-        linha[1]
+        str(linha[1]).lower()
         for linha in cursor.fetchall()
     }
 
@@ -6470,17 +6477,24 @@ def cadastrar_imovel_importado(
     usuario_id
 ):
     """
-    Monta o INSERT usando apenas colunas existentes.
-    Evita quebrar caso o banco de uma instalação tenha
-    pequenas diferenças.
+    Insere o imóvel usando os nomes reais das colunas existentes.
+
+    Isso mantém compatibilidade com bancos antigos que possuem, por
+    exemplo, a coluna "Mobilia" com M maiúsculo.
     """
 
-    colunas_existentes = colunas_tabela_importador(
-        cursor,
-        "imoveis"
+    cursor.execute(
+        "PRAGMA table_info(imoveis)"
     )
 
-    dados = {
+    colunas_banco = cursor.fetchall()
+
+    mapa_colunas = {
+        str(coluna[1]).lower(): str(coluna[1])
+        for coluna in colunas_banco
+    }
+
+    dados_base = {
         "titulo": imovel.get("titulo"),
         "empresa_id": empresa_id,
         "usuario_id": usuario_id,
@@ -6510,24 +6524,23 @@ def cadastrar_imovel_importado(
         "link": imovel.get("link_fotos")
     }
 
-    dados = {
-        coluna: valor
-        for coluna, valor in dados.items()
-        if coluna in colunas_existentes
-    }
+    dados_insert = {}
 
-    colunas = list(
-        dados.keys()
-    )
+    for nome_coluna, valor in dados_base.items():
+        nome_normalizado = nome_coluna.lower()
 
-    valores = [
-        dados[coluna]
-        for coluna in colunas
-    ]
+        if nome_normalizado in mapa_colunas:
+            nome_real = mapa_colunas[nome_normalizado]
+            dados_insert[nome_real] = valor
 
-    placeholders = ",".join(
-        ["?"] * len(colunas)
-    )
+    if not dados_insert:
+        raise RuntimeError(
+            "Nenhuma coluna válida foi encontrada para cadastrar o imóvel."
+        )
+
+    colunas = list(dados_insert.keys())
+    valores = [dados_insert[coluna] for coluna in colunas]
+    placeholders = ", ".join(["?"] * len(colunas))
 
     sql = f"""
         INSERT INTO imoveis
@@ -6535,10 +6548,7 @@ def cadastrar_imovel_importado(
         VALUES ({placeholders})
     """
 
-    cursor.execute(
-        sql,
-        valores
-    )
+    cursor.execute(sql, valores)
 
     return cursor.lastrowid
 
