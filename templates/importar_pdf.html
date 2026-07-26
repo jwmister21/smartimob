@@ -1,38 +1,420 @@
 {% extends 'base.html' %}
 
+{% block title %}Importar Imóveis por PDF{% endblock %}
+{% block pagina %}Importar Imóveis por PDF{% endblock %}
+
 {% block content %}
 
-<div class="page-header">
-    <h2>Importar Imóveis via PDF</h2>
+<style>
+    .importador-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .importador-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
+
+    .cabecalho-importador {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+
+    .icone-importador {
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        color: #ffffff;
+        font-size: 29px;
+        box-shadow: 0 14px 28px rgba(37, 99, 235, 0.23);
+    }
+
+    .cabecalho-importador h2 {
+        margin: 0 0 5px;
+        color: #0f172a;
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .cabecalho-importador p {
+        margin: 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .etapas {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+
+    .etapa {
+        position: relative;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .etapa-numero {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        border-radius: 11px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        font-weight: 800;
+    }
+
+    .etapa strong {
+        display: block;
+        margin-bottom: 4px;
+        color: #0f172a;
+        font-size: 14px;
+    }
+
+    .etapa span {
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .area-upload {
+        position: relative;
+        min-height: 290px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 35px;
+        text-align: center;
+        border: 2px dashed #bfdbfe;
+        border-radius: 22px;
+        background:
+            radial-gradient(circle at top, rgba(37, 99, 235, 0.08), transparent 45%),
+            #f8fbff;
+        cursor: pointer;
+        transition: 0.25s ease;
+    }
+
+    .area-upload:hover,
+    .area-upload.arrastando {
+        border-color: #2563eb;
+        background: #eff6ff;
+        transform: translateY(-2px);
+    }
+
+    .area-upload input {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .upload-icone {
+        width: 78px;
+        height: 78px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 18px;
+        border-radius: 24px;
+        background: #ffffff;
+        color: #2563eb;
+        font-size: 38px;
+        box-shadow: 0 14px 30px rgba(37, 99, 235, 0.16);
+    }
+
+    .area-upload h3 {
+        margin: 0 0 8px;
+        color: #0f172a;
+        font-size: 20px;
+    }
+
+    .area-upload p {
+        margin: 0;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .nome-arquivo {
+        display: none;
+        width: 100%;
+        margin-top: 18px;
+        padding: 14px 16px;
+        border: 1px solid #bbf7d0;
+        border-radius: 14px;
+        background: #f0fdf4;
+        color: #166534;
+        font-size: 13px;
+        font-weight: 700;
+        word-break: break-word;
+    }
+
+    .nome-arquivo.ativo {
+        display: block;
+    }
+
+    .alerta-importador {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+        padding: 16px;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        background: #fffbeb;
+        color: #92400e;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .acoes-importador {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 24px;
+    }
+
+    .btn-analisar-pdf {
+        min-width: 220px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        padding: 15px 24px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 13px 25px rgba(37, 99, 235, 0.22);
+        transition: 0.22s ease;
+    }
+
+    .btn-analisar-pdf:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-analisar-pdf:disabled {
+        opacity: 0.65;
+        cursor: wait;
+        transform: none;
+    }
+
+    .carregando {
+        display: none;
+        width: 18px;
+        height: 18px;
+        border: 3px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: girar 0.8s linear infinite;
+    }
+
+    .btn-analisar-pdf.processando .carregando {
+        display: inline-block;
+    }
+
+    @keyframes girar {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 800px) {
+        .importador-card {
+            padding: 22px;
+        }
+
+        .etapas {
+            grid-template-columns: 1fr;
+        }
+
+        .cabecalho-importador {
+            align-items: flex-start;
+        }
+
+        .acoes-importador,
+        .btn-analisar-pdf {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="importador-container">
+
+    <div class="importador-card">
+
+        <div class="cabecalho-importador">
+            <div class="icone-importador">📄</div>
+
+            <div>
+                <h2>Importação inteligente de imóveis</h2>
+                <p>
+                    Envie uma tabela em PDF. O sistema identificará os imóveis,
+                    os dados de cada anúncio e os links individuais das fotos.
+                </p>
+            </div>
+        </div>
+
+        <div class="etapas">
+            <div class="etapa">
+                <div class="etapa-numero">1</div>
+                <strong>Envie o PDF</strong>
+                <span>Selecione a tabela de imóveis que será analisada.</span>
+            </div>
+
+            <div class="etapa">
+                <div class="etapa-numero">2</div>
+                <strong>Confira os dados</strong>
+                <span>Revise títulos, valores, endereços e links das fotos.</span>
+            </div>
+
+            <div class="etapa">
+                <div class="etapa-numero">3</div>
+                <strong>Confirme a importação</strong>
+                <span>Somente os imóveis selecionados serão cadastrados.</span>
+            </div>
+        </div>
+
+        <form
+            id="form-importador"
+            action="{{ url_for('analisar_pdf_rota') }}"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+            <label
+                for="input-pdf"
+                class="area-upload"
+                id="area-upload"
+            >
+                <input
+                    type="file"
+                    name="pdf"
+                    id="input-pdf"
+                    accept=".pdf,application/pdf"
+                    required
+                >
+
+                <div class="upload-icone">⬆️</div>
+
+                <h3>Arraste o PDF ou clique para selecionar</h3>
+
+                <p>
+                    Envie apenas arquivos no formato PDF.<br>
+                    O documento será usado somente durante a análise.
+                </p>
+
+                <div
+                    class="nome-arquivo"
+                    id="nome-arquivo"
+                ></div>
+            </label>
+
+            <div class="alerta-importador">
+                <div>⚠️</div>
+                <div>
+                    O sistema mostrará uma tela de conferência antes de cadastrar.
+                    Imóveis marcados como <strong>“Fotos em breve”</strong> poderão
+                    ser importados normalmente sem imagens.
+                </div>
+            </div>
+
+            <div class="acoes-importador">
+                <button
+                    type="submit"
+                    class="btn-analisar-pdf"
+                    id="btn-analisar"
+                >
+                    <span class="carregando"></span>
+                    <span id="texto-botao">🔍 Analisar PDF</span>
+                </button>
+            </div>
+        </form>
+
+    </div>
+
 </div>
 
-<div class="config-box">
+<script>
+    const inputPdf = document.getElementById("input-pdf");
+    const areaUpload = document.getElementById("area-upload");
+    const nomeArquivo = document.getElementById("nome-arquivo");
+    const formulario = document.getElementById("form-importador");
+    const botaoAnalisar = document.getElementById("btn-analisar");
+    const textoBotao = document.getElementById("texto-botao");
 
-    <form
-        action="/analisar_pdf"
-        method="POST"
-        enctype="multipart/form-data"
-    >
+    function mostrarArquivo(arquivo) {
+        if (!arquivo) {
+            nomeArquivo.classList.remove("ativo");
+            nomeArquivo.textContent = "";
+            return;
+        }
 
-        <label>Selecione o PDF</label>
+        if (!arquivo.name.toLowerCase().endsWith(".pdf")) {
+            alert("Selecione um arquivo PDF válido.");
+            inputPdf.value = "";
+            nomeArquivo.classList.remove("ativo");
+            return;
+        }
 
-        <input
-            type="file"
-            name="pdf"
-            accept=".pdf"
-            required
-            class="form-control"
-        >
+        const tamanhoMb = arquivo.size / 1024 / 1024;
 
-        <button
-            type="submit"
-            class="btn-salvar"
-        >
-            Analisar PDF
-        </button>
+        nomeArquivo.textContent =
+            `✅ ${arquivo.name} — ${tamanhoMb.toFixed(2)} MB`;
 
-    </form>
+        nomeArquivo.classList.add("ativo");
+    }
 
-</div>
+    inputPdf.addEventListener("change", function () {
+        mostrarArquivo(this.files[0]);
+    });
+
+    ["dragenter", "dragover"].forEach(function (evento) {
+        areaUpload.addEventListener(evento, function (e) {
+            e.preventDefault();
+            areaUpload.classList.add("arrastando");
+        });
+    });
+
+    ["dragleave", "drop"].forEach(function (evento) {
+        areaUpload.addEventListener(evento, function (e) {
+            e.preventDefault();
+            areaUpload.classList.remove("arrastando");
+        });
+    });
+
+    formulario.addEventListener("submit", function (e) {
+        if (!inputPdf.files.length) {
+            e.preventDefault();
+            alert("Selecione um PDF antes de continuar.");
+            return;
+        }
+
+        botaoAnalisar.disabled = true;
+        botaoAnalisar.classList.add("processando");
+        textoBotao.textContent = "Analisando imóveis...";
+    });
+</script>
 
 {% endblock %}
