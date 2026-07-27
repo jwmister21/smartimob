@@ -1,176 +1,831 @@
 {% extends 'base.html' %}
 
 {% block title %}Editar Imóvel{% endblock %}
-{% block pagina %}Editar Imóvel{% endblock %} 
+{% block pagina %}Editar Imóvel{% endblock %}
 
 {% block content %}
+
 <style>
-    /* Design Premium Moderno */
-    .card-edit { 
-        background: #ffffff; 
-        padding: 40px; 
-        border-radius: 20px; 
-        border: 1px solid #e2e8f0; 
+    .card-edit {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         color: #1e293b;
         max-width: 900px;
         margin: auto;
     }
 
-    .section-title { 
-        color: #2563eb; 
-        margin: 30px 0 20px 0; 
+    .section-title {
+        color: #2563eb;
+        margin: 30px 0 20px;
         font-size: 1.1em;
         font-weight: 700;
         display: flex;
         align-items: center;
         gap: 15px;
     }
-    .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; }
 
-    .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .campo-box { display: flex; flex-direction: column; gap: 8px; }
-    .campo-box label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
-    
-    input, select, textarea { 
-        width: 100%; padding: 12px; background: #f8fafc; 
-        border: 1px solid #e2e8f0; border-radius: 10px; 
-        font-size: 14px; transition: 0.2s;
+    .section-title:first-child {
+        margin-top: 0;
     }
-    input:focus, select:focus, textarea:focus { border-color: #2563eb; outline: none; background: #fff; }
 
-    .img-preview { width: 120px; height: 120px; object-fit: cover; border-radius: 12px; border: 2px solid #edf2f7; }
-    
-    .btn-container { margin-top: 30px; display: flex; align-items: center; gap: 20px; }
-    .btn { background: #2563eb; color: white; padding: 12px 30px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; }
-    .btn:hover { background: #1d4ed8; }
-    .btn-voltar { color: #64748b; text-decoration: none; font-weight: 500; }
+    .section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #e2e8f0;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .campo-box {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .campo-box label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: 0.2s;
+        box-sizing: border-box;
+        color: #1e293b;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #2563eb;
+        outline: none;
+        background: #ffffff;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    .ajuda {
+        margin-top: 5px;
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    /* ============================
+       FOTOS
+    ============================ */
+
+    .fotos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .foto-item {
+        min-width: 0;
+    }
+
+    .foto-card {
+        display: block;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .foto-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .foto-box {
+        position: relative;
+        height: 135px;
+        overflow: hidden;
+        border-radius: 12px;
+        border: 3px solid #e2e8f0;
+        background: #f8fafc;
+        transition: 0.2s;
+    }
+
+    .foto-box:hover {
+        border-color: #93c5fd;
+    }
+
+    .foto-card input[type="radio"]:checked + .foto-box {
+        border-color: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.14);
+    }
+
+    .foto-box img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+    }
+
+    .capa-badge {
+        position: absolute;
+        left: 7px;
+        right: 7px;
+        bottom: 7px;
+        padding: 7px;
+        border-radius: 7px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #ffffff;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        display: none;
+    }
+
+    .foto-card input[type="radio"]:checked
+    + .foto-box
+    .capa-badge {
+        display: block;
+    }
+
+    .check-capa {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #16a34a;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: bold;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .foto-card input[type="radio"]:checked
+    + .foto-box
+    .check-capa {
+        display: flex;
+    }
+
+    .foto-acoes {
+        margin-top: 7px;
+        text-align: center;
+    }
+
+    .btn-excluir-foto {
+        color: #ef4444;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .btn-excluir-foto:hover {
+        text-decoration: underline;
+    }
+
+    .sem-fotos {
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px dashed #cbd5e1;
+        background: #f8fafc;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .novas-fotos {
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px dashed #cbd5e1;
+        background: #f8fafc;
+    }
+
+    .novas-fotos label {
+        display: block;
+        margin-bottom: 10px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    #preview-fotos {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+
+    .preview-item {
+        width: 110px;
+        height: 110px;
+        overflow: hidden;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        background: #ffffff;
+    }
+
+    .preview-item img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+    }
+
+    /* ============================
+       BOTÕES
+    ============================ */
+
+    .btn-container {
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .btn {
+        background: #2563eb;
+        color: #ffffff;
+        padding: 12px 30px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .btn:hover {
+        background: #1d4ed8;
+    }
+
+    .btn-voltar {
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    @media (max-width: 750px) {
+        .card-edit {
+            padding: 22px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .campo-box {
+            grid-column: span 1 !important;
+        }
+
+        .fotos-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .btn-container {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .btn,
+        .btn-voltar {
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+    }
+
+    @media (max-width: 450px) {
+        .fotos-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .foto-box {
+            height: 210px;
+        }
+    }
 </style>
 
 <div class="card-edit">
+
     <form method="POST" enctype="multipart/form-data">
-        
+
+        <!-- INFORMAÇÕES PRINCIPAIS -->
+
         <h3 class="section-title">Informações Principais</h3>
+
         <div class="form-grid">
-            <div class="campo-box" style="grid-column: span 1;"><label>Título</label><input type="text" name="titulo" value="{{ imovel['titulo'] }}" required></div>
-            <div class="campo-box"><label>Tipo</label>
+
+            <div class="campo-box">
+                <label>Título</label>
+
+                <input
+                    type="text"
+                    name="titulo"
+                    value="{{ imovel['titulo'] or '' }}"
+                    required
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Tipo</label>
+
                 <select name="tipo">
-                    {% for t in ['Casa', 'Apartamento', 'Terreno', 'Comercial', 'Duplex', 'Triplex', 'Kitnet', 'Bangalo'] %}
-                        <option value="{{ t }}" {% if imovel['tipo'] == t %}selected{% endif %}>{{ t }}</option>
+
+                    {% for t in [
+                        'Casa',
+                        'Apartamento',
+                        'Terreno',
+                        'Comercial',
+                        'Duplex',
+                        'Triplex',
+                        'Kitnet',
+                        'Bangalo'
+                    ] %}
+
+                        <option
+                            value="{{ t }}"
+                            {% if imovel['tipo'] == t %}selected{% endif %}
+                        >
+                            {{ t }}
+                        </option>
+
                     {% endfor %}
+
                 </select>
             </div>
-            <div class="campo-box"><label>Status</label>
+
+            <div class="campo-box">
+                <label>Status</label>
+
                 <select name="status">
-                    <option value="Venda" {% if imovel['status'] == 'Venda' %}selected{% endif %}>Venda</option>
-                    <option value="Aluguel" {% if imovel['status'] == 'Aluguel' %}selected{% endif %}>Aluguel</option>
+
+                    <option
+                        value="Venda"
+                        {% if imovel['status'] == 'Venda' %}selected{% endif %}
+                    >
+                        Venda
+                    </option>
+
+                    <option
+                        value="Aluguel"
+                        {% if imovel['status'] == 'Aluguel' %}selected{% endif %}
+                    >
+                        Aluguel
+                    </option>
+
                 </select>
-                <div class="mb-3">
-    <label class="form-label">
-        Compartilhamento FIFIT
-    </label>
-
-    <select name="compartilhar_fifit" class="form-select">
-        <option value="0"
-            {% if imovel.compartilhar_fifit == 0 %}selected{% endif %}>
-            Não compartilhar
-        </option>
-
-        <option value="1"
-            {% if imovel.compartilhar_fifit == 1 %}selected{% endif %}>
-            Compartilhar na Rede FIFIT
-        </option>
-    </select>
-
-    <small class="text-muted">
-        Outros corretores poderão visualizar este imóvel na Rede FIFIT e solicitar contato.
-    </small>
-</div>
             </div>
+
+            <div class="campo-box" style="grid-column: span 3;">
+                <label>Compartilhamento FIFIT</label>
+
+                <select name="compartilhar_fifit">
+
+                    <option
+                        value="0"
+                        {% if imovel['compartilhar_fifit'] == 0 %}selected{% endif %}
+                    >
+                        Não compartilhar
+                    </option>
+
+                    <option
+                        value="1"
+                        {% if imovel['compartilhar_fifit'] == 1 %}selected{% endif %}
+                    >
+                        Compartilhar na Rede FIFIT
+                    </option>
+
+                </select>
+
+                <div class="ajuda">
+                    Outros corretores poderão visualizar este imóvel na Rede FIFIT.
+                </div>
+            </div>
+
         </div>
+
+        <!-- LOCALIZAÇÃO -->
 
         <h3 class="section-title">Localização</h3>
+
         <div class="form-grid">
-            <div class="campo-box"><label>CEP</label><input type="text" name="cep" value="{{ imovel['cep'] }}"></div>
-            <div class="campo-box"><label>Cidade</label><input type="text" name="cidade" value="{{ imovel['cidade'] }}"></div>
-            <div class="campo-box"><label>Bairro</label><input type="text" name="bairro" value="{{ imovel['bairro'] }}"></div>
-            <div class="campo-box" style="grid-column: span 3;"><label>Rua / Logradouro</label><input type="text" name="rua" value="{{ imovel['rua'] }}"></div>
+
+            <div class="campo-box">
+                <label>CEP</label>
+
+                <input
+                    type="text"
+                    name="cep"
+                    value="{{ imovel['cep'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Cidade</label>
+
+                <input
+                    type="text"
+                    name="cidade"
+                    value="{{ imovel['cidade'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Bairro</label>
+
+                <input
+                    type="text"
+                    name="bairro"
+                    value="{{ imovel['bairro'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box" style="grid-column: span 3;">
+                <label>Rua / Logradouro</label>
+
+                <input
+                    type="text"
+                    name="rua"
+                    value="{{ imovel['rua'] or '' }}"
+                >
+            </div>
+
         </div>
+
+        <!-- DETALHES -->
 
         <h3 class="section-title">Detalhes do Imóvel</h3>
+
         <div class="form-grid">
-            <div class="campo-box"><label>Área (m²)</label><input type="number" name="area" value="{{ imovel['area'] or 0 }}"></div>
-            <div class="campo-box"><label>Quartos</label><input type="number" name="quartos" value="{{ imovel['quartos'] or 0 }}"></div>
-            <div class="campo-box"><label>Suítes</label><input type="number" name="banheiros" value="{{ imovel['banheiros'] or 0 }}"></div>
-            <div class="campo-box"><label>Banheiros</label><input type="number" name="banheiros21" value="{{ imovel['banheiros21'] or 0 }}"></div>
-            <div class="campo-box"><label>Vagas</label><input type="number" name="vaga_garagem" value="{{ imovel['vaga_garagem'] or 0 }}"></div>
-            <div class="campo-box"><label>Lavabo</label><input type="number" name="lavabo" value="{{ imovel['lavabo'] or 0 }}"></div>
-            <div class="campo-box"><label>Sacada</label><input type="number" name="sacada" value="{{ imovel['sacada'] or 0 }}"></div>
-                
-            <div class="campo-box" style="grid-column: span 3;"><label>Área de Lazer</label><input type="text" name="lazer" value="{{ imovel['lazer'] or '' }}"></div>
+
+            <div class="campo-box">
+                <label>Área (m²)</label>
+
+                <input
+                    type="number"
+                    name="area"
+                    min="0"
+                    step="0.01"
+                    value="{{ imovel['area'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Quartos</label>
+
+                <input
+                    type="number"
+                    name="quartos"
+                    min="0"
+                    value="{{ imovel['quartos'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Suítes</label>
+
+                <input
+                    type="number"
+                    name="banheiros"
+                    min="0"
+                    value="{{ imovel['banheiros'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Banheiros</label>
+
+                <input
+                    type="number"
+                    name="banheiros21"
+                    min="0"
+                    value="{{ imovel['banheiros21'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Vagas</label>
+
+                <input
+                    type="number"
+                    name="vaga_garagem"
+                    min="0"
+                    value="{{ imovel['vaga_garagem'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Lavabo</label>
+
+                <input
+                    type="number"
+                    name="lavabo"
+                    min="0"
+                    value="{{ imovel['lavabo'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Sacada</label>
+
+                <input
+                    type="number"
+                    name="sacada"
+                    min="0"
+                    value="{{ imovel['sacada'] or 0 }}"
+                >
+            </div>
+
+            <div class="campo-box" style="grid-column: span 2;">
+                <label>Área de Lazer</label>
+
+                <input
+                    type="text"
+                    name="lazer"
+                    value="{{ imovel['lazer'] or '' }}"
+                >
+            </div>
+
         </div>
+
+        <!-- FINANCEIRO -->
 
         <h3 class="section-title">Financeiro</h3>
+
         <div class="form-grid">
-            <div class="campo-box"><label>Valor (R$)</label><input type="text" name="valor" class="moeda" value="{{ imovel['valor'] }}"></div>
-            <div class="campo-box"><label>Condomínio (R$)</label><input type="text" name="condominio" class="moeda" value="{{ imovel['condominio'] }}"></div>
-            <div class="campo-box"><label>IPTU (R$)</label><input type="text" name="iptu" class="moeda" value="{{ imovel['iptu'] }}"></div>
-            <div class="campo-box"><label>Entrada</label><input type="text" name="entrada" class="moeda" value="{{ imovel['entrada'] }}"></div>
-            <div class="campo-box"><label>Parcela</label><input type="text" name="parcela" class="moeda" value="{{ imovel['parcela'] }}"></div>
-            <div class="campo-box"><label>Anuais</label><input type="text" name="anuais" class="moeda" value="{{ imovel['anuais'] }}"></div>
-            <div class="campo-box" style="grid-column: span 3;"><label>Prazo</label><input type="text" name="prazo" value="{{ imovel['prazo'] }}"></div>
-            <div class="campo-box" style="grid-column: span 3;"><label>Link Drive</label><input type="text" name="link" value="{{ imovel['link'] }}"></div>
+
+            <div class="campo-box">
+                <label>Valor (R$)</label>
+
+                <input
+                    type="text"
+                    name="valor"
+                    class="moeda"
+                    value="{{ imovel['valor'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Condomínio (R$)</label>
+
+                <input
+                    type="text"
+                    name="condominio"
+                    class="moeda"
+                    value="{{ imovel['condominio'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>IPTU (R$)</label>
+
+                <input
+                    type="text"
+                    name="iptu"
+                    class="moeda"
+                    value="{{ imovel['iptu'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Entrada</label>
+
+                <input
+                    type="text"
+                    name="entrada"
+                    class="moeda"
+                    value="{{ imovel['entrada'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Parcela</label>
+
+                <input
+                    type="text"
+                    name="parcela"
+                    class="moeda"
+                    value="{{ imovel['parcela'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box">
+                <label>Anuais</label>
+
+                <input
+                    type="text"
+                    name="anuais"
+                    class="moeda"
+                    value="{{ imovel['anuais'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box" style="grid-column: span 3;">
+                <label>Prazo</label>
+
+                <input
+                    type="text"
+                    name="prazo"
+                    value="{{ imovel['prazo'] or '' }}"
+                >
+            </div>
+
+            <div class="campo-box" style="grid-column: span 3;">
+                <label>Link Drive</label>
+
+                <input
+                    type="text"
+                    name="link"
+                    value="{{ imovel['link'] or '' }}"
+                >
+            </div>
+
         </div>
+
+        <!-- FOTOS -->
 
         <h3 class="section-title">Fotos</h3>
-        <div class="campo-box">
-            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+
+        <p class="ajuda">
+            Clique em uma foto para escolher qual será a capa do imóvel.
+        </p>
+
+        {% if fotos %}
+
+            <div class="fotos-grid">
+
                 {% for foto in fotos %}
-                    <div style="text-align: center;">
-                        <img src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}" class="img-preview">
-                        <br><a href="/excluir-foto/{{ foto['id'] }}" style="color: #ef4444; font-size: 11px;">Excluir</a>
+
+                    <div class="foto-item">
+
+                        <label class="foto-card">
+
+                            <input
+                                type="radio"
+                                name="foto_capa_id"
+                                value="{{ foto['id'] }}"
+                                {% if foto['capa'] == 1 %}checked{% endif %}
+                            >
+
+                            <div class="foto-box">
+
+                                <img
+                                    src="/data/uploads/imoveis/{{ foto['nome_arquivo'] }}"
+                                    alt="Foto do imóvel"
+                                >
+
+                                <div class="check-capa">
+                                    ✓
+                                </div>
+
+                                <div class="capa-badge">
+                                    Foto de capa
+                                </div>
+
+                            </div>
+
+                        </label>
+
+                        <div class="foto-acoes">
+
+                            <a
+                                href="/excluir-foto/{{ foto['id'] }}"
+                                class="btn-excluir-foto"
+                                onclick="return confirm('Deseja excluir esta foto?');"
+                            >
+                                Excluir
+                            </a>
+
+                        </div>
+
                     </div>
+
                 {% endfor %}
+
             </div>
-            <input type="file" name="fotos[]" multiple accept="image/*" id="input-fotos" style="margin-top:15px">
-            <div id="preview-fotos" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"></div>
+
+        {% else %}
+
+            <div class="sem-fotos">
+                Este imóvel ainda não possui fotos.
+            </div>
+
+        {% endif %}
+
+        <div class="novas-fotos">
+
+            <label>Adicionar novas fotos</label>
+
+            <input
+                type="file"
+                name="fotos[]"
+                multiple
+                accept="image/*"
+                id="input-fotos"
+            >
+
+            <div id="preview-fotos"></div>
+
         </div>
 
-        <div class="campo-box" style="margin-top: 20px;"><label>Descrição</label><textarea name="descricao" rows="5">{{ imovel['descricao'] }}</textarea></div>
+        <!-- DESCRIÇÃO -->
+
+        <h3 class="section-title">Descrição</h3>
+
+        <div class="campo-box">
+
+            <textarea
+                name="descricao"
+                rows="6"
+            >{{ imovel['descricao'] or '' }}</textarea>
+
+        </div>
+
+        <!-- BOTÕES -->
 
         <div class="btn-container">
-            <a href="/imoveis" class="btn-voltar">← Voltar</a>
-            <button type="submit" class="btn">Salvar Alterações</button>
+
+            <a href="/imoveis" class="btn-voltar">
+                ← Voltar
+            </a>
+
+            <button type="submit" class="btn">
+                Salvar Alterações
+            </button>
+
         </div>
+
     </form>
+
 </div>
 
 <script>
-// Preview de fotos
-document.getElementById("input-fotos").addEventListener("change", function() {
-    let preview = document.getElementById("preview-fotos");
-    preview.innerHTML = "";
-    Array.from(this.files).forEach(file => {
-        let reader = new FileReader();
-        reader.onload = (e) => {
-            let img = document.createElement("img");
-            img.src = e.target.result;
-            img.className = "img-preview";
-            preview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
+    const inputFotos = document.getElementById("input-fotos");
+    const previewFotos = document.getElementById("preview-fotos");
+
+    if (inputFotos) {
+        inputFotos.addEventListener("change", function () {
+            previewFotos.innerHTML = "";
+
+            Array.from(this.files).forEach(function (file) {
+                if (!file.type.startsWith("image/")) {
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    const item = document.createElement("div");
+                    item.className = "preview-item";
+
+                    const imagem = document.createElement("img");
+                    imagem.src = event.target.result;
+
+                    item.appendChild(imagem);
+                    previewFotos.appendChild(item);
+                };
+
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+
+    function formatarMoeda(valor) {
+        const somenteNumeros = valor.replace(/\D/g, "");
+
+        if (!somenteNumeros) {
+            return "";
+        }
+
+        return (Number(somenteNumeros) / 100).toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+        });
+    }
+
+    document.querySelectorAll(".moeda").forEach(function (input) {
+        input.addEventListener("input", function () {
+            this.value = formatarMoeda(this.value);
+        });
     });
-});
-
-// Formatação Moeda (Evita erro se o valor for nulo no banco)
-function formatarMoeda(v) {
-    v = v.replace(/\D/g, '');
-    return (Number(v) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-document.querySelectorAll('.moeda').forEach(input => {
-    input.addEventListener('input', (e) => e.target.value = formatarMoeda(e.target.value));
-    if(input.value) input.value = formatarMoeda(input.value);
-});
 </script>
+
 {% endblock %}
