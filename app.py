@@ -7634,72 +7634,45 @@ def imoveis():
 
     empresa_id = session.get("empresa_id")
 
-
     conn = sqlite3.connect(DB_PATH)
-
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
-
-
-
-    # Busca imóveis da empresa
-    # Mais novos aparecem primeiro
 
     cursor.execute("""
         SELECT *
         FROM imoveis
         WHERE empresa_id = ?
         ORDER BY id DESC
-    """,
-    (
+    """, (
         empresa_id,
     ))
 
-
-
     imoveis_db = cursor.fetchall()
-
-
 
     lista_final = []
 
-
-
     for row in imoveis_db:
-
 
         imovel = dict(row)
 
-
-
-        # Busca fotos do imóvel
-
+        # Foto marcada como capa aparece primeiro
         cursor.execute("""
-            SELECT nome_arquivo
+            SELECT
+                nome_arquivo,
+                capa
             FROM fotos_imoveis
             WHERE imovel_id = ?
-        """,
-        (
+            ORDER BY capa DESC, id ASC
+        """, (
             imovel["id"],
         ))
-
-
 
         fotos = [
             foto["nome_arquivo"]
             for foto in cursor.fetchall()
         ]
 
-
-
         imovel["fotos"] = fotos
-
-
-
-        # ==========================
-        # BUSCAR REFERÊNCIAS DO IMÓVEL
-        # ==========================
 
         cursor.execute("""
             SELECT
@@ -7709,14 +7682,11 @@ def imoveis():
             FROM referencias_imovel
             WHERE imovel_id = ?
             ORDER BY distancia ASC
-        """,
-        (
+        """, (
             imovel["id"],
         ))
 
-
         referencias = cursor.fetchall()
-
 
         imovel["referencias"] = [
             {
@@ -7727,35 +7697,18 @@ def imoveis():
             for ref in referencias
         ]
 
-
-        print(
-            "IMOVEL",
-            imovel["id"],
-            "REFERENCIAS:",
-            imovel["referencias"]
-        )
-
-
-
         lista_final.append(imovel)
-
-
-
 
     total_imoveis = len(lista_final)
 
-
-
     conn.close()
-
-
 
     return render_template(
         "imoveis.html",
         imoveis=lista_final,
         total_imoveis=total_imoveis
     )
-
+    
 @app.route("/excluir_imovel/<int:id>")
 @verificar_sessao
 def excluir_imovel(id):
