@@ -5418,20 +5418,79 @@ def somente_numeros_importador(valor):
 
 def normalizar_valor_importador(valor):
     """
-    Mantém o padrão já usado no seu banco:
-    270.000
-    385,47
+    Padroniza os valores importados para:
+
+    R$ 270.000,00
+    R$ 450.000,00
+    R$ 1.200.000,00
     """
 
-    if not valor:
+    if valor is None:
         return ""
 
-    valor = str(valor).strip()
+    texto = str(valor).strip()
 
-    valor = valor.replace("R$", "").strip()
+    texto = (
+        texto
+        .replace("R$", "")
+        .replace("\xa0", "")
+        .replace(" ", "")
+        .strip()
+    )
 
-    return valor
+    if not texto:
+        return ""
 
+    try:
+
+        # Exemplo: 270.000,00
+        if "." in texto and "," in texto:
+            numero = float(
+                texto
+                .replace(".", "")
+                .replace(",", ".")
+            )
+
+        # Exemplo: 270,00
+        elif "," in texto:
+            numero = float(
+                texto.replace(",", ".")
+            )
+
+        # Exemplo: 270.000
+        # Nesse sistema, o ponto representa milhar.
+        elif "." in texto:
+
+            partes = texto.split(".")
+
+            if len(partes[-1]) == 3:
+                numero = float(
+                    texto.replace(".", "")
+                )
+            else:
+                numero = float(texto)
+
+        # Exemplo: 270000
+        else:
+            numero = float(texto)
+
+        valor_formatado = (
+            f"{numero:,.2f}"
+            .replace(",", "X")
+            .replace(".", ",")
+            .replace("X", ".")
+        )
+
+        return f"R$ {valor_formatado}"
+
+    except (ValueError, TypeError):
+
+        logger_importador.warning(
+            "Não foi possível formatar o valor importado: %s",
+            valor
+        )
+
+        return str(valor)
 
 def valor_numerico_importador(valor):
     """
