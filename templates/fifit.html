@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% set usuario_logado = session.get('usuario_id') %}
+
 <style>
 
 .fifit-header{
@@ -247,7 +249,7 @@
 }
 </style>
 
-<form method="GET" class="filtros-box">
+<form method="GET" class="filtros-box" id="form-filtros">
 
 <div class="filtros-grid">
 
@@ -551,7 +553,58 @@ imóveis.
 </div>
 
 <script>
+const USUARIO_LOGADO = {{ 'true' if usuario_logado else 'false' }};
+const LOGIN_URL = "{{ url_for('login', next=request.full_path) }}";
+
+function pedirLogin(event){
+    if(USUARIO_LOGADO){
+        return true;
+    }
+
+    if(event){
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+    }
+
+    window.location.href = LOGIN_URL;
+    return false;
+}
+
+/*
+ Impede qualquer botão/ação da página para visitantes.
+ O modo capture=true faz o bloqueio acontecer antes dos onclick existentes.
+*/
+document.addEventListener('click', function(event){
+    const acao = event.target.closest(
+        'button, .btn-limpar, .btn-fifit, .btn-copiar, .btn-nav'
+    );
+
+    if(!acao || acao.disabled){
+        return;
+    }
+
+    if(!USUARIO_LOGADO){
+        pedirLogin(event);
+    }
+}, true);
+
+const formFiltros = document.getElementById('form-filtros');
+
+if(formFiltros){
+    formFiltros.addEventListener('submit', function(event){
+        if(!USUARIO_LOGADO){
+            pedirLogin(event);
+        }
+    }, true);
+}
+
 function mudarFoto(id, dir){
+
+    if(!USUARIO_LOGADO){
+        window.location.href = LOGIN_URL;
+        return;
+    }
 
     const carousel = document
         .getElementById(id)
@@ -567,6 +620,11 @@ function mudarFoto(id, dir){
 }
 
 function copiarLink(botao){
+
+    if(!USUARIO_LOGADO){
+        window.location.href = LOGIN_URL;
+        return;
+    }
 
     const link = botao.dataset.link;
 
