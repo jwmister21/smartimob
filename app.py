@@ -1169,7 +1169,6 @@ def simulador_financiamento():
 
 
 @app.route("/fifit")
-@verificar_sessao
 def fifit():
 
     conn = sqlite3.connect(DB_PATH)
