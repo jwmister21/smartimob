@@ -1299,7 +1299,7 @@ def fifit():
             SELECT nome_arquivo
             FROM fotos_imoveis
             WHERE imovel_id = ?
-            ORDER BY id
+            ORDER BY capa DESC, id ASC
         """, (imovel["id"],))
 
         fotos = [
@@ -3146,7 +3146,7 @@ def site_publico(slug):
                 SELECT nome_arquivo
                 FROM fotos_imoveis
                 WHERE imovel_id = ?
-                ORDER BY id ASC
+                ORDER BY capa DESC, id ASC
             """,
             (imovel["id"],))
 
@@ -4880,6 +4880,7 @@ SELECT
         SELECT nome_arquivo
         FROM fotos_imoveis f
         WHERE f.imovel_id = i.id
+        ORDER BY f.capa DESC, f.id ASC
         LIMIT 1
     ) as foto
 FROM imoveis i
@@ -7765,7 +7766,12 @@ def ver_imovel(imovel_id):
 
     # 2. Busca todas as fotos deste imóvel
     # Como o imovel_id é único, a segurança já foi validada no passo acima
-    cursor.execute("SELECT nome_arquivo FROM fotos_imoveis WHERE imovel_id = ?", (imovel_id,))
+    cursor.execute("""
+        SELECT nome_arquivo
+        FROM fotos_imoveis
+        WHERE imovel_id = ?
+        ORDER BY capa DESC, id ASC
+    """, (imovel_id,))
     fotos = [row['nome_arquivo'] for row in cursor.fetchall()]
 
     imovel['fotos'] = fotos
@@ -8804,7 +8810,7 @@ def informa_imovel(imovel_id):
         SELECT nome_arquivo
         FROM fotos_imoveis
         WHERE imovel_id = ?
-        ORDER BY id ASC
+        ORDER BY capa DESC, id ASC
     """,(imovel_id,))
 
 
