@@ -1412,7 +1412,25 @@ def catalogo():
     return render_template("catalogo.html", imoveis=imoveis)
 
 
+def adicionar_coluna_capa_fotos():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
 
+    cursor.execute("PRAGMA table_info(fotos_imoveis)")
+    colunas = [coluna[1] for coluna in cursor.fetchall()]
+
+    if "capa" not in colunas:
+        cursor.execute("""
+            ALTER TABLE fotos_imoveis
+            ADD COLUMN capa INTEGER DEFAULT 0
+        """)
+
+        print("Coluna 'capa' criada em fotos_imoveis.")
+
+    conn.commit()
+    conn.close()
+
+adicionar_coluna_capa_fotos()
 
 
  
@@ -8004,6 +8022,19 @@ def editar_imovel(id):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    # Verifica se o imóvel pertence à empresa logada
+    cursor.execute("""
+        SELECT *
+        FROM imoveis
+        WHERE id = ? AND empresa_id = ?
+    """, (id, empresa_id))
+
+    imovel = cursor.fetchone()
+
+    if not imovel:
+        conn.close()
+        return "Imóvel não encontrado ou sem permissão de acesso.", 404
+
     if request.method == "POST":
 
         titulo = request.form.get("titulo", "")
@@ -8019,7 +8050,7 @@ def editar_imovel(id):
         condominio = request.form.get("condominio", "")
         link = request.form.get("link", "")
         cep = request.form.get("cep", "")
-        lavabo  = request.form.get("lavabo", "")
+        lavabo = request.form.get("lavabo", "")
         vaga_garagem = request.form.get("vaga_garagem", "")
         lazer = request.form.get("lazer", "")
         sacada = request.form.get("sacada", "")
@@ -8033,40 +8064,49 @@ def editar_imovel(id):
         proprietario1 = request.form.get("proprietario1", "")
         telefone2 = request.form.get("telefone2", "")
         mobilia = request.form.get("mobilia", "")
-        compartilhar_fifit = int(request.form.get("compartilhar_fifit", 0))
 
-        # Atualiza os dados do imóvel
+        compartilhar_fifit = int(
+            request.form.get("compartilhar_fifit", 0)
+        )
+
+        # Foto existente escolhida como capa
+        foto_capa_id = request.form.get("foto_capa_id")
+
+        # ==========================
+        # ATUALIZAR IMÓVEL
+        # ==========================
+
         cursor.execute("""
             UPDATE imoveis
-            SET titulo=?,
-                tipo=?,
-                valor=?,
-                cidade=?,
-                bairro=?,
-                quartos=?,
-                banheiros=?,
-                area=?,
-                status=?,
-                descricao=?,
-                condominio=?,
-                link=?,
-                cep=?,
-                lavabo=?,                
-                vaga_garagem=?,
-                lazer=?,
-                sacada=?,
-                rua=?,
-                iptu=?,
-                parcela=?,
-                prazo=?,
-                anuais=?,
-                entrada=?,
-                banheiros21=?,
-                proprietario1=?,
-                telefone2=?,
-                mobilia=?,
-                compartilhar_fifit=?
-            WHERE id=? AND empresa_id=?
+            SET titulo = ?,
+                tipo = ?,
+                valor = ?,
+                cidade = ?,
+                bairro = ?,
+                quartos = ?,
+                banheiros = ?,
+                area = ?,
+                status = ?,
+                descricao = ?,
+                condominio = ?,
+                link = ?,
+                cep = ?,
+                lavabo = ?,
+                vaga_garagem = ?,
+                lazer = ?,
+                sacada = ?,
+                rua = ?,
+                iptu = ?,
+                parcela = ?,
+                prazo = ?,
+                anuais = ?,
+                entrada = ?,
+                banheiros21 = ?,
+                proprietario1 = ?,
+                telefone2 = ?,
+                mobilia = ?,
+                compartilhar_fifit = ?
+            WHERE id = ? AND empresa_id = ?
         """, (
             titulo,
             tipo,
@@ -8101,19 +8141,60 @@ def editar_imovel(id):
         ))
 
         # ==========================
+        # DEFINIR FOTO EXISTENTE COMO CAPA
+        # ==========================
+
+        if foto_capa_id:
+
+            cursor.execute("""
+                SELECT id
+                FROM fotos_imoveis
+                WHERE id = ? AND imovel_id = ?
+            """, (foto_capa_id, id))
+
+            foto_valida = cursor.fetchone()
+
+            if foto_valida:
+
+                # Retira a capa de todas as fotos do imóvel
+                cursor.execute("""
+                    UPDATE fotos_imoveis
+                    SET capa = 0
+                    WHERE imovel_id = ?
+                """, (id,))
+
+                # Define a escolhida como capa
+                cursor.execute("""
+                    UPDATE fotos_imoveis
+                    SET capa = 1
+                    WHERE id = ? AND imovel_id = ?
+                """, (foto_capa_id, id))
+
+        # ==========================
         # NOVAS FOTOS
         # ==========================
+
         arquivos = request.files.getlist("fotos[]")
+
+        # Descobre se o imóvel já possui foto de capa
+        cursor.execute("""
+            SELECT id
+            FROM fotos_imoveis
+            WHERE imovel_id = ? AND capa = 1
+            LIMIT 1
+        """, (id,))
+
+        ja_tem_capa = cursor.fetchone() is not None
 
         for file in arquivos:
 
-            if file and file.filename != "":
+            if file and file.filename:
 
                 nome_seguro = secure_filename(file.filename)
 
                 nome_foto = (
                     f"{id}_"
-                    f"{int(datetime.now().timestamp())}_"
+                    f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}_"
                     f"{nome_seguro}"
                 )
 
@@ -8124,43 +8205,74 @@ def editar_imovel(id):
 
                 file.save(caminho_salvamento)
 
+                # Se ainda não existe capa, a primeira nova foto será a capa
+                eh_capa = 0
+
+                if not ja_tem_capa:
+                    eh_capa = 1
+                    ja_tem_capa = True
+
                 cursor.execute("""
                     INSERT INTO fotos_imoveis
-                    (imovel_id, nome_arquivo)
-                    VALUES (?, ?)
+                    (
+                        imovel_id,
+                        nome_arquivo,
+                        capa
+                    )
+                    VALUES (?, ?, ?)
                 """, (
                     id,
-                    nome_foto
+                    nome_foto,
+                    eh_capa
                 ))
+
+        # ==========================
+        # GARANTIR QUE EXISTA UMA CAPA
+        # ==========================
+
+        cursor.execute("""
+            SELECT id
+            FROM fotos_imoveis
+            WHERE imovel_id = ? AND capa = 1
+            LIMIT 1
+        """, (id,))
+
+        tem_capa = cursor.fetchone()
+
+        if not tem_capa:
+
+            cursor.execute("""
+                SELECT id
+                FROM fotos_imoveis
+                WHERE imovel_id = ?
+                ORDER BY id ASC
+                LIMIT 1
+            """, (id,))
+
+            primeira_foto = cursor.fetchone()
+
+            if primeira_foto:
+                cursor.execute("""
+                    UPDATE fotos_imoveis
+                    SET capa = 1
+                    WHERE id = ?
+                """, (primeira_foto["id"],))
 
         conn.commit()
         conn.close()
 
-        return redirect("/imoveis")
-
-    # ==========================
-    # BUSCAR IMÓVEL
-    # ==========================
-    cursor.execute("""
-        SELECT *
-        FROM imoveis
-        WHERE id=? AND empresa_id=?
-    """, (id, empresa_id))
-
-    imovel = cursor.fetchone()
-
-    if not imovel:
-        conn.close()
-        return "Imóvel não encontrado ou sem permissão de acesso.", 404
+        flash("Imóvel atualizado com sucesso!", "success")
+        return redirect(url_for("editar_imovel", id=id))
 
     # ==========================
     # BUSCAR FOTOS
     # ==========================
+
     cursor.execute("""
         SELECT *
         FROM fotos_imoveis
-        WHERE imovel_id=?
-        ORDER BY id DESC
+        WHERE imovel_id = ?
+        ORDER BY capa DESC, id ASC
     """, (id,))
 
     fotos = cursor.fetchall()
@@ -8172,7 +8284,6 @@ def editar_imovel(id):
         imovel=imovel,
         fotos=fotos
     )
-
 
 
 @app.route("/gerar_site")
