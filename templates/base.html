@@ -1093,6 +1093,112 @@ a{
     .mira-ouvir,.mira-pular{width:100%}
 }
 
+
+/* ================= MIRA - RECONHECIMENTO DE VOZ ================= */
+.btn-microfone{
+    position:relative;
+    flex-shrink:0;
+    width:44px;
+    height:44px;
+    border:1px solid #dbeafe;
+    border-radius:14px;
+    background:#eff6ff;
+    color:#2563eb;
+    cursor:pointer;
+    font-size:17px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s ease;
+}
+
+.btn-microfone:hover{
+    transform:translateY(-2px);
+    background:#dbeafe;
+    border-color:#bfdbfe;
+}
+
+.btn-microfone.ouvindo{
+    color:#fff;
+    border-color:#ef4444;
+    background:linear-gradient(135deg,#ef4444,#f97316);
+    box-shadow:
+        0 0 0 6px rgba(239,68,68,.12),
+        0 12px 24px rgba(239,68,68,.25);
+    animation:miraMicPulse .9s ease-in-out infinite alternate;
+}
+
+.btn-microfone.ouvindo::before,
+.btn-microfone.ouvindo::after{
+    content:"";
+    position:absolute;
+    inset:-7px;
+    border:1px solid rgba(239,68,68,.35);
+    border-radius:19px;
+    animation:miraMicRing 1.4s ease-out infinite;
+}
+
+.btn-microfone.ouvindo::after{
+    animation-delay:.55s;
+}
+
+@keyframes miraMicPulse{
+    to{transform:scale(1.06)}
+}
+
+@keyframes miraMicRing{
+    from{transform:scale(.84);opacity:.9}
+    to{transform:scale(1.26);opacity:0}
+}
+
+.chat-widget.mira-ouvindo{
+    border-color:rgba(239,68,68,.55);
+    box-shadow:
+        0 28px 70px rgba(15,23,42,.24),
+        0 0 0 4px rgba(239,68,68,.08);
+}
+
+.chat-widget.mira-ouvindo .chat-header-status{
+    color:#fecaca;
+}
+
+.chat-widget.mira-ouvindo .chat-header-status::before{
+    background:#ef4444;
+    box-shadow:0 0 0 5px rgba(239,68,68,.16);
+    animation:miraStatusPulse .8s ease-in-out infinite alternate;
+}
+
+@keyframes miraStatusPulse{
+    to{transform:scale(1.35)}
+}
+
+#mira-voz-status.ouvindo{
+    color:#ef4444;
+    font-weight:800;
+}
+
+#mira-voz-status.sucesso{
+    color:#059669;
+    font-weight:800;
+}
+
+#mira-voz-status.erro{
+    color:#dc2626;
+    font-weight:800;
+}
+
+@media(max-width:480px){
+    .btn-microfone,
+    .btn-analisar{
+        width:42px;
+        height:42px;
+    }
+
+    .chat-footer-info{
+        font-size:9px;
+    }
+}
+
 </style>
 </head>
 
@@ -1323,6 +1429,16 @@ a{
 
             <button
                 type="button"
+                class="btn-microfone"
+                id="btn-microfone-mira"
+                onclick="alternarReconhecimentoMira()"
+                title="Falar com a Mira"
+                aria-label="Falar com a Mira">
+                <span class="icone-microfone-mira">🎙️</span>
+            </button>
+
+            <button
+                type="button"
                 class="btn-analisar"
                 id="btn-analisar-ia"
                 onclick="analisarIA()"
@@ -1333,7 +1449,7 @@ a{
         </div>
 
         <div class="chat-footer-info">
-            <span>Enter envia • Shift + Enter quebra linha</span>
+            <span id="mira-voz-status">Enter envia • 🎙️ permite falar</span>
 
             <button
                 type="button"
@@ -1604,6 +1720,10 @@ function limparHistoricoChat() {
 }
 
 async function analisarIA() {
+    if (miraEstaOuvindo && reconhecimentoMira) {
+        reconhecimentoMira.stop();
+    }
+
     if (chatEnviando) {
         return;
     }
@@ -1926,10 +2046,210 @@ function configurarMira(){
 }
 
 
+
+/* ==========================================================
+   MIRA - RECONHECIMENTO DE VOZ GRATUITO DO NAVEGADOR
+========================================================== */
+
+let reconhecimentoMira = null;
+let miraEstaOuvindo = false;
+let textoAntesDaVoz = "";
+
+function obterClasseReconhecimentoVoz(){
+    return (
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition ||
+        null
+    );
+}
+
+function atualizarEstadoVozMira(estado, mensagem){
+    const botao = document.getElementById("btn-microfone-mira");
+    const chat = document.getElementById("chat-widget");
+    const status = document.getElementById("mira-voz-status");
+
+    botao?.classList.toggle("ouvindo", estado === "ouvindo");
+    chat?.classList.toggle("mira-ouvindo", estado === "ouvindo");
+
+    if(status){
+        status.classList.remove("ouvindo","sucesso","erro");
+
+        if(estado){
+            status.classList.add(estado);
+        }
+
+        status.textContent = mensagem;
+    }
+}
+
+function prepararReconhecimentoMira(){
+    const ClasseReconhecimento = obterClasseReconhecimentoVoz();
+
+    if(!ClasseReconhecimento){
+        atualizarEstadoVozMira(
+            "erro",
+            "Seu navegador não oferece reconhecimento de voz."
+        );
+
+        const botao = document.getElementById("btn-microfone-mira");
+
+        if(botao){
+            botao.disabled = true;
+            botao.title =
+                "Reconhecimento de voz indisponível neste navegador";
+        }
+
+        return false;
+    }
+
+    reconhecimentoMira = new ClasseReconhecimento();
+    reconhecimentoMira.lang = "pt-BR";
+    reconhecimentoMira.continuous = false;
+    reconhecimentoMira.interimResults = true;
+    reconhecimentoMira.maxAlternatives = 1;
+
+    reconhecimentoMira.onstart = function(){
+        miraEstaOuvindo = true;
+
+        const input = document.getElementById("texto_cliente");
+        textoAntesDaVoz = input?.value.trim() || "";
+
+        atualizarEstadoVozMira(
+            "ouvindo",
+            "Mira está ouvindo... fale agora"
+        );
+    };
+
+    reconhecimentoMira.onresult = function(event){
+        let textoTemporario = "";
+        let textoFinal = "";
+
+        for(let i = event.resultIndex; i < event.results.length; i++){
+            const trecho = event.results[i][0].transcript;
+
+            if(event.results[i].isFinal){
+                textoFinal += trecho;
+            }else{
+                textoTemporario += trecho;
+            }
+        }
+
+        const input = document.getElementById("texto_cliente");
+
+        if(!input){
+            return;
+        }
+
+        const falaCapturada = (textoFinal || textoTemporario).trim();
+
+        input.value = [
+            textoAntesDaVoz,
+            falaCapturada
+        ].filter(Boolean).join(" ");
+
+        ajustarAlturaTextarea();
+
+        if(textoFinal.trim()){
+            atualizarEstadoVozMira(
+                "sucesso",
+                "Fala reconhecida. Revise ou envie."
+            );
+
+            input.focus();
+        }
+    };
+
+    reconhecimentoMira.onerror = function(event){
+        miraEstaOuvindo = false;
+
+        const mensagens = {
+            "not-allowed":
+                "Permissão do microfone bloqueada. Libere no navegador.",
+            "service-not-allowed":
+                "O serviço de voz foi bloqueado pelo navegador.",
+            "no-speech":
+                "Não ouvi nenhuma fala. Clique no microfone e tente novamente.",
+            "audio-capture":
+                "Nenhum microfone disponível ou selecionado.",
+            "network":
+                "Falha de rede no reconhecimento de voz.",
+            "aborted":
+                "Escuta cancelada."
+        };
+
+        atualizarEstadoVozMira(
+            "erro",
+            mensagens[event.error] ||
+            "Não foi possível reconhecer sua voz."
+        );
+
+        console.warn(
+            "Erro no reconhecimento de voz da Mira:",
+            event.error
+        );
+    };
+
+    reconhecimentoMira.onend = function(){
+        miraEstaOuvindo = false;
+
+        const botao = document.getElementById("btn-microfone-mira");
+        const chat = document.getElementById("chat-widget");
+
+        botao?.classList.remove("ouvindo");
+        chat?.classList.remove("mira-ouvindo");
+
+        const status = document.getElementById("mira-voz-status");
+
+        if(
+            status &&
+            status.classList.contains("ouvindo")
+        ){
+            atualizarEstadoVozMira(
+                "",
+                "Enter envia • 🎙️ permite falar"
+            );
+        }
+    };
+
+    return true;
+}
+
+function alternarReconhecimentoMira(){
+    if(!reconhecimentoMira){
+        const preparado = prepararReconhecimentoMira();
+
+        if(!preparado){
+            return;
+        }
+    }
+
+    if(miraEstaOuvindo){
+        reconhecimentoMira.stop();
+        return;
+    }
+
+    /*
+      A voz de boas-vindas precisa parar antes do microfone começar,
+      evitando que a Mira reconheça a própria fala.
+    */
+    window.speechSynthesis?.cancel();
+
+    try{
+        reconhecimentoMira.start();
+    }catch(error){
+        console.warn(
+            "O reconhecimento já estava sendo iniciado:",
+            error
+        );
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const input = document.getElementById("texto_cliente");
 
     configurarMira();
+    prepararReconhecimentoMira();
     montarBoasVindasIA();
     abrirChatAutomaticamente();
 
