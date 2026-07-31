@@ -24,6 +24,7 @@
     --line:#e7e2d8;
     --soft:#f6f7f9;
     --container:1180px;
+    --content-width:min(92vw, var(--container));
     --shadow-sm:0 10px 30px rgba(7,24,43,.08);
     --shadow-md:0 20px 55px rgba(7,24,43,.14);
     --shadow-lg:0 30px 80px rgba(7,24,43,.22);
@@ -68,7 +69,7 @@ button,input{
     align-items:center;
     justify-content:space-between;
     gap:24px;
-    padding:10px max(20px,calc((100vw - var(--container))/2));
+    padding:10px max(20px,calc((100vw - min(92vw,var(--container)))/2));
     border-bottom:1px solid rgba(231,226,216,.9);
     box-shadow:0 5px 20px rgba(7,24,43,.05);
     position:sticky;
@@ -139,14 +140,15 @@ button,input{
 
 /* HERO */
 .hero{
-    max-width:var(--container);
+    width:var(--content-width);
+    max-width:none;
     margin:18px auto 0;
     padding:0 16px;
 }
 
 .hero-box{
     position:relative;
-    min-height:470px;
+    min-height:clamp(410px,48vw,500px);
     display:flex;
     align-items:center;
     overflow:hidden;
@@ -192,7 +194,7 @@ button,input{
     grid-template-columns:1.05fr .95fr;
     align-items:center;
     gap:38px;
-    padding:46px 54px;
+    padding:clamp(34px,4vw,52px);
 }
 
 .hero-copy{
@@ -226,7 +228,7 @@ button,input{
     max-width:650px;
     margin-bottom:16px;
     font-family:"Playfair Display",serif;
-    font-size:clamp(42px,4.8vw,62px);
+    font-size:clamp(38px,4.4vw,60px);
     line-height:.98;
     letter-spacing:-.045em;
     color:#fff;
@@ -344,9 +346,10 @@ button,input{
 
 /* CONTEÚDO */
 .container{
-    max-width:var(--container);
+    width:var(--content-width);
+    max-width:none;
     margin:auto;
-    padding:38px 16px 18px;
+    padding:38px 0 18px;
 }
 
 .section-title{
@@ -385,7 +388,7 @@ button,input{
 /* GRID */
 .grid{
     display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));
     gap:22px;
     align-items:stretch;
 }
@@ -438,7 +441,7 @@ button,input{
 .carousel-container{
     position:relative;
     width:100%;
-    height:235px;
+    height:clamp(215px,20vw,255px);
     overflow:hidden;
 }
 
@@ -629,7 +632,7 @@ button,input{
     grid-template-columns:1.6fr .8fr .9fr;
     gap:42px;
     margin-top:62px;
-    padding:52px max(22px,calc((100vw - var(--container))/2)) 22px;
+    padding:52px max(22px,calc((100vw - min(92vw,var(--container)))/2)) 22px;
     background:
         radial-gradient(circle at 10% 15%,rgba(201,153,76,.13),transparent 27%),
         linear-gradient(135deg,#07182b,#0b2138);
@@ -904,6 +907,255 @@ button,input{
         height:210px;
     }
 }
+
+/* MONITORES GRANDES, ULTRAWIDE E TV */
+@media(min-width:1440px){
+    :root{
+        --container:1360px;
+    }
+
+    .topo-site{
+        min-height:86px;
+    }
+
+    .logo{
+        height:60px;
+    }
+
+    .marca h1{
+        font-size:27px;
+        max-width:680px;
+    }
+
+    .hero-box{
+        min-height:500px;
+    }
+
+    .hero-content{
+        grid-template-columns:1.1fr .9fr;
+    }
+
+    .grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:26px;
+    }
+}
+
+@media(min-width:1920px){
+    :root{
+        --container:1540px;
+    }
+
+    body{
+        font-size:17px;
+    }
+
+    .topo-site{
+        min-height:94px;
+    }
+
+    .logo{
+        height:66px;
+        max-width:180px;
+    }
+
+    .marca h1{
+        font-size:31px;
+        max-width:780px;
+    }
+
+    .marca span{
+        font-size:12px;
+    }
+
+    .acoes a{
+        min-height:50px;
+        padding-inline:28px;
+        font-size:14px;
+    }
+
+    .hero-box{
+        min-height:540px;
+    }
+
+    .hero-content{
+        padding:56px 64px;
+    }
+
+    .hero h2{
+        font-size:clamp(52px,3.5vw,70px);
+    }
+
+    .hero p{
+        font-size:17px;
+    }
+
+    .busca{
+        padding:24px;
+    }
+
+    .busca input{
+        min-height:62px;
+        font-size:16px;
+    }
+
+    .section-title h2{
+        font-size:42px;
+    }
+
+    .grid{
+        grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+
+    .card-body{
+        padding:20px;
+    }
+}
+
+/* TV 4K: limita o conteúdo para não ficar espalhado */
+@media(min-width:2560px){
+    :root{
+        --container:1880px;
+    }
+
+    .hero-box{
+        min-height:620px;
+    }
+
+    .grid{
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        gap:30px;
+    }
+
+    .carousel-container{
+        height:310px;
+    }
+}
+
+/* TABLETS NA HORIZONTAL */
+@media(min-width:701px) and (max-width:1050px){
+    .hero-content{
+        padding:38px;
+    }
+
+    .grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+
+/* CELULARES GRANDES E TABLETS ESTREITOS */
+@media(min-width:520px) and (max-width:700px){
+    .grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .carousel-container{
+        height:210px;
+    }
+
+    .titulo{
+        font-size:17px;
+    }
+
+    .detalhes-imovel{
+        gap:5px;
+    }
+}
+
+/* CELULARES PEQUENOS */
+@media(max-width:360px){
+    .topo-site{
+        padding-inline:10px;
+    }
+
+    .logo{
+        height:39px;
+        max-width:82px;
+    }
+
+    .marca h1{
+        max-width:165px;
+        font-size:14px;
+    }
+
+    .marca span{
+        display:none;
+    }
+
+    .hero{
+        width:calc(100% - 12px);
+        padding:0;
+    }
+
+    .hero-content{
+        padding:31px 15px 18px;
+    }
+
+    .hero h2{
+        font-size:30px;
+    }
+
+    .hero p{
+        font-size:12px;
+    }
+
+    .hero-benefits span{
+        width:100%;
+        justify-content:center;
+    }
+
+    .container{
+        width:calc(100% - 16px);
+    }
+
+    .carousel-container{
+        height:195px;
+    }
+
+    .card-body{
+        padding:14px;
+    }
+
+    .detalhes-imovel span{
+        padding:6px;
+        font-size:9px;
+    }
+
+    .valor{
+        font-size:22px;
+    }
+}
+
+/* Impede qualquer conteúdo de ultrapassar a tela */
+.hero-content,
+.marca,
+.card,
+.card-body,
+.footer-col{
+    min-width:0;
+}
+
+.titulo,
+.localizacao-principal,
+.endereco,
+.footer p,
+.footer a{
+    overflow-wrap:anywhere;
+}
+
+@media(prefers-reduced-motion:reduce){
+    html{
+        scroll-behavior:auto;
+    }
+
+    *,
+    *::before,
+    *::after{
+        transition:none !important;
+        animation:none !important;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -1039,7 +1291,7 @@ button,input{
                 <img
                     src="https://via.placeholder.com/800x500?text=Sem+Foto"
                     alt="Sem Foto"
-                    style="width:100%;height:235px;object-fit:cover;display:block;">
+                    style="width:100%;height:clamp(215px,20vw,255px);object-fit:cover;display:block;">
 
                 {% endif %}
 
