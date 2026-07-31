@@ -1888,6 +1888,20 @@ async function analisarIA() {
         return;
     }
 
+    const comandoLocal = interpretarComandoMira(texto);
+
+    if (
+        comandoLocal.tipo === "navegar" ||
+        comandoLocal.tipo === "acao_local" ||
+        comandoLocal.tipo === "resposta_local"
+    ) {
+        adicionarMensagemUsuario(texto);
+        input.value = "";
+        ajustarAlturaTextarea();
+        executarComandoMira(comandoLocal);
+        return;
+    }
+
     chatEnviando = true;
     botao.disabled = true;
 
@@ -1933,8 +1947,12 @@ async function analisarIA() {
         removerLoading(loadingId);
 
         if (!response.ok || data.sucesso === false) {
+            const erroTemporario = document.createElement("div");
+            erroTemporario.innerHTML = data.resultado || "";
+
             throw new Error(
                 data.erro ||
+                erroTemporario.textContent?.trim() ||
                 "Não foi possível processar sua solicitação."
             );
         }
@@ -1946,6 +1964,29 @@ async function analisarIA() {
         `;
 
         adicionarMensagemAssistente(resultado);
+
+        if (data.tipo === "imoveis") {
+            falarRespostaCurtaMira(
+                `Encontrei ${data.quantidade || 0} imóveis dentro dos critérios.`
+            );
+        } else if (data.tipo === "clientes") {
+            falarRespostaCurtaMira(
+                `Encontrei ${data.quantidade || 0} clientes.`
+            );
+        } else {
+            const blocoRespostaMira = document.createElement("div");
+            blocoRespostaMira.innerHTML = resultado;
+
+            const respostaFalavelMira = (
+                blocoRespostaMira.textContent ||
+                blocoRespostaMira.innerText ||
+                ""
+            ).replace(/\s+/g, " ").trim();
+
+            if (respostaFalavelMira) {
+                falarRespostaCurtaMira(respostaFalavelMira.slice(0, 700));
+            }
+        }
 
         /*
            Guardamos um resumo textual no histórico.
@@ -2208,6 +2249,16 @@ const ROTAS_MIRA = [
         resposta:"Abrindo o dashboard."
     },
     {
+        nomes:["novo cliente","cadastrar cliente","cadastro de cliente","adicionar cliente"],
+        rota:"/cadastrar_cliente",
+        resposta:"Abrindo o cadastro de cliente."
+    },
+    {
+        nomes:["novo imóvel","novo imovel","cadastrar imóvel","cadastrar imovel","cadastro de imóvel","cadastro de imovel","adicionar imóvel","adicionar imovel"],
+        rota:"/cadastrar_imovel",
+        resposta:"Abrindo o cadastro de imóvel."
+    },
+    {
         nomes:["clientes","meus clientes","lista de clientes"],
         rota:"/clientes",
         resposta:"Abrindo seus clientes."
@@ -2359,6 +2410,23 @@ function interpretarComandoMira(textoOriginal){
         return {tipo:"vazio"};
     }
 
+    const saudacoesMira = [
+        "ola mira", "oi mira", "bom dia mira", "boa tarde mira",
+        "boa noite mira", "mira voce esta ai", "mira esta ai"
+    ];
+
+    if(saudacoesMira.some(saudacao => texto.includes(saudacao))){
+        const nomeCompleto = {{ session.get('nome', 'Usuário')|tojson }};
+        const primeiroNome = String(nomeCompleto || "Usuário")
+            .trim()
+            .split(/\s+/)[0] || "Usuário";
+
+        return {
+            tipo:"resposta_local",
+            resposta:`Olá, ${primeiroNome}! Estou aqui e pronta para ajudar. O que vamos fazer?`
+        };
+    }
+
     const rota = encontrarRotaMira(texto);
 
     if(rota){
@@ -2453,6 +2521,25 @@ function executarComandoMira(comando){
             setTimeout(esconderComandoMira,900);
         }
 
+        return;
+    }
+
+    if(comando.tipo === "resposta_local"){
+        const chat = document.getElementById("chat-widget");
+
+        if(chat && !chat.classList.contains("aberto")){
+            chat.classList.add("aberto");
+        }
+
+        adicionarMensagemAssistente(`
+            <div class="card-msg-imovel">
+                ${escaparHTML(comando.resposta)}
+            </div>
+        `);
+
+        falarRespostaCurtaMira(comando.resposta);
+        atualizarComandoMira("Mira respondeu", comando.resposta, "executando");
+        setTimeout(esconderComandoMira, 1400);
         return;
     }
 
