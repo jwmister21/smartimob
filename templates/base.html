@@ -2628,10 +2628,10 @@ function atualizarEstadoVozMira(estado, mensagem){
     }
 }
 
-function prepararReconhecimentoMira(){
+function prepararReconhecimentoMira() {
     const ClasseReconhecimento = obterClasseReconhecimentoVoz();
 
-    if(!ClasseReconhecimento){
+    if (!ClasseReconhecimento) {
         atualizarEstadoVozMira(
             "erro",
             "Seu navegador não oferece reconhecimento de voz."
@@ -2639,7 +2639,7 @@ function prepararReconhecimentoMira(){
 
         const botao = document.getElementById("btn-microfone-mira");
 
-        if(botao){
+        if (botao) {
             botao.disabled = true;
             botao.title =
                 "Reconhecimento de voz indisponível neste navegador";
@@ -2649,12 +2649,15 @@ function prepararReconhecimentoMira(){
     }
 
     reconhecimentoMira = new ClasseReconhecimento();
+
     reconhecimentoMira.lang = "pt-BR";
     reconhecimentoMira.continuous = false;
-    reconhecimentoMira.interimResults = true;
+
+    // Importante: evita ficar preso em texto provisório.
+    reconhecimentoMira.interimResults = false;
     reconhecimentoMira.maxAlternatives = 1;
 
-    reconhecimentoMira.onstart = function(){
+    reconhecimentoMira.onstart = function () {
         miraEstaOuvindo = true;
 
         const input = document.getElementById("texto_cliente");
@@ -2666,64 +2669,76 @@ function prepararReconhecimentoMira(){
         );
     };
 
-    reconhecimentoMira.onresult = function(event){
-        let textoTemporario = "";
-        let textoFinal = "";
+    reconhecimentoMira.onresult = function (event) {
+        let falaCapturada = "";
 
-        for(let i = event.resultIndex; i < event.results.length; i++){
-            const trecho = event.results[i][0].transcript;
-
-            if(event.results[i].isFinal){
-                textoFinal += trecho;
-            }else{
-                textoTemporario += trecho;
-            }
+        for (
+            let i = event.resultIndex;
+            i < event.results.length;
+            i++
+        ) {
+            falaCapturada +=
+                event.results[i][0].transcript || "";
         }
 
-        const input = document.getElementById("texto_cliente");
+        falaCapturada = falaCapturada.trim();
 
-        if(!input){
+        if (!falaCapturada) {
+            atualizarEstadoVozMira(
+                "erro",
+                "Não consegui entender. Tente novamente."
+            );
             return;
         }
 
-        const falaCapturada = (textoFinal || textoTemporario).trim();
+        const input =
+            document.getElementById("texto_cliente");
 
-        input.value = [
-            textoAntesDaVoz,
-            falaCapturada
-        ].filter(Boolean).join(" ");
+        if (input) {
+            input.value = [
+                textoAntesDaVoz,
+                falaCapturada
+            ]
+            .filter(Boolean)
+            .join(" ");
 
-        ajustarAlturaTextarea();
-
-        if(textoFinal.trim()){
-            atualizarEstadoVozMira(
-                "sucesso",
-                "Fala reconhecida. Processando comando..."
-            );
-
-            input.focus();
-
-            /*
-              Na Etapa 3, a fala final já é interpretada e executada.
-            */
-            setTimeout(() => {
-                processarFalaMira(textoFinal.trim());
-            },250);
+            ajustarAlturaTextarea();
         }
+
+        atualizarEstadoVozMira(
+            "sucesso",
+            `Entendi: "${falaCapturada}"`
+        );
+
+        console.log(
+            "Fala reconhecida pela Mira:",
+            falaCapturada
+        );
+
+        // Executa exatamente o mesmo fluxo dos comandos digitados.
+        setTimeout(() => {
+            processarFalaMira(falaCapturada);
+        }, 200);
     };
 
-    reconhecimentoMira.onerror = function(event){
+    reconhecimentoMira.onerror = function (event) {
         miraEstaOuvindo = false;
+
+        console.error(
+            "Erro no reconhecimento da Mira:",
+            event.error,
+            event
+        );
 
         const mensagens = {
             "not-allowed":
-                "Permissão do microfone bloqueada. Libere no navegador.",
+                "O microfone está bloqueado. Clique no cadeado do navegador e permita o microfone.",
             "service-not-allowed":
                 "O serviço de voz foi bloqueado pelo navegador.",
             "no-speech":
-                "Não ouvi nenhuma fala. Clique no microfone e tente novamente.",
+                "Não ouvi nenhuma fala. Clique no microfone e fale novamente.",
             "audio-capture":
-                "Nenhum microfone disponível ou selecionado.",
+                "Nenhum microfone foi encontrado.",
             "network":
                 "Falha de rede no reconhecimento de voz.",
             "aborted":
@@ -2735,38 +2750,36 @@ function prepararReconhecimentoMira(){
             mensagens[event.error] ||
             "Não foi possível reconhecer sua voz."
         );
-
-        console.warn(
-            "Erro no reconhecimento de voz da Mira:",
-            event.error
-        );
     };
 
-    reconhecimentoMira.onend = function(){
+    reconhecimentoMira.onend = function () {
         miraEstaOuvindo = false;
 
-        const botao = document.getElementById("btn-microfone-mira");
-        const chat = document.getElementById("chat-widget");
+        const botao =
+            document.getElementById("btn-microfone-mira");
+
+        const chat =
+            document.getElementById("chat-widget");
 
         botao?.classList.remove("ouvindo");
         chat?.classList.remove("mira-ouvindo");
 
-        const status = document.getElementById("mira-voz-status");
+        const status =
+            document.getElementById("mira-voz-status");
 
-        if(
+        if (
             status &&
             status.classList.contains("ouvindo")
-        ){
+        ) {
             atualizarEstadoVozMira(
                 "",
-                "Enter envia • 🎙️ permite falar"
+                "Clique no microfone e fale com a Mira"
             );
         }
     };
 
     return true;
 }
-
 function alternarReconhecimentoMira(){
     if(!reconhecimentoMira){
         const preparado = prepararReconhecimentoMira();
