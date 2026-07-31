@@ -1199,10 +1199,140 @@ a{
     }
 }
 
+
+/* ================= MIRA - ETAPA 3 / COMANDOS ================= */
+.mira-comando-box{
+    display:none;
+    align-items:center;
+    gap:11px;
+    margin:10px 14px 0;
+    padding:11px 12px;
+    border:1px solid #bfdbfe;
+    border-radius:16px;
+    background:linear-gradient(135deg,#eff6ff,#f5f3ff);
+    color:#1e3a8a;
+    box-shadow:0 8px 20px rgba(37,99,235,.08);
+}
+
+.mira-comando-box.ativo{
+    display:flex;
+    animation:miraComandoEntrar .2s ease;
+}
+
+.mira-comando-box.executando{
+    border-color:#86efac;
+    background:linear-gradient(135deg,#ecfdf5,#f0fdf4);
+    color:#065f46;
+}
+
+.mira-comando-box.erro{
+    border-color:#fecaca;
+    background:#fff1f2;
+    color:#be123c;
+}
+
+@keyframes miraComandoEntrar{
+    from{opacity:0;transform:translateY(-5px)}
+    to{opacity:1;transform:none}
+}
+
+.mira-comando-icone{
+    flex-shrink:0;
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#2563eb,#7c3aed);
+    color:#fff;
+    box-shadow:0 8px 16px rgba(37,99,235,.18);
+}
+
+.mira-comando-conteudo{
+    min-width:0;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+}
+
+.mira-comando-conteudo strong{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+}
+
+.mira-comando-conteudo span{
+    font-size:12px;
+    color:inherit;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.mira-comando-cancelar{
+    flex-shrink:0;
+    width:30px;
+    height:30px;
+    border:0;
+    border-radius:10px;
+    background:rgba(255,255,255,.75);
+    color:inherit;
+    cursor:pointer;
+}
+
+.mira-toast{
+    position:fixed;
+    top:24px;
+    left:50%;
+    transform:translate(-50%,-18px);
+    z-index:30000;
+    min-width:min(420px,calc(100vw - 28px));
+    max-width:620px;
+    padding:14px 18px;
+    border-radius:16px;
+    background:#0f172a;
+    color:#fff;
+    box-shadow:0 20px 50px rgba(15,23,42,.30);
+    opacity:0;
+    visibility:hidden;
+    transition:.25s ease;
+    text-align:center;
+    font-size:13px;
+    font-weight:700;
+}
+
+.mira-toast.ativo{
+    opacity:1;
+    visibility:visible;
+    transform:translate(-50%,0);
+}
+
+.mira-toast.sucesso{
+    background:linear-gradient(135deg,#047857,#059669);
+}
+
+.mira-toast.erro{
+    background:linear-gradient(135deg,#b91c1c,#dc2626);
+}
+
+@media(max-width:480px){
+    .mira-comando-box{
+        margin-inline:10px;
+    }
+
+    .mira-comando-conteudo span{
+        white-space:normal;
+        line-height:1.35;
+    }
+}
+
 </style>
 </head>
 
 <body>
+<div class="mira-toast" id="mira-toast" role="status" aria-live="polite"></div>
 
 <div class="sidebar">
 
@@ -1407,6 +1537,22 @@ a{
 
     </div>
 
+    
+    <div class="mira-comando-box" id="mira-comando-box" aria-live="polite">
+        <div class="mira-comando-icone">✦</div>
+        <div class="mira-comando-conteudo">
+            <strong id="mira-comando-titulo">Comando reconhecido</strong>
+            <span id="mira-comando-texto">Aguardando sua voz...</span>
+        </div>
+        <button
+            type="button"
+            class="mira-comando-cancelar"
+            id="mira-comando-cancelar"
+            title="Cancelar comando">
+            ✕
+        </button>
+    </div>
+
     <div class="chat-body" id="chat-body">
 
         <div class="chat-msg-row assistente">
@@ -1449,7 +1595,7 @@ a{
         </div>
 
         <div class="chat-footer-info">
-            <span id="mira-voz-status">Enter envia • 🎙️ permite falar</span>
+            <span id="mira-voz-status">Diga: “abra clientes” ou faça uma pergunta</span>
 
             <button
                 type="button"
@@ -2047,6 +2193,319 @@ function configurarMira(){
 
 
 
+
+/* ==========================================================
+   MIRA - ETAPA 3 / EXECUÇÃO DE COMANDOS SEGUROS
+========================================================== */
+
+let comandoMiraPendente = null;
+let timerToastMira = null;
+
+const ROTAS_MIRA = [
+    {
+        nomes:["dashboard","painel","início","inicio","tela inicial"],
+        rota:"/dashboard_v2",
+        resposta:"Abrindo o dashboard."
+    },
+    {
+        nomes:["clientes","meus clientes","lista de clientes"],
+        rota:"/clientes",
+        resposta:"Abrindo seus clientes."
+    },
+    {
+        nomes:["funil","funil de vendas","pipeline"],
+        rota:"/funil",
+        resposta:"Abrindo o funil de vendas."
+    },
+    {
+        nomes:["leads","leads do site","novos leads"],
+        rota:"/leads_site",
+        resposta:"Abrindo os leads do site."
+    },
+    {
+        nomes:["imóveis","imoveis","meus imóveis","meus imoveis","lista de imóveis","lista de imoveis"],
+        rota:"/imoveis",
+        resposta:"Abrindo seus imóveis."
+    },
+    {
+        nomes:["match ia","match","combinação de imóveis","combinacao de imoveis"],
+        rota:"/match_ia",
+        resposta:"Abrindo o Match IA."
+    },
+    {
+        nomes:["rede fifty","fifty","rede fifit","fifit"],
+        rota:"/fifit",
+        resposta:"Abrindo a Rede Fifty."
+    },
+    {
+        nomes:["gerar anúncio","gerar anuncio","anúncios","anuncios"],
+        rota:"/gerar_anuncio",
+        resposta:"Abrindo o gerador de anúncios."
+    },
+    {
+        nomes:["campanhas","criar campanha"],
+        rota:"/CriarCampanha",
+        resposta:"Abrindo suas campanhas."
+    },
+    {
+        nomes:["whatsapp","conexão whatsapp","conexao whatsapp"],
+        rota:"/campanhas",
+        resposta:"Abrindo a integração com o WhatsApp."
+    },
+    {
+        nomes:["configurações","configuracoes","ajustes"],
+        rota:"/configuracoes",
+        resposta:"Abrindo as configurações."
+    },
+    {
+        nomes:["financiamento","simulador","simulador de financiamento"],
+        rota:"/simulador_financiamento",
+        resposta:"Abrindo o simulador de financiamento."
+    },
+    {
+        nomes:["importar pdf","importação pdf","importacao pdf"],
+        rota:"/importar_pdf",
+        resposta:"Abrindo a importação de PDF."
+    }
+];
+
+function normalizarTextoMira(texto){
+    return String(texto || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .replace(/[^\w\s]/g," ")
+        .replace(/\s+/g," ")
+        .trim();
+}
+
+function mostrarToastMira(mensagem,tipo=""){
+    const toast = document.getElementById("mira-toast");
+
+    if(!toast) return;
+
+    clearTimeout(timerToastMira);
+    toast.className = `mira-toast ativo ${tipo}`.trim();
+    toast.textContent = mensagem;
+
+    timerToastMira = setTimeout(() => {
+        toast.classList.remove("ativo");
+    },2600);
+}
+
+function falarRespostaCurtaMira(texto){
+    if(!("speechSynthesis" in window)) return;
+
+    const fala = new SpeechSynthesisUtterance(texto);
+    const voz = typeof obterVozMira === "function"
+        ? obterVozMira()
+        : null;
+
+    if(voz) fala.voice = voz;
+
+    fala.lang = "pt-BR";
+    fala.rate = .98;
+    fala.pitch = 1.02;
+    fala.volume = 1;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(fala);
+}
+
+function atualizarComandoMira(titulo,texto,estado=""){
+    const box = document.getElementById("mira-comando-box");
+    const tituloEl = document.getElementById("mira-comando-titulo");
+    const textoEl = document.getElementById("mira-comando-texto");
+
+    if(!box) return;
+
+    box.className = `mira-comando-box ativo ${estado}`.trim();
+
+    if(tituloEl) tituloEl.textContent = titulo;
+    if(textoEl) textoEl.textContent = texto;
+}
+
+function esconderComandoMira(){
+    const box = document.getElementById("mira-comando-box");
+    box?.classList.remove("ativo","executando","erro");
+    comandoMiraPendente = null;
+}
+
+function encontrarRotaMira(textoNormalizado){
+    const prefixos = [
+        "abra ","abrir ","abre ","ir para ","va para ","vá para ",
+        "mostre a tela de ","mostrar a tela de ","quero ver "
+    ];
+
+    const pareceNavegacao = prefixos.some(
+        prefixo => textoNormalizado.startsWith(normalizarTextoMira(prefixo))
+    );
+
+    if(!pareceNavegacao){
+        return null;
+    }
+
+    return ROTAS_MIRA.find(item =>
+        item.nomes.some(nome =>
+            textoNormalizado.includes(normalizarTextoMira(nome))
+        )
+    ) || null;
+}
+
+function interpretarComandoMira(textoOriginal){
+    const texto = normalizarTextoMira(textoOriginal);
+
+    if(!texto){
+        return {tipo:"vazio"};
+    }
+
+    const rota = encontrarRotaMira(texto);
+
+    if(rota){
+        return {
+            tipo:"navegar",
+            rota:rota.rota,
+            resposta:rota.resposta,
+            texto:textoOriginal
+        };
+    }
+
+    if(
+        texto === "fechar chat" ||
+        texto === "feche o chat" ||
+        texto === "fechar a mira"
+    ){
+        return {
+            tipo:"acao_local",
+            acao:"fechar_chat",
+            resposta:"Fechando o chat."
+        };
+    }
+
+    if(
+        texto === "limpar conversa" ||
+        texto === "limpe a conversa" ||
+        texto === "apagar conversa"
+    ){
+        return {
+            tipo:"acao_local",
+            acao:"limpar_chat",
+            resposta:"Conversa limpa."
+        };
+    }
+
+    /*
+      Pedidos de pesquisa, criação de texto e consultas continuam usando
+      a rota atual da IA, que já respeita empresa e sessão do usuário.
+    */
+    return {
+        tipo:"enviar_ia",
+        texto:textoOriginal
+    };
+}
+
+function executarComandoMira(comando){
+    if(!comando) return;
+
+    comandoMiraPendente = comando;
+
+    if(comando.tipo === "navegar"){
+        atualizarComandoMira(
+            "Executando comando",
+            comando.resposta,
+            "executando"
+        );
+
+        mostrarToastMira(comando.resposta,"sucesso");
+        falarRespostaCurtaMira(comando.resposta);
+
+        setTimeout(() => {
+            window.location.href = comando.rota;
+        },750);
+
+        return;
+    }
+
+    if(comando.tipo === "acao_local"){
+        atualizarComandoMira(
+            "Executando comando",
+            comando.resposta,
+            "executando"
+        );
+
+        falarRespostaCurtaMira(comando.resposta);
+
+        if(comando.acao === "fechar_chat"){
+            setTimeout(() => {
+                const chat = document.getElementById("chat-widget");
+
+                if(chat?.classList.contains("aberto")){
+                    toggleChat();
+                }
+
+                esconderComandoMira();
+            },450);
+        }
+
+        if(comando.acao === "limpar_chat"){
+            limparHistoricoChat();
+
+            setTimeout(esconderComandoMira,900);
+        }
+
+        return;
+    }
+
+    if(comando.tipo === "enviar_ia"){
+        const input = document.getElementById("texto_cliente");
+
+        if(!input) return;
+
+        input.value = comando.texto;
+        ajustarAlturaTextarea();
+
+        atualizarComandoMira(
+            "Enviando para a Mira",
+            comando.texto,
+            "executando"
+        );
+
+        /*
+          Envia automaticamente após uma pequena pausa.
+          Isso deixa a experiência de voz natural, mas usa a mesma rota
+          /analisar_cliente que já existia.
+        */
+        setTimeout(async () => {
+            await analisarIA();
+            esconderComandoMira();
+        },450);
+
+        return;
+    }
+
+    atualizarComandoMira(
+        "Não entendi",
+        "Tente dizer: abra clientes, abra imóveis ou mostre imóveis até 500 mil.",
+        "erro"
+    );
+}
+
+function processarFalaMira(texto){
+    const comando = interpretarComandoMira(texto);
+
+    if(comando.tipo === "vazio"){
+        return;
+    }
+
+    atualizarComandoMira(
+        "Comando reconhecido",
+        texto
+    );
+
+    executarComandoMira(comando);
+}
+
+
 /* ==========================================================
    MIRA - RECONHECIMENTO DE VOZ GRATUITO DO NAVEGADOR
 ========================================================== */
@@ -2152,10 +2611,17 @@ function prepararReconhecimentoMira(){
         if(textoFinal.trim()){
             atualizarEstadoVozMira(
                 "sucesso",
-                "Fala reconhecida. Revise ou envie."
+                "Fala reconhecida. Processando comando..."
             );
 
             input.focus();
+
+            /*
+              Na Etapa 3, a fala final já é interpretada e executada.
+            */
+            setTimeout(() => {
+                processarFalaMira(textoFinal.trim());
+            },250);
         }
     };
 
@@ -2251,6 +2717,10 @@ document.addEventListener("DOMContentLoaded", function () {
     configurarMira();
     prepararReconhecimentoMira();
     montarBoasVindasIA();
+
+    document
+        .getElementById("mira-comando-cancelar")
+        ?.addEventListener("click", esconderComandoMira);
     abrirChatAutomaticamente();
 
     input?.addEventListener("input", ajustarAlturaTextarea);
