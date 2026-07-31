@@ -1276,6 +1276,231 @@ button,input{
     }
 }
 
+
+/* AJUSTE FINAL — LARGURA TOTAL, ALINHAMENTO E HERO COMPACTO */
+:root{
+    --page-gap:clamp(10px,1.5vw,24px);
+}
+
+body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+}
+
+.topo-site{
+    width:100%;
+    padding-left:var(--page-gap) !important;
+    padding-right:var(--page-gap) !important;
+}
+
+.hero{
+    width:100% !important;
+    max-width:none !important;
+    margin:12px 0 0 !important;
+    padding:0 var(--page-gap) !important;
+}
+
+.hero-box{
+    width:100% !important;
+    max-width:none !important;
+    min-height:430px !important;
+    border-radius:24px !important;
+}
+
+.hero-content{
+    width:100% !important;
+    max-width:none !important;
+    min-height:430px !important;
+    padding:34px clamp(24px,4vw,58px) !important;
+    gap:18px !important;
+}
+
+.hero-copy{
+    width:100% !important;
+    max-width:720px !important;
+}
+
+.hero-eyebrow{
+    margin-bottom:12px !important;
+}
+
+.hero h2{
+    width:100% !important;
+    max-width:720px !important;
+    margin-bottom:12px !important;
+    font-size:clamp(36px,4vw,56px) !important;
+    line-height:.98 !important;
+}
+
+.hero h2::after{
+    margin-top:12px !important;
+}
+
+.hero p{
+    max-width:700px !important;
+    font-size:14px !important;
+    line-height:1.55 !important;
+}
+
+.hero-benefits{
+    margin-top:14px !important;
+}
+
+.busca{
+    width:100% !important;
+    max-width:900px !important;
+    padding:16px !important;
+    border-radius:18px !important;
+}
+
+.busca input{
+    min-height:52px !important;
+}
+
+.container{
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:32px var(--page-gap) 16px !important;
+}
+
+.footer{
+    width:100% !important;
+    margin-top:50px !important;
+    padding-left:var(--page-gap) !important;
+    padding-right:var(--page-gap) !important;
+}
+
+@media(min-width:1400px){
+    .hero-box{
+        min-height:450px !important;
+    }
+
+    .hero-content{
+        min-height:450px !important;
+        padding:38px 64px !important;
+    }
+
+    .hero h2{
+        max-width:780px !important;
+        font-size:58px !important;
+    }
+
+    .busca{
+        max-width:980px !important;
+    }
+}
+
+@media(min-width:1920px){
+    :root{
+        --page-gap:32px;
+    }
+
+    .hero-box{
+        min-height:500px !important;
+    }
+
+    .hero-content{
+        min-height:500px !important;
+        padding:46px 76px !important;
+    }
+
+    .hero h2{
+        max-width:900px !important;
+        font-size:66px !important;
+    }
+
+    .hero p{
+        font-size:17px !important;
+    }
+
+    .busca{
+        max-width:1100px !important;
+    }
+}
+
+@media(max-width:900px){
+    .hero-box,
+    .hero-content{
+        min-height:auto !important;
+    }
+
+    .hero-content{
+        padding:30px 22px !important;
+    }
+
+    .hero h2{
+        font-size:clamp(34px,7vw,48px) !important;
+    }
+
+    .busca{
+        max-width:100% !important;
+    }
+}
+
+@media(max-width:700px){
+    :root{
+        --page-gap:8px;
+    }
+
+    .hero{
+        margin-top:8px !important;
+    }
+
+    .hero-box{
+        border-radius:18px !important;
+    }
+
+    .hero-box::after{
+        inset:7px !important;
+        border-radius:12px !important;
+    }
+
+    .hero-content{
+        padding:28px 18px 18px !important;
+    }
+
+    .hero h2{
+        font-size:clamp(30px,10vw,42px) !important;
+    }
+
+    .hero p{
+        font-size:13px !important;
+    }
+
+    .hero-benefits{
+        gap:6px !important;
+    }
+
+    .hero-benefits span{
+        font-size:9px !important;
+    }
+
+    .busca{
+        padding:13px !important;
+    }
+
+    .container{
+        padding-top:26px !important;
+    }
+}
+
+@media(max-width:360px){
+    .hero-content{
+        padding:25px 14px 16px !important;
+    }
+
+    .hero h2{
+        font-size:29px !important;
+    }
+
+    .hero-benefits span{
+        width:100%;
+        justify-content:center;
+    }
+}
+
 </style>
 </head>
 <body>
