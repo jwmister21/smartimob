@@ -999,6 +999,100 @@ a{
         font-size:12px;
     }
 }
+
+/* ================= MIRA IA ================= */
+.mira-intro{
+    position:fixed; inset:0; z-index:20000;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; background:rgba(2,6,23,.76);
+    backdrop-filter:blur(15px);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:.35s ease;
+}
+.mira-intro.ativo{opacity:1;visibility:visible;pointer-events:auto}
+.mira-intro-card{
+    position:relative; width:min(500px,100%); padding:44px 34px 32px;
+    border:1px solid rgba(255,255,255,.18); border-radius:34px;
+    background:
+      radial-gradient(circle at 50% 0%,rgba(59,130,246,.24),transparent 36%),
+      linear-gradient(145deg,#0f172a,#1e293b);
+    color:#fff; text-align:center;
+    box-shadow:0 40px 100px rgba(2,6,23,.58);
+    transform:translateY(18px) scale(.98); transition:.35s ease;
+}
+.mira-intro.ativo .mira-intro-card{transform:none}
+.mira-fechar{
+    position:absolute;top:15px;right:15px;width:38px;height:38px;
+    border:1px solid rgba(255,255,255,.12);border-radius:12px;
+    background:rgba(255,255,255,.08);color:#cbd5e1;cursor:pointer;
+}
+.mira-orb-grande{
+    position:relative;width:130px;height:130px;margin:0 auto 22px;
+    display:flex;align-items:center;justify-content:center;
+}
+.mira-centro{
+    position:relative;z-index:3;width:52px;height:52px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff,#7dd3fc 28%,#6366f1 65%,#312e81);
+    box-shadow:0 0 30px rgba(96,165,250,.9),0 0 70px rgba(99,102,241,.55);
+}
+.mira-anel{
+    position:absolute;border-radius:50%;border:1px solid rgba(191,219,254,.55);
+}
+.mira-anel-1{inset:23px;animation:miraGirar 7s linear infinite}
+.mira-anel-2{inset:5px;border-style:dashed;animation:miraGirarR 11s linear infinite}
+.mira-orb-grande.falando .mira-centro{animation:miraFalar .7s ease-in-out infinite alternate}
+@keyframes miraGirar{to{transform:rotate(360deg)}}
+@keyframes miraGirarR{to{transform:rotate(-360deg)}}
+@keyframes miraFalar{to{transform:scale(1.18);filter:brightness(1.2)}}
+.mira-tag{
+    display:inline-flex;padding:7px 12px;margin-bottom:13px;border-radius:999px;
+    background:rgba(37,99,235,.15);border:1px solid rgba(147,197,253,.22);
+    color:#bfdbfe;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+}
+.mira-intro h2{font-size:clamp(28px,5vw,38px);letter-spacing:-.04em;margin-bottom:9px}
+.mira-intro p{min-height:45px;color:#cbd5e1;font-size:14px;line-height:1.6}
+.mira-ondas{
+    height:38px;margin:18px 0 21px;display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.mira-ondas span{width:4px;height:8px;border-radius:99px;background:linear-gradient(#7dd3fc,#6366f1);opacity:.45}
+.mira-ondas.ativo span{animation:miraOnda 1s ease-in-out infinite}
+.mira-ondas.ativo span:nth-child(2n){animation-delay:.12s}
+.mira-ondas.ativo span:nth-child(3n){animation-delay:.24s}
+@keyframes miraOnda{50%{height:33px;opacity:1}}
+.mira-acoes{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.mira-ouvir,.mira-pular{
+    min-height:46px;padding:0 18px;border-radius:14px;font-size:12px;font-weight:800;cursor:pointer;
+}
+.mira-ouvir{border:0;background:linear-gradient(135deg,#3b82f6,#7c3aed);color:#fff;box-shadow:0 14px 30px rgba(59,130,246,.28)}
+.mira-pular{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.07);color:#cbd5e1}
+.mira-intro small{display:block;margin-top:17px;color:#94a3b8;font-size:10px}
+.mira-avatar{font-size:20px;color:#bfdbfe;text-shadow:0 0 15px #60a5fa}
+.chat-float-btn.mira-float-btn{
+    width:76px;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    border:1px solid rgba(255,255,255,.30);border-radius:24px;
+    background:radial-gradient(circle at 35% 20%,rgba(125,211,252,.55),transparent 28%),linear-gradient(145deg,#1d4ed8,#6d28d9);
+}
+.mira-orbita{
+    position:relative;width:35px;height:35px;border:1px dashed rgba(255,255,255,.7);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;animation:miraGirar 8s linear infinite;
+}
+.mira-nucleo{
+    width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff,#7dd3fc 35%,#818cf8);
+    box-shadow:0 0 17px rgba(191,219,254,.95);
+}
+.mira-label{font-size:9px;font-weight:900;letter-spacing:.14em}
+.mira-float-btn.falando{animation:miraBotao .75s ease-in-out infinite alternate}
+@keyframes miraBotao{to{transform:translateY(-3px) scale(1.05);box-shadow:0 24px 50px rgba(99,102,241,.48)}}
+@media(max-width:820px){
+    .mira-intro-card{padding:40px 22px 28px;border-radius:28px}
+    .chat-float-btn.mira-float-btn{width:62px;height:62px;border-radius:20px}
+}
+@media(max-width:420px){
+    .mira-acoes{flex-direction:column}
+    .mira-ouvir,.mira-pular{width:100%}
+}
+
 </style>
 </head>
 
@@ -1101,16 +1195,45 @@ a{
 </div>
 </div>
 
+
+<div class="mira-intro" id="mira-intro" aria-hidden="true">
+    <div class="mira-intro-card">
+        <button type="button" class="mira-fechar" id="mira-fechar" aria-label="Fechar">✕</button>
+
+        <div class="mira-orb-grande" id="mira-orb-grande">
+            <span class="mira-anel mira-anel-1"></span>
+            <span class="mira-anel mira-anel-2"></span>
+            <span class="mira-centro"></span>
+        </div>
+
+        <div class="mira-tag">Assistente inteligente</div>
+        <h2>Olá, <span id="mira-primeiro-nome">Usuário</span>.</h2>
+        <p id="mira-status">Eu sou a Mira, sua assistente virtual do SmartImob.</p>
+
+        <div class="mira-ondas" id="mira-ondas">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+        </div>
+
+        <div class="mira-acoes">
+            <button type="button" class="mira-ouvir" id="mira-ouvir">▶ Ouvir apresentação</button>
+            <button type="button" class="mira-pular" id="mira-pular">Agora não</button>
+        </div>
+
+        <small>A Mira está sendo preparada para executar comandos por voz.</small>
+    </div>
+</div>
+
 <div class="chat-widget" id="chat-widget">
 
     <div class="chat-header">
 
         <div class="chat-header-info">
-            <div class="chat-avatar">🧠</div>
+            <div class="chat-avatar mira-avatar">✦</div>
 
             <div>
-                <div class="chat-header-title">Assistente SmartZen</div>
-                <div class="chat-header-status">CRM conectado</div>
+                <div class="chat-header-title">Mira IA</div>
+                <div class="chat-header-status">Assistente inteligente</div>
             </div>
         </div>
 
@@ -1226,11 +1349,12 @@ a{
 
 <button
     type="button"
-    class="chat-float-btn"
+    class="chat-float-btn mira-float-btn"
     id="chat-float-btn"
     onclick="toggleChat()"
-    aria-label="Abrir assistente SmartZen">
-    🧠
+    aria-label="Abrir a assistente Mira">
+    <span class="mira-orbita"><span class="mira-nucleo"></span></span>
+    <span class="mira-label">MIRA</span>
 </button>
 
 {% block content %}
@@ -1650,7 +1774,7 @@ function montarBoasVindasIA() {
     elemento.innerHTML = `
         <strong>${saudacao.icone} ${saudacao.texto}, ${escaparHTML(nomeUsuario)}!</strong>
         <br><br>
-        Eu sou a Assistente SmartZen.
+        Eu sou a Mira IA.
         <br><br>
         Posso ajudar você a:
         <br>
@@ -1676,6 +1800,11 @@ function abrirChatAutomaticamente() {
     const botao = document.getElementById("chat-float-btn");
     const input = document.getElementById("texto_cliente");
 
+    // A apresentação da Mira tem prioridade no primeiro acesso.
+    if (!sessionStorage.getItem(MIRA_KEY)) {
+        return;
+    }
+
     // Já abriu nesta sessão?
     if (sessionStorage.getItem("smartzen_chat_aberto")) {
         return;
@@ -1693,9 +1822,114 @@ function abrirChatAutomaticamente() {
 
 }
 
+
+const MIRA_KEY = "smartimob_mira_apresentada";
+
+function obterVozMira(){
+    const vozes = window.speechSynthesis?.getVoices?.() || [];
+    return (
+        vozes.find(v => /giovanna/i.test(v.name)) ||
+        vozes.find(v => /francisca.*natural/i.test(v.name)) ||
+        vozes.find(v => /maria/i.test(v.name) && /^pt-BR/i.test(v.lang)) ||
+        vozes.find(v => /google.*portugu/i.test(v.name)) ||
+        vozes.find(v => /^pt-BR/i.test(v.lang)) ||
+        vozes.find(v => /^pt/i.test(v.lang)) ||
+        null
+    );
+}
+
+function primeiroNomeMira(nome){
+    return String(nome || "Usuário").trim().split(/\s+/)[0] || "Usuário";
+}
+
+function fecharMira(marcar=true){
+    const intro = document.getElementById("mira-intro");
+    intro?.classList.remove("ativo");
+    intro?.setAttribute("aria-hidden","true");
+    window.speechSynthesis?.cancel();
+    document.getElementById("mira-orb-grande")?.classList.remove("falando");
+    document.getElementById("mira-ondas")?.classList.remove("ativo");
+    document.getElementById("chat-float-btn")?.classList.remove("falando");
+    if(marcar) sessionStorage.setItem(MIRA_KEY,"1");
+}
+
+function falarMira(){
+    if(!("speechSynthesis" in window)){
+        const status = document.getElementById("mira-status");
+        if(status) status.textContent = "Seu navegador não disponibilizou a reprodução de voz.";
+        return;
+    }
+
+    const nome = primeiroNomeMira({{ session.get('nome', 'Usuário')|tojson }});
+    const texto =
+        `Olá, ${nome}. Seja muito bem-vindo ao Smart Imob. ` +
+        `Eu sou a Mira, sua assistente inteligente. ` +
+        `Estou sendo preparada para ajudar você a navegar pelo sistema, ` +
+        `responder perguntas e executar comandos por voz. ` +
+        `Em breve, estarei pronta para tornar seu trabalho mais rápido e inteligente. ` +
+        `Desejo um excelente dia e ótimos negócios.`;
+
+    const fala = new SpeechSynthesisUtterance(texto);
+    const voz = obterVozMira();
+
+    if(voz) fala.voice = voz;
+    fala.lang = "pt-BR";
+    fala.rate = .93;
+    fala.pitch = 1.03;
+    fala.volume = 1;
+
+    fala.onstart = () => {
+        const status = document.getElementById("mira-status");
+        if(status) status.textContent = "Mira está falando...";
+        document.getElementById("mira-orb-grande")?.classList.add("falando");
+        document.getElementById("mira-ondas")?.classList.add("ativo");
+        document.getElementById("chat-float-btn")?.classList.add("falando");
+    };
+
+    fala.onend = () => {
+        const status = document.getElementById("mira-status");
+        if(status) status.textContent = "Estou pronta para ajudar você pelo chat.";
+        document.getElementById("mira-orb-grande")?.classList.remove("falando");
+        document.getElementById("mira-ondas")?.classList.remove("ativo");
+        document.getElementById("chat-float-btn")?.classList.remove("falando");
+        sessionStorage.setItem(MIRA_KEY,"1");
+        setTimeout(() => fecharMira(false),1500);
+    };
+
+    fala.onerror = () => {
+        const status = document.getElementById("mira-status");
+        if(status) status.textContent = "Clique em “Ouvir apresentação” para ativar a voz.";
+    };
+
+    window.speechSynthesis.cancel();
+    setTimeout(() => window.speechSynthesis.speak(fala),100);
+}
+
+function configurarMira(){
+    const intro = document.getElementById("mira-intro");
+    const nome = primeiroNomeMira({{ session.get('nome', 'Usuário')|tojson }});
+
+    const nomeEl = document.getElementById("mira-primeiro-nome");
+    if(nomeEl) nomeEl.textContent = nome;
+
+    document.getElementById("mira-ouvir")?.addEventListener("click", falarMira);
+    document.getElementById("mira-pular")?.addEventListener("click", () => fecharMira(true));
+    document.getElementById("mira-fechar")?.addEventListener("click", () => fecharMira(true));
+
+    if(!sessionStorage.getItem(MIRA_KEY)){
+        setTimeout(() => {
+            intro?.classList.add("ativo");
+            intro?.setAttribute("aria-hidden","false");
+            setTimeout(falarMira,600);
+        },500);
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const input = document.getElementById("texto_cliente");
 
+    configurarMira();
     montarBoasVindasIA();
     abrirChatAutomaticamente();
 
