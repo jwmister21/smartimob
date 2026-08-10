@@ -496,13 +496,21 @@
                 <span>{{ nome_instancia }}</span>
 
                 {% if status_whatsapp == "conectado" %}
-                    <span class="status-conectado">🟢 WhatsApp conectado</span>
+                    <span class="status-conectado">
+                        🟢 WhatsApp conectado
+                    </span>
                 {% elif status_whatsapp == "aguardando_qr" %}
-                    <span class="status-aguardando">🟡 Aguardando QR Code</span>
+                    <span class="status-aguardando">
+                        🟡 Aguardando QR Code
+                    </span>
                 {% elif status_whatsapp == "desconectado" %}
-                    <span class="status-desconectado">🔴 WhatsApp desconectado</span>
+                    <span class="status-desconectado">
+                        🔴 WhatsApp desconectado
+                    </span>
                 {% else %}
-                    <span class="status-erro">⚠️ Não foi possível verificar</span>
+                    <span class="status-erro">
+                        ⚠️ Não foi possível verificar
+                    </span>
                 {% endif %}
             </div>
         {% else %}
@@ -592,7 +600,8 @@
 
                     <p>
                         Use um contato por linha no formato
-                        <strong>Nome;Telefone</strong>.
+                        <strong>Nome;Telefone</strong> ou
+                        <strong>Nome,Telefone</strong>.
                         Na mensagem, utilize
                         <strong>{nome}</strong>
                         para inserir o nome automaticamente.
@@ -617,7 +626,7 @@
                             name="numeros"
                             id="numeros"
                             class="textarea-numeros"
-                            placeholder="João;62999999999&#10;Maria;62988888888&#10;Carlos;62977777777"
+                            placeholder="João,62999999999&#10;Maria,62988888888&#10;Carlos,62977777777"
                             autocomplete="off"
                             required
                         ></textarea>
@@ -628,7 +637,7 @@
                         </small>
 
                         <span class="exemplo-contato">
-                            Exemplo: João;62999999999
+                            Exemplo: João,62999999999
                         </span>
                     </div>
 
