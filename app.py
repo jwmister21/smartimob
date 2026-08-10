@@ -4140,6 +4140,7 @@ def campanhas():
 
     qrcode = None
     erro_whatsapp = None
+    status_whatsapp = "sem_sessao"
 
     sucesso_envio = session.pop("sucesso_envio", None)
     erro_envio = session.pop("erro_envio", None)
@@ -4147,39 +4148,145 @@ def campanhas():
 
     if nome_instancia:
 
+        headers = {
+            "apikey": EVOLUTION_API_KEY,
+            "Accept": "application/json"
+        }
+
         try:
+            # ==========================================
+            # 1. VERIFICA O ESTADO REAL DA INSTÂNCIA
+            # ==========================================
 
-            headers = {
-                "apikey": EVOLUTION_API_KEY,
-                "Accept": "application/json"
-            }
-
-            resposta_qr = requests.get(
-                f"{EVOLUTION_URL}/instance/connect/{nome_instancia}",
+            resposta_status = requests.get(
+                (
+                    f"{EVOLUTION_URL}"
+                    f"/instance/connectionState/"
+                    f"{nome_instancia}"
+                ),
                 headers=headers,
                 timeout=(5, 15)
             )
 
-            if resposta_qr.status_code in (200, 201):
+            if resposta_status.status_code in (200, 201):
 
                 try:
-                    dados = resposta_qr.json()
+                    dados_status = resposta_status.json()
                 except ValueError:
-                    dados = {}
+                    dados_status = {}
 
-                qrcode = (
-                    dados.get("base64")
-                    or dados.get("qrcode", {}).get("base64")
+                estado = str(
+                    dados_status
+                    .get("instance", {})
+                    .get("state")
+
+                    or dados_status.get("state")
+                    or dados_status.get("status")
+                    or ""
+                ).strip().lower()
+
+                logger.info(
+                    "WHATSAPP STATUS | instancia=%s | estado=%s",
+                    nome_instancia,
+                    estado
                 )
 
-            elif resposta_qr.status_code == 404:
+                if estado in (
+                    "open",
+                    "connected",
+                    "conectado"
+                ):
+
+                    status_whatsapp = "conectado"
+
+                else:
+
+                    status_whatsapp = "desconectado"
+
+                    # ==================================
+                    # 2. SÓ BUSCA QR SE NÃO ESTIVER OPEN
+                    # ==================================
+
+                    try:
+
+                        resposta_qr = requests.get(
+                            (
+                                f"{EVOLUTION_URL}"
+                                f"/instance/connect/"
+                                f"{nome_instancia}"
+                            ),
+                            headers=headers,
+                            timeout=(5, 15)
+                        )
+
+                        if resposta_qr.status_code in (
+                            200,
+                            201
+                        ):
+
+                            try:
+                                dados_qr = resposta_qr.json()
+                            except ValueError:
+                                dados_qr = {}
+
+                            qrcode = (
+                                dados_qr.get("base64")
+                                or (
+                                    dados_qr
+                                    .get("qrcode", {})
+                                    .get("base64")
+                                )
+                            )
+
+                            if qrcode:
+                                status_whatsapp = "aguardando_qr"
+
+                        elif resposta_qr.status_code == 404:
+
+                            erro_whatsapp = (
+                                "A instância não foi encontrada "
+                                "na Evolution API."
+                            )
+
+                        elif resposta_qr.status_code == 401:
+
+                            erro_whatsapp = (
+                                "Chave da Evolution API inválida."
+                            )
+
+                        else:
+
+                            erro_whatsapp = (
+                                "Não foi possível gerar o QR Code. "
+                                f"HTTP {resposta_qr.status_code}"
+                            )
+
+                    except requests.Timeout:
+
+                        erro_whatsapp = (
+                            "O servidor demorou para gerar "
+                            "o QR Code."
+                        )
+
+                    except requests.ConnectionError:
+
+                        erro_whatsapp = (
+                            "Não foi possível acessar "
+                            "o servidor do WhatsApp."
+                        )
+
+            elif resposta_status.status_code == 404:
+
+                status_whatsapp = "desconectado"
 
                 erro_whatsapp = (
-                    "A sessão do WhatsApp não foi encontrada "
+                    "A sessão não foi encontrada "
                     "na Evolution API."
                 )
 
-            elif resposta_qr.status_code == 401:
+            elif resposta_status.status_code == 401:
+
+                status_whatsapp = "erro"
 
                 erro_whatsapp = (
                     "Chave da Evolution API inválida."
@@ -4187,12 +4294,16 @@ def campanhas():
 
             else:
 
+                status_whatsapp = "erro"
+
                 erro_whatsapp = (
                     "Não foi possível consultar o WhatsApp. "
-                    f"HTTP {resposta_qr.status_code}"
+                    f"HTTP {resposta_status.status_code}"
                 )
 
         except requests.Timeout:
+
+            status_whatsapp = "erro"
 
             erro_whatsapp = (
                 "O servidor do WhatsApp demorou para responder."
@@ -4200,16 +4311,20 @@ def campanhas():
 
         except requests.ConnectionError:
 
+            status_whatsapp = "erro"
+
             erro_whatsapp = (
                 "Não foi possível conectar ao servidor do WhatsApp."
             )
 
-        except Exception as e:
+        except Exception as erro:
 
             logger.exception(
-                "Erro ao buscar QR Code do WhatsApp: %s",
-                e
+                "Erro consultando WhatsApp: %s",
+                erro
             )
+
+            status_whatsapp = "erro"
 
             erro_whatsapp = (
                 "Erro ao consultar a conexão do WhatsApp."
@@ -4219,11 +4334,12 @@ def campanhas():
         "campanhas.html",
         nome_instancia=nome_instancia,
         qrcode=qrcode,
+        status_whatsapp=status_whatsapp,
         erro_whatsapp=erro_whatsapp,
         sucesso_envio=sucesso_envio,
         erro_envio=erro_envio,
         campanha_finalizada=campanha_finalizada
-    )     
+    )    
 
 
 @app.route('/termos')
