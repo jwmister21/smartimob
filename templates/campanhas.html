@@ -84,7 +84,9 @@
     }
 
     .status-conectado,
-    .status-aguardando {
+    .status-aguardando,
+    .status-desconectado,
+    .status-erro {
         display: inline-block;
         padding: 7px 12px;
         border-radius: 999px;
@@ -98,6 +100,16 @@
     }
 
     .status-aguardando {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-desconectado {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-erro {
         background: #fef3c7;
         color: #92400e;
     }
@@ -483,14 +495,14 @@
                 <strong>Instância:</strong>
                 <span>{{ nome_instancia }}</span>
 
-                {% if qrcode %}
-                    <span class="status-aguardando">
-                        Aguardando conexão
-                    </span>
+                {% if status_whatsapp == "conectado" %}
+                    <span class="status-conectado">🟢 WhatsApp conectado</span>
+                {% elif status_whatsapp == "aguardando_qr" %}
+                    <span class="status-aguardando">🟡 Aguardando QR Code</span>
+                {% elif status_whatsapp == "desconectado" %}
+                    <span class="status-desconectado">🔴 WhatsApp desconectado</span>
                 {% else %}
-                    <span class="status-conectado">
-                        Conectado
-                    </span>
+                    <span class="status-erro">⚠️ Não foi possível verificar</span>
                 {% endif %}
             </div>
         {% else %}
@@ -530,7 +542,7 @@
     </div>
 
     <!-- ÁREA DE DISPARO -->
-    {% if nome_instancia and not qrcode %}
+    {% if nome_instancia and status_whatsapp == "conectado" %}
         <div class="box-whatsapp envio-massa">
             <div class="envio-topo">
                 <div>
