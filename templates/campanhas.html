@@ -705,7 +705,7 @@
                         <span class="loading-spinner"></span>
 
                         <span>
-                            Enviando campanha. Não feche esta página.
+                            Envio em andamento. Mantenha esta página aberta até finalizar.
                         </span>
                     </div>
                 </div>
@@ -879,31 +879,34 @@
 
                 formCampanha.addEventListener(
                     "submit",
-                    function (evento) {
-                        const lista = obterListaContatos();
+                    async function (evento) {
+                        evento.preventDefault();
+
+                        const listaOriginal = obterListaContatos();
                         const textoMensagem = mensagem.value.trim();
 
-                        if (lista.length === 0) {
-                            evento.preventDefault();
-
-                            alert(
-                                "Informe pelo menos um contato."
-                            );
-
+                        if (listaOriginal.length === 0) {
+                            alert("Informe pelo menos um contato.");
                             numeros.focus();
                             return;
                         }
 
                         if (!textoMensagem) {
-                            evento.preventDefault();
-
-                            alert(
-                                "Digite a mensagem da campanha."
-                            );
-
+                            alert("Digite a mensagem da campanha.");
                             mensagem.focus();
                             return;
                         }
+
+                        if (listaOriginal.length > 30) {
+                            alert("Envie no máximo 30 contatos por campanha.");
+                            return;
+                        }
+
+                        /*
+                         * Remove linhas idênticas para evitar disparo duplicado
+                         * por acidente dentro da mesma campanha.
+                         */
+                        const lista = [...new Set(listaOriginal)];
 
                         const confirmar = window.confirm(
                             "Confirma o envio para " +
@@ -912,15 +915,178 @@
                         );
 
                         if (!confirmar) {
-                            evento.preventDefault();
                             return;
                         }
 
                         btnEnviar.disabled = true;
-                        btnEnviar.textContent =
-                            "⏳ Enviando campanha...";
-
                         loadingEnvio.style.display = "block";
+
+                        let enviados = 0;
+                        let falhas = 0;
+                        let interrompido = false;
+                        const erros = [];
+
+                        try {
+                            for (
+                                let indice = 0;
+                                indice < lista.length;
+                                indice++
+                            ) {
+                                const contato = lista[indice];
+
+                                btnEnviar.textContent =
+                                    "⏳ Enviando " +
+                                    (indice + 1) +
+                                    " de " +
+                                    lista.length;
+
+                                try {
+                                    const resposta = await fetch(
+                                        "/campanhas/enviar-whatsapp-individual",
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json"
+                                            },
+                                            credentials: "same-origin",
+                                            body: JSON.stringify({
+                                                contato: contato,
+                                                mensagem: textoMensagem
+                                            })
+                                        }
+                                    );
+
+                                    let resultado = {};
+
+                                    try {
+                                        resultado = await resposta.json();
+                                    } catch (erroJson) {
+                                        resultado = {
+                                            sucesso: false,
+                                            erro:
+                                                "Resposta inválida do servidor."
+                                        };
+                                    }
+
+                                    if (
+                                        resposta.ok &&
+                                        resultado.sucesso
+                                    ) {
+                                        enviados++;
+                                    } else {
+                                        falhas++;
+
+                                        erros.push(
+                                            contato +
+                                            ": " +
+                                            (
+                                                resultado.erro ||
+                                                "Falha desconhecida."
+                                            )
+                                        );
+
+                                        /*
+                                         * Se a sessão caiu ou a Evolution ficou
+                                         * indisponível, parar evita uma sequência
+                                         * de falhas e possíveis reenvios confusos.
+                                         */
+                                        if (
+                                            resposta.status === 409 ||
+                                            resposta.status === 503 ||
+                                            resposta.status === 504
+                                        ) {
+                                            interrompido = true;
+
+                                            alert(
+                                                "O disparo foi interrompido.\n\n" +
+                                                (
+                                                    resultado.erro ||
+                                                    "WhatsApp indisponível."
+                                                )
+                                            );
+
+                                            break;
+                                        }
+                                    }
+                                } catch (erro) {
+                                    console.error(
+                                        "Erro durante o envio:",
+                                        erro
+                                    );
+
+                                    falhas++;
+                                    interrompido = true;
+
+                                    erros.push(
+                                        contato +
+                                        ": conexão com o servidor perdida"
+                                    );
+
+                                    alert(
+                                        "A conexão com o servidor foi perdida. " +
+                                        "A campanha foi interrompida."
+                                    );
+
+                                    break;
+                                }
+
+                                /*
+                                 * Pausa somente se ainda houver próximo contato.
+                                 * Mantém o intervalo que seu sistema já utilizava.
+                                 */
+                                if (
+                                    !interrompido &&
+                                    indice < lista.length - 1
+                                ) {
+                                    const intervalo =
+                                        Math.floor(
+                                            Math.random() * 3000
+                                        ) + 4000;
+
+                                    btnEnviar.textContent =
+                                        "✅ " +
+                                        enviados +
+                                        " enviado(s) • próximo em " +
+                                        Math.ceil(intervalo / 1000) +
+                                        "s";
+
+                                    await new Promise(
+                                        function (resolver) {
+                                            window.setTimeout(
+                                                resolver,
+                                                intervalo
+                                            );
+                                        }
+                                    );
+                                }
+                            }
+                        } finally {
+                            btnEnviar.disabled = false;
+                            btnEnviar.textContent =
+                                "📤 Enviar para todos";
+                            loadingEnvio.style.display = "none";
+                        }
+
+                        let resumo =
+                            (
+                                interrompido
+                                    ? "Campanha interrompida.\n\n"
+                                    : "Campanha finalizada.\n\n"
+                            ) +
+                            "✅ Enviados: " +
+                            enviados +
+                            "\n" +
+                            "❌ Falhas: " +
+                            falhas;
+
+                        if (erros.length > 0) {
+                            resumo +=
+                                "\n\nPrimeiras falhas:\n" +
+                                erros.slice(0, 5).join("\n");
+                        }
+
+                        alert(resumo);
                     }
                 );
 
