@@ -3317,7 +3317,7 @@ EVOLUTION_URL = os.getenv(
 
 EVOLUTION_API_KEY = os.getenv(
     "EVOLUTION_API_KEY",
-    "123456789"
+    "smartzen123"
 ).strip()
 
 
