@@ -4,7 +4,7 @@ import secrets
 import requests 
 import math
 from datetime import datetime, timedelta
-from flask import Flask, render_template, request, redirect, session, url_for, flash
+from flask import Flask, render_template, request, redirect, session, url_for, flash, jsonify
 from werkzeug.utils import secure_filename
 from google import genai
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -3310,8 +3310,15 @@ def site_publico(slug):
 import requests
 from flask import render_template, request, redirect, session
 
-EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-EVOLUTION_API_KEY = "123456789"
+EVOLUTION_URL = os.getenv(
+    "EVOLUTION_URL",
+    "https://zoom-leggings-viability.ngrok-free.dev"
+).rstrip("/")
+
+EVOLUTION_API_KEY = os.getenv(
+    "EVOLUTION_API_KEY",
+    "123456789"
+).strip()
 
 
 @app.route("/whatsapp/sessoes")
@@ -3320,395 +3327,87 @@ def whatsapp_sessoes():
     return render_template("campanhas.html")
 
 
-def salvar_sessao_whatsapp(
-    usuario_id,
-    empresa_id,
-    nome_instancia,
-    status="created"
-):
-    """
-    Salva/vincula a instância ao usuário.
-
-    É chamado apenas quando a sessão é criada/conectada.
-    NÃO é chamado a cada mensagem.
-    """
-
-    conn = None
-
-    try:
-        conn = sqlite3.connect(
-            DB_PATH,
-            timeout=15
-        )
-
-        conn.row_factory = sqlite3.Row
-
-        conn.execute(
-            "PRAGMA busy_timeout = 15000"
-        )
-
-        # Procura a sessão mais recente desse usuário.
-        registro = conn.execute("""
-            SELECT id
-            FROM whatsapp_sessoes
-            WHERE usuario_id = ?
-            ORDER BY id DESC
-            LIMIT 1
-        """, (
-            usuario_id,
-        )).fetchone()
-
-        if registro:
-
-            conn.execute("""
-                UPDATE whatsapp_sessoes
-                SET
-                    empresa_id = ?,
-                    session_name = ?,
-                    status = ?,
-                    atualizado_em = CURRENT_TIMESTAMP
-                WHERE id = ?
-            """, (
-                empresa_id,
-                nome_instancia,
-                status,
-                registro["id"]
-            ))
-
-        else:
-
-            conn.execute("""
-                INSERT INTO whatsapp_sessoes (
-                    empresa_id,
-                    usuario_id,
-                    session_name,
-                    status,
-                    atualizado_em
-                )
-                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (
-                empresa_id,
-                usuario_id,
-                nome_instancia,
-                status
-            ))
-
-        conn.commit()
-
-        logger.info(
-            "WHATSAPP SESSÃO SALVA | usuario=%s | instancia=%s",
-            usuario_id,
-            nome_instancia
-        )
-
-        return True
-
-    except sqlite3.OperationalError as erro:
-
-        logger.exception(
-            "SQLite ocupado ao salvar sessão WhatsApp: %s",
-            erro
-        )
-
-        return False
-
-    except Exception as erro:
-
-        logger.exception(
-            "Erro salvando sessão WhatsApp: %s",
-            erro
-        )
-
-        return False
-
-    finally:
-
-        if conn:
-            conn.close()
-
+# ==========================================================
+# WHATSAPP / EVOLUTION - INSTÂNCIA AUTOMÁTICA, SEM SQLITE
+# ==========================================================
 
 def obter_instancia_whatsapp_usuario():
     """
-    Primeiro usa a sessão Flask.
+    Cada usuário possui um nome de instância determinístico.
+    Ex.: usuario_id 21 -> usuario_21.
 
-    Só consulta SQLite se a sessão Flask
-    ainda não souber qual é a instância.
+    Não lê nem grava whatsapp_sessoes.
     """
-
-    nome_instancia = str(
-        session.get(
-            "whatsapp_instancia",
-            ""
-        )
-    ).strip()
-
-    if nome_instancia:
-        return nome_instancia
-
     usuario_id = session.get("usuario_id")
 
     if not usuario_id:
         return None
 
-    conn = None
+    nome_instancia = f"usuario_{usuario_id}"
 
-    try:
+    # Cache apenas na sessão web. Não é persistência em SQLite.
+    session["whatsapp_instancia"] = nome_instancia
 
-        conn = sqlite3.connect(
-            DB_PATH,
-            timeout=15
-        )
-
-        conn.row_factory = sqlite3.Row
-
-        conn.execute(
-            "PRAGMA busy_timeout = 15000"
-        )
-
-        registro = conn.execute("""
-            SELECT session_name
-            FROM whatsapp_sessoes
-            WHERE usuario_id = ?
-              AND session_name IS NOT NULL
-              AND TRIM(session_name) != ''
-            ORDER BY id DESC
-            LIMIT 1
-        """, (
-            usuario_id,
-        )).fetchone()
-
-        if not registro:
-            return None
-
-        nome_instancia = str(
-            registro["session_name"]
-        ).strip()
-
-        if not nome_instancia:
-            return None
-
-        # Guarda na sessão Flask.
-        # Daqui para frente não precisa consultar
-        # SQLite em cada mensagem.
-        session[
-            "whatsapp_instancia"
-        ] = nome_instancia
-
-        return nome_instancia
-
-    except Exception as erro:
-
-        logger.exception(
-            "Erro buscando sessão WhatsApp: %s",
-            erro
-        )
-
-        return None
-
-    finally:
-
-        if conn:
-            conn.close()
+    return nome_instancia
 
 
-
-
-@app.route(
-    "/campanhas/criar-sessao-whatsapp",
-    methods=["POST"]
-)
-@verificar_sessao
-def campanhas_criar_sessao_whatsapp():
-
-    usuario_id = session.get("usuario_id")
-    empresa_id = session.get("empresa_id")
-
-    if not usuario_id:
-
-        flash(
-            "Usuário não identificado.",
-            "danger"
-        )
-
-        return redirect("/login")
-
-    nome_instancia = (
-        f"usuario_{usuario_id}"
-    )
-
-    headers = {
+def evolution_headers():
+    return {
         "apikey": EVOLUTION_API_KEY,
         "Content-Type": "application/json",
         "Accept": "application/json"
     }
 
-    payload = {
-        "instanceName": nome_instancia,
-        "qrcode": True,
-        "integration": "WHATSAPP-BAILEYS"
-    }
+
+def obter_estado_evolution(nome_instancia):
+    """
+    A Evolution é a fonte da verdade para o estado real.
+    Retorna: (estado, erro)
+    """
+    if not nome_instancia:
+        return None, "Instância não informada."
 
     try:
-
-        resposta = requests.post(
-            f"{EVOLUTION_URL}/instance/create",
-            json=payload,
-            headers=headers,
-            timeout=(8, 30)
+        resposta = requests.get(
+            f"{EVOLUTION_URL}/instance/connectionState/{nome_instancia}",
+            headers=evolution_headers(),
+            timeout=(5, 15)
         )
 
-        logger.info(
-            (
-                "CRIAR EVOLUTION | "
-                "usuario=%s | status=%s | resposta=%s"
-            ),
-            usuario_id,
-            resposta.status_code,
-            resposta.text[:500]
-        )
+        if resposta.status_code == 404:
+            return "nao_existe", None
 
-        # 200/201 = criada.
-        #
-        # Algumas versões da Evolution podem
-        # responder erro porque a instância
-        # já existe. Nesse caso verificamos
-        # diretamente o estado dela.
+        if resposta.status_code == 401:
+            return None, "Chave da Evolution API inválida."
 
-        instancia_valida = (
-            resposta.status_code in (
-                200,
-                201
-            )
-        )
+        if resposta.status_code not in (200, 201):
+            return None, f"Evolution retornou HTTP {resposta.status_code}."
 
-        if not instancia_valida:
+        try:
+            dados = resposta.json()
+        except ValueError:
+            return None, "A Evolution retornou uma resposta inválida."
 
-            try:
+        estado = str(
+            dados.get("instance", {}).get("state")
+            or dados.get("state")
+            or dados.get("status")
+            or ""
+        ).strip().lower()
 
-                verificar = requests.get(
-                    (
-                        f"{EVOLUTION_URL}"
-                        f"/instance/connectionState/"
-                        f"{nome_instancia}"
-                    ),
-                    headers={
-                        "apikey":
-                            EVOLUTION_API_KEY
-                    },
-                    timeout=(5, 15)
-                )
-
-                if verificar.status_code in (
-                    200,
-                    201
-                ):
-                    instancia_valida = True
-
-            except requests.RequestException:
-                pass
-
-        if not instancia_valida:
-
-            flash(
-                (
-                    "Não foi possível criar "
-                    "a sessão do WhatsApp."
-                ),
-                "danger"
-            )
-
-            return redirect("/campanhas")
-
-        # -------------------------------
-        # Guarda imediatamente na sessão
-        # Flask.
-        # -------------------------------
-
-        session[
-            "whatsapp_instancia"
-        ] = nome_instancia
-
-        # -------------------------------
-        # Salva UMA VEZ no SQLite.
-        # -------------------------------
-
-        salvo = salvar_sessao_whatsapp(
-            usuario_id=usuario_id,
-            empresa_id=empresa_id,
-            nome_instancia=nome_instancia,
-            status="created"
-        )
-
-        if not salvo:
-
-            # A Evolution continua funcionando
-            # mesmo se neste instante o SQLite
-            # estiver ocupado.
-            #
-            # A sessão Flask já possui a instância.
-
-            logger.warning(
-                (
-                    "Instância %s criada, porém "
-                    "não foi possível persistir "
-                    "imediatamente no SQLite."
-                ),
-                nome_instancia
-            )
-
-        flash(
-            "Sessão WhatsApp preparada.",
-            "success"
-        )
-
-        return redirect("/campanhas")
+        return estado or "desconhecido", None
 
     except requests.Timeout:
-
-        logger.warning(
-            "Timeout criando sessão Evolution."
-        )
-
-        flash(
-            (
-                "O servidor do WhatsApp demorou "
-                "para responder."
-            ),
-            "danger"
-        )
+        return None, "O servidor do WhatsApp demorou para responder."
 
     except requests.ConnectionError:
+        return None, "Não foi possível acessar o servidor do WhatsApp."
 
-        logger.warning(
-            "Evolution/ngrok indisponível."
-        )
+    except requests.RequestException as erro:
+        logger.exception("Erro consultando Evolution: %s", erro)
+        return None, "Erro de comunicação com a Evolution API."
 
-        flash(
-            (
-                "Não foi possível acessar "
-                "o servidor do WhatsApp."
-            ),
-            "danger"
-        )
 
-    except Exception as erro:
-
-        logger.exception(
-            (
-                "Erro inesperado criando "
-                "sessão WhatsApp: %s"
-            ),
-            erro
-        )
-
-        flash(
-            "Erro ao preparar o WhatsApp.",
-            "danger"
-        )
-
-    return redirect("/campanhas")
-    
-     
 @app.route("/admin/ativar-usuario", methods=["POST"])
 @verificar_sessao
 def ativar_usuario():
@@ -4148,187 +3847,83 @@ def campanhas():
 
     if nome_instancia:
 
-        headers = {
-            "apikey": EVOLUTION_API_KEY,
-            "Accept": "application/json"
-        }
+        estado, erro = obter_estado_evolution(nome_instancia)
 
-        try:
-            # ==========================================
-            # 1. VERIFICA O ESTADO REAL DA INSTÂNCIA
-            # ==========================================
+        logger.info(
+            "WHATSAPP STATUS | instancia=%s | estado=%s | erro=%s",
+            nome_instancia,
+            estado,
+            erro
+        )
 
-            resposta_status = requests.get(
-                (
-                    f"{EVOLUTION_URL}"
-                    f"/instance/connectionState/"
-                    f"{nome_instancia}"
-                ),
-                headers=headers,
-                timeout=(5, 15)
+        if erro:
+            status_whatsapp = "erro"
+            erro_whatsapp = erro
+
+        elif estado in ("open", "connected", "conectado"):
+            status_whatsapp = "conectado"
+
+        elif estado == "nao_existe":
+            status_whatsapp = "desconectado"
+            erro_whatsapp = (
+                "A sessão ainda não existe. "
+                "Clique em Criar / Conectar Sessão."
             )
 
-            if resposta_status.status_code in (200, 201):
+        else:
+            status_whatsapp = "desconectado"
 
-                try:
-                    dados_status = resposta_status.json()
-                except ValueError:
-                    dados_status = {}
-
-                estado = str(
-                    dados_status
-                    .get("instance", {})
-                    .get("state")
-
-                    or dados_status.get("state")
-                    or dados_status.get("status")
-                    or ""
-                ).strip().lower()
-
-                logger.info(
-                    "WHATSAPP STATUS | instancia=%s | estado=%s",
-                    nome_instancia,
-                    estado
+            # Só solicita QR quando a instância existe mas não está OPEN.
+            try:
+                resposta_qr = requests.get(
+                    f"{EVOLUTION_URL}/instance/connect/{nome_instancia}",
+                    headers=evolution_headers(),
+                    timeout=(5, 15)
                 )
 
-                if estado in (
-                    "open",
-                    "connected",
-                    "conectado"
-                ):
+                if resposta_qr.status_code in (200, 201):
+                    try:
+                        dados_qr = resposta_qr.json()
+                    except ValueError:
+                        dados_qr = {}
 
-                    status_whatsapp = "conectado"
+                    qrcode = dados_qr.get("base64")
+
+                    if not qrcode:
+                        qrcode_obj = dados_qr.get("qrcode")
+                        if isinstance(qrcode_obj, dict):
+                            qrcode = qrcode_obj.get("base64")
+
+                    if qrcode:
+                        status_whatsapp = "aguardando_qr"
+
+                elif resposta_qr.status_code == 404:
+                    erro_whatsapp = (
+                        "A instância não foi encontrada na Evolution. "
+                        "Clique em Criar / Conectar Sessão."
+                    )
+
+                elif resposta_qr.status_code == 401:
+                    status_whatsapp = "erro"
+                    erro_whatsapp = "Chave da Evolution API inválida."
 
                 else:
+                    erro_whatsapp = (
+                        "Não foi possível gerar o QR Code. "
+                        f"HTTP {resposta_qr.status_code}."
+                    )
 
-                    status_whatsapp = "desconectado"
+            except requests.Timeout:
+                erro_whatsapp = "O servidor demorou para gerar o QR Code."
 
-                    # ==================================
-                    # 2. SÓ BUSCA QR SE NÃO ESTIVER OPEN
-                    # ==================================
-
-                    try:
-
-                        resposta_qr = requests.get(
-                            (
-                                f"{EVOLUTION_URL}"
-                                f"/instance/connect/"
-                                f"{nome_instancia}"
-                            ),
-                            headers=headers,
-                            timeout=(5, 15)
-                        )
-
-                        if resposta_qr.status_code in (
-                            200,
-                            201
-                        ):
-
-                            try:
-                                dados_qr = resposta_qr.json()
-                            except ValueError:
-                                dados_qr = {}
-
-                            qrcode = (
-                                dados_qr.get("base64")
-                                or (
-                                    dados_qr
-                                    .get("qrcode", {})
-                                    .get("base64")
-                                )
-                            )
-
-                            if qrcode:
-                                status_whatsapp = "aguardando_qr"
-
-                        elif resposta_qr.status_code == 404:
-
-                            erro_whatsapp = (
-                                "A instância não foi encontrada "
-                                "na Evolution API."
-                            )
-
-                        elif resposta_qr.status_code == 401:
-
-                            erro_whatsapp = (
-                                "Chave da Evolution API inválida."
-                            )
-
-                        else:
-
-                            erro_whatsapp = (
-                                "Não foi possível gerar o QR Code. "
-                                f"HTTP {resposta_qr.status_code}"
-                            )
-
-                    except requests.Timeout:
-
-                        erro_whatsapp = (
-                            "O servidor demorou para gerar "
-                            "o QR Code."
-                        )
-
-                    except requests.ConnectionError:
-
-                        erro_whatsapp = (
-                            "Não foi possível acessar "
-                            "o servidor do WhatsApp."
-                        )
-
-            elif resposta_status.status_code == 404:
-
-                status_whatsapp = "desconectado"
-
-                erro_whatsapp = (
-                    "A sessão não foi encontrada "
-                    "na Evolution API."
-                )
-
-            elif resposta_status.status_code == 401:
-
+            except requests.ConnectionError:
                 status_whatsapp = "erro"
+                erro_whatsapp = "Não foi possível acessar o servidor do WhatsApp."
 
-                erro_whatsapp = (
-                    "Chave da Evolution API inválida."
-                )
-
-            else:
-
+            except requests.RequestException as erro_qr:
+                logger.exception("Erro buscando QR Evolution: %s", erro_qr)
                 status_whatsapp = "erro"
-
-                erro_whatsapp = (
-                    "Não foi possível consultar o WhatsApp. "
-                    f"HTTP {resposta_status.status_code}"
-                )
-
-        except requests.Timeout:
-
-            status_whatsapp = "erro"
-
-            erro_whatsapp = (
-                "O servidor do WhatsApp demorou para responder."
-            )
-
-        except requests.ConnectionError:
-
-            status_whatsapp = "erro"
-
-            erro_whatsapp = (
-                "Não foi possível conectar ao servidor do WhatsApp."
-            )
-
-        except Exception as erro:
-
-            logger.exception(
-                "Erro consultando WhatsApp: %s",
-                erro
-            )
-
-            status_whatsapp = "erro"
-
-            erro_whatsapp = (
-                "Erro ao consultar a conexão do WhatsApp."
-            )
+                erro_whatsapp = "Não foi possível consultar o QR Code agora."
 
     return render_template(
         "campanhas.html",
@@ -4339,7 +3934,350 @@ def campanhas():
         sucesso_envio=sucesso_envio,
         erro_envio=erro_envio,
         campanha_finalizada=campanha_finalizada
-    )    
+    )
+
+
+@app.route("/campanhas/criar-sessao-whatsapp", methods=["POST"])
+@verificar_sessao
+def campanhas_criar_sessao_whatsapp():
+
+    nome_instancia = obter_instancia_whatsapp_usuario()
+
+    if not nome_instancia:
+        flash("Usuário não identificado.", "danger")
+        return redirect("/login")
+
+    if not EVOLUTION_URL or not EVOLUTION_API_KEY:
+        flash("Evolution API não configurada.", "danger")
+        return redirect("/campanhas")
+
+    estado, erro = obter_estado_evolution(nome_instancia)
+
+    # Se a instância já existe, não recria e não toca no banco.
+    if estado not in (None, "nao_existe"):
+        return redirect("/campanhas")
+
+    payload = {
+        "instanceName": nome_instancia,
+        "qrcode": True,
+        "integration": "WHATSAPP-BAILEYS"
+    }
+
+    try:
+        resposta = requests.post(
+            f"{EVOLUTION_URL}/instance/create",
+            headers=evolution_headers(),
+            json=payload,
+            timeout=(8, 30)
+        )
+
+        logger.info(
+            "CRIAR EVOLUTION | instancia=%s | status=%s | resposta=%s",
+            nome_instancia,
+            resposta.status_code,
+            resposta.text[:500]
+        )
+
+        if resposta.status_code not in (200, 201):
+            # Confere de novo porque algumas versões respondem erro
+            # quando a instância já existe.
+            estado_depois, _ = obter_estado_evolution(nome_instancia)
+
+            if estado_depois in (None, "nao_existe"):
+                flash(
+                    f"Não foi possível criar a sessão. "
+                    f"HTTP {resposta.status_code}.",
+                    "danger"
+                )
+                return redirect("/campanhas")
+
+        flash("Sessão WhatsApp preparada.", "success")
+
+    except requests.Timeout:
+        flash("O servidor do WhatsApp demorou para responder.", "danger")
+
+    except requests.ConnectionError:
+        flash("Não foi possível acessar a Evolution API.", "danger")
+
+    except requests.RequestException as erro:
+        logger.exception("Erro criando sessão Evolution: %s", erro)
+        flash("Erro ao preparar o WhatsApp.", "danger")
+
+    return redirect("/campanhas")
+
+
+def interpretar_contato(linha):
+    """
+    Aceita:
+    João;11999999999
+    João,11999999999
+    João 11999999999
+    11999999999
+    """
+    linha = str(linha or "").strip()
+
+    if not linha:
+        return None, None, "Contato vazio."
+
+    nome = ""
+    telefone_digitado = ""
+
+    if ";" in linha:
+        nome, telefone_digitado = linha.split(";", 1)
+        nome = nome.strip()
+        telefone_digitado = telefone_digitado.strip()
+
+    elif "," in linha:
+        nome, telefone_digitado = linha.split(",", 1)
+        nome = nome.strip()
+        telefone_digitado = telefone_digitado.strip()
+
+    else:
+        encontrado = re.search(
+            r"(\+?\d[\d\s().-]{8,}\d)$",
+            linha
+        )
+
+        if encontrado:
+            telefone_digitado = encontrado.group(1)
+            nome = linha[:encontrado.start()].strip()
+        else:
+            somente_digitos = re.sub(r"\D", "", linha)
+
+            if len(somente_digitos) in (10, 11, 12, 13):
+                telefone_digitado = linha
+            else:
+                return None, None, "Formato de contato inválido."
+
+    telefone = re.sub(r"\D", "", telefone_digitado)
+
+    if telefone.startswith("00"):
+        telefone = telefone[2:]
+
+    telefone = telefone.lstrip("0")
+
+    if telefone and not telefone.startswith("55"):
+        telefone = "55" + telefone
+
+    if len(telefone) not in (12, 13):
+        return None, None, "Telefone inválido."
+
+    if not nome:
+        nome = "cliente"
+
+    return nome, telefone, None
+
+
+@app.route("/campanhas/enviar-whatsapp-individual", methods=["POST"])
+@verificar_sessao
+def campanhas_enviar_whatsapp_individual():
+
+    try:
+        dados = request.get_json(silent=True) or {}
+
+        linha = str(dados.get("contato", "")).strip()
+        mensagem_base = str(dados.get("mensagem", "")).strip()
+
+        nome_instancia = obter_instancia_whatsapp_usuario()
+
+        if not nome_instancia:
+            return jsonify({
+                "sucesso": False,
+                "erro": "Usuário não identificado."
+            }), 401
+
+        if not mensagem_base:
+            return jsonify({
+                "sucesso": False,
+                "erro": "Mensagem vazia."
+            }), 400
+
+        # Estado REAL consultado na Evolution.
+        estado, erro_estado = obter_estado_evolution(nome_instancia)
+
+        if erro_estado:
+            return jsonify({
+                "sucesso": False,
+                "erro": erro_estado
+            }), 503
+
+        if estado not in ("open", "connected", "conectado"):
+            return jsonify({
+                "sucesso": False,
+                "erro": (
+                    "WhatsApp desconectado. "
+                    f"Estado: {estado or 'desconhecido'}."
+                )
+            }), 409
+
+        nome, telefone, erro_contato = interpretar_contato(linha)
+
+        if erro_contato:
+            return jsonify({
+                "sucesso": False,
+                "erro": erro_contato
+            }), 400
+
+        mensagem_final = (
+            mensagem_base
+            .replace("{nome}", nome)
+            .replace("{name}", nome)
+            .replace("{telefone}", telefone)
+            .replace("{phone}", telefone)
+        )
+
+        endpoint = (
+            f"{EVOLUTION_URL}"
+            f"/message/sendText/"
+            f"{nome_instancia}"
+        )
+
+        payload = {
+            "number": telefone,
+            "text": mensagem_final
+        }
+
+        logger.info(
+            "WHATSAPP ENVIO | instancia=%s | telefone=%s",
+            nome_instancia,
+            telefone
+        )
+
+        try:
+            resposta = requests.post(
+                endpoint,
+                headers=evolution_headers(),
+                json=payload,
+                timeout=(8, 35)
+            )
+
+        except requests.ConnectTimeout:
+            return jsonify({
+                "sucesso": False,
+                "telefone": telefone,
+                "erro": "Tempo esgotado ao conectar com a Evolution."
+            }), 503
+
+        except requests.ReadTimeout:
+            # Não repete automaticamente: a mensagem pode ter sido aceita.
+            return jsonify({
+                "sucesso": False,
+                "telefone": telefone,
+                "erro": (
+                    "A Evolution demorou para responder. "
+                    "Confira o WhatsApp antes de repetir."
+                )
+            }), 504
+
+        except requests.ConnectionError:
+            return jsonify({
+                "sucesso": False,
+                "telefone": telefone,
+                "erro": "Conexão com a Evolution perdida."
+            }), 503
+
+        except requests.RequestException as erro:
+            logger.exception("Erro Evolution: %s", erro)
+            return jsonify({
+                "sucesso": False,
+                "telefone": telefone,
+                "erro": "Erro de comunicação com a Evolution."
+            }), 503
+
+        logger.info(
+            "WHATSAPP RESPOSTA | telefone=%s | status=%s | resposta=%s",
+            telefone,
+            resposta.status_code,
+            resposta.text[:500]
+        )
+
+        if resposta.status_code not in (200, 201):
+            detalhe = resposta.text.strip()
+
+            if len(detalhe) > 500:
+                detalhe = detalhe[:500]
+
+            if resposta.status_code == 401:
+                mensagem_erro = "Chave da Evolution inválida."
+
+            elif resposta.status_code == 404:
+                mensagem_erro = "Instância do WhatsApp não encontrada."
+
+            elif resposta.status_code == 429:
+                mensagem_erro = "Servidor temporariamente ocupado."
+
+            elif resposta.status_code >= 500:
+                mensagem_erro = "Evolution apresentou erro interno."
+
+            else:
+                mensagem_erro = (
+                    f"Evolution retornou HTTP {resposta.status_code}."
+                )
+
+                if detalhe:
+                    mensagem_erro += f" Detalhe: {detalhe}"
+
+            return jsonify({
+                "sucesso": False,
+                "telefone": telefone,
+                "erro": mensagem_erro
+            }), 502
+
+        try:
+            retorno = resposta.json()
+        except ValueError:
+            retorno = {}
+
+        erro_evolution = None
+
+        if isinstance(retorno, dict):
+            erro_evolution = (
+                retorno.get("error")
+                or retorno.get("errors")
+            )
+
+        if erro_evolution:
+            return jsonify({
+                "sucesso": False,
+                "telefone": telefone,
+                "erro": str(erro_evolution)[:500]
+            }), 502
+
+        mensagem_id = None
+
+        if isinstance(retorno, dict):
+            if isinstance(retorno.get("key"), dict):
+                mensagem_id = retorno["key"].get("id")
+
+            mensagem_id = (
+                mensagem_id
+                or retorno.get("id")
+                or retorno.get("messageId")
+            )
+
+        logger.info(
+            "WHATSAPP ACEITO | telefone=%s | id=%s",
+            telefone,
+            mensagem_id
+        )
+
+        return jsonify({
+            "sucesso": True,
+            "nome": nome,
+            "telefone": telefone,
+            "mensagem_id": mensagem_id
+        })
+
+    except Exception as erro:
+        logger.exception(
+            "Erro inesperado no disparador WhatsApp: %s",
+            erro
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "erro": "Erro inesperado durante o envio."
+        }), 500
 
 
 @app.route('/termos')
@@ -4740,1038 +4678,7 @@ def verificar_login():
     return "ativo"
 
 
-@app.route("/campanhas/enviar-whatsapp-individual", methods=["POST"])
-@verificar_sessao
-def campanhas_enviar_whatsapp_individual():
 
-    try:
-        dados = request.get_json(silent=True) or {}
-
-        linha = str(dados.get("contato", "")).strip()
-        mensagem_base = str(dados.get("mensagem", "")).strip()
-
-        # Primeiro procura na sessão Flask.
-        # Se não encontrar, recupera do SQLite.
-        nome_instancia = str(
-            obter_instancia_whatsapp_usuario() or ""
-        ).strip()
-
-        # ==========================================
-        # VALIDAÇÕES
-        # ==========================================
-
-        if not nome_instancia:
-            return jsonify({
-                "sucesso": False,
-                "erro": "WhatsApp não conectado."
-            }), 400
-
-        if not linha:
-            return jsonify({
-                "sucesso": False,
-                "erro": "Contato vazio."
-            }), 400
-
-        if not mensagem_base:
-            return jsonify({
-                "sucesso": False,
-                "erro": "Mensagem vazia."
-            }), 400
-
-        evolution_url = str(
-            EVOLUTION_URL or ""
-        ).rstrip("/")
-
-        evolution_api_key = str(
-            EVOLUTION_API_KEY or ""
-        ).strip()
-
-        if not evolution_url or not evolution_api_key:
-
-            logger.error(
-                "Evolution API não configurada."
-            )
-
-            return jsonify({
-                "sucesso": False,
-                "erro": "Evolution API não configurada."
-            }), 500
-
-        headers = {
-            "apikey": evolution_api_key,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-
-        # ==========================================
-        # INTERPRETA O CONTATO
-        # ==========================================
-
-        nome = ""
-        telefone_digitado = ""
-
-        telefone_encontrado = re.search(
-            r"(\+?\d[\d\s().-]{8,}\d)$",
-            linha
-        )
-
-        if telefone_encontrado:
-
-            telefone_digitado = (
-                telefone_encontrado.group(1)
-            )
-
-            nome = linha[
-                :telefone_encontrado.start()
-            ].strip()
-
-            nome = re.sub(
-                r"[\s;,.\|:/=\->]+$",
-                "",
-                nome
-            ).strip()
-
-        else:
-
-            somente_digitos = re.sub(
-                r"\D",
-                "",
-                linha
-            )
-
-            if len(somente_digitos) in (
-                10,
-                11,
-                12,
-                13
-            ):
-                telefone_digitado = linha
-                nome = ""
-
-            else:
-                return jsonify({
-                    "sucesso": False,
-                    "erro": "Formato de contato inválido."
-                }), 400
-
-        telefone = re.sub(
-            r"\D",
-            "",
-            telefone_digitado
-        )
-
-        if telefone.startswith("00"):
-            telefone = telefone[2:]
-
-        telefone = telefone.lstrip("0")
-
-        if telefone and not telefone.startswith("55"):
-            telefone = "55" + telefone
-
-        if len(telefone) not in (12, 13):
-
-            return jsonify({
-                "sucesso": False,
-                "erro": "Telefone inválido."
-            }), 400
-
-        if not nome:
-            nome = "cliente"
-
-        # ==========================================
-        # PERSONALIZA A MENSAGEM
-        # ==========================================
-
-        mensagem_final = (
-            mensagem_base
-            .replace("{nome}", nome)
-            .replace("{name}", nome)
-            .replace("{telefone}", telefone)
-            .replace("{phone}", telefone)
-        )
-
-        # ==========================================
-        # VERIFICA CONEXÃO
-        # ==========================================
-
-        try:
-
-            resposta_status = requests.get(
-                (
-                    f"{evolution_url}"
-                    f"/instance/connectionState/"
-                    f"{nome_instancia}"
-                ),
-                headers=headers,
-                timeout=(5, 12)
-            )
-
-        except requests.Timeout:
-
-            logger.warning(
-                "Timeout verificando WhatsApp."
-            )
-
-            return jsonify({
-                "sucesso": False,
-                "erro": (
-                    "Servidor do WhatsApp demorou "
-                    "para responder."
-                )
-            }), 503
-
-        except requests.ConnectionError:
-
-            logger.warning(
-                "Evolution indisponível."
-            )
-
-            return jsonify({
-                "sucesso": False,
-                "erro": (
-                    "Não foi possível acessar "
-                    "o servidor do WhatsApp."
-                )
-            }), 503
-
-        if resposta_status.status_code not in (
-            200,
-            201
-        ):
-
-            return jsonify({
-                "sucesso": False,
-                "erro": (
-                    "Não foi possível confirmar "
-                    "a conexão do WhatsApp."
-                )
-            }), 503
-
-        try:
-
-            dados_status = resposta_status.json()
-
-        except ValueError:
-
-            dados_status = {}
-
-        estado = str(
-            dados_status
-            .get("instance", {})
-            .get("state")
-
-            or dados_status.get("state")
-
-            or dados_status.get("status")
-
-            or ""
-        ).strip().lower()
-
-        estados_conectados = {
-            "open",
-            "connected",
-            "conectado"
-        }
-
-        if estado not in estados_conectados:
-
-            return jsonify({
-                "sucesso": False,
-                "erro": (
-                    "WhatsApp desconectado. "
-                    f"Estado: {estado or 'desconhecido'}."
-                )
-            }), 409
-
-        # ==========================================
-        # ENVIA
-        # ==========================================
-
-        endpoint = (
-            f"{evolution_url}"
-            f"/message/sendText/"
-            f"{nome_instancia}"
-        )
-
-        payload = {
-            "number": telefone,
-            "text": mensagem_final
-        }
-
-        logger.info(
-            "WHATSAPP ENVIO | instancia=%s | telefone=%s",
-            nome_instancia,
-            telefone
-        )
-
-        try:
-
-            resposta = requests.post(
-                endpoint,
-                headers=headers,
-                json=payload,
-                timeout=(8, 35)
-            )
-
-        except requests.ConnectTimeout:
-
-            return jsonify({
-                "sucesso": False,
-                "telefone": telefone,
-                "erro": (
-                    "Tempo esgotado ao conectar "
-                    "com a Evolution."
-                )
-            }), 503
-
-        except requests.ReadTimeout:
-
-            # Não tenta de novo automaticamente.
-            # A mensagem pode ter sido enviada
-            # mesmo sem a resposta chegar.
-
-            return jsonify({
-                "sucesso": False,
-                "telefone": telefone,
-                "erro": (
-                    "A Evolution demorou para responder. "
-                    "Confira o WhatsApp antes de repetir."
-                )
-            }), 504
-
-        except requests.ConnectionError:
-
-            return jsonify({
-                "sucesso": False,
-                "telefone": telefone,
-                "erro": (
-                    "Conexão com a Evolution perdida."
-                )
-            }), 503
-
-        except requests.RequestException as erro:
-
-            logger.exception(
-                "Erro Evolution: %s",
-                erro
-            )
-
-            return jsonify({
-                "sucesso": False,
-                "telefone": telefone,
-                "erro": "Erro de comunicação com a Evolution."
-            }), 503
-
-        logger.info(
-            (
-                "WHATSAPP RESPOSTA | telefone=%s "
-                "| status=%s | resposta=%s"
-            ),
-            telefone,
-            resposta.status_code,
-            resposta.text[:500]
-        )
-
-        # ==========================================
-        # ANALISA RESPOSTA
-        # ==========================================
-
-        if resposta.status_code not in (
-            200,
-            201
-        ):
-
-            if resposta.status_code == 401:
-
-                erro = "Chave da Evolution inválida."
-
-            elif resposta.status_code == 404:
-
-                erro = (
-                    "Instância do WhatsApp "
-                    "não encontrada."
-                )
-
-            elif resposta.status_code == 429:
-
-                erro = (
-                    "Servidor temporariamente "
-                    "ocupado."
-                )
-
-            elif resposta.status_code >= 500:
-
-                erro = (
-                    "Evolution apresentou "
-                    "erro interno."
-                )
-
-            else:
-
-                erro = (
-                    f"Evolution retornou HTTP "
-                    f"{resposta.status_code}."
-                )
-
-            return jsonify({
-                "sucesso": False,
-                "telefone": telefone,
-                "erro": erro
-            }), 502
-
-        try:
-
-            retorno = resposta.json()
-
-        except ValueError:
-
-            retorno = {}
-
-        erro_evolution = (
-            retorno.get("error")
-            or retorno.get("errors")
-        )
-
-        if erro_evolution:
-
-            return jsonify({
-                "sucesso": False,
-                "telefone": telefone,
-                "erro": str(
-                    erro_evolution
-                )[:250]
-            }), 502
-
-        # ==========================================
-        # ID DA MENSAGEM
-        # ==========================================
-
-        mensagem_id = None
-
-        if isinstance(retorno, dict):
-
-            mensagem_id = (
-                retorno.get("key", {}).get("id")
-                if isinstance(
-                    retorno.get("key"),
-                    dict
-                )
-                else None
-            )
-
-            mensagem_id = (
-                mensagem_id
-                or retorno.get("id")
-                or retorno.get("messageId")
-            )
-
-        logger.info(
-            (
-                "WHATSAPP ACEITO | "
-                "telefone=%s | id=%s"
-            ),
-            telefone,
-            mensagem_id
-        )
-
-        return jsonify({
-            "sucesso": True,
-            "nome": nome,
-            "telefone": telefone,
-            "mensagem_id": mensagem_id
-        })
-
-    except Exception as erro:
-
-        logger.exception(
-            "Erro inesperado no disparador: %s",
-            erro
-        )
-
-        return jsonify({
-            "sucesso": False,
-            "erro": (
-                "Erro inesperado durante o envio."
-            )
-        }), 500
- 
-@app.route("/campanhas/enviar-teste-whatsapp", methods=["POST"])
-@verificar_sessao
-def campanhas_enviar_teste_whatsapp():
-    """
-    Formatos aceitos:
-
-    João;62999999999
-    João,62999999999
-    João.62999999999
-    João|62999999999
-    João:62999999999
-    João/62999999999
-    João-62999999999
-    João=62999999999
-    João => 62999999999
-    João 62999999999
-    João (62) 99999-9999
-    62999999999
-
-    Variáveis da mensagem:
-
-    {nome}
-    {name}
-    {telefone}
-    {phone}
-    """
-
-    nome_instancia = str(
-        session.get("whatsapp_instancia", "")
-    ).strip()
-
-    contatos_texto = request.form.get("numeros", "").strip()
-    mensagem_base = request.form.get("mensagem", "").strip()
-
-    # Limpa os avisos da campanha anterior.
-    session.pop("erro_envio", None)
-    session.pop("sucesso_envio", None)
-    session.pop("campanha_finalizada", None)
-
-    # =========================================================
-    # VALIDAÇÕES INICIAIS
-    # =========================================================
-
-    if not nome_instancia:
-        session["erro_envio"] = (
-            "Nenhuma sessão WhatsApp foi encontrada. "
-            "Conecte o WhatsApp antes de enviar."
-        )
-        return redirect("/campanhas")
-
-    if not contatos_texto:
-        session["erro_envio"] = "Informe pelo menos um contato."
-        return redirect("/campanhas")
-
-    if not mensagem_base:
-        session["erro_envio"] = "Digite a mensagem da campanha."
-        return redirect("/campanhas")
-
-    evolution_url = str(EVOLUTION_URL or "").rstrip("/")
-    evolution_api_key = str(EVOLUTION_API_KEY or "").strip()
-
-    if not evolution_url or not evolution_api_key:
-        logger.error("Evolution API não configurada corretamente.")
-
-        session["erro_envio"] = (
-            "A integração com o WhatsApp não está configurada corretamente."
-        )
-        return redirect("/campanhas")
-
-    headers = {
-        "apikey": evolution_api_key,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
-
-    # Evita deixar uma requisição aberta por tempo demais.
-    LIMITE_CONTATOS = 30
-
-    # Pausa entre as mensagens.
-    INTERVALO_MINIMO = 4
-    INTERVALO_MAXIMO = 7
-
-    # =========================================================
-    # VERIFICA SE A INSTÂNCIA ESTÁ CONECTADA
-    # =========================================================
-
-    try:
-        resposta_conexao = requests.get(
-            (
-                f"{evolution_url}/instance/connectionState/"
-                f"{nome_instancia}"
-            ),
-            headers=headers,
-            timeout=(5, 15)
-        )
-
-        logger.info(
-            "CONEXÃO EVOLUTION | instancia=%s | status=%s | resposta=%s",
-            nome_instancia,
-            resposta_conexao.status_code,
-            resposta_conexao.text[:500]
-        )
-
-        if resposta_conexao.status_code not in (200, 201):
-            session["erro_envio"] = (
-                "Não foi possível confirmar a conexão do WhatsApp. "
-                f"A Evolution retornou HTTP "
-                f"{resposta_conexao.status_code}."
-            )
-            return redirect("/campanhas")
-
-        try:
-            dados_conexao = resposta_conexao.json()
-        except ValueError:
-            dados_conexao = {}
-
-        estado = str(
-            dados_conexao.get("instance", {}).get("state")
-            or dados_conexao.get("state")
-            or dados_conexao.get("status")
-            or ""
-        ).strip().lower()
-
-        estados_conectados = {
-            "open",
-            "connected",
-            "conectado"
-        }
-
-        if estado not in estados_conectados:
-            session["erro_envio"] = (
-                "O WhatsApp não está conectado neste momento. "
-                f"Estado atual: {estado or 'desconhecido'}. "
-                "Reconecte a sessão e tente novamente."
-            )
-            return redirect("/campanhas")
-
-    except requests.ConnectTimeout:
-        logger.exception(
-            "Timeout ao conectar com a Evolution API."
-        )
-
-        session["erro_envio"] = (
-            "A Evolution API demorou para aceitar a conexão. "
-            "Tente novamente."
-        )
-        return redirect("/campanhas")
-
-    except requests.ConnectionError:
-        logger.exception(
-            "Não foi possível acessar a Evolution API."
-        )
-
-        session["erro_envio"] = (
-            "O servidor da Evolution API está indisponível."
-        )
-        return redirect("/campanhas")
-
-    except requests.RequestException as erro:
-        logger.exception(
-            "Erro ao consultar a conexão da Evolution: %s",
-            erro
-        )
-
-        session["erro_envio"] = (
-            "Não foi possível verificar a conexão do WhatsApp."
-        )
-        return redirect("/campanhas")
-
-    # =========================================================
-    # LEITURA E NORMALIZAÇÃO DOS CONTATOS
-    # =========================================================
-
-    contatos = []
-    linhas_invalidas = []
-    numeros_adicionados = set()
-
-    for numero_linha, linha_original in enumerate(
-        contatos_texto.splitlines(),
-        start=1
-    ):
-        linha = linha_original.strip()
-
-        if not linha:
-            continue
-
-        nome = ""
-        telefone_digitado = ""
-
-        # Procura um telefone no final da linha.
-        # Aceita números com espaços, parênteses, pontos e hífens.
-        telefone_encontrado = re.search(
-            r"(\+?\d[\d\s().-]{8,}\d)$",
-            linha
-        )
-
-        if telefone_encontrado:
-            telefone_digitado = telefone_encontrado.group(1)
-
-            # Tudo que estiver antes do telefone será tratado como nome.
-            nome = linha[:telefone_encontrado.start()].strip()
-
-            # Remove separadores deixados no final do nome.
-            nome = re.sub(
-                r"[\s;,.\|:/=\->]+$",
-                "",
-                nome
-            ).strip()
-
-        else:
-            # Caso não encontre pelo padrão anterior, verifica se
-            # a linha inteira contém somente um número.
-            somente_digitos = re.sub(r"\D", "", linha)
-
-            if len(somente_digitos) in (10, 11, 12, 13):
-                telefone_digitado = linha
-                nome = ""
-            else:
-                linhas_invalidas.append(
-                    f"Linha {numero_linha}: {linha_original.strip()}"
-                )
-                continue
-
-        # Deixa somente os números.
-        telefone = re.sub(r"\D", "", telefone_digitado)
-
-        # Remove o prefixo internacional 00.
-        if telefone.startswith("00"):
-            telefone = telefone[2:]
-
-        # Remove zeros antes do DDD.
-        telefone = telefone.lstrip("0")
-
-        # Adiciona o código do Brasil quando necessário.
-        if telefone and not telefone.startswith("55"):
-            telefone = f"55{telefone}"
-
-        # 55 + DDD + número:
-        # normalmente 12 ou 13 dígitos.
-        if len(telefone) not in (12, 13):
-            linhas_invalidas.append(
-                f"Linha {numero_linha}: telefone inválido"
-            )
-            continue
-
-        ddd = telefone[2:4]
-
-        if len(ddd) != 2 or ddd.startswith("0"):
-            linhas_invalidas.append(
-                f"Linha {numero_linha}: DDD inválido"
-            )
-            continue
-
-        # Evita disparar duas vezes para o mesmo telefone.
-        if telefone in numeros_adicionados:
-            logger.info(
-                "CONTATO DUPLICADO IGNORADO | telefone=%s",
-                telefone
-            )
-            continue
-
-        numeros_adicionados.add(telefone)
-
-        contatos.append({
-            "nome": nome or "cliente",
-            "telefone": telefone
-        })
-
-    if not contatos:
-        session["erro_envio"] = (
-            "Nenhum contato válido foi encontrado. "
-            "Exemplo: João;62999999999"
-        )
-        return redirect("/campanhas")
-
-    if len(contatos) > LIMITE_CONTATOS:
-        session["erro_envio"] = (
-            f"Envie no máximo {LIMITE_CONTATOS} contatos por campanha. "
-            "Divida a lista em grupos menores."
-        )
-        return redirect("/campanhas")
-
-    # =========================================================
-    # ENVIO DAS MENSAGENS
-    # =========================================================
-
-    enviados = []
-    falhas = []
-
-    endpoint_envio = (
-        f"{evolution_url}/message/sendText/{nome_instancia}"
-    )
-
-    total_contatos = len(contatos)
-
-    for indice, contato in enumerate(contatos, start=1):
-        nome = contato["nome"]
-        telefone = contato["telefone"]
-
-        mensagem_final = (
-            mensagem_base
-            .replace("{nome}", nome)
-            .replace("{name}", nome)
-            .replace("{telefone}", telefone)
-            .replace("{phone}", telefone)
-        )
-
-        payload = {
-            "number": telefone,
-            "text": mensagem_final
-        }
-
-        logger.info(
-            (
-                "INICIANDO ENVIO | atual=%s | total=%s | "
-                "nome=%s | telefone=%s"
-            ),
-            indice,
-            total_contatos,
-            nome,
-            telefone
-        )
-
-        try:
-            resposta = requests.post(
-                endpoint_envio,
-                json=payload,
-                headers=headers,
-                timeout=(10, 40)
-            )
-
-            corpo_resposta = resposta.text[:1000]
-
-            logger.info(
-                (
-                    "RESPOSTA ENVIO | telefone=%s | "
-                    "status=%s | resposta=%s"
-                ),
-                telefone,
-                resposta.status_code,
-                corpo_resposta
-            )
-
-            if resposta.status_code in (200, 201):
-                try:
-                    dados_envio = resposta.json()
-                except ValueError:
-                    dados_envio = {}
-
-                erro_interno = (
-                    dados_envio.get("error")
-                    or dados_envio.get("errors")
-                )
-
-                if erro_interno:
-                    falhas.append({
-                        "nome": nome,
-                        "telefone": telefone,
-                        "motivo": str(erro_interno)[:180]
-                    })
-                else:
-                    enviados.append({
-                        "nome": nome,
-                        "telefone": telefone
-                    })
-
-            elif resposta.status_code == 401:
-                falhas.append({
-                    "nome": nome,
-                    "telefone": telefone,
-                    "motivo": "Chave da Evolution API inválida."
-                })
-
-                # Interrompe, pois todos os próximos terão o mesmo erro.
-                break
-
-            elif resposta.status_code == 404:
-                falhas.append({
-                    "nome": nome,
-                    "telefone": telefone,
-                    "motivo": (
-                        "Instância ou endpoint não encontrado."
-                    )
-                })
-
-                break
-
-            elif resposta.status_code == 429:
-                falhas.append({
-                    "nome": nome,
-                    "telefone": telefone,
-                    "motivo": (
-                        "Muitas requisições em pouco tempo."
-                    )
-                })
-
-                time.sleep(15)
-
-            elif resposta.status_code >= 500:
-                falhas.append({
-                    "nome": nome,
-                    "telefone": telefone,
-                    "motivo": (
-                        f"Erro interno da Evolution "
-                        f"(HTTP {resposta.status_code})."
-                    )
-                })
-
-                time.sleep(8)
-
-            else:
-                falhas.append({
-                    "nome": nome,
-                    "telefone": telefone,
-                    "motivo": (
-                        f"HTTP {resposta.status_code}: "
-                        f"{corpo_resposta[:180]}"
-                    )
-                })
-
-        except requests.ConnectTimeout:
-            logger.exception(
-                "Timeout de conexão ao enviar para %s.",
-                telefone
-            )
-
-            falhas.append({
-                "nome": nome,
-                "telefone": telefone,
-                "motivo": (
-                    "Tempo esgotado ao conectar com a Evolution."
-                )
-            })
-
-        except requests.ReadTimeout:
-            logger.exception(
-                "Timeout de resposta ao enviar para %s.",
-                telefone
-            )
-
-            # Não repete automaticamente para evitar mensagem duplicada.
-            falhas.append({
-                "nome": nome,
-                "telefone": telefone,
-                "motivo": (
-                    "A Evolution demorou para responder. "
-                    "Confira se a mensagem foi enviada antes de repetir."
-                )
-            })
-
-        except requests.ConnectionError:
-            logger.exception(
-                "Conexão perdida durante o envio para %s.",
-                telefone
-            )
-
-            falhas.append({
-                "nome": nome,
-                "telefone": telefone,
-                "motivo": (
-                    "A conexão com a Evolution API foi perdida."
-                )
-            })
-
-            break
-
-        except requests.RequestException as erro:
-            logger.exception(
-                "Erro ao enviar para %s: %s",
-                telefone,
-                erro
-            )
-
-            falhas.append({
-                "nome": nome,
-                "telefone": telefone,
-                "motivo": str(erro)[:180]
-            })
-
-        except Exception as erro:
-            logger.exception(
-                "Erro inesperado no envio para %s: %s",
-                telefone,
-                erro
-            )
-
-            falhas.append({
-                "nome": nome,
-                "telefone": telefone,
-                "motivo": "Erro inesperado durante o envio."
-            })
-
-        # Não espera depois do último contato.
-        if indice < total_contatos:
-            intervalo = random.uniform(
-                INTERVALO_MINIMO,
-                INTERVALO_MAXIMO
-            )
-
-            logger.info(
-                "AGUARDANDO %.1f segundos antes do próximo envio.",
-                intervalo
-            )
-
-            time.sleep(intervalo)
-
-    # =========================================================
-    # RESULTADO FINAL
-    # =========================================================
-
-    quantidade_enviados = len(enviados)
-    quantidade_falhas = len(falhas)
-    quantidade_invalidos = len(linhas_invalidas)
-
-    session["campanha_finalizada"] = (
-        f"{quantidade_enviados} enviada(s), "
-        f"{quantidade_falhas} falha(s) e "
-        f"{quantidade_invalidos} contato(s) inválido(s)."
-    )
-
-    if quantidade_enviados:
-        session["sucesso_envio"] = (
-            f"{quantidade_enviados} mensagem(ns) aceita(s) "
-            "pela Evolution API."
-        )
-
-    mensagens_erro = []
-
-    if linhas_invalidas:
-        resumo_invalidos = " | ".join(
-            linhas_invalidas[:5]
-        )
-
-        if len(linhas_invalidas) > 5:
-            resumo_invalidos += (
-                f" | e mais {len(linhas_invalidas) - 5}"
-            )
-
-        mensagens_erro.append(
-            f"Contatos inválidos: {resumo_invalidos}."
-        )
-
-    if falhas:
-        resumo_falhas = []
-
-        for falha in falhas[:5]:
-            resumo_falhas.append(
-                f'{falha["nome"]} ({falha["telefone"]}): '
-                f'{falha["motivo"]}'
-            )
-
-        texto_falhas = " | ".join(resumo_falhas)
-
-        if len(falhas) > 5:
-            texto_falhas += (
-                f" | e mais {len(falhas) - 5}"
-            )
-
-        mensagens_erro.append(
-            f"Falhas no envio: {texto_falhas}."
-        )
-
-    if mensagens_erro:
-        session["erro_envio"] = " ".join(mensagens_erro)
-
-    logger.info(
-        (
-            "CAMPANHA FINALIZADA | instancia=%s | "
-            "enviados=%s | falhas=%s | invalidos=%s"
-        ),
-        nome_instancia,
-        quantidade_enviados,
-        quantidade_falhas,
-        quantidade_invalidos
-    )
-
-    return redirect("/campanhas")
     
 @app.route("/api/session/<session>/status")
 def session_status(session):
@@ -8134,9 +7041,9 @@ def manutencao():
 
 
 
-EVOLUTION_URL = "https://zoom-leggings-viability.ngrok-free.dev"
-EVOLUTION_API_KEY = "123456789"
-EVOLUTION_INSTANCE = "smartcrm"  # coloque exatamente o nome da sua instância
+# EVOLUTION_URL e EVOLUTION_API_KEY já foram configurados acima.
+# Mantido apenas para a rota legada /whatsapp.
+EVOLUTION_INSTANCE = "smartcrm"  # instância usada somente pela rota /whatsapp
 
 
 @app.route("/whatsapp", methods=["GET", "POST"])
