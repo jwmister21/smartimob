@@ -74,10 +74,46 @@ os.makedirs(DB_DIR, exist_ok=True)
 
 DB_PATH = os.path.join(DB_DIR, "imobiliaria.db")
 
+def configurar_sqlite():
+    try:
+        conn = sqlite3.connect(
+            DB_PATH,
+            timeout=15
+        )
+
+        conn.execute("PRAGMA busy_timeout = 15000")
+
+        # WAL melhora leitura/escrita simultânea.
+        conn.execute("PRAGMA journal_mode=WAL")
+
+        conn.execute("PRAGMA synchronous=NORMAL")
+
+        conn.close()
+
+        logger.info("SQLite configurado em modo WAL.")
+
+    except Exception as erro:
+        logger.exception(
+            "Erro configurando SQLite: %s",
+            erro
+        )
+
+
+configurar_sqlite()
+
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(
+        DB_PATH,
+        timeout=15
+    )
+
     conn.row_factory = sqlite3.Row
+
+    # Se outro processo estiver gravando,
+    # espera em vez de retornar "database is locked".
+    conn.execute("PRAGMA busy_timeout = 15000")
+
     return conn
 
 # Inicialização do Banco
@@ -3284,16 +3320,226 @@ def whatsapp_sessoes():
     return render_template("campanhas.html")
 
 
+def salvar_sessao_whatsapp(
+    usuario_id,
+    empresa_id,
+    nome_instancia,
+    status="created"
+):
+    """
+    Salva/vincula a instância ao usuário.
+
+    É chamado apenas quando a sessão é criada/conectada.
+    NÃO é chamado a cada mensagem.
+    """
+
+    conn = None
+
+    try:
+        conn = sqlite3.connect(
+            DB_PATH,
+            timeout=15
+        )
+
+        conn.row_factory = sqlite3.Row
+
+        conn.execute(
+            "PRAGMA busy_timeout = 15000"
+        )
+
+        # Procura a sessão mais recente desse usuário.
+        registro = conn.execute("""
+            SELECT id
+            FROM whatsapp_sessoes
+            WHERE usuario_id = ?
+            ORDER BY id DESC
+            LIMIT 1
+        """, (
+            usuario_id,
+        )).fetchone()
+
+        if registro:
+
+            conn.execute("""
+                UPDATE whatsapp_sessoes
+                SET
+                    empresa_id = ?,
+                    session_name = ?,
+                    status = ?,
+                    atualizado_em = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (
+                empresa_id,
+                nome_instancia,
+                status,
+                registro["id"]
+            ))
+
+        else:
+
+            conn.execute("""
+                INSERT INTO whatsapp_sessoes (
+                    empresa_id,
+                    usuario_id,
+                    session_name,
+                    status,
+                    atualizado_em
+                )
+                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+            """, (
+                empresa_id,
+                usuario_id,
+                nome_instancia,
+                status
+            ))
+
+        conn.commit()
+
+        logger.info(
+            "WHATSAPP SESSÃO SALVA | usuario=%s | instancia=%s",
+            usuario_id,
+            nome_instancia
+        )
+
+        return True
+
+    except sqlite3.OperationalError as erro:
+
+        logger.exception(
+            "SQLite ocupado ao salvar sessão WhatsApp: %s",
+            erro
+        )
+
+        return False
+
+    except Exception as erro:
+
+        logger.exception(
+            "Erro salvando sessão WhatsApp: %s",
+            erro
+        )
+
+        return False
+
+    finally:
+
+        if conn:
+            conn.close()
 
 
-@app.route("/campanhas/criar-sessao-whatsapp", methods=["POST"])
+def obter_instancia_whatsapp_usuario():
+    """
+    Primeiro usa a sessão Flask.
+
+    Só consulta SQLite se a sessão Flask
+    ainda não souber qual é a instância.
+    """
+
+    nome_instancia = str(
+        session.get(
+            "whatsapp_instancia",
+            ""
+        )
+    ).strip()
+
+    if nome_instancia:
+        return nome_instancia
+
+    usuario_id = session.get("usuario_id")
+
+    if not usuario_id:
+        return None
+
+    conn = None
+
+    try:
+
+        conn = sqlite3.connect(
+            DB_PATH,
+            timeout=15
+        )
+
+        conn.row_factory = sqlite3.Row
+
+        conn.execute(
+            "PRAGMA busy_timeout = 15000"
+        )
+
+        registro = conn.execute("""
+            SELECT session_name
+            FROM whatsapp_sessoes
+            WHERE usuario_id = ?
+              AND session_name IS NOT NULL
+              AND TRIM(session_name) != ''
+            ORDER BY id DESC
+            LIMIT 1
+        """, (
+            usuario_id,
+        )).fetchone()
+
+        if not registro:
+            return None
+
+        nome_instancia = str(
+            registro["session_name"]
+        ).strip()
+
+        if not nome_instancia:
+            return None
+
+        # Guarda na sessão Flask.
+        # Daqui para frente não precisa consultar
+        # SQLite em cada mensagem.
+        session[
+            "whatsapp_instancia"
+        ] = nome_instancia
+
+        return nome_instancia
+
+    except Exception as erro:
+
+        logger.exception(
+            "Erro buscando sessão WhatsApp: %s",
+            erro
+        )
+
+        return None
+
+    finally:
+
+        if conn:
+            conn.close()
+
+
+
+
+@app.route(
+    "/campanhas/criar-sessao-whatsapp",
+    methods=["POST"]
+)
+@verificar_sessao
 def campanhas_criar_sessao_whatsapp():
-    usuario_id = session.get("usuario_id", 1)
-    nome_instancia = f"usuario_{usuario_id}"
+
+    usuario_id = session.get("usuario_id")
+    empresa_id = session.get("empresa_id")
+
+    if not usuario_id:
+
+        flash(
+            "Usuário não identificado.",
+            "danger"
+        )
+
+        return redirect("/login")
+
+    nome_instancia = (
+        f"usuario_{usuario_id}"
+    )
 
     headers = {
         "apikey": EVOLUTION_API_KEY,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Accept": "application/json"
     }
 
     payload = {
@@ -3302,16 +3548,166 @@ def campanhas_criar_sessao_whatsapp():
         "integration": "WHATSAPP-BAILEYS"
     }
 
-    resposta = requests.post(
-        f"{EVOLUTION_URL}/instance/create",
-        json=payload,
-        headers=headers,
-        timeout=30
-    )
+    try:
 
-    session["whatsapp_instancia"] = nome_instancia
+        resposta = requests.post(
+            f"{EVOLUTION_URL}/instance/create",
+            json=payload,
+            headers=headers,
+            timeout=(8, 30)
+        )
+
+        logger.info(
+            (
+                "CRIAR EVOLUTION | "
+                "usuario=%s | status=%s | resposta=%s"
+            ),
+            usuario_id,
+            resposta.status_code,
+            resposta.text[:500]
+        )
+
+        # 200/201 = criada.
+        #
+        # Algumas versões da Evolution podem
+        # responder erro porque a instância
+        # já existe. Nesse caso verificamos
+        # diretamente o estado dela.
+
+        instancia_valida = (
+            resposta.status_code in (
+                200,
+                201
+            )
+        )
+
+        if not instancia_valida:
+
+            try:
+
+                verificar = requests.get(
+                    (
+                        f"{EVOLUTION_URL}"
+                        f"/instance/connectionState/"
+                        f"{nome_instancia}"
+                    ),
+                    headers={
+                        "apikey":
+                            EVOLUTION_API_KEY
+                    },
+                    timeout=(5, 15)
+                )
+
+                if verificar.status_code in (
+                    200,
+                    201
+                ):
+                    instancia_valida = True
+
+            except requests.RequestException:
+                pass
+
+        if not instancia_valida:
+
+            flash(
+                (
+                    "Não foi possível criar "
+                    "a sessão do WhatsApp."
+                ),
+                "danger"
+            )
+
+            return redirect("/campanhas")
+
+        # -------------------------------
+        # Guarda imediatamente na sessão
+        # Flask.
+        # -------------------------------
+
+        session[
+            "whatsapp_instancia"
+        ] = nome_instancia
+
+        # -------------------------------
+        # Salva UMA VEZ no SQLite.
+        # -------------------------------
+
+        salvo = salvar_sessao_whatsapp(
+            usuario_id=usuario_id,
+            empresa_id=empresa_id,
+            nome_instancia=nome_instancia,
+            status="created"
+        )
+
+        if not salvo:
+
+            # A Evolution continua funcionando
+            # mesmo se neste instante o SQLite
+            # estiver ocupado.
+            #
+            # A sessão Flask já possui a instância.
+
+            logger.warning(
+                (
+                    "Instância %s criada, porém "
+                    "não foi possível persistir "
+                    "imediatamente no SQLite."
+                ),
+                nome_instancia
+            )
+
+        flash(
+            "Sessão WhatsApp preparada.",
+            "success"
+        )
+
+        return redirect("/campanhas")
+
+    except requests.Timeout:
+
+        logger.warning(
+            "Timeout criando sessão Evolution."
+        )
+
+        flash(
+            (
+                "O servidor do WhatsApp demorou "
+                "para responder."
+            ),
+            "danger"
+        )
+
+    except requests.ConnectionError:
+
+        logger.warning(
+            "Evolution/ngrok indisponível."
+        )
+
+        flash(
+            (
+                "Não foi possível acessar "
+                "o servidor do WhatsApp."
+            ),
+            "danger"
+        )
+
+    except Exception as erro:
+
+        logger.exception(
+            (
+                "Erro inesperado criando "
+                "sessão WhatsApp: %s"
+            ),
+            erro
+        )
+
+        flash(
+            "Erro ao preparar o WhatsApp.",
+            "danger"
+        )
 
     return redirect("/campanhas")
+    
      
 @app.route("/admin/ativar-usuario", methods=["POST"])
 @verificar_sessao
@@ -3737,8 +4133,11 @@ def excluir_foto(foto_id):
 
 
 @app.route("/campanhas")
+@verificar_sessao
 def campanhas():
-    nome_instancia = session.get("whatsapp_instancia")
+
+    nome_instancia = obter_instancia_whatsapp_usuario()
+
     qrcode = None
     erro_whatsapp = None
 
@@ -3747,20 +4146,74 @@ def campanhas():
     campanha_finalizada = session.pop("campanha_finalizada", None)
 
     if nome_instancia:
+
         try:
-            headers = {"apikey": EVOLUTION_API_KEY}
+
+            headers = {
+                "apikey": EVOLUTION_API_KEY,
+                "Accept": "application/json"
+            }
 
             resposta_qr = requests.get(
                 f"{EVOLUTION_URL}/instance/connect/{nome_instancia}",
                 headers=headers,
-                timeout=30
+                timeout=(5, 15)
             )
 
-            dados = resposta_qr.json()
-            qrcode = dados.get("base64")
+            if resposta_qr.status_code in (200, 201):
+
+                try:
+                    dados = resposta_qr.json()
+                except ValueError:
+                    dados = {}
+
+                qrcode = (
+                    dados.get("base64")
+                    or dados.get("qrcode", {}).get("base64")
+                )
+
+            elif resposta_qr.status_code == 404:
+
+                erro_whatsapp = (
+                    "A sessão do WhatsApp não foi encontrada "
+                    "na Evolution API."
+                )
+
+            elif resposta_qr.status_code == 401:
+
+                erro_whatsapp = (
+                    "Chave da Evolution API inválida."
+                )
+
+            else:
+
+                erro_whatsapp = (
+                    "Não foi possível consultar o WhatsApp. "
+                    f"HTTP {resposta_qr.status_code}"
+                )
+
+        except requests.Timeout:
+
+            erro_whatsapp = (
+                "O servidor do WhatsApp demorou para responder."
+            )
+
+        except requests.ConnectionError:
+
+            erro_whatsapp = (
+                "Não foi possível conectar ao servidor do WhatsApp."
+            )
 
         except Exception as e:
-            erro_whatsapp = f"Erro ao buscar QR Code: {e}"
+
+            logger.exception(
+                "Erro ao buscar QR Code do WhatsApp: %s",
+                e
+            )
+
+            erro_whatsapp = (
+                "Erro ao consultar a conexão do WhatsApp."
+            )
 
     return render_template(
         "campanhas.html",
@@ -4181,8 +4634,10 @@ def campanhas_enviar_whatsapp_individual():
         linha = str(dados.get("contato", "")).strip()
         mensagem_base = str(dados.get("mensagem", "")).strip()
 
+        # Primeiro procura na sessão Flask.
+        # Se não encontrar, recupera do SQLite.
         nome_instancia = str(
-            session.get("whatsapp_instancia", "")
+            obter_instancia_whatsapp_usuario() or ""
         ).strip()
 
         # ==========================================
@@ -4455,9 +4910,8 @@ def campanhas_enviar_whatsapp_individual():
 
         except requests.ReadTimeout:
 
-            # IMPORTANTE:
-            # não tentamos novamente automaticamente,
-            # porque a mensagem pode ter sido enviada
+            # Não tenta de novo automaticamente.
+            # A mensagem pode ter sido enviada
             # mesmo sem a resposta chegar.
 
             return jsonify({
@@ -4572,7 +5026,10 @@ def campanhas_enviar_whatsapp_individual():
                 )[:250]
             }), 502
 
-        # Tenta recuperar ID retornado
+        # ==========================================
+        # ID DA MENSAGEM
+        # ==========================================
+
         mensagem_id = None
 
         if isinstance(retorno, dict):
