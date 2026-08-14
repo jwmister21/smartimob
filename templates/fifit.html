@@ -554,7 +554,7 @@ imóveis.
 
 <script>
 
-function mudarFoto(id, dir){
+function mudarFoto(id, dir) {
 
     const carousel = document
         .getElementById(id)
@@ -572,26 +572,26 @@ function mudarFoto(id, dir){
 }
 
 
-function copiarLink(botao){
+function copiarLink(botao) {
 
     const link = botao.dataset.link;
 
-    if(!link){
+    if (!link) {
         alert("Nenhum link encontrado.");
         return;
     }
 
-    if(navigator.clipboard && window.isSecureContext){
+    if (navigator.clipboard && window.isSecureContext) {
 
         navigator.clipboard.writeText(link)
-        .then(() => {
-            alert("✅ Link copiado!");
-        })
-        .catch(() => {
-            copiarFallback(link);
-        });
+            .then(() => {
+                alert("✅ Link copiado!");
+            })
+            .catch(() => {
+                copiarFallback(link);
+            });
 
-    }else{
+    } else {
 
         copiarFallback(link);
 
@@ -599,7 +599,7 @@ function copiarLink(botao){
 }
 
 
-function copiarFallback(texto){
+function copiarFallback(texto) {
 
     const input = document.createElement("textarea");
 
@@ -608,7 +608,6 @@ function copiarFallback(texto){
     document.body.appendChild(input);
 
     input.select();
-
     input.setSelectionRange(0, 99999);
 
     document.execCommand("copy");
