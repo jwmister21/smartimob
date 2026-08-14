@@ -8769,102 +8769,71 @@ def informa_imovel(imovel_id):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-
     # ==========================
     # IMÓVEL PRINCIPAL
     # ==========================
 
     cursor.execute("""
-        SELECT *
-        FROM imoveis
-        WHERE id = ?
+        SELECT
+            i.*,
+            u.nome AS corretor_nome,
+            u.telefone AS corretor_telefone,
+            u.foto_url AS corretor_foto
+        FROM imoveis i
+        LEFT JOIN usuarios u
+            ON u.id = i.usuario_id
+        WHERE i.id = ?
     """, (imovel_id,))
-
 
     imovel = cursor.fetchone()
 
-
     if not imovel:
-
         conn.close()
-
-        return "Imóvel não encontrado",404
-
-
+        return "Imóvel não encontrado", 404
 
     imovel = dict(imovel)
-
-
-
-
 
     # ==========================
     # FOTOS DO IMÓVEL
     # ==========================
-
 
     cursor.execute("""
         SELECT nome_arquivo
         FROM fotos_imoveis
         WHERE imovel_id = ?
         ORDER BY capa DESC, id ASC
-    """,(imovel_id,))
-
+    """, (imovel_id,))
 
     fotos = cursor.fetchall()
 
-
-
     imovel["fotos"] = [
-
         foto["nome_arquivo"]
-
         for foto in fotos
-
     ]
-
-
-
-
-
-
 
     # ==========================
     # IMÓVEIS SEMELHANTES
     # ==========================
 
-
-    semelhantes=[]
-
-
+    semelhantes = []
 
     cursor.execute("""
         SELECT *
         FROM imoveis
         WHERE id != ?
-        AND empresa_id = ?
+          AND empresa_id = ?
         ORDER BY RANDOM()
         LIMIT 6
-    """,
-    (
+    """, (
         imovel_id,
         imovel.get("empresa_id")
     ))
 
-
-
     semelhantes_db = cursor.fetchall()
-
-
-
-
 
     for item in semelhantes_db:
 
-
         item = dict(item)
-
-
 
         cursor.execute("""
             SELECT nome_arquivo
@@ -8872,94 +8841,56 @@ def informa_imovel(imovel_id):
             WHERE imovel_id = ?
             ORDER BY id ASC
             LIMIT 1
-        """,
-        (item["id"],))
-
-
+        """, (item["id"],))
 
         foto = cursor.fetchone()
 
-
-
         if foto:
-
             item["foto"] = foto["nome_arquivo"]
-
         else:
-
             item["foto"] = None
 
-
-
-
         semelhantes.append(item)
-
-
-
-
-
- 
-
 
     # ==========================
     # EMPRESA / HEADER
     # ==========================
 
-
     empresa = None
-
-
 
     cursor.execute("""
         SELECT *
         FROM configuracoes_site
         WHERE empresa_id = ?
         LIMIT 1
-    """,
-    (
+    """, (
         imovel.get("empresa_id"),
     ))
 
-
-
     empresa_db = cursor.fetchone()
-
-
-
 
     if empresa_db:
 
-
         empresa = dict(empresa_db)
-
-
 
     else:
 
-
         empresa = {
-
-            "nome_imobiliaria":"SMARTZEN IMOB",
-
-            "logo":None
-
+            "nome_imobiliaria": "SMARTZEN IMOB",
+            "logo": None
         }
 
-
-
-
-
-
+    # ==========================
+    # FECHA BANCO
+    # ==========================
 
     conn.close()
 
-
-
-
-
+    # ==========================
+    # RENDERIZA PÁGINA
+    # ==========================
 
     return render_template(
-
         "informa_imovel.html",
 
         imovel=imovel,
@@ -8967,9 +8898,7 @@ def informa_imovel(imovel_id):
         semelhantes=semelhantes,
 
         empresa=empresa
-
     )
-
 # ==========================================================
 # ASSINATURA POR EMPRESA + SUPER ADMIN
 # Bloco integrado sem remover as rotas originais do sistema
