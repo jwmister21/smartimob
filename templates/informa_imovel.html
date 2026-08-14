@@ -664,10 +664,10 @@ a{color:inherit;}
     <img id="fotoModal" alt="Foto ampliada">
 </div>
 
-<a class="float-whats" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">🟢</a>
+<a class="float-whats" target="_blank" href="https://wa.me/{{ imovel.corretor_telefone }}?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">🟢</a>
 
 <div class="mobile-bar">
-    <a class="whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
+    <a class="whatsapp" target="_blank" href="https://wa.me/{{ imovel.corretor_telefone }}?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
     <a class="compartilhar" onclick="compartilhar()">Compartilhar</a>
 </div>
 
