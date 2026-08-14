@@ -553,58 +553,8 @@ imóveis.
 </div>
 
 <script>
-const USUARIO_LOGADO = {{ 'true' if usuario_logado else 'false' }};
-const LOGIN_URL = "{{ url_for('login', next=request.full_path) }}";
-
-function pedirLogin(event){
-    if(USUARIO_LOGADO){
-        return true;
-    }
-
-    if(event){
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-    }
-
-    window.location.href = LOGIN_URL;
-    return false;
-}
-
-/*
- Impede qualquer botão/ação da página para visitantes.
- O modo capture=true faz o bloqueio acontecer antes dos onclick existentes.
-*/
-document.addEventListener('click', function(event){
-    const acao = event.target.closest(
-        'button, .btn-limpar, .btn-fifit, .btn-copiar, .btn-nav'
-    );
-
-    if(!acao || acao.disabled){
-        return;
-    }
-
-    if(!USUARIO_LOGADO){
-        pedirLogin(event);
-    }
-}, true);
-
-const formFiltros = document.getElementById('form-filtros');
-
-if(formFiltros){
-    formFiltros.addEventListener('submit', function(event){
-        if(!USUARIO_LOGADO){
-            pedirLogin(event);
-        }
-    }, true);
-}
 
 function mudarFoto(id, dir){
-
-    if(!USUARIO_LOGADO){
-        window.location.href = LOGIN_URL;
-        return;
-    }
 
     const carousel = document
         .getElementById(id)
@@ -612,19 +562,17 @@ function mudarFoto(id, dir){
 
     let idx = parseInt(carousel.dataset.index || 0);
 
-    idx = (idx + dir + carousel.children.length) % carousel.children.length;
+    idx = (idx + dir + carousel.children.length)
+        % carousel.children.length;
 
     carousel.dataset.index = idx;
 
-    carousel.style.transform = `translateX(-${idx * 100}%)`;
+    carousel.style.transform =
+        `translateX(-${idx * 100}%)`;
 }
 
-function copiarLink(botao){
 
-    if(!USUARIO_LOGADO){
-        window.location.href = LOGIN_URL;
-        return;
-    }
+function copiarLink(botao){
 
     const link = botao.dataset.link;
 
@@ -644,18 +592,23 @@ function copiarLink(botao){
         });
 
     }else{
+
         copiarFallback(link);
+
     }
 }
+
 
 function copiarFallback(texto){
 
     const input = document.createElement("textarea");
+
     input.value = texto;
 
     document.body.appendChild(input);
 
     input.select();
+
     input.setSelectionRange(0, 99999);
 
     document.execCommand("copy");
@@ -663,6 +616,8 @@ function copiarFallback(texto){
     document.body.removeChild(input);
 
     alert("✅ Link copiado!");
+
 }
+
 </script>
 {% endblock %}
