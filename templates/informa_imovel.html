@@ -602,7 +602,7 @@ a{color:inherit;}
             </div>
 
             <div class="botoes">
-                <a class="btn whatsapp" target="_blank" href="https://wa.me/?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
+                <a class="btn whatsapp" target="_blank" href="https://wa.me/{{ imovel.corretor_telefone }}?text=Tenho interesse no imóvel {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
                 <a class="btn compartilhar" href="#" onclick="compartilhar()">Compartilhar</a>
             </div>
 
@@ -625,7 +625,7 @@ a{color:inherit;}
                 <input type="hidden" name="id_imovel" value="{{ imovel.id }}">
                 <input type="text" name="nome" placeholder="Seu nome" required>
                 <input type="text" name="telefone" placeholder="Seu telefone" required>
-                <textarea name="mensagem">Olá! Gostei do imóvel "{{ imovel.titulo }}" e gostaria de mais informações.</textarea>
+                <textarea name="mensagem">Olá! Gostei do imóvel "{{ imovel.id}}" e gostaria de mais informações.</textarea>
                 <button>Quero ser atendido</button>
             </form>
 
