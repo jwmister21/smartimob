@@ -155,6 +155,146 @@
         white-space: nowrap;
     }
 
+    /* CLIENTES EM ANDAMENTO */
+    .clientes-andamento {
+        margin-bottom: 22px;
+        padding: 20px;
+        border: 1px solid #dbeafe;
+        border-radius: 20px;
+        background: linear-gradient(180deg, #ffffff, #f8fafc);
+    }
+
+    .clientes-andamento-topo {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .clientes-andamento-topo h3 {
+        margin: 0;
+        color: #0f172a;
+        font-size: 19px;
+    }
+
+    .clientes-andamento-topo p {
+        margin: 5px 0 0;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .clientes-filtros {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .clientes-filtros input,
+    .clientes-filtros select {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        border-radius: 13px;
+        padding: 12px 13px;
+        font: inherit;
+        color: #0f172a;
+        outline: none;
+    }
+
+    .clientes-filtros input:focus,
+    .clientes-filtros select:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.10);
+    }
+
+    .clientes-acoes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .clientes-acoes button {
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #334155;
+        padding: 9px 12px;
+        border-radius: 11px;
+        cursor: pointer;
+        font-weight: 800;
+    }
+
+    .clientes-acoes .btn-adicionar-clientes {
+        border-color: #86efac;
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .clientes-lista {
+        max-height: 330px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        background: #ffffff;
+    }
+
+    .cliente-campanha {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 13px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .cliente-campanha:last-child {
+        border-bottom: 0;
+    }
+
+    .cliente-campanha input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #16a34a;
+        cursor: pointer;
+    }
+
+    .cliente-campanha-nome {
+        min-width: 0;
+    }
+
+    .cliente-campanha-nome strong {
+        display: block;
+        color: #0f172a;
+        font-size: 14px;
+    }
+
+    .cliente-campanha-nome span {
+        display: block;
+        margin-top: 3px;
+        color: #64748b;
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .cliente-status {
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-size: 11px;
+        font-weight: 900;
+        white-space: nowrap;
+    }
+
+    .clientes-vazio {
+        padding: 20px;
+        text-align: center;
+        color: #64748b;
+        font-size: 14px;
+    }
+
     .aviso-formato {
         display: flex;
         gap: 12px;
@@ -436,6 +576,23 @@
             width: 100%;
         }
 
+        .clientes-andamento-topo {
+            flex-direction: column;
+        }
+
+        .clientes-filtros {
+            grid-template-columns: 1fr;
+        }
+
+        .cliente-campanha {
+            grid-template-columns: 30px minmax(0, 1fr);
+        }
+
+        .cliente-status {
+            grid-column: 2;
+            justify-self: start;
+        }
+
         .badge-contador {
             text-align: center;
         }
@@ -592,6 +749,95 @@
                 </div>
             {% endif %}
 
+            <!-- CLIENTES EM ANDAMENTO -->
+            <div class="clientes-andamento">
+                <div class="clientes-andamento-topo">
+                    <div>
+                        <h3>👥 Clientes em andamento</h3>
+                        <p>
+                            Filtre, selecione os clientes e monte automaticamente
+                            a lista no formato Nome,Telefone.
+                        </p>
+                    </div>
+
+                    <span class="badge-contador">
+                        <span id="contadorSelecionados">0</span> selecionado(s)
+                    </span>
+                </div>
+
+                <div class="clientes-filtros">
+                    <input
+                        type="search"
+                        id="filtroCliente"
+                        placeholder="Buscar por nome, telefone ou interesse..."
+                        autocomplete="off"
+                    >
+
+                    <select id="filtroStatusCliente">
+                        <option value="todos">Todos em andamento</option>
+                        <option value="Lead Novo">Lead Novo</option>
+                        <option value="Visita Agendada">Visita Agendada</option>
+                        <option value="Negociação">Negociação</option>
+                    </select>
+                </div>
+
+                <div class="clientes-acoes">
+                    <button type="button" id="selecionarFiltrados">
+                        Selecionar filtrados
+                    </button>
+
+                    <button type="button" id="limparSelecaoClientes">
+                        Limpar seleção
+                    </button>
+
+                    <button
+                        type="button"
+                        id="adicionarClientes"
+                        class="btn-adicionar-clientes"
+                    >
+                        + Adicionar selecionados aos contatos
+                    </button>
+                </div>
+
+                <div class="clientes-lista" id="listaClientesCampanha">
+                    {% for cliente in clientes_em_andamento %}
+                        {% set status_cliente = cliente["status_funil"] or "Lead Novo" %}
+                        <label
+                            class="cliente-campanha"
+                            data-nome="{{ (cliente['nome'] or '')|lower|e }}"
+                            data-telefone="{{ (cliente['telefone'] or '')|e }}"
+                            data-interesse="{{ (cliente['interesse'] or '')|lower|e }}"
+                            data-status="{{ status_cliente|e }}"
+                        >
+                            <input
+                                type="checkbox"
+                                class="cliente-checkbox"
+                                data-nome-original="{{ (cliente['nome'] or 'Cliente')|e }}"
+                                data-telefone-original="{{ (cliente['telefone'] or '')|e }}"
+                            >
+
+                            <span class="cliente-campanha-nome">
+                                <strong>{{ cliente["nome"] or "Cliente sem nome" }}</strong>
+                                <span>
+                                    📱 {{ cliente["telefone"] }}
+                                    {% if cliente["interesse"] %}
+                                        · 🏠 {{ cliente["interesse"] }}
+                                    {% endif %}
+                                </span>
+                            </span>
+
+                            <span class="cliente-status">
+                                {{ status_cliente }}
+                            </span>
+                        </label>
+                    {% else %}
+                        <div class="clientes-vazio">
+                            Nenhum cliente em andamento com telefone cadastrado.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
             <div class="aviso-formato">
                 <div class="aviso-icone">💡</div>
 
@@ -744,6 +990,14 @@
                 const loadingEnvio = document.getElementById("loadingEnvio");
                 const atalhos = document.querySelectorAll(".atalho");
 
+                const filtroCliente = document.getElementById("filtroCliente");
+                const filtroStatusCliente = document.getElementById("filtroStatusCliente");
+                const listaClientesCampanha = document.getElementById("listaClientesCampanha");
+                const selecionarFiltrados = document.getElementById("selecionarFiltrados");
+                const limparSelecaoClientes = document.getElementById("limparSelecaoClientes");
+                const adicionarClientes = document.getElementById("adicionarClientes");
+                const contadorSelecionados = document.getElementById("contadorSelecionados");
+
                 if (
                     !numeros ||
                     !mensagem ||
@@ -872,6 +1126,184 @@
                     );
 
                     atualizarTela();
+                }
+
+                function normalizarBusca(texto) {
+                    return (texto || "")
+                        .toString()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .toLowerCase()
+                        .trim();
+                }
+
+                function filtrarClientesCampanha() {
+                    if (!listaClientesCampanha) {
+                        return;
+                    }
+
+                    const busca = normalizarBusca(
+                        filtroCliente ? filtroCliente.value : ""
+                    );
+
+                    const status = filtroStatusCliente
+                        ? filtroStatusCliente.value
+                        : "todos";
+
+                    listaClientesCampanha
+                        .querySelectorAll(".cliente-campanha")
+                        .forEach(function (item) {
+                            const texto = normalizarBusca(
+                                [
+                                    item.dataset.nome || "",
+                                    item.dataset.telefone || "",
+                                    item.dataset.interesse || ""
+                                ].join(" ")
+                            );
+
+                            const combinaBusca =
+                                !busca || texto.includes(busca);
+
+                            const combinaStatus =
+                                status === "todos" ||
+                                item.dataset.status === status;
+
+                            item.hidden = !(combinaBusca && combinaStatus);
+                        });
+                }
+
+                function atualizarContadorSelecionados() {
+                    if (!contadorSelecionados) {
+                        return;
+                    }
+
+                    const total = document.querySelectorAll(
+                        ".cliente-checkbox:checked"
+                    ).length;
+
+                    contadorSelecionados.textContent = total;
+                }
+
+                if (filtroCliente) {
+                    filtroCliente.addEventListener(
+                        "input",
+                        filtrarClientesCampanha
+                    );
+                }
+
+                if (filtroStatusCliente) {
+                    filtroStatusCliente.addEventListener(
+                        "change",
+                        filtrarClientesCampanha
+                    );
+                }
+
+                document
+                    .querySelectorAll(".cliente-checkbox")
+                    .forEach(function (checkbox) {
+                        checkbox.addEventListener(
+                            "change",
+                            atualizarContadorSelecionados
+                        );
+                    });
+
+                if (selecionarFiltrados) {
+                    selecionarFiltrados.addEventListener(
+                        "click",
+                        function () {
+                            document
+                                .querySelectorAll(".cliente-campanha")
+                                .forEach(function (item) {
+                                    if (item.hidden) {
+                                        return;
+                                    }
+
+                                    const checkbox =
+                                        item.querySelector(".cliente-checkbox");
+
+                                    if (checkbox) {
+                                        checkbox.checked = true;
+                                    }
+                                });
+
+                            atualizarContadorSelecionados();
+                        }
+                    );
+                }
+
+                if (limparSelecaoClientes) {
+                    limparSelecaoClientes.addEventListener(
+                        "click",
+                        function () {
+                            document
+                                .querySelectorAll(".cliente-checkbox")
+                                .forEach(function (checkbox) {
+                                    checkbox.checked = false;
+                                });
+
+                            atualizarContadorSelecionados();
+                        }
+                    );
+                }
+
+                if (adicionarClientes) {
+                    adicionarClientes.addEventListener(
+                        "click",
+                        function () {
+                            const linhasAtuais = numeros.value
+                                .split(/\r?\n/)
+                                .map(function (linha) {
+                                    return linha.trim();
+                                })
+                                .filter(Boolean);
+
+                            const existentes = new Set(
+                                linhasAtuais.map(function (linha) {
+                                    return linha.toLowerCase();
+                                })
+                            );
+
+                            let adicionados = 0;
+
+                            document
+                                .querySelectorAll(".cliente-checkbox:checked")
+                                .forEach(function (checkbox) {
+                                    const nome = (
+                                        checkbox.dataset.nomeOriginal ||
+                                        "Cliente"
+                                    )
+                                        .replace(/[\r\n,;]/g, " ")
+                                        .replace(/\s+/g, " ")
+                                        .trim();
+
+                                    const telefone = (
+                                        checkbox.dataset.telefoneOriginal || ""
+                                    ).replace(/\D/g, "");
+
+                                    if (!telefone) {
+                                        return;
+                                    }
+
+                                    const linha = nome + "," + telefone;
+                                    const chave = linha.toLowerCase();
+
+                                    if (!existentes.has(chave)) {
+                                        linhasAtuais.push(linha);
+                                        existentes.add(chave);
+                                        adicionados++;
+                                    }
+                                });
+
+                            numeros.value = linhasAtuais.join("\n");
+                            atualizarTela();
+
+                            if (adicionados === 0) {
+                                alert(
+                                    "Selecione pelo menos um cliente que ainda não esteja na lista."
+                                );
+                            }
+                        }
+                    );
                 }
 
                 numeros.addEventListener(
