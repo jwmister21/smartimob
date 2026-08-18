@@ -609,6 +609,18 @@ textarea.campanha-input{
                 </div>
 
                 <div class="campanha-field">
+                    <label for="filtroFunil"><i class="bi bi-funnel"></i> Funil</label>
+                    <select id="filtroFunil" class="campanha-input">
+                        <option value="">Todos os clientes</option>
+                        <option value="Lead Novo">Lead Novo</option>
+                        <option value="Visita Agendada">Visita Agendada</option>
+                        <option value="Negociação">Negociação</option>
+                        <option value="Concluido">Concluído</option>
+                        <option value="Desistencia">Desistência</option>
+                    </select>
+                </div>
+
+                <div class="campanha-field">
                     <label for="valorMin"><i class="bi bi-arrow-down-circle"></i> Valor mínimo</label>
                     <input
                         id="valorMin"
@@ -950,6 +962,11 @@ function aplicarFiltros(){
         .value
     );
 
+    let funil =
+    document
+    .getElementById("filtroFunil")
+    .value;
+
     let contador=0;
 
     document
@@ -971,6 +988,15 @@ function aplicarFiltros(){
         let aparece =
         texto.includes(busca);
 
+        let statusCliente =
+        card
+        .querySelector(".cliente-check")
+        .dataset.status || "";
+
+        let dentroFunil =
+        !funil ||
+        statusCliente === funil;
+
         let dentroMin =
         !minimo ||
         preco >= minimo;
@@ -981,6 +1007,7 @@ function aplicarFiltros(){
 
         if(
             aparece &&
+            dentroFunil &&
             dentroMin &&
             dentroMax
         ){
@@ -1002,6 +1029,13 @@ document
 .getElementById("filtro")
 .addEventListener(
     "input",
+    aplicarFiltros
+);
+
+document
+.getElementById("filtroFunil")
+.addEventListener(
+    "change",
     aplicarFiltros
 );
 
