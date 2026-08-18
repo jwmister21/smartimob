@@ -5215,13 +5215,14 @@ def criar_campanha():
 
     cursor = conn.cursor()
 
-
     cursor.execute("""
         SELECT
             id,
             nome,
             telefone,
-            faixa_preco
+            faixa_preco,
+            bairro,
+            status_funil
         FROM clientes
         WHERE empresa_id = ?
         ORDER BY id DESC
@@ -5230,12 +5231,9 @@ def criar_campanha():
         session.get("empresa_id"),
     ))
 
-
     clientes = cursor.fetchall()
 
-
     conn.close()
-
 
     return render_template(
         "CriarCampanha.html",
