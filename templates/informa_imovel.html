@@ -554,6 +554,16 @@ a{color:inherit;}
 
 <body>
 
+{% set whatsapp_numero = imovel.corretor_telefone|string
+    |replace('+','')
+    |replace(' ','')
+    |replace('(','')
+    |replace(')','')
+    |replace('-','')
+    |replace('.','') %}
+{% set whatsapp_mensagem = ('Tenho interesse no imóvel Ref ' ~ imovel.id ~ ' - ' ~ imovel.titulo ~ ' ' ~ request.url)|urlencode %}
+
+
 <div class="property-hero">
     <div class="hero-inner">
         <a class="back-link" href="javascript:history.back()">← Voltar</a>
@@ -602,7 +612,7 @@ a{color:inherit;}
             </div>
 
             <div class="botoes">
-                <a class="btn whatsapp" target="_blank" href="https://wa.me/{{ imovel.corretor_telefone }}?text=Tenho interesse no imóvel Ref >{{ imovel.id }} {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
+                <a class="btn whatsapp" target="_blank" href="https://wa.me/{{ whatsapp_numero }}?text={{ whatsapp_mensagem }}">WhatsApp</a>
                 <a class="btn compartilhar" href="#" onclick="compartilhar()">Compartilhar</a>
             </div>
 
@@ -664,10 +674,10 @@ a{color:inherit;}
     <img id="fotoModal" alt="Foto ampliada">
 </div>
 
-<a class="float-whats" target="_blank" href="https://wa.me/{{ imovel.corretor_telefone }}?text=Tenho interesse no imóvel Ref >{{ imovel.id }} {{ imovel.titulo }} {{ request.url }}">🟢</a>
+<a class="float-whats" target="_blank" href="https://wa.me/{{ whatsapp_numero }}?text={{ whatsapp_mensagem }}">🟢</a>
 
 <div class="mobile-bar">
-    <a class="whatsapp" target="_blank" href="https://wa.me/{{ imovel.corretor_telefone }}?text=Tenho interesse no imóvel Ref >{{ imovel.id }} {{ imovel.titulo }} {{ request.url }}">WhatsApp</a>
+    <a class="whatsapp" target="_blank" href="https://wa.me/{{ whatsapp_numero }}?text={{ whatsapp_mensagem }}">WhatsApp</a>
     <a class="compartilhar" onclick="compartilhar()">Compartilhar</a>
 </div>
 
