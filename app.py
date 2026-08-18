@@ -5206,13 +5206,11 @@ def dashboard_v2():
 
 
 @app.route("/CriarCampanha")
+@verificar_sessao
 def criar_campanha():
-
-    import sqlite3
 
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -5222,12 +5220,32 @@ def criar_campanha():
             telefone,
             faixa_preco,
             bairro,
-            status_funil
+
+            CASE
+                WHEN status_funil = 'Visita Agendada'
+                    THEN 'Visita Agendada'
+
+                WHEN status_funil = 'Negociação'
+                    THEN 'Negociação'
+
+                WHEN status_funil = 'Concluido'
+                    THEN 'Concluido'
+
+                WHEN status_funil = 'Desistencia'
+                    THEN 'Desistencia'
+
+                WHEN status_funil = 'Lead Novo'
+                    THEN 'Lead Novo'
+
+                ELSE 'Lead Novo'
+            END AS status_funil
+
         FROM clientes
+
         WHERE empresa_id = ?
+
         ORDER BY id DESC
-    """,
-    (
+    """, (
         session.get("empresa_id"),
     ))
 
