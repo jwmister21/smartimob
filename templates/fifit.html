@@ -522,7 +522,13 @@ imóveis.
         {% if imovel.corretor_telefone %}
 
         <a
-            href="https://wa.me/{{ imovel.corretor_telefone }}?text=Olá,%20vi%20seu%20imóvel%20na%20Rede%20FIFIT%20e%20tenho%20interesse%20em%20uma%20parceria."
+            href="https://wa.me/{{ (imovel.corretor_telefone|string)
+                |replace('+','')
+                |replace(' ','')
+                |replace('(','')
+                |replace(')','')
+                |replace('-','')
+                |replace('.','') }}?text=Ola%2C%20vi%20seu%20imovel%20na%20Rede%20FIFIT%20e%20tenho%20interesse%20em%20uma%20parceria."
             target="_blank"
             class="btn-fifit"
             style="background:#16a34a;">
