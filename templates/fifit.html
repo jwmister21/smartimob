@@ -179,6 +179,199 @@
 }
 
 
+
+/* ========================= */
+/* CTA IMOB ZEN - VISITANTES */
+/* ========================= */
+
+.imobzen-public-cta{
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at top right, rgba(59,130,246,.16), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(16,185,129,.14), transparent 30%),
+        linear-gradient(135deg,#ffffff 0%,#f8fbff 58%,#f0fdf8 100%);
+    border:1px solid #dbeafe;
+    border-radius:24px;
+    padding:28px;
+    margin-bottom:25px;
+    box-shadow:0 16px 40px rgba(15,23,42,.09);
+}
+
+.imobzen-public-cta::before{
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    right:-55px;
+    top:-65px;
+    border-radius:50%;
+    background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(124,58,237,.08));
+    pointer-events:none;
+}
+
+.imobzen-public-cta-content{
+    position:relative;
+    z-index:2;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:24px;
+}
+
+.imobzen-public-cta-copy{
+    min-width:0;
+}
+
+.imobzen-public-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    margin-bottom:12px;
+    padding:7px 11px;
+    border-radius:999px;
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    color:#1d4ed8;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.04em;
+}
+
+.imobzen-public-cta h3{
+    margin:0;
+    color:#0f172a;
+    font-size:clamp(22px,3vw,31px);
+    line-height:1.18;
+    letter-spacing:-.03em;
+}
+
+.imobzen-public-cta p{
+    max-width:780px;
+    margin:11px 0 0;
+    color:#475569;
+    font-size:14px;
+    line-height:1.75;
+}
+
+.imobzen-public-features{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:16px;
+}
+
+.imobzen-public-feature{
+    display:inline-flex;
+    align-items:center;
+    min-height:32px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    color:#334155;
+    font-size:11px;
+    font-weight:700;
+    box-shadow:0 5px 12px rgba(15,23,42,.04);
+}
+
+.imobzen-public-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    min-width:230px;
+}
+
+.imobzen-public-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:100%;
+    min-height:48px;
+    padding:12px 18px;
+    border-radius:14px;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:800;
+    transition:.22s ease;
+}
+
+.imobzen-public-btn-primary{
+    color:#fff;
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    box-shadow:0 12px 24px rgba(37,99,235,.24);
+}
+
+.imobzen-public-btn-primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 16px 30px rgba(37,99,235,.30);
+}
+
+.imobzen-public-btn-secondary{
+    color:#1e293b;
+    background:#fff;
+    border:1px solid #cbd5e1;
+}
+
+.imobzen-public-btn-secondary:hover{
+    color:#2563eb;
+    border-color:#93c5fd;
+    background:#f8fbff;
+    transform:translateY(-2px);
+}
+
+.imobzen-public-note{
+    margin-top:9px;
+    text-align:center;
+    color:#94a3b8;
+    font-size:10px;
+    font-weight:600;
+}
+
+@media(max-width:850px){
+    .imobzen-public-cta{
+        padding:22px;
+        border-radius:20px;
+    }
+
+    .imobzen-public-cta-content{
+        grid-template-columns:1fr;
+    }
+
+    .imobzen-public-actions{
+        width:100%;
+        min-width:0;
+        flex-direction:row;
+    }
+
+    .imobzen-public-btn{
+        flex:1;
+    }
+}
+
+@media(max-width:560px){
+    .imobzen-public-cta{
+        padding:20px 16px;
+    }
+
+    .imobzen-public-actions{
+        flex-direction:column;
+    }
+
+    .imobzen-public-btn{
+        width:100%;
+    }
+
+    .imobzen-public-features{
+        gap:6px;
+    }
+
+    .imobzen-public-feature{
+        font-size:10px;
+    }
+}
+
 </style>
 
 <div class="fifit-header">
@@ -188,6 +381,58 @@
         Imóveis compartilhados por corretores parceiros.
     </p>
 </div>
+
+
+{% if not usuario_logado %}
+<div class="imobzen-public-cta">
+    <div class="imobzen-public-cta-content">
+
+        <div class="imobzen-public-cta-copy">
+            <div class="imobzen-public-badge">
+                ✨ Plataforma para corretores
+            </div>
+
+            <h3>
+                Você está na Rede FIFTY. Agora conheça o IMOB ZEN.
+            </h3>
+
+            <p>
+                Organize clientes, imóveis e oportunidades em um só lugar.
+                Tenha CRM, funil de vendas, inteligência artificial e ferramentas
+                para acelerar seu atendimento e transformar contatos em negócios.
+            </p>
+
+            <div class="imobzen-public-features">
+                <span class="imobzen-public-feature">👥 CRM de clientes</span>
+                <span class="imobzen-public-feature">🏢 Gestão de imóveis</span>
+                <span class="imobzen-public-feature">⚡ Funil de vendas</span>
+                <span class="imobzen-public-feature">🤖 Inteligência artificial</span>
+                <span class="imobzen-public-feature">📢 Marketing imobiliário</span>
+            </div>
+        </div>
+
+        <div class="imobzen-public-actions">
+            <a href="https://wa.me/5511920900085?text=Ol%C3%A1%21%20Conheci%20o%20IMOB%20ZEN%20pela%20Rede%20FIFTY%20e%20quero%20saber%20mais%20sobre%20a%20plataforma."
+               target="_blank"
+               rel="noopener noreferrer"
+               class="imobzen-public-btn imobzen-public-btn-primary">
+                💬 Quero conhecer o IMOB ZEN
+            </a>
+
+            <a href="/login" class="imobzen-public-btn imobzen-public-btn-secondary">
+                🔐 Já tenho uma conta
+            </a>
+
+            <div class="imobzen-public-note">
+                A Rede FIFTY continua disponível normalmente.
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endif %}
+
+
 <!-- ========================= -->
 <!-- FILTROS -->
 <!-- ========================= -->
