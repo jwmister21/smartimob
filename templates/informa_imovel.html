@@ -441,6 +441,67 @@ a{color:inherit;}
     font-size:14px;
 }
 
+
+/* SETAS DA GALERIA PRINCIPAL */
+.galeria-seta{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:8;
+    width:48px;
+    height:48px;
+    border:1px solid rgba(255,255,255,.55);
+    border-radius:50%;
+    background:rgba(15,23,42,.58);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(15,23,42,.22);
+    backdrop-filter:blur(7px);
+    transition:.2s ease;
+}
+
+.galeria-seta:hover{
+    background:rgba(15,23,42,.82);
+    transform:translateY(-50%) scale(1.06);
+}
+
+.galeria-seta.anterior{left:14px;}
+.galeria-seta.proxima{right:14px;}
+
+.galeria-contador{
+    position:absolute;
+    left:15px;
+    bottom:15px;
+    z-index:7;
+    padding:8px 11px;
+    border-radius:999px;
+    background:rgba(15,23,42,.72);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    pointer-events:none;
+}
+
+@media(max-width:600px){
+    .galeria-seta{
+        width:42px;
+        height:42px;
+        font-size:24px;
+    }
+    .galeria-seta.anterior{left:8px;}
+    .galeria-seta.proxima{right:8px;}
+    .galeria-contador{
+        left:10px;
+        bottom:10px;
+        font-size:11px;
+    }
+}
+
 /* MODAL */
 .modal{
     display:none;
@@ -579,7 +640,26 @@ a{color:inherit;}
         {% if imovel.fotos %}
         <div class="gallery-shell">
             <div class="galeria-principal">
-                <img id="fotoPrincipal" src="/uploads/imoveis/{{ imovel.fotos[0] }}" onclick="abrirGaleria(this.src)" alt="{{ imovel.titulo }}">
+                <img id="fotoPrincipal"
+                     src="/uploads/imoveis/{{ imovel.fotos[0] }}"
+                     onclick="abrirGaleria(this.src)"
+                     alt="{{ imovel.titulo }}">
+
+                {% if imovel.fotos|length > 1 %}
+                <button type="button"
+                        class="galeria-seta anterior"
+                        onclick="event.stopPropagation(); navegarFoto(-1)"
+                        aria-label="Foto anterior">‹</button>
+
+                <button type="button"
+                        class="galeria-seta proxima"
+                        onclick="event.stopPropagation(); navegarFoto(1)"
+                        aria-label="Próxima foto">›</button>
+
+                <div class="galeria-contador" id="galeriaContador">
+                    1 / {{ imovel.fotos|length }}
+                </div>
+                {% endif %}
             </div>
 
             <div class="miniaturas">
@@ -682,8 +762,43 @@ a{color:inherit;}
 </div>
 
 <script>
+const fotosGaleria = [
+{% for foto in imovel.fotos %}
+    "/uploads/imoveis/{{ foto }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+];
+
+let fotoAtual = 0;
+
+function atualizarFotoGaleria(indice){
+    if(!fotosGaleria.length) return;
+
+    fotoAtual = (indice + fotosGaleria.length) % fotosGaleria.length;
+
+    const principal = document.getElementById("fotoPrincipal");
+    const contador = document.getElementById("galeriaContador");
+
+    if(principal){
+        principal.src = fotosGaleria[fotoAtual];
+    }
+
+    if(contador){
+        contador.textContent = `${fotoAtual + 1} / ${fotosGaleria.length}`;
+    }
+}
+
+function navegarFoto(direcao){
+    atualizarFotoGaleria(fotoAtual + direcao);
+}
+
 function trocarFoto(src){
-    document.getElementById("fotoPrincipal").src=src;
+    const indice = fotosGaleria.indexOf(src);
+
+    if(indice >= 0){
+        atualizarFotoGaleria(indice);
+    }else{
+        document.getElementById("fotoPrincipal").src = src;
+    }
 }
 
 function abrirGaleria(src){
