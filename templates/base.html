@@ -1094,6 +1094,16 @@ a{
 }
 
 
+/* ================= MIRA - SOMENTE CHAT ================= */
+.btn-microfone,
+#mira-voz-status,
+#mira-intro {
+    display:none !important;
+}
+
+/* Código antigo de voz mantido abaixo apenas para compatibilidade,
+   mas não é inicializado e a saída de áudio foi desativada. */
+
 /* ================= MIRA - RECONHECIMENTO DE VOZ ================= */
 .btn-microfone{
     position:relative;
@@ -1553,16 +1563,6 @@ a{
 
             <button
                 type="button"
-                class="btn-microfone"
-                id="btn-microfone-mira"
-                onclick="alternarReconhecimentoMira()"
-                title="Falar com a Mira"
-                aria-label="Falar com a Mira">
-                <span class="icone-microfone-mira">🎙️</span>
-            </button>
-
-            <button
-                type="button"
                 class="btn-analisar"
                 id="btn-analisar-ia"
                 onclick="analisarIA()"
@@ -1573,7 +1573,7 @@ a{
         </div>
 
         <div class="chat-footer-info">
-            <span id="mira-voz-status">Diga: “abra clientes” ou faça uma pergunta</span>
+            <span>Digite sua mensagem para conversar com a Mira</span>
 
             <button
                 type="button"
@@ -2323,43 +2323,8 @@ function mostrarToastMira(mensagem,tipo=""){
 }
 
 function falarRespostaCurtaMira(texto){
-    if(!("speechSynthesis" in window)) return;
-
-    miraPausadaPelaFala = true;
-
-    if(miraEstaOuvindo && reconhecimentoMira){
-        try{
-            reconhecimentoMira.stop();
-        }catch(error){
-            console.warn("Não foi possível pausar o microfone:", error);
-        }
-    }
-
-    const fala = new SpeechSynthesisUtterance(texto);
-    const voz = typeof obterVozMira === "function"
-        ? obterVozMira()
-        : null;
-
-    if(voz) fala.voice = voz;
-
-    fala.lang = "pt-BR";
-    fala.rate = .98;
-    fala.pitch = 1.02;
-    fala.volume = 1;
-
-    const retomarEscuta = () => {
-        miraPausadaPelaFala = false;
-
-        if(miraEscutaAtiva){
-            setTimeout(iniciarEscutaAutomaticaMira, 700);
-        }
-    };
-
-    fala.onend = retomarEscuta;
-    fala.onerror = retomarEscuta;
-
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(fala);
+    // Voz desativada: a Mira funciona somente pelo chat.
+    return;
 }
 
 function atualizarComandoMira(titulo,texto,estado=""){
@@ -2967,23 +2932,10 @@ function liberarEscutaMiraComPrimeiraInteracao(){
 document.addEventListener("DOMContentLoaded", function () {
     const input = document.getElementById("texto_cliente");
 
-    configurarMira();
-    prepararReconhecimentoMira();
+    // Mira em modo somente chat: sem voz e sem microfone.
+    sessionStorage.setItem(MIRA_KEY, "1");
+    window.speechSynthesis?.cancel();
     montarBoasVindasIA();
-
-    setTimeout(iniciarEscutaAutomaticaMira, 1400);
-
-    document.addEventListener(
-        "pointerdown",
-        liberarEscutaMiraComPrimeiraInteracao,
-        { once:true }
-    );
-
-    document.addEventListener(
-        "keydown",
-        liberarEscutaMiraComPrimeiraInteracao,
-        { once:true }
-    );
 
     document
         .getElementById("mira-comando-cancelar")
