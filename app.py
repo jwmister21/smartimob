@@ -761,7 +761,13 @@ def atualizar_banco():
         "ALTER TABLE usuarios ADD COLUMN cargo TEXT DEFAULT 'Corretor'",
         "ALTER TABLE usuarios ADD COLUMN is_admin INTEGER DEFAULT 0",
         "ALTER TABLE usuarios ADD COLUMN validade_assinatura TEXT",
-
+        # REDES SOCIAIS
+        "ALTER TABLE usuarios ADD COLUMN instagram TEXT",
+        "ALTER TABLE usuarios ADD COLUMN facebook TEXT",
+        "ALTER TABLE usuarios ADD COLUMN tiktok TEXT",
+        "ALTER TABLE usuarios ADD COLUMN youtube TEXT",
+        "ALTER TABLE usuarios ADD COLUMN linkedin TEXT",
+        "ALTER TABLE usuarios ADD COLUMN site TEXT",
         # CLIENTES
         "ALTER TABLE clientes ADD COLUMN interesse TEXT",
         "ALTER TABLE clientes ADD COLUMN faixa_preco TEXT",
@@ -7129,21 +7135,40 @@ def configuracoes():
         nome = request.form.get("nome", "").strip()
         telefone = request.form.get("telefone", "").strip()
 
-        # Atualiza nome e telefone
+        instagram = request.form.get("instagram", "").strip()
+        facebook = request.form.get("facebook", "").strip()
+        tiktok = request.form.get("tiktok", "").strip()
+        youtube = request.form.get("youtube", "").strip()
+        linkedin = request.form.get("linkedin", "").strip()
+        site = request.form.get("site", "").strip()
+
         cursor.execute("""
             UPDATE usuarios
-            SET nome = ?,
-                telefone = ?
+            SET
+                nome = ?,
+                telefone = ?,
+                instagram = ?,
+                facebook = ?,
+                tiktok = ?,
+                youtube = ?,
+                linkedin = ?,
+                site = ?
             WHERE id = ?
             AND empresa_id = ?
         """, (
             nome,
             telefone,
+            instagram,
+            facebook,
+            tiktok,
+            youtube,
+            linkedin,
+            site,
             session["usuario_id"],
             session["empresa_id"]
         ))
 
-        # Foto
+        # FOTO DO USUÁRIO
         file = request.files.get("foto")
 
         if file and file.filename != "":
@@ -7172,16 +7197,28 @@ def configuracoes():
             ))
 
         conn.commit()
+        conn.close()
+
+        flash("Configurações salvas com sucesso!", "success")
 
         return redirect("/configuracoes")
 
-    # usuário
+    # ==========================
+    # USUÁRIO
+    # ==========================
+
     cursor.execute("""
         SELECT
             nome,
             foto_url,
             is_admin,
-            telefone
+            telefone,
+            instagram,
+            facebook,
+            tiktok,
+            youtube,
+            linkedin,
+            site
         FROM usuarios
         WHERE id = ?
         AND empresa_id = ?
@@ -7192,7 +7229,10 @@ def configuracoes():
 
     usuario = cursor.fetchone()
 
-    # empresa / site
+    # ==========================
+    # EMPRESA / SITE
+    # ==========================
+
     cursor.execute("""
         SELECT *
         FROM configuracoes_site
