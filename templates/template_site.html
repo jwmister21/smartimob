@@ -1525,6 +1525,80 @@ body{
     font-weight:500;
 }
 
+/* REDES SOCIAIS NO HERO */
+.hero-social{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:9px;
+    margin-top:16px;
+}
+
+.hero-social-label{
+    color:#dbe4ec;
+    font-size:11px;
+    font-weight:800;
+    margin-right:2px;
+}
+
+.hero-social a{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    min-height:38px;
+    padding:0 12px;
+    border:1px solid rgba(255,255,255,.20);
+    border-radius:999px;
+    background:rgba(7,24,43,.64);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    color:#fff;
+    text-decoration:none;
+    font-size:11px;
+    font-weight:800;
+    box-shadow:0 9px 22px rgba(0,0,0,.18);
+    transition:transform .2s,background .2s,border-color .2s;
+}
+
+.hero-social a:hover{
+    transform:translateY(-2px);
+    background:rgba(201,153,76,.92);
+    border-color:var(--gold-light);
+}
+
+.hero-social svg{
+    width:16px;
+    height:16px;
+    flex:0 0 16px;
+    fill:currentColor;
+}
+
+@media(max-width:700px){
+    .hero-social{
+        gap:7px;
+        margin-top:14px;
+    }
+
+    .hero-social-label{
+        width:100%;
+        margin:0 0 2px;
+        font-size:10px;
+    }
+
+    .hero-social a{
+        min-height:36px;
+        padding:0 10px;
+        font-size:10px;
+    }
+}
+
+@media(max-width:360px){
+    .hero-social a{
+        flex:1 1 calc(50% - 7px);
+    }
+}
+
 </style>
 </head>
 <body>
@@ -1578,6 +1652,55 @@ body{
                     <span>✓ Imóveis atualizados</span>
                     <span>✓ Negociação segura</span>
                 </div>
+
+                {% if redes and (redes.instagram or redes.facebook or redes.tiktok or redes.youtube or redes.linkedin or redes.site) %}
+                <div class="hero-social" aria-label="Redes sociais">
+                    <span class="hero-social-label">Siga e acompanhe:</span>
+
+                    {% if redes.instagram %}
+                    <a href="{{ redes.instagram }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.8A4.2 4.2 0 1 1 7.8 12 4.2 4.2 0 0 1 12 7.8Zm0 2A2.2 2.2 0 1 0 14.2 12 2.2 2.2 0 0 0 12 9.8Zm4.7-3.15a1 1 0 1 1-1 1 1 1 0 0 1 1-1Z"/></svg>
+                        Instagram
+                    </a>
+                    {% endif %}
+
+                    {% if redes.facebook %}
+                    <a href="{{ redes.facebook }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8h2.8l.42-3.2H13.5V8.75c0-.93.26-1.56 1.6-1.56h1.71V4.33c-.3-.04-1.31-.13-2.5-.13-2.47 0-4.16 1.51-4.16 4.28v2.32H7.36V14h2.79v8h3.35Z"/></svg>
+                        Facebook
+                    </a>
+                    {% endif %}
+
+                    {% if redes.tiktok %}
+                    <a href="{{ redes.tiktok }}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3c.35 2.05 1.55 3.28 3.5 3.42v3.05a7.3 7.3 0 0 1-3.46-.9v6.26a5.82 5.82 0 1 1-5.03-5.77v3.08a2.82 2.82 0 1 0 2 2.69V3h2.99Z"/></svg>
+                        TikTok
+                    </a>
+                    {% endif %}
+
+                    {% if redes.youtube %}
+                    <a href="{{ redes.youtube }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.8 2.8 0 0 0-2-2C17.84 4.7 12 4.7 12 4.7s-5.84 0-7.6.5a2.8 2.8 0 0 0-2 2A29 29 0 0 0 2 12a29 29 0 0 0 .4 4.8 2.8 2.8 0 0 0 2 2c1.76.5 7.6.5 7.6.5s5.84 0 7.6-.5a2.8 2.8 0 0 0 2-2A29 29 0 0 0 22 12a29 29 0 0 0-.4-4.8ZM10 15.3V8.7l5.7 3.3L10 15.3Z"/></svg>
+                        YouTube
+                    </a>
+                    {% endif %}
+
+                    {% if redes.linkedin %}
+                    <a href="{{ redes.linkedin }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.2 7.2A2.2 2.2 0 1 1 5.2 2.8a2.2 2.2 0 0 1 0 4.4ZM3.3 9h3.8v12H3.3V9Zm6.1 0H13v1.64h.05a3.95 3.95 0 0 1 3.56-1.96c3.8 0 4.5 2.5 4.5 5.76V21h-3.77v-5.82c0-1.39-.02-3.18-1.94-3.18-1.95 0-2.25 1.52-2.25 3.08V21H9.4V9Z"/></svg>
+                        LinkedIn
+                    </a>
+                    {% endif %}
+
+                    {% if redes.site %}
+                    <a href="{{ redes.site }}" target="_blank" rel="noopener noreferrer" aria-label="Site">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm6.92 6h-3.05a15.7 15.7 0 0 0-1.28-3.15A8.05 8.05 0 0 1 18.92 8ZM12 4c.83 1.01 1.56 2.36 1.93 4h-3.86C10.44 6.36 11.17 5.01 12 4ZM9.41 4.85A15.7 15.7 0 0 0 8.13 8H5.08a8.05 8.05 0 0 1 4.33-3.15ZM4 12c0-.69.09-1.36.25-2h3.52c-.05.65-.08 1.32-.08 2s.03 1.35.08 2H4.25A8.1 8.1 0 0 1 4 12Zm1.08 4h3.05a15.7 15.7 0 0 0 1.28 3.15A8.05 8.05 0 0 1 5.08 16ZM12 20c-.83-1.01-1.56-2.36-1.93-4h3.86c-.37 1.64-1.1 2.99-1.93 4Zm2.32-6H9.68c-.06-.64-.1-1.31-.1-2s.04-1.36.1-2h4.64c.06.64.1 1.31.1 2s-.04 1.36-.1 2Zm.27 5.15A15.7 15.7 0 0 0 15.87 16h3.05a8.05 8.05 0 0 1-4.33 3.15ZM16.23 14c.05-.65.08-1.32.08-2s-.03-1.35-.08-2h3.52c.16.64.25 1.31.25 2s-.09 1.36-.25 2h-3.52Z"/></svg>
+                        Site
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
             </div>
 
             <div class="busca">
