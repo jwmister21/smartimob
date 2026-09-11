@@ -27,6 +27,7 @@ label{
     border-radius:20px;
     border:1px solid #e2e8f0;
     box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
+    margin-bottom:25px;
 }
 
 .form-control{
@@ -37,6 +38,14 @@ label{
     border-radius:12px;
     background:#f8fafc;
     color:#1e293b;
+    transition:0.2s;
+}
+
+.form-control:focus{
+    outline:none;
+    border-color:#2563eb;
+    background:#ffffff;
+    box-shadow:0 0 0 3px rgba(37,99,235,0.08);
 }
 
 .btn-salvar{
@@ -74,6 +83,55 @@ label{
     margin-bottom:20px;
 }
 
+/* REDES SOCIAIS */
+
+.redes-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+}
+
+.rede-item{
+    position:relative;
+}
+
+.rede-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:3px;
+}
+
+.rede-icone{
+    width:30px;
+    height:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:9px;
+    background:#eff6ff;
+    font-size:16px;
+}
+
+.config-descricao{
+    color:#94a3b8;
+    font-size:0.85rem;
+    margin-top:-10px;
+    margin-bottom:25px;
+}
+
+@media(max-width:700px){
+
+    .config-grid{
+        grid-template-columns:1fr;
+    }
+
+    .redes-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
 </style>
 
 <h2>Configurações</h2>
@@ -85,7 +143,11 @@ label{
 
         <h3>Meu Perfil</h3>
 
-        <form action="/configuracoes" method="POST" enctype="multipart/form-data">
+        <form
+            action="/configuracoes"
+            method="POST"
+            enctype="multipart/form-data"
+        >
 
             {% if usuario[1] %}
                 <img
@@ -95,6 +157,7 @@ label{
             {% endif %}
 
             <label>Alterar foto:</label>
+
             <input
                 type="file"
                 name="foto"
@@ -103,23 +166,28 @@ label{
             >
 
             <label>Nome:</label>
-<input
-    type="text"
-    name="nome"
-    class="form-control"
-    value="{{ usuario['nome'] }}"
->
 
-<label>Telefone:</label>
-<input
-    type="text"
-    name="telefone"
-    class="form-control"
-    value="{{ usuario['telefone'] or '' }}"
-    placeholder="5511999999999"
->
+            <input
+                type="text"
+                name="nome"
+                class="form-control"
+                value="{{ usuario['nome'] }}"
+            >
 
-            <button type="submit" class="btn-salvar">
+            <label>Telefone:</label>
+
+            <input
+                type="text"
+                name="telefone"
+                class="form-control"
+                value="{{ usuario['telefone'] or '' }}"
+                placeholder="5511999999999"
+            >
+
+            <button
+                type="submit"
+                class="btn-salvar"
+            >
                 Salvar Perfil
             </button>
 
@@ -127,54 +195,251 @@ label{
 
     </div>
 
+
     <!-- LOGO IMOBILIÁRIA -->
+
     {% if usuario[2] == 1 %}
+
+    <div class="config-box">
+
+        <h3>Logo da Imobiliária</h3>
+
+        <form
+            action="/salvar_logo_imobiliaria"
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            {% if empresa and empresa["logo"] %}
+
+                <img
+                    src="{{ empresa['logo'] }}"
+                    class="logo-imobiliaria"
+                >
+
+            {% endif %}
+
+            <label>Enviar logo:</label>
+
+            <input
+                type="file"
+                name="logo"
+                class="form-control"
+                accept="image/*"
+            >
+
+            <button
+                type="submit"
+                class="btn-salvar"
+            >
+                Salvar Logo
+            </button>
+
+        </form>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- REDES SOCIAIS -->
 
 <div class="config-box">
 
-    <h3>Logo da Imobiliária</h3>
+    <h3>🌐 Minhas Redes Sociais</h3>
+
+    <p class="config-descricao">
+        Adicione suas redes sociais para exibir em seu perfil,
+        imóveis, páginas públicas e materiais de divulgação.
+    </p>
 
     <form
-        action="/salvar_logo_imobiliaria"
+        action="/salvar_redes_sociais"
         method="POST"
-        enctype="multipart/form-data"
     >
 
-        {% if empresa and empresa["logo"] %}
-            <img
-                src="{{ empresa['logo'] }}"
-                class="logo-imobiliaria"
-            >
-        {% endif %}
+        <div class="redes-grid">
 
-        <label>Enviar logo:</label>
 
-        <input
-            type="file"
-            name="logo"
-            class="form-control"
-            accept="image/*"
+            <!-- INSTAGRAM -->
+
+            <div class="rede-item">
+
+                <div class="rede-label">
+
+                    <span class="rede-icone">
+                        📸
+                    </span>
+
+                    <label>Instagram</label>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="instagram"
+                    class="form-control"
+                    value="{{ usuario['instagram'] or '' }}"
+                    placeholder="https://instagram.com/seuperfil"
+                >
+
+            </div>
+
+
+            <!-- FACEBOOK -->
+
+            <div class="rede-item">
+
+                <div class="rede-label">
+
+                    <span class="rede-icone">
+                        📘
+                    </span>
+
+                    <label>Facebook</label>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="facebook"
+                    class="form-control"
+                    value="{{ usuario['facebook'] or '' }}"
+                    placeholder="https://facebook.com/seuperfil"
+                >
+
+            </div>
+
+
+            <!-- TIKTOK -->
+
+            <div class="rede-item">
+
+                <div class="rede-label">
+
+                    <span class="rede-icone">
+                        🎵
+                    </span>
+
+                    <label>TikTok</label>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="tiktok"
+                    class="form-control"
+                    value="{{ usuario['tiktok'] or '' }}"
+                    placeholder="https://tiktok.com/@seuperfil"
+                >
+
+            </div>
+
+
+            <!-- YOUTUBE -->
+
+            <div class="rede-item">
+
+                <div class="rede-label">
+
+                    <span class="rede-icone">
+                        ▶️
+                    </span>
+
+                    <label>YouTube</label>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="youtube"
+                    class="form-control"
+                    value="{{ usuario['youtube'] or '' }}"
+                    placeholder="https://youtube.com/@seucanal"
+                >
+
+            </div>
+
+
+            <!-- LINKEDIN -->
+
+            <div class="rede-item">
+
+                <div class="rede-label">
+
+                    <span class="rede-icone">
+                        💼
+                    </span>
+
+                    <label>LinkedIn</label>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="linkedin"
+                    class="form-control"
+                    value="{{ usuario['linkedin'] or '' }}"
+                    placeholder="https://linkedin.com/in/seuperfil"
+                >
+
+            </div>
+
+
+            <!-- SITE -->
+
+            <div class="rede-item">
+
+                <div class="rede-label">
+
+                    <span class="rede-icone">
+                        🌎
+                    </span>
+
+                    <label>Site / Página profissional</label>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="site"
+                    class="form-control"
+                    value="{{ usuario['site'] or '' }}"
+                    placeholder="https://www.seusite.com.br"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn-salvar"
         >
-
-        <button type="submit" class="btn-salvar">
-            Salvar Logo
+            💾 Salvar Redes Sociais
         </button>
 
     </form>
 
 </div>
 
-{% endif %}
-</div>
 
 <!-- SEGURANÇA -->
+
 <div class="config-box">
 
     <h3>Segurança</h3>
 
-    <form action="/atualizar_senha" method="POST">
+    <form
+        action="/atualizar_senha"
+        method="POST"
+    >
 
         <label>Senha Atual:</label>
+
         <input
             type="password"
             name="senha_atual"
@@ -183,6 +448,7 @@ label{
         >
 
         <label>Nova Senha:</label>
+
         <input
             type="password"
             name="nova_senha"
@@ -190,7 +456,10 @@ label{
             required
         >
 
-        <button type="submit" class="btn-salvar">
+        <button
+            type="submit"
+            class="btn-salvar"
+        >
             Alterar Senha
         </button>
 
